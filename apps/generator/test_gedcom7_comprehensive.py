@@ -10,8 +10,8 @@ from io import BytesIO
 
 from django.test import TestCase
 
-from generator.models import PersonData
-from generator.utils.gedcom_parser import convert_to_utf8, parse_gedcom_data
+from apps.generator.models import PersonData
+from apps.generator.utils.gedcom_parser import convert_to_utf8, parse_gedcom_data
 
 
 class Gedcom7ComprehensiveTests(TestCase):

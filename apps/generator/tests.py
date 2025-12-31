@@ -13,9 +13,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from generator.models import GedcomFile, PersonData
-from generator.utils.gedcom_parser import convert_to_utf8, parse_gedcom_data
-from generator.views import (
+from apps.generator.models import GedcomFile, PersonData
+from apps.generator.utils.gedcom_parser import convert_to_utf8, parse_gedcom_data
+from apps.generator.views import (
     get_spouse_and_children,
     preprocess_family_data,
     upload_and_process,

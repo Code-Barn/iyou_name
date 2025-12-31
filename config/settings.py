@@ -47,7 +47,7 @@ EXTERNAL_APPS = [
 ]
 
 OWN_APPS = [
-    "generator",
+    "apps.generator",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + EXTERNAL_APPS + OWN_APPS
@@ -148,6 +148,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # Add this to include additional static file directories
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
+    os.path.join(BASE_DIR, "apps", "generator", "static"),
 ]
 
 # Logging Configuration
@@ -183,7 +184,7 @@ LOGGING = {
             "level": "INFO",
             "propagate": True,
         },
-        "generator": {
+        "apps.generator": {
             "handlers": ["file", "console"],
             "level": "DEBUG",
             "propagate": True,

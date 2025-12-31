@@ -10,8 +10,8 @@ from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 
-from generator.models import GedcomFile, PersonData
-from generator.utils.gedcom_parser import parse_gedcom_data
+from apps.generator.models import GedcomFile, PersonData
+from apps.generator.utils.gedcom_parser import parse_gedcom_data
 
 
 class FileHandlingComprehensiveTest(TestCase):

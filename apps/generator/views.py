@@ -24,13 +24,13 @@ logger.debug("STATIC_URL: %s", settings.STATIC_URL)
 # Template mapping
 TEMPLATE_MAPPING = {
     "1": {
-        "module": "generator.utils.image_1generator",
+        "module": "apps.generator.utils.image_1generator",
         "function": "generate_family_tree",
         "filename": "US_LETTER_1GEN_BW.pdf",
         "name": "1 Generation (Individual Only)",
     },
     "4": {
-        "module": "generator.utils.image_4generator",
+        "module": "apps.generator.utils.image_4generator",
         "function": "generate_family_tree",
         "filename": "US_LETTER_4GEN_BW.pdf",
         "name": "4 Generation Chart",
@@ -125,25 +125,28 @@ def upload_and_generate(request):
         try:
             # Read the file content directly for parsing
             gedcom_content_bytes = gedcom_file.read()
-            print(f"Read file content. Length: {len(gedcom_content_bytes)} bytes")
+            print(
+                f"DEBUG: Read file content. Length: {len(gedcom_content_bytes)} bytes"
+            )
 
             # Save the file
             gedcom_model = GedcomFile.objects.create(
                 file=ContentFile(gedcom_content_bytes, name=gedcom_file.name),
                 user=request.user if request.user.is_authenticated else None,
             )
-            print(f"Saved file to database. File ID: {gedcom_model.id}")
 
             # Parse the GEDCOM data
-            print("Starting to convert file content to UTF-8...")
-            gedcom_content = convert_to_utf8(gedcom_content_bytes)
-            print(
-                f"Converted content to UTF-8. Length: {len(gedcom_content)} characters"
-            )
+            try:
+                gedcom_content = convert_to_utf8(gedcom_content_bytes)
+            except Exception as e:
+                print(f"DEBUG: Error converting to UTF-8: {e}")
+                raise
 
-            print("Starting to parse GEDCOM data...")
-            family_data = parse_gedcom_data(gedcom_content)
-            print("Finished parsing GEDCOM data.")
+            try:
+                family_data = parse_gedcom_data(gedcom_content)
+            except Exception as e:
+                print(f"DEBUG: Error parsing GEDCOM data: {e}")
+                raise
 
             # Store parsed data directly in the GedcomFile model
             gedcom_model.parsed_data = {
@@ -428,6 +431,7 @@ def select_individual(request):
 
             # Get the selected template from session
             selected_template = request.session.get("selected_template", "4")
+
             template_name = TEMPLATE_MAPPING.get(selected_template, {}).get(
                 "name", "Unknown"
             )
@@ -495,6 +499,11 @@ def select_individual(request):
             try:
                 # Get the selected template from session
                 selected_template = request.session.get("selected_template", "4")
+                print(f"DEBUG: selected_template in POST = {selected_template}")
+                print(
+                    f"DEBUG: selected_template type in POST = {type(selected_template)}"
+                )
+                print(f"DEBUG: TEMPLATE_MAPPING keys = {list(TEMPLATE_MAPPING.keys())}")
                 template_config = TEMPLATE_MAPPING.get(
                     selected_template, TEMPLATE_MAPPING["4"]
                 )
@@ -515,6 +524,7 @@ def select_individual(request):
 
                 # Store settings in session for HUD
                 request.session["selected_individual_id"] = selected_id
+                request.session["selected_template"] = selected_template
                 request.session["chart_parameters"] = {}
 
                 # Redirect to HUD display instead of generating chart directly
@@ -1050,6 +1060,7 @@ def generate_chart(request):
         }
 
         # Generate the family tree image using the selected template
+        template = request.session.get("selected_template", "4")
         template_config = TEMPLATE_MAPPING.get(template, TEMPLATE_MAPPING["4"])
 
         # Dynamically import the appropriate generator module
@@ -1266,7 +1277,7 @@ def display_tree_hud(request):
             )
 
         # Get current settings from session
-        current_template = request.session.get("selected_template", "4")
+        current_template = str(request.session.get("selected_template", "4"))
         generations = request.session.get("generations", "4")
         chart_parameters = request.session.get("chart_parameters", {})
 

@@ -1,0 +1,23 @@
+{
+  "name": "namechart",
+  "version": "1.0.0",
+  "description": "Generate printable family trees in our unique format.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dcbyers13/namechart-django.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dcbyers13/namechart-django/issues"
+  },
+  "homepage": "https://github.com/dcbyers13/namechart-django#readme",
+  "dependencies": {
+    "@playwright/test": "^1.57.0"
+  }
+}

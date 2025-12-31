@@ -11,9 +11,16 @@ def generate_family_tree(primary_individual):
         primary_individual: Dict with name, birth_date, birth_place, death_date
 
     """  # Create a new image with the same dimensions as your template
-    with Image(
-        filename="media/base_image_templates/US_LETTER_1GEN_BW.pdf", resolution=300
-    ) as img:
+    import os
+
+    from django.conf import settings
+
+    template_path = os.path.join(
+        settings.BASE_DIR,
+        "apps/generator/static/generator/images/base_image_templates",
+        "US_LETTER_1GEN_BW.pdf",
+    )
+    with Image(filename=template_path, resolution=300) as img:
         with Drawing() as draw:
             # Set font (you'll need to specify the actual font you want to use)
             draw.gravity = "center"

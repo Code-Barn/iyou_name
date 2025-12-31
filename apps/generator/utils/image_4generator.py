@@ -31,17 +31,21 @@ def generate_family_tree(primary_individual, family_data, template="4gen"):
     with Draw() as draw:
         draw.font = font
     """
-    print(f"Generating family tree for: {primary_individual.full_name}")
-    print(f"Primary individual ID: {primary_individual.id}")
-    print(f"Family data keys: {family_data.keys()}")
-    print(f"Total individuals in family data: {len(family_data['individuals'])}")
+    print(f"DEBUG: Generating family tree for: {primary_individual.full_name}")
+    print(f"DEBUG: Primary individual ID: {primary_individual.id}")
+    print(f"DEBUG: Family data keys: {family_data.keys()}")
+    print(f"DEBUG: Total individuals in family data: {len(family_data['individuals'])}")
     # Create a new image with the same dimensions as your template
     # Construct the full path to the template file
     try:
         # Construct the full path to the template file
         template_path = os.path.join(
-            settings.MEDIA_ROOT, "base_image_templates", "US_LETTER_4GEN_BW.pdf"
+            settings.BASE_DIR,
+            "apps/generator/static/generator/images/base_image_templates",
+            "US_LETTER_4GEN_BW.pdf",
         )
+        print(f"DEBUG: Template path: {template_path}")
+        print(f"DEBUG: File exists: {os.path.exists(template_path)}")
 
         # Add detailed debugging
         print(f"Template path: {template_path}")

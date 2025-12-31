@@ -1,10 +1,14 @@
 import io
+import logging
 from typing import Dict, Optional
 
 import chardet
 from ged4py.parser import GedcomReader
 
-from generator.models import PersonData
+from apps.generator.models import PersonData
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 
 def detect_encoding(file_path: str) -> Optional[str]:
@@ -349,9 +353,6 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
             print(
                 f"Family {fam_id} - Husband: {family['husband']}, Wife: {family['wife']}, Children: {family['children']}"
             )
-    except Exception as e:
-        print(f"Failed to parse GEDCOM data: {e}")
-        raise
 
         for record in parser.records0("INDI"):
             ind = (
@@ -605,9 +606,6 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
             print(
                 f"Family {fam_id} - Husband: {family['husband']}, Wife: {family['wife']}, Children: {family['children']}"
             )
-        except Exception as e:
-            print(f"Failed to iterate over families: {e}")
-            raise
 
         print(f"Finished parsing families. Total: {len(family_data['families'])}")
         # Identify root individuals (those without parents)
