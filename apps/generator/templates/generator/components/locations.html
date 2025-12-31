@@ -1,0 +1,15 @@
+<div class="mt-4">
+    <h5>Locations</h5>
+    <ul class="list-group">
+        {% if individual.birth_place %}
+        <li class="list-group-item">
+            <strong>Birth Place:</strong> {{ individual.birth_place }}
+        </li>
+        {% endif %}
+        {% if individual.death_place %}
+        <li class="list-group-item">
+            <strong>Death Place:</strong> {{ individual.death_place }}
+        </li>
+        {% endif %}
+    </ul>
+</div>

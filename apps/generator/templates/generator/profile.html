@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load tz %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">User Profile</h2>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">GEDCOM Files</h5>
+
+            {% if gedcom_files %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>File Name</th>
+                            <th>Uploaded At</th>
+                            <th>Home Person</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in gedcom_files %}
+                        <tr>
+                            <td>{{ file.basename }}</td>
+                            <td>{% localtime on %}{{ file.uploaded_at }}{% endlocaltime %}</td>
+                            <td>
+                                {% if file.home_person_id %}
+                                {{ file.home_person.full_name }}
+                                {% else %}
+                                Not selected
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="position-relative d-inline-block">
+                                    <input type="text" class="form-control form-control-sm" style="width: 200px;" placeholder="Search for Home Person..." data-file-id="{{ file.id }}">
+                                    <div class="position-absolute bg-white border rounded mt-1" style="width: 200px; display: none; z-index: 1000;" id="searchResults{{ file.id }}">
+                                    </div>
+                                </div>
+                                <a href="{% url 'generator:browse_individuals' %}" class="btn btn-info btn-sm ms-2">
+                                    Browse
+                                </a>
+                                <a href="{% url 'generator:select_individual' %}" class="btn btn-success btn-sm ms-2">
+                                    Generate
+                                </a>
+                                <button type="button" class="btn btn-danger btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#deleteModal{{ file.id }}">
+                                    Delete
+                                </button>
+                                <!-- Delete Confirmation Modal -->
+                                <div class="modal fade" id="deleteModal{{ file.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ file.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteModalLabel{{ file.id }}">Confirm Deletion</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Are you sure you want to delete the file "{{ file.basename }}"?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <form method="post" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="file_id" value="{{ file.id }}">
+                                                    <button type="submit" name="delete_file" class="btn btn-danger">
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No GEDCOM files uploaded yet.</p>
+            {% endif %}
+
+            <div class="mt-4">
+                <a href="{% url 'generator:upload_file' %}" class="btn btn-primary">
+                    Upload New GEDCOM File
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInputs = document.querySelectorAll('input[placeholder="Search for Home Person..."]');
+
+    searchInputs.forEach(searchInput => {
+        const fileId = searchInput.getAttribute('data-file-id');
+        const searchResults = document.getElementById(`searchResults${fileId}`);
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = searchInput.value.toLowerCase();
+            searchResults.innerHTML = '';
+
+            if (searchTerm.length === 0) {
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            // Get the list of individuals for this file
+            const individuals = JSON.parse(`{{ file.parsed_data.individuals|escapejs }}`);
+
+            // Split the search term into parts
+            const searchParts = searchTerm.split(' ').filter(part => part.length > 0);
+
+            const filteredIndividuals = individuals.filter(individual => {
+                const fullName = individual.full_name.toLowerCase();
+                const givenName = individual.given_name ? individual.given_name.toLowerCase() : '';
+                const surname = individual.surname ? individual.surname.toLowerCase() : '';
+
+                // Check if all parts of the search term are present in the full name, given name, or surname
+                return searchParts.every(part =>
+                    fullName.includes(part) ||
+                    givenName.includes(part) ||
+                    surname.includes(part)
+                );
+            });
+
+            if (filteredIndividuals.length === 0) {
+                searchResults.innerHTML = '<div class="list-group-item">No results found</div>';
+                searchResults.style.display = 'block';
+                return;
+            }
+
+            filteredIndividuals.forEach(individual => {
+                const individualElement = document.createElement('a');
+                individualElement.href = `#`;
+                individualElement.className = 'list-group-item list-group-item-action';
+                individualElement.innerHTML = `
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1">${individual.full_name}</h6>
+                    </div>
+                `;
+                individualElement.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // Set the home person for this file
+                    const form = document.createElement('form');
+                    form.method = 'post';
+                    form.action = window.location.href;
+                    form.innerHTML = `
+                        <input type="hidden" name="file_id" value="${fileId}">
+                        <input type="hidden" name="home_person_id" value="${individual.id}">
+                        {% csrf_token %}
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                });
+                searchResults.appendChild(individualElement);
+            });
+
+            searchResults.style.display = 'block';
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

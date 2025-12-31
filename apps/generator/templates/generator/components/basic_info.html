@@ -1,0 +1,25 @@
+<div class="mt-4">
+    <h5>Basic Information</h5>
+    <ul class="list-group">
+        {% if individual.birth_date %}
+        <li class="list-group-item">
+            <strong>Birth Date:</strong> {{ individual.birth_date }}
+        </li>
+        {% endif %}
+        {% if individual.birth_place %}
+        <li class="list-group-item">
+            <strong>Birth Place:</strong> {{ individual.birth_place }}
+        </li>
+        {% endif %}
+        {% if individual.death_date %}
+        <li class="list-group-item">
+            <strong>Death Date:</strong> {{ individual.death_date }}
+        </li>
+        {% endif %}
+        {% if individual.death_place %}
+        <li class="list-group-item">
+            <strong>Death Place:</strong> {{ individual.death_place }}
+        </li>
+        {% endif %}
+    </ul>
+</div>

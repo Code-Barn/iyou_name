@@ -1,0 +1,50 @@
+<!-- HUD Component Template -->
+<div id="family-tree-hud" class="hud-container">
+    <div class="hud-header">
+        <h3>Interactive Preview</h3>
+        <div class="hud-controls">
+            <button id="hud-toggle" class="btn btn-sm btn-outline-secondary" title="Toggle Preview">
+                <i class="bi bi-eye"></i>
+            </button>
+            <button id="hud-reset" class="btn btn-sm btn-outline-danger" title="Reset Settings">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </button>
+        </div>
+    </div>
+    <div class="hud-content">
+        <div class="hud-preview-area">
+            <div id="hud-canvas-container" class="canvas-container">
+                <canvas id="hud-canvas"></canvas>
+                <div class="hud-loading" style="display: none;"></div>
+            </div>
+        </div>
+        <div class="hud-settings">
+            <div class="setting-group">
+                <label>Primary Individual</label>
+                <select id="hud-individual-select" class="form-select form-select-sm"></select>
+            </div>
+            <div class="setting-group">
+                <label>Generations</label>
+                <select id="hud-generations" class="form-select form-select-sm">
+                    <option value="1">1 Generation</option>
+                    <option value="4" selected>4 Generations</option>
+                    <option value="10">10 Generations</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label>Template</label>
+                <select id="hud-template" class="form-select form-select-sm">
+                    <option value="1">Individual Only</option>
+                    <option value="4" selected>4-Gen Chart</option>
+                    <option value="10">Extended Chart</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="hud-footer">
+        <button id="hud-generate" class="btn btn-primary btn-sm">
+            <i class="bi bi-file-earmark-pdf"></i> Generate Final Chart
+        </button>
+        <div class="hud-status">Ready</div>
+    </div>
+</div>

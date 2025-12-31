@@ -1,0 +1,89 @@
+### **Comprehensive Strategy for Updates**
+
+#### **1. Update Tests**
+**Objective**: Ensure tests reflect the current logic for parsing and displaying family relationships, including adoptive, foster, and step-parents.
+
+**Steps**:
+1. **Review Existing Tests**:
+   - Examine the current test suite to identify gaps in coverage for adoptive, foster, and step-parents.
+   - Ensure tests cover edge cases like multiple spouses, adoptive children, and step-siblings.
+
+2. **Add New Tests**:
+   - **Adoptive Parents**: Add tests to verify that adoptive parents are correctly identified and displayed.
+   - **Foster Parents**: Add tests to verify that foster parents are correctly identified and displayed.
+   - **Step-Parents**: Add tests to verify that step-parents are correctly identified and displayed.
+   - **Children Under Spouses**: Add tests to verify that children are correctly displayed under their respective spouses.
+
+3. **Refine Test Data**:
+   - Update test GEDCOM files to include examples of adoptive, foster, and step-parents.
+   - Ensure test data covers scenarios like:
+     - Children with adoptive parents.
+     - Children with foster parents.
+     - Children with step-parents.
+     - Multiple spouses with shared and non-shared children.
+
+4. **Run and Validate Tests**:
+   - Execute the test suite to ensure all tests pass.
+   - Debug and fix any failures.
+
+---
+
+#### **2. Update Documentation**
+**Objective**: Ensure documentation reflects the current logic and provides clear guidance for future development.
+
+**Steps**:
+1. **Update `gedcom_parser.py` Documentation**:
+   - Add detailed comments explaining the logic for identifying adoptive, foster, and step-parents.
+   - Document the `spouses_children` dictionary and how it is populated.
+
+2. **Update `models.py` Documentation**:
+   - Document the `PersonData` class fields, including `adoptive_parents`, `foster_parents`, and `step_parents`.
+   - Explain the purpose of each field and how they are used in the application.
+
+3. **Update `views.py` Documentation**:
+   - Document the logic for populating the `spouses_children` dictionary.
+   - Explain how children are associated with their respective spouses.
+
+4. **Update `family_info.html` Documentation**:
+   - Add comments explaining how the family information is displayed, including the collapsible sections for children.
+   - Document the use of badges for adoptive, foster, and step-parents.
+
+5. **Create a `README.md` for the Project**:
+   - Provide an overview of the project and its features.
+   - Include instructions for running the application and tests.
+   - Document the GEDCOM parsing logic and how family relationships are identified.
+
+---
+
+#### **3. Correct HTML Settings for Children Display**
+**Objective**: Ensure children are displayed under their respective spouses in the `family_info.html` component.
+
+**Steps**:
+1. **Review Current Logic**:
+   - Examine the `family_info.html` component to understand how children are currently displayed.
+   - Identify any gaps or issues in the logic for displaying children under spouses.
+
+2. **Refine the Logic**:
+   - Ensure the `spouses_children` dictionary is correctly populated in the `views.py` file.
+   - Update the `family_info.html` component to display children under their respective spouses.
+   - Add collapsible sections for children under each spouse.
+
+3. **Test the Changes**:
+   - Run the application and navigate to the individual detail page for Glenn Raymond Byers.
+   - Verify that children are correctly displayed under their respective spouses.
+
+4. **Debug and Fix Issues**:
+   - Address any issues that arise during testing.
+   - Ensure the changes do not break existing functionality.
+
+---
+
+### **Priority Order**
+1. **Correct HTML Settings for Children Display**:
+   - This is a top priority to ensure the user interface is intuitive and correct.
+
+2. **Update Tests**:
+   - Ensure the test suite reflects the current logic and covers all edge cases.
+
+3. **Update Documentation**:
+   - Ensure the documentation is up-to-date and provides clear guidance for future development.

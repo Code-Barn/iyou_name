@@ -1,0 +1,52 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Upload Your GEDCOM File</h2>
+    {% if user.is_authenticated %}
+    <div class="alert alert-info">
+        Welcome, {{ user.username }}! <a href="{% url 'logout' %}">Logout</a>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        Optional: <a href="{% url 'generator:login' %}">Login</a> or
+        <a href="{% url 'generator:register' %}">Register</a> to save your
+        GEDCOM file for future use.
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <p class="card-text">
+                Upload your GEDCOM file to begin creating your custom
+                <strong>namechart™</strong>!
+            </p>
+
+            <form
+                method="post"
+                enctype="multipart/form-data"
+                class="mt-4"
+                action="{% url 'generator:upload_file' %}"
+            >
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label for="gedcom_file" class="form-label"
+                        >GEDCOM File</label
+                    >
+                    <input
+                        class="form-control"
+                        type="file"
+                        id="gedcom_file"
+                        name="gedcom_file"
+                        accept=".ged"
+                        required
+                    />
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Upload & Continue
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
