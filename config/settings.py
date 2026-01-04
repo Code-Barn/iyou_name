@@ -47,6 +47,12 @@ EXTERNAL_APPS = [
 ]
 
 OWN_APPS = [
+    "apps.core",
+    "apps.upload",
+    "apps.browse",
+    "apps.hud",
+    "apps.charts",
+    "apps.users",
     "apps.generator",
 ]
 
@@ -73,10 +79,13 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, "templates")],
-        "APP_DIRS": True,
+        "DIRS": [
+            os.path.join(BASE_DIR, "templates")
+        ],  # Ensure this points to your templates directory
+        "APP_DIRS": True,  # This allows Django to look for templates in each app's templates directory
         "OPTIONS": {
             "context_processors": [
+                "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
@@ -105,6 +114,9 @@ DATABASES = {
 TEST = {
     "NAME": "namechart",
 }
+
+# Add to TEST_RUNNER or create test settings
+TEST_RUNNER = "django.test.runner.DiscoverRunner"
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -148,7 +160,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # Add this to include additional static file directories
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
-    os.path.join(BASE_DIR, "apps", "generator", "static"),
+    os.path.join(BASE_DIR, "apps", "core", "static"),
+    os.path.join(BASE_DIR, "apps", "upload", "static"),
+    os.path.join(BASE_DIR, "apps", "browse", "static"),
+    os.path.join(BASE_DIR, "apps", "hud", "static"),
+    os.path.join(BASE_DIR, "apps", "charts", "static"),
+    os.path.join(BASE_DIR, "apps", "users", "static"),
 ]
 
 # Logging Configuration

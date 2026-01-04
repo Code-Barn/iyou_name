@@ -22,10 +22,13 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
-    path("", include("apps.generator.urls")),
+    path("", include("apps.upload.urls")),
+    path("browse/", include("apps.browse.urls")),
+    path("hud/", include("apps.hud.urls")),
+    path("charts/", include("apps.charts.urls")),
+    path("users/", include("apps.users.urls")),
     path("admin/", admin.site.urls),
-    path("__debug__/", include("debug_toolbar.urls")),
-    path("accounts/", include("django.contrib.auth.urls")),
+    path("__debug__/", include("debug_toolbar.urls")),  # Disabled for testing
 ]
 
 # Add static and media file serving for development

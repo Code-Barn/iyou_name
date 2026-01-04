@@ -1,0 +1,62 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">Select Individual for Chart</h2>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h4>Select Root Individual</h4>
+                        <p>Choose the individual who will be the root of your family chart.</p>
+                    </div>
+
+                    <form method="post" action="{% url 'charts:generate_chart' %}" class="mb-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="template" value="{{ template }}">
+
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Select</th>
+                                        <th>Name</th>
+                                        <th>Birth</th>
+                                        <th>Death</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for individual in individuals %}
+                                    <tr>
+                                        <td>
+                                            <input type="radio" name="individual_id" value="{{ individual.id }}" id="ind_{{ individual.id }}" required>
+                                        </td>
+                                        <td>
+                                            <label for="ind_{{ individual.id }}">{{ individual.full_name }}</label>
+                                        </td>
+                                        <td>{{ individual.birth_date|default:"Unknown" }}</td>
+                                        <td>{{ individual.death_date|default:"Unknown" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-person-check"></i> Select and Generate Chart
+                            </button>
+                            <a href="{% url 'browse:browse_individuals' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Browse
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

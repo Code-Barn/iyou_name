@@ -1,0 +1,53 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h2 class="mb-0">Chart Generation Successful!</h2>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                    </div>
+
+                    <h3>Your family chart has been generated</h3>
+                    <p class="lead">Chart for {{ individual.full_name }}</p>
+
+                    <div class="alert alert-info mb-4">
+                        <h4>Chart Details</h4>
+                        <p><strong>Template:</strong> {{ template_name }}</p>
+                        <p><strong>Filename:</strong> {{ filename }}</p>
+                        <p><strong>Individual:</strong> {{ individual.full_name }}</p>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="#" class="btn btn-primary" id="downloadChart">
+                            <i class="bi bi-download"></i> Download Chart
+                        </a>
+                        <a href="{% url 'charts:adjust_output' %}" class="btn btn-secondary">
+                            <i class="bi bi-gear"></i> Adjust Settings
+                        </a>
+                        <a href="{% url 'upload:home' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-house"></i> Return to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // In a real implementation, this would trigger the actual chart download
+    document.getElementById('downloadChart').addEventListener('click', function(e) {
+        e.preventDefault();
+        alert('In a complete implementation, this would download the generated chart file.');
+        // Actual implementation would call the chart generation API or download the file
+    });
+});
+</script>
+{% endblock %}

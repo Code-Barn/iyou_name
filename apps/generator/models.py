@@ -81,6 +81,15 @@ class GedcomFile(models.Model):
             return f"{self.user.username}'s GEDCOM file"
         return "Anonymous GEDCOM file"
 
+    def get_home_person_name(self):
+        """Get the full name of the home person from the parsed data."""
+        if self.home_person_id and self.parsed_data:
+            individuals = self.parsed_data.get("individuals", {})
+            home_person = individuals.get(self.home_person_id)
+            if home_person:
+                return home_person.get("full_name", "Unknown")
+        return "Unknown"
+
 
 @receiver(post_delete, sender="generator.GedcomFile")
 def delete_parsed_data(sender, instance, **kwargs):

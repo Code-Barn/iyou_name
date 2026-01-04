@@ -1,0 +1,71 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">Generate Family Chart</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'charts:generate_chart' %}">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <h4>Select Individual</h4>
+                            <p>Choose the individual who will be the root of your family chart.</p>
+
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Individual</span>
+                                <select class="form-select" id="individualSelect" name="individual_id" required>
+                                    <option value="">Select an individual...</option>
+                                    {% for ind in individuals %}
+                                    <option value="{{ ind.id }}"
+                                            {% if individual and individual.id == ind.id %}selected{% endif %}>
+                                        {{ ind.full_name }} ({{ ind.birth_date|default:"?" }} - {{ ind.death_date|default:"?" }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h4>Select Chart Template</h4>
+                            <p>Choose the template for your family chart.</p>
+
+                            <div class="row">
+                                {% for template_id, template_info in TEMPLATE_MAPPING.items %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="template" id="template_{{ template_id }}" value="{{ template_id }}"
+                                                    {% if template_id == template_id %}checked{% endif %}>
+                                                <label class="form-check-label" for="template_{{ template_id }}">
+                                                    <h5 class="card-title">{{ template_info.name }}</h5>
+                                                    <p class="card-text">{{ template_info.filename }}</p>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-file-earmark-pdf"></i> Generate Chart
+                            </button>
+                            <a href="{% url 'upload:home' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Home
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h2 class="mb-0">Chart Generation Error</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <h4 class="alert-heading">Error Generating Chart</h4>
+                        <p>{{ error|default:"An error occurred while generating the chart." }}</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'charts:adjust_output' %}" class="btn btn-primary">
+                            <i class="bi bi-arrow-left"></i> Back to Chart Settings
+                        </a>
+                        <a href="{% url 'upload:home' %}" class="btn btn-secondary">
+                            <i class="bi bi-house"></i> Return to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

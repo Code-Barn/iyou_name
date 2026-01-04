@@ -1,0 +1,27 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h2 class="mb-0">Browse Error</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <h4 class="alert-heading">Error</h4>
+                        <p>{{ error|default:"An error occurred while browsing individuals." }}</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'browse:browse_individuals' %}" class="btn btn-primary">
+                            <i class="bi bi-arrow-left"></i> Return to Browse
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
