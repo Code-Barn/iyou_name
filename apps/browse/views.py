@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 
 from apps.generator.models import GedcomFile
-from apps.generator.utils.gedcom_parser import PersonData
+from apps.parser.models import PersonData
 
 
 def browse_individuals(request):
@@ -17,16 +17,43 @@ def browse_individuals(request):
 
     try:
         gedcom_file = GedcomFile.objects.get(id=gedcom_file_id)
+        logger.debug(f"Retrieved GEDCOM file: {gedcom_file_id}")
+        logger.debug(f"parsed_data exists: {gedcom_file.parsed_data is not None}")
+        if gedcom_file.parsed_data:
+            logger.debug(f"parsed_data keys: {list(gedcom_file.parsed_data.keys())}")
+            logger.debug(
+                f"'individuals' key exists: {'individuals' in gedcom_file.parsed_data}"
+            )
+
         if not gedcom_file.parsed_data:
+            logger.error("parsed_data is None")
             return render(
                 request, "browse/error.html", {"error": "File not processed yet"}
             )
 
         individuals = gedcom_file.parsed_data.get("individuals", {})
+        logger.debug(f"Number of individuals: {len(individuals)}")
+        logger.debug(
+            f"First individual: {list(individuals.items())[0] if individuals else 'None'}"
+        )
+
+        # Convert dictionaries to PersonData objects
+        processed_individuals = []
+        for ind_id, individual in individuals.items():
+            logger.debug(f"Processing individual {ind_id}: {type(individual)}")
+            if isinstance(individual, dict):
+                person = PersonData(**individual)
+                processed_individuals.append(person)
+                logger.debug(f"Created PersonData for {ind_id}: {person.full_name}")
+            else:
+                processed_individuals.append(individual)
+                logger.debug(
+                    f"Using existing PersonData for {ind_id}: {individual.full_name}"
+                )
         return render(
             request,
             "browse/browse_individuals.html",
-            {"individuals": individuals.values()},
+            {"individuals": processed_individuals},
         )
 
     except GedcomFile.DoesNotExist:
@@ -45,17 +72,44 @@ def select_individual(request):
 
     try:
         gedcom_file = GedcomFile.objects.get(id=gedcom_file_id)
+        logger.debug(f"Retrieved GEDCOM file: {gedcom_file_id}")
+        logger.debug(f"parsed_data exists: {gedcom_file.parsed_data is not None}")
+        if gedcom_file.parsed_data:
+            logger.debug(f"parsed_data keys: {list(gedcom_file.parsed_data.keys())}")
+            logger.debug(
+                f"'individuals' key exists: {'individuals' in gedcom_file.parsed_data}"
+            )
+
         if not gedcom_file.parsed_data:
+            logger.error("parsed_data is None")
             return render(
                 request, "browse/error.html", {"error": "File not processed yet"}
             )
 
         individuals = gedcom_file.parsed_data.get("individuals", {})
+        logger.debug(f"Number of individuals: {len(individuals)}")
+        logger.debug(
+            f"First individual: {list(individuals.items())[0] if individuals else 'None'}"
+        )
+
+        # Convert dictionaries to PersonData objects
+        processed_individuals = []
+        for ind_id, individual in individuals.items():
+            logger.debug(f"Processing individual {ind_id}: {type(individual)}")
+            if isinstance(individual, dict):
+                person = PersonData(**individual)
+                processed_individuals.append(person)
+                logger.debug(f"Created PersonData for {ind_id}: {person.full_name}")
+            else:
+                processed_individuals.append(individual)
+                logger.debug(
+                    f"Using existing PersonData for {ind_id}: {individual.full_name}"
+                )
         return render(
             request,
             "browse/select_individual.html",
             {
-                "individuals": individuals.values(),
+                "individuals": processed_individuals,
                 "template": request.session.get("selected_template", "4"),
             },
         )
@@ -76,18 +130,40 @@ def individual_detail(request, ind_id):
 
     try:
         gedcom_file = GedcomFile.objects.get(id=gedcom_file_id)
+        logger.debug(f"Retrieved GEDCOM file: {gedcom_file_id}")
+        logger.debug(f"parsed_data exists: {gedcom_file.parsed_data is not None}")
+        if gedcom_file.parsed_data:
+            logger.debug(f"parsed_data keys: {list(gedcom_file.parsed_data.keys())}")
+            logger.debug(
+                f"'individuals' key exists: {'individuals' in gedcom_file.parsed_data}"
+            )
+
         if not gedcom_file.parsed_data:
+            logger.error("parsed_data is None")
             return render(
                 request, "browse/error.html", {"error": "File not processed yet"}
             )
 
         individuals = gedcom_file.parsed_data.get("individuals", {})
+        logger.debug(f"Looking for individual: {ind_id}")
+        logger.debug(f"Available individuals: {list(individuals.keys())}")
+
         if ind_id not in individuals:
+            logger.error(f"Individual {ind_id} not found in individuals")
             return render(
                 request, "browse/error.html", {"error": "Individual not found"}
             )
 
-        individual = individuals[ind_id]
+        individual_data = individuals[ind_id]
+        logger.debug(f"Individual data type: {type(individual_data)}")
+        if isinstance(individual_data, dict):
+            individual = PersonData(**individual_data)
+            logger.debug(f"Created PersonData for {ind_id}: {individual.full_name}")
+        else:
+            individual = individual_data
+            logger.debug(
+                f"Using existing PersonData for {ind_id}: {individual.full_name}"
+            )
         return render(
             request, "browse/individual_detail.html", {"individual": individual}
         )

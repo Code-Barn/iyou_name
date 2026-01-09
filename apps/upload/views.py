@@ -7,7 +7,8 @@ from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 from apps.generator.models import GedcomFile
-from apps.generator.utils.gedcom_parser import convert_to_utf8, parse_gedcom_data
+from apps.parser.models import PersonData
+from apps.parser.utils import convert_to_utf8, parse_gedcom_data
 
 # Template mapping
 TEMPLATE_MAPPING = {
@@ -71,14 +72,34 @@ def upload_and_generate(request):
                 raise
 
             # Store parsed data directly in the GedcomFile model
+            # Convert PersonData objects to dictionaries for JSONField
+            # Ensure parsed_data has the correct structure
+            if not isinstance(family_data.get("individuals"), dict):
+                logger.error("family_data['individuals'] is not a dictionary")
+                raise ValueError("family_data['individuals'] must be a dictionary")
+
             gedcom_model.parsed_data = {
                 "individuals": {
                     ind_id: person.to_dict()
                     for ind_id, person in family_data["individuals"].items()
                 },
-                "families": family_data["families"],
-                "root_individuals": family_data["root_individuals"],
+                "families": family_data.get("families", {}),
+                "root_individuals": family_data.get("root_individuals", []),
             }
+
+            # Debug logging to verify parsed_data structure
+            logger.debug(
+                f"Stored parsed_data keys: {list(gedcom_model.parsed_data.keys())}"
+            )
+            logger.debug(
+                f"Number of individuals: {len(gedcom_model.parsed_data['individuals'])}"
+            )
+
+            # Debug logging to verify parsed_data structure
+            logger.debug(f"Stored parsed_data keys: {gedcom_model.parsed_data.keys()}")
+            logger.debug(
+                f"Number of individuals: {len(gedcom_model.parsed_data['individuals'])}"
+            )
             gedcom_model.home_person_id = (
                 family_data["root_individuals"][0]
                 if family_data["root_individuals"]
@@ -99,6 +120,7 @@ def upload_and_generate(request):
                 {
                     "individuals": individuals,
                     "template": "4",
+                    "selected_template": request.session.get("selected_template", "4"),
                     "TEMPLATE_MAPPING": TEMPLATE_MAPPING,
                 },
             )
@@ -122,6 +144,18 @@ def select_gedcom_file(request, file_id):
         gedcom_file = GedcomFile.objects.get(id=file_id)
         request.session["current_gedcom_file_id"] = gedcom_file.id
         return redirect("upload:home")
+    except GedcomFile.DoesNotExist:
+        return HttpResponse("File not found", status=404)
+
+
+def set_current_gedcom_file(request, file_id):
+    """
+    View for setting the current GEDCOM file in the session and redirecting to select_individual
+    """
+    try:
+        gedcom_file = GedcomFile.objects.get(id=file_id)
+        request.session["current_gedcom_file_id"] = gedcom_file.id
+        return redirect("browse:select_individual")
     except GedcomFile.DoesNotExist:
         return HttpResponse("File not found", status=404)
 

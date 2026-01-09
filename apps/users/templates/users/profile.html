@@ -41,7 +41,7 @@
                                 <a href="{% url 'browse:browse_individuals' %}" class="btn btn-info btn-sm ms-2">
                                     Browse
                                 </a>
-                                <a href="{% url 'browse:select_individual' %}" class="btn btn-success btn-sm ms-2">
+                                <a href="{% url 'upload:set_current_gedcom_file' file.id %}" class="btn btn-success btn-sm ms-2">
                                     Generate
                                 </a>
                                 <button type="button" class="btn btn-danger btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#deleteModal{{ file.id }}">

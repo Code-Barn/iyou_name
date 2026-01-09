@@ -13,13 +13,13 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from apps.models import GedcomFile, PersonData
-from apps.utils.gedcom_parser import convert_to_utf8, parse_gedcom_data
-from apps.views import (
+from apps.generator.models import GedcomFile
+from apps.generator.views import (
     get_spouse_and_children,
     preprocess_family_data,
-    upload_and_process,
 )
+from apps.parser.models import PersonData
+from apps.parser.utils.gedcom_parser import convert_to_utf8, parse_gedcom_data
 
 
 class GedcomParserTests(TestCase):

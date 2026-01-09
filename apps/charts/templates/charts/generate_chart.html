@@ -35,14 +35,14 @@
                             <p>Choose the template for your family chart.</p>
 
                             <div class="row">
-                                {% for template_id, template_info in TEMPLATE_MAPPING.items %}
+                                {% for tid, template_info in TEMPLATE_MAPPING.items %}
                                 <div class="col-md-6 mb-3">
                                     <div class="card">
                                         <div class="card-body">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="radio" name="template" id="template_{{ template_id }}" value="{{ template_id }}"
-                                                    {% if template_id == template_id %}checked{% endif %}>
-                                                <label class="form-check-label" for="template_{{ template_id }}">
+                                                <input class="form-check-input" type="radio" name="template" id="template_{{ tid }}" value="{{ tid }}"
+                                                    {% if tid|stringformat:"s" == template_id|default:"4"|stringformat:"s" %}checked{% endif %}>
+                                                <label class="form-check-label" for="template_{{ tid }}">
                                                     <h5 class="card-title">{{ template_info.name }}</h5>
                                                     <p class="card-text">{{ template_info.filename }}</p>
                                                 </label>

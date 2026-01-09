@@ -13,9 +13,10 @@ from django.utils import timezone
 # Set up logging
 logger = logging.getLogger(__name__)
 
+from apps.parser.utils import convert_to_utf8, parse_gedcom_data
+
 from .forms import RegisterForm
 from .models import GedcomFile, PersonData
-from .utils.gedcom_parser import convert_to_utf8, parse_gedcom_data
 
 logger.debug("STATICFILES_DIRS: %s", settings.STATICFILES_DIRS)
 logger.debug("STATIC_ROOT: %s", settings.STATIC_ROOT)
