@@ -10,21 +10,7 @@ from apps.generator.models import GedcomFile
 from apps.parser.models import PersonData
 from apps.parser.utils import convert_to_utf8, parse_gedcom_data
 
-# Template mapping
-TEMPLATE_MAPPING = {
-    "1": {
-        "module": "apps.generator.utils.image_1generator",
-        "function": "generate_family_tree",
-        "filename": "US_LETTER_1GEN_BW.pdf",
-        "name": "1 Generation (Individual Only)",
-    },
-    "4": {
-        "module": "apps.generator.utils.image_4generator",
-        "function": "generate_family_tree",
-        "filename": "US_LETTER_4GEN_BW.pdf",
-        "name": "4 Generation Chart",
-    },
-}
+# Template mapping moved to HUD
 
 
 def upload_file(request):
@@ -114,16 +100,7 @@ def upload_and_generate(request):
             request.session["selected_template"] = "4"  # Default template
 
             individuals = list(family_data["individuals"].values())
-            return render(
-                request,
-                "upload/select_individual.html",
-                {
-                    "individuals": individuals,
-                    "template": "4",
-                    "selected_template": request.session.get("selected_template", "4"),
-                    "TEMPLATE_MAPPING": TEMPLATE_MAPPING,
-                },
-            )
+            return redirect("selector:select_individual", file_id=gedcom_model.id)
 
         except Exception as e:
             logger.error(f"Error processing GEDCOM file: {e}")
@@ -131,9 +108,16 @@ def upload_and_generate(request):
 
     if request.user.is_authenticated:
         return redirect("users:profile")
-    return render(
-        request, "upload/upload_file.html", {"TEMPLATE_MAPPING": TEMPLATE_MAPPING}
-    )
+    else:
+        # Check if anonymous user has a file in session
+        if request.session.get("current_gedcom_file_id"):
+            return redirect("browse:browse_individuals")
+        else:
+            return render(
+                request,
+                "upload/upload_file.html",
+                {},
+            )
 
 
 def select_gedcom_file(request, file_id):
@@ -143,7 +127,7 @@ def select_gedcom_file(request, file_id):
     try:
         gedcom_file = GedcomFile.objects.get(id=file_id)
         request.session["current_gedcom_file_id"] = gedcom_file.id
-        return redirect("upload:home")
+        return redirect("selector:select_individual", file_id=gedcom_file.id)
     except GedcomFile.DoesNotExist:
         return HttpResponse("File not found", status=404)
 
@@ -155,7 +139,7 @@ def set_current_gedcom_file(request, file_id):
     try:
         gedcom_file = GedcomFile.objects.get(id=file_id)
         request.session["current_gedcom_file_id"] = gedcom_file.id
-        return redirect("browse:select_individual")
+        return redirect("selector:select_individual", file_id=gedcom_file.id)
     except GedcomFile.DoesNotExist:
         return HttpResponse("File not found", status=404)
 

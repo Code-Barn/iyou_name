@@ -27,9 +27,9 @@
                             <td>{% localtime on %}{{ file.uploaded_at }}{% endlocaltime %}</td>
                             <td>
                                 {% if file.home_person_id %}
-                                {{ file.get_home_person_name }}
+                                <span class="badge bg-success">{{ file.get_home_person_name }}</span>
                                 {% else %}
-                                Not selected
+                                <span class="badge bg-secondary">Not selected</span>
                                 {% endif %}
                             </td>
                             <td>
@@ -41,8 +41,8 @@
                                 <a href="{% url 'browse:browse_individuals' %}" class="btn btn-info btn-sm ms-2">
                                     Browse
                                 </a>
-                                <a href="{% url 'upload:set_current_gedcom_file' file.id %}" class="btn btn-success btn-sm ms-2">
-                                    Generate
+                                <a href="{% url 'selector:select_individual' file.id %}" class="btn btn-success btn-sm ms-2">
+                                    Select Home Person
                                 </a>
                                 <button type="button" class="btn btn-danger btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#deleteModal{{ file.id }}">
                                     Delete

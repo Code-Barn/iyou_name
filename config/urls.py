@@ -9,7 +9,7 @@ Function views
     2. Add a URL to urlpatterns:  path('', views.home, name='home')
 Class-based views
     1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
+    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
@@ -27,6 +27,7 @@ urlpatterns = [
     path("hud/", include("apps.hud.urls")),
     path("charts/", include("apps.charts.urls")),
     path("users/", include("apps.users.urls")),
+    path("selector/", include("apps.selector.urls")),
     path("admin/", admin.site.urls),
     path("__debug__/", include("debug_toolbar.urls")),  # Disabled for testing
 ]
@@ -37,7 +38,3 @@ if settings.DEBUG:
         settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0]
     )
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-# Debug toolbar URLs (commented out as it's already included above)
-# if 'debug_toolbar' in settings.INSTALLED_APPS:
-#    urlpatterns += debug_toolbar_urls()

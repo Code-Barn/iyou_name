@@ -54,7 +54,9 @@ OWN_APPS = [
     "apps.charts",
     "apps.users",
     "apps.generator",
+    "apps.selector",  # Add this line
 ]
+
 
 INSTALLED_APPS = DJANGO_APPS + EXTERNAL_APPS + OWN_APPS
 

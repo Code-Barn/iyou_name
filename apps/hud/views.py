@@ -5,16 +5,98 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
+from apps.generator.models import GedcomFile
+from apps.parser.models import PersonData
+
+
+def get_template_mapping():
+    """Helper function to get template mapping"""
+    return {
+        "1": {
+            "module": "apps.generator.utils.image_1generator",
+            "function": "generate_family_tree",
+            "filename": "US_LETTER_1GEN_BW.pdf",
+            "name": "1 Generation (Individual Only)",
+        },
+        "2": {
+            "module": "apps.generator.utils.image_2generator",
+            "function": "generate_family_tree",
+            "filename": "US_LETTER_2GEN_BW.pdf",
+            "name": "2 Generation Chart",
+        },
+        "3": {
+            "module": "apps.generator.utils.image_3generator",
+            "function": "generate_family_tree",
+            "filename": "US_LETTER_3GEN_BW.png",
+            "name": "3 Generation Chart",
+        },
+        "4": {
+            "module": "apps.generator.utils.image_4generator",
+            "function": "generate_family_tree",
+            "filename": "US_LETTER_4GEN_BW.pdf",
+            "name": "4 Generation Chart",
+        },
+        "5": {
+            "module": "apps.generator.utils.image_5generator",
+            "function": "generate_family_tree",
+            "filename": "US_LETTER_5GEN_BW.pdf",
+            "name": "5 Generation Chart",
+        },
+        "6": {
+            "module": "apps.generator.utils.image_6generator",
+            "function": "generate_family_tree",
+            "filename": "US_LETTER_6GEN_BW.pdf",
+            "name": "6 Generation Chart",
+        },
+        "7": {
+            "module": "apps.generator.utils.image_7generator",
+            "function": "generate_family_tree",
+            "filename": "US_LETTER_7GEN_BW.pdf",
+            "name": "7 Generation Chart",
+        },
+    }
+
 
 def display_tree_hud(request):
     """
     View for displaying the interactive HUD interface
     """
-    gedcom_file_id = request.session.get("current_gedcom_file_id")
+    # Handle POST requests from individual detail page (direct chart generation)
+    if request.method == "POST":
+        gedcom_file_id = request.POST.get("file_id")
+        individual_id = request.POST.get("individual_id")
+
+        # Store in session for subsequent requests
+        if gedcom_file_id:
+            request.session["current_gedcom_file_id"] = gedcom_file_id
+        if individual_id:
+            request.session["selected_individual_id"] = individual_id
+    else:
+        gedcom_file_id = request.session.get("current_gedcom_file_id")
+        individual_id = request.session.get("selected_individual_id")
+
     if not gedcom_file_id:
         return render(request, "hud/error.html", {"error": "No GEDCOM file selected"})
+    if not individual_id:
+        return render(request, "hud/error.html", {"error": "No individual selected"})
 
     try:
+        gedcom_file = GedcomFile.objects.get(id=gedcom_file_id)
+
+        if not gedcom_file.parsed_data:
+            return render(
+                request, "hud/error.html", {"error": "File not processed yet"}
+            )
+
+        # Get the selected individual
+        individuals = gedcom_file.parsed_data.get("individuals", {})
+        if individual_id not in individuals:
+            return render(request, "hud/error.html", {"error": "Individual not found"})
+
+        individual = individuals[individual_id]
+        if isinstance(individual, dict):
+            individual = PersonData(**individual)
+
         # Get HUD settings from session or use defaults
         hud_settings = request.session.get(
             "hud_settings",
@@ -24,15 +106,23 @@ def display_tree_hud(request):
                 "show_locations": True,
                 "compact_mode": False,
                 "theme": "light",
+                "template": "4",  # Default template
             },
         )
 
         return render(
             request,
             "hud/display_tree.html",
-            {"gedcom_file_id": gedcom_file_id, "hud_settings": hud_settings},
+            {
+                "gedcom_file_id": gedcom_file_id,
+                "individual": individual,
+                "hud_settings": hud_settings,
+                "TEMPLATE_MAPPING": get_template_mapping(),
+            },
         )
 
+    except GedcomFile.DoesNotExist:
+        return render(request, "hud/error.html", {"error": "GEDCOM file not found"})
     except Exception as e:
         return render(request, "hud/error.html", {"error": str(e)})
 
@@ -41,7 +131,7 @@ def display_tree_hud(request):
 @csrf_exempt
 def save_hud_settings(request):
     """
-    View for saving HUD settings
+    View for saving HUD settings including template selection
     """
     try:
         data = json.loads(request.body)
@@ -61,8 +151,6 @@ def get_hud_family_data(request):
         return JsonResponse({"error": "No GEDCOM file selected"}, status=400)
 
     try:
-        from apps.generator.models import GedcomFile
-
         gedcom_file = GedcomFile.objects.get(id=gedcom_file_id)
 
         if not gedcom_file.parsed_data:
@@ -104,8 +192,6 @@ def get_hud_preview(request):
         return JsonResponse({"error": "No GEDCOM file selected"}, status=400)
 
     try:
-        from apps.generator.models import GedcomFile
-
         gedcom_file = GedcomFile.objects.get(id=gedcom_file_id)
 
         if not gedcom_file.parsed_data:
@@ -147,6 +233,7 @@ def get_hud_settings(request):
                 "theme": "light",
                 "font_size": "medium",
                 "color_scheme": "default",
+                "template": "4",  # Default template
             },
         )
         return JsonResponse(settings)

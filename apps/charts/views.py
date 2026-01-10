@@ -1,5 +1,4 @@
 import importlib
-import json
 import logging
 
 from django.http import HttpResponse, JsonResponse
@@ -61,73 +60,24 @@ def get_template_mapping():
     }
 
 
-def adjust_output(request):
-    """
-    View for adjusting chart output settings
-    """
-    gedcom_file_id = request.session.get("current_gedcom_file_id")
-    if not gedcom_file_id:
-        return render(
-            request, "charts/error.html", {"error": "No GEDCOM file selected"}
-        )
-
-    try:
-        # Get current settings from session or use defaults
-        chart_settings = request.session.get(
-            "chart_settings",
-            {
-                "template": "4",
-                "orientation": "portrait",
-                "paper_size": "letter",
-                "include_photos": False,
-                "color_scheme": "black_and_white",
-                "generations": 4,
-                "show_spouses": True,
-                "show_siblings": False,
-            },
-        )
-
-        return render(
-            request,
-            "charts/adjust_output.html",
-            {
-                "gedcom_file_id": gedcom_file_id,
-                "chart_settings": chart_settings,
-                "TEMPLATE_MAPPING": get_template_mapping(),
-            },
-        )
-
-    except Exception as e:
-        return render(request, "charts/error.html", {"error": str(e)})
-
-
 def generate_chart(request):
     """
-    View for generating the final chart
+    View for generating the final chart from HUD
     """
     gedcom_file_id = request.session.get("current_gedcom_file_id")
+    individual_id = request.session.get("selected_individual_id")
+
     if not gedcom_file_id:
         return render(
             request, "charts/error.html", {"error": "No GEDCOM file selected"}
         )
+    if not individual_id:
+        return render(request, "charts/error.html", {"error": "No individual selected"})
 
     # Define gedcom_file early to avoid scope issues
     try:
         gedcom_file = GedcomFile.objects.get(id=gedcom_file_id)
         logger.debug(f"Retrieved GEDCOM file: {gedcom_file_id}")
-        logger.debug(f"parsed_data exists: {gedcom_file.parsed_data is not None}")
-        if gedcom_file.parsed_data:
-            logger.debug(f"parsed_data keys: {list(gedcom_file.parsed_data.keys())}")
-            logger.debug(
-                f"individuals key exists: {'individuals' in gedcom_file.parsed_data}"
-            )
-            if "individuals" in gedcom_file.parsed_data:
-                logger.debug(
-                    f"Number of individuals: {len(gedcom_file.parsed_data['individuals'])}"
-                )
-                logger.debug(
-                    f"First individual: {list(gedcom_file.parsed_data['individuals'].items())[0] if gedcom_file.parsed_data['individuals'] else 'None'}"
-                )
     except GedcomFile.DoesNotExist:
         logger.error(f"GEDCOM file not found: {gedcom_file_id}")
         return render(request, "charts/error.html", {"error": "GEDCOM file not found"})
@@ -136,23 +86,14 @@ def generate_chart(request):
     if request.method == "POST":
         try:
             logger.debug(f"POST data: {request.POST}")
-            # Get chart settings from POST data
-            template_id = request.POST.get("template", "4")
-            individual_id = request.POST.get("individual_id")
-            orientation = request.POST.get("orientation", "portrait")
-
-            # Save settings to session
-            chart_settings = {
-                "template": template_id,
-                "orientation": orientation,
-                "individual_id": individual_id,
-            }
-            request.session["chart_settings"] = chart_settings
-            logger.debug(f"Chart settings saved to session: {chart_settings}")
+            # Get chart settings from POST data or session
+            template_id = request.POST.get(
+                "template", request.session.get("hud_settings", {}).get("template", "4")
+            )
+            # orientation = request.POST.get("orientation", "portrait")  # Currently unused
 
             # Validate parsed_data structure
             logger.debug(f"Validating parsed_data for GEDCOM file: {gedcom_file_id}")
-            logger.debug(f"parsed_data: {gedcom_file.parsed_data}")
             if not gedcom_file.parsed_data:
                 logger.error("parsed_data is None")
                 return render(
@@ -235,7 +176,7 @@ def generate_chart(request):
                 {"error": f"Chart generation failed: {str(e)}"},
             )
 
-    # GET request - show the generation form
+    # GET request - show the generation form (should come from HUD)
     try:
         logger.debug(
             f"GET request - Checking parsed_data for GEDCOM file: {gedcom_file_id}"
@@ -257,9 +198,6 @@ def generate_chart(request):
                 {"error": "'individuals' key missing from parsed data"},
             )
 
-        chart_settings = request.session.get("chart_settings", {})
-        template_id = chart_settings.get("template", "4")
-
         # Convert dictionaries to PersonData objects
         logger.debug(f"GET request - Converting individuals to PersonData objects")
         individuals = {}
@@ -278,13 +216,8 @@ def generate_chart(request):
                     f"GET request - Using existing PersonData for {ind_id}: {individuals[ind_id].full_name}"
                 )
 
-        individual_id = chart_settings.get("individual_id", gedcom_file.home_person_id)
-
-        if individual_id and individual_id in individuals:
-            individual = individuals[individual_id]
-        else:
-            individual = None
-            logger.error(f"Individual not found: {individual_id}")
+        individual = individuals[individual_id]
+        template_id = request.session.get("hud_settings", {}).get("template", "4")
 
         return render(
             request,

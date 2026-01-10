@@ -1,0 +1,23 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h2 class="mb-0">Error</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        {{ error }}
+                    </div>
+                    <a href="{% if is_logged_in %}{% url 'users:profile' %}{% else %}{% url 'upload:home' %}{% endif %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-left"></i> Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

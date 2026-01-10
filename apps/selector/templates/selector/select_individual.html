@@ -1,0 +1,143 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">Select Primary Individual</h2>
+                </div>
+                <div class="card-body">
+                    <!-- Search Functionality -->
+                    <div class="mb-4">
+                        <div class="input-group">
+                            <input type="text" id="individual-search" class="form-control" placeholder="Search individuals by name...">
+                            <button class="btn btn-outline-secondary" type="button" id="search-clear">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
+                        <div id="search-stats" class="text-muted mt-1" style="font-size: 0.875em;">
+                            Showing all <span id="total-count">{{ individuals|length }}</span> individuals
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h4>Choose the Primary Individual</h4>
+                        <p>Select the individual who will be the focus of your family chart.</p>
+                        {% if is_logged_in %}
+                        <p>This will be set as the "home person" for this GEDCOM file.</p>
+                        {% endif %}
+                    </div>
+
+                    <form method="post" action="{% url 'selector:confirm_selection' file_id=gedcom_file.id %}" class="mb-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="file_id" value="{{ gedcom_file.id }}">
+
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Select</th>
+                                        <th>Name</th>
+                                        <th>Birth</th>
+                                        <th>Death</th>
+                                        {% if is_logged_in %}
+                                        <th>Current Home</th>
+                                        {% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for individual in individuals %}
+                                    <tr>
+                                        <td>
+                                            <input type="radio" name="individual_id" value="{{ individual.id }}" id="ind_{{ individual.id }}" required>
+                                        </td>
+                                        <td>
+                                            <label for="ind_{{ individual.id }}">{{ individual.full_name }}</label>
+                                        </td>
+                                        <td>{{ individual.birth_date|default:"Unknown" }}</td>
+                                        <td>{{ individual.death_date|default:"Unknown" }}</td>
+                                        {% if is_logged_in %}
+                                        <td>
+                                            {% if individual.id == gedcom_file.home_person_id %}
+                                            <span class="badge bg-success">Home Person</span>
+                                            {% endif %}
+                                        </td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <div>
+                                {% if is_logged_in %}
+                                <button type="submit" name="action" value="set_home" class="btn btn-primary">
+                                    <i class="bi bi-person-check"></i> Set as Home Person
+                                </button>
+                                {% endif %}
+                                <button type="submit" name="action" value="generate" class="btn btn-success">
+                                    <i class="bi bi-file-earmark-pdf"></i> Generate Chart
+                                </button>
+                            </div>
+                            <div>
+                                <a href="{% if is_logged_in %}{% url 'users:profile' %}{% else %}{% url 'upload:home' %}{% endif %}" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left"></i> Back
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Search functionality for individuals table
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('individual-search');
+    const searchClear = document.getElementById('search-clear');
+    const tableRows = document.querySelectorAll('table tbody tr');
+    const totalCount = document.getElementById('total-count');
+    const statsDisplay = document.getElementById('search-stats');
+
+    // Clear search
+    searchClear.addEventListener('click', function() {
+        searchInput.value = '';
+        searchInput.focus();
+        updateSearchResults();
+    });
+
+    // Search as user types
+    searchInput.addEventListener('input', updateSearchResults);
+
+    function updateSearchResults() {
+        const searchTerm = searchInput.value.toLowerCase();
+        let visibleCount = 0;
+
+        tableRows.forEach(row => {
+            const nameCell = row.querySelector('td:nth-child(2) label');
+            if (nameCell) {
+                const fullName = nameCell.textContent.toLowerCase();
+                if (fullName.includes(searchTerm)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+
+        // Update stats
+        if (searchTerm) {
+            statsDisplay.innerHTML = `Found <strong>${visibleCount}</strong> of ${totalCount.textContent} individuals`;
+        } else {
+            statsDisplay.innerHTML = `Showing all <span id="total-count">${totalCount.textContent}</span> individuals`;
+        }
+    }
+});
+</script>
+{% endblock %}
