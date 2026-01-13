@@ -1,7 +1,6 @@
 from django.contrib.sessions.backends.db import SessionStore
 from django.test import RequestFactory, TestCase
 
-from .models import PersonData
 from .views import get_spouse_and_children, individual_detail
 
 
@@ -182,7 +181,7 @@ class IndividualDetailViewTestCase(TestCase):
         }
 
     def test_individual_detail_with_valid_individual(self):
-        request = self.factory.get(f"/person/I1/")
+        request = self.factory.get("/person/I1/")
         request.session = self.session
         request.session["family_data"] = self.family_data
         request.session.save()
@@ -192,7 +191,7 @@ class IndividualDetailViewTestCase(TestCase):
         self.assertContains(response, "John Doe")
 
     def test_individual_detail_with_invalid_individual(self):
-        request = self.factory.get(f"/person/I99/")
+        request = self.factory.get("/person/I99/")
         request.session = self.session
         request.session["family_data"] = self.family_data
         request.session.save()
@@ -202,7 +201,7 @@ class IndividualDetailViewTestCase(TestCase):
         self.assertContains(response, "Individual not found")
 
     def test_individual_detail_with_no_family_data(self):
-        request = self.factory.get(f"/person/I1/")
+        request = self.factory.get("/person/I1/")
         request.session = self.session
         request.session["family_data"] = {}
         request.session.save()

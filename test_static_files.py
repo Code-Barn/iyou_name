@@ -1,5 +1,4 @@
 from django.contrib.staticfiles.finders import find
-from django.contrib.staticfiles.storage import staticfiles_storage
 from django.test import TestCase
 
 

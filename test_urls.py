@@ -41,7 +41,7 @@ class URLTests(SimpleTestCase):
         self.assertEqual(resolve(url).app_name, "charts")
         self.assertEqual(resolve(url).url_name, "adjust_output")
 
-        url = reverse("charts:generate_chart")
+        url = reverse("charts:generate_chart", args=[1, "I1"])
         self.assertEqual(resolve(url).app_name, "charts")
         self.assertEqual(resolve(url).url_name, "generate_chart")
 

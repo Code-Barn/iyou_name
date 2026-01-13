@@ -13,6 +13,7 @@ class GedcomFile(models.Model):
     home_person_id = models.CharField(max_length=100, null=True, blank=True)
     is_processed = models.BooleanField(default=False)
     processing_date = models.DateTimeField(null=True, blank=True)
+    last_activity = models.DateTimeField(auto_now=True)  # Automatically updated on save
 
     def __str__(self):
         if self.user:
@@ -34,6 +35,5 @@ def delete_parsed_data(sender, instance, **kwargs):
     """
     Signal to handle deletion of parsed data when a GEDCOM file is deleted.
     """
-    # Clear the parsed_data field to free up memory
-    instance.parsed_data = None
-    instance.save()
+    # No action needed - the file and its parsed data are already deleted
+    pass

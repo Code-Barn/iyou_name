@@ -7,4 +7,4 @@ class UploadConfig(AppConfig):
 
     def ready(self):
         # Import and register any signals here
-        import apps.upload.signals
+        pass

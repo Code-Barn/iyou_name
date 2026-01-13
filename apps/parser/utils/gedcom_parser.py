@@ -100,7 +100,7 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
             print(f"Failed to detect GEDCOM version: {e}")
             raise
 
-        print(f"Starting to parse individuals...")
+        print("Starting to parse individuals...")
         for record in parser.records0("INDI"):
             ind = (
                 record.xref_id.replace("@", "")
@@ -223,12 +223,44 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                         place_str if isinstance(place_str, str) else str(place_str)
                     )
                 elif event.tag == "DEAT":
-                    death_date = date_str
-                    death_place = (
-                        place_str if isinstance(place_str, str) else str(place_str)
-                    )
+                    # Only update death info if we don't have it yet, or if this event has actual data
+                    if not death_date and date_str and date_str != "":
+                        death_date = date_str
+                    if (
+                        not death_place
+                        and place_str
+                        and place_str != "None"
+                        and place_str != ""
+                    ):
+                        death_place = (
+                            place_str if isinstance(place_str, str) else str(place_str)
+                        )
 
             # Create PersonData object with safe defaults
+            # Debug: Check for family tags in GEDCOM 7.0
+            if gedcom_version.startswith("7."):
+                logger.debug(f"Checking GEDCOM 7.0 family tags for individual {ind}")
+                # Check for FAMC (Family Child) tags
+                famc_tags = record.sub_tags("FAMC")
+                logger.debug(f"FAMC tags found: {len(famc_tags)}")
+                for famc_tag in famc_tags:
+                    logger.debug(
+                        f"FAMC: {famc_tag.xref_id if hasattr(famc_tag, 'xref_id') else famc_tag}"
+                    )
+
+                # Check for FAMS (Family Spouse) tags
+                fams_tags = record.sub_tags("FAMS")
+                logger.debug(f"FAMS tags found: {len(fams_tags)}")
+                for fams_tag in fams_tags:
+                    logger.debug(
+                        f"FAMS: {fams_tag.xref_id if hasattr(fams_tag, 'xref_id') else fams_tag}"
+                    )
+
+                # Check for other family-related tags
+                all_tags = [tag for tag in record.sub_tags()]
+                family_related_tags = [tag for tag in all_tags if "FAM" in str(tag)]
+                logger.debug(f"All family-related tags: {family_related_tags}")
+
             individual = PersonData(
                 id=ind,
                 full_name=full_name or f"{given_name} {surname}".strip(),
@@ -258,6 +290,12 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
         # Second pass: Collect family data and establish relationships
         # Note: parser is already opened with UTF-8 encoding above
         print("Starting to parse families...")
+        # Debug: Count how many family records exist
+        all_family_records = list(parser.records0("FAM"))
+        print(f"Found {len(all_family_records)} family records in GEDCOM file")
+        for fam_rec in all_family_records:
+            print(f"Family record ID: {fam_rec.xref_id}")
+
         for record in parser.records0("FAM"):
             fam_id = (
                 record.xref_id.replace("@", "")
@@ -333,6 +371,98 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                         if family["wife"] and not child_individual.mother:
                             child_individual.mother = family["wife"].replace("@", "")
 
+                        # Link parents to child
+                        if (
+                            family["husband"]
+                            and family["husband"].replace("@", "")
+                            in family_data["individuals"]
+                        ):
+                            husband_individual = family_data["individuals"][
+                                family["husband"].replace("@", "")
+                            ]
+                            if (
+                                child_id.replace("@", "")
+                                not in husband_individual.children
+                            ):
+                                husband_individual.children.append(
+                                    child_id.replace("@", "")
+                                )
+
+                        if (
+                            family["wife"]
+                            and family["wife"].replace("@", "")
+                            in family_data["individuals"]
+                        ):
+                            wife_individual = family_data["individuals"][
+                                family["wife"].replace("@", "")
+                            ]
+                            if (
+                                child_id.replace("@", "")
+                                not in wife_individual.children
+                            ):
+                                wife_individual.children.append(
+                                    child_id.replace("@", "")
+                                )
+
+                        # Populate spouses_children dictionary
+                        if (
+                            family["husband"]
+                            and family["husband"].replace("@", "")
+                            in family_data["individuals"]
+                        ):
+                            husband_individual = family_data["individuals"][
+                                family["husband"].replace("@", "")
+                            ]
+                            # Initialize spouses_children if not exists
+                            if husband_individual.spouses_children is None:
+                                husband_individual.spouses_children = {}
+                            # Add child to this spouse's children list
+                            if (
+                                family["wife"].replace("@", "")
+                                not in husband_individual.spouses_children
+                            ):
+                                husband_individual.spouses_children[
+                                    family["wife"].replace("@", "")
+                                ] = []
+                            if (
+                                child_id.replace("@", "")
+                                not in husband_individual.spouses_children[
+                                    family["wife"].replace("@", "")
+                                ]
+                            ):
+                                husband_individual.spouses_children[
+                                    family["wife"].replace("@", "")
+                                ].append(child_id.replace("@", ""))
+
+                        if (
+                            family["wife"]
+                            and family["wife"].replace("@", "")
+                            in family_data["individuals"]
+                        ):
+                            wife_individual = family_data["individuals"][
+                                family["wife"].replace("@", "")
+                            ]
+                            # Initialize spouses_children if not exists
+                            if wife_individual.spouses_children is None:
+                                wife_individual.spouses_children = {}
+                            # Add child to this spouse's children list
+                            if (
+                                family["husband"].replace("@", "")
+                                not in wife_individual.spouses_children
+                            ):
+                                wife_individual.spouses_children[
+                                    family["husband"].replace("@", "")
+                                ] = []
+                            if (
+                                child_id.replace("@", "")
+                                not in wife_individual.spouses_children[
+                                    family["husband"].replace("@", "")
+                                ]
+                            ):
+                                wife_individual.spouses_children[
+                                    family["husband"].replace("@", "")
+                                ].append(child_id.replace("@", ""))
+
             # Extract family events
             for event in record.sub_tags("MARR", "DIV", "EVEN"):
                 event_info = {
@@ -354,159 +484,7 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                 f"Family {fam_id} - Husband: {family['husband']}, Wife: {family['wife']}, Children: {family['children']}"
             )
 
-        for record in parser.records0("INDI"):
-            ind = (
-                record.xref_id.replace("@", "")
-                if record.xref_id
-                else f"unknown_{len(family_data['individuals'])}"
-            )
-
-            # Initialize variables with safe defaults
-            given_name = ""
-            surname = ""
-            full_name = ""
-            birth_date = None
-            birth_place = None
-            death_date = None
-            death_place = None
-            sex = None
-            title = None
-            occupation = None
-            events = []
-
-            # Extract name information safely
-            name_obj = getattr(record, "name", None)
-            if name_obj:
-                given_name = getattr(name_obj, "given", "")
-                surname = getattr(name_obj, "surname", "")
-                full_name = getattr(
-                    name_obj, "format", lambda: f"{given_name} {surname}"
-                )()
-
-            # Extract sex information safely
-            sex = getattr(record, "sex", None)
-
-            # Extract title information safely (GEDCOM 7.0 uses different structure)
-            title = None
-            if gedcom_version.startswith("7."):
-                # GEDCOM 7.0: titles might be in NAME structure
-                name_obj = getattr(record, "name", None)
-                if name_obj:
-                    title_tag = getattr(name_obj, "title", None)
-                    if title_tag:
-                        title = str(title_tag)
-            else:
-                # GEDCOM 5.5: TITL tag
-                title_tag = record.sub_tag("TITL")
-                if title_tag and hasattr(title_tag, "value"):
-                    title = str(title_tag.value)
-
-            # Extract occupation information safely
-            occupation = None
-            if gedcom_version.startswith("7."):
-                # GEDCOM 7.0: occupations might be in different structure
-                occu_tag = record.sub_tag("OCCU")
-                if occu_tag and hasattr(occu_tag, "value"):
-                    occupation = str(occu_tag.value)
-            else:
-                # GEDCOM 5.5: OCCU tag
-                occu_tag = record.sub_tag("OCCU")
-                if occu_tag and hasattr(occu_tag, "value"):
-                    occupation = str(occu_tag.value)
-
-            # Extract all events (BIRT, DEAT, CHR, BURI, EVEN, ADOP)
-            # GEDCOM 7.0 adds more event types
-            event_tags = ["BIRT", "DEAT", "CHR", "BURI", "EVEN", "ADOP"]
-            if gedcom_version.startswith("7."):
-                event_tags.extend(["BAPM", "CONF", "ORDN", "RETI", "PROB", "WILL"])
-
-            for event in record.sub_tags(*event_tags):
-                # Extract date safely
-                date_str = None
-                date_obj = event.sub_tag("DATE")
-                if date_obj and hasattr(date_obj, "value") and date_obj.value:
-                    date_str = str(date_obj.value)
-                    # Normalize date format (convert uppercase months to title case)
-                    if date_str:
-                        # Convert "JAN" to "Jan", "FEB" to "Feb", etc.
-                        date_str = date_str.replace(" JAN ", " Jan ")
-                        date_str = date_str.replace(" FEB ", " Feb ")
-                        date_str = date_str.replace(" MAR ", " Mar ")
-                        date_str = date_str.replace(" APR ", " Apr ")
-                        date_str = date_str.replace(" MAY ", " May ")
-                        date_str = date_str.replace(" JUN ", " Jun ")
-                        date_str = date_str.replace(" JUL ", " Jul ")
-                        date_str = date_str.replace(" AUG ", " Aug ")
-                        date_str = date_str.replace(" SEP ", " Sep ")
-                        date_str = date_str.replace(" OCT ", " Oct ")
-                        date_str = date_str.replace(" NOV ", " Nov ")
-                        date_str = date_str.replace(" DEC ", " Dec ")
-
-                # Extract place safely
-                place_str = None
-                place_obj = event.sub_tag("PLAC")
-                if place_obj:
-                    place_str = (
-                        str(place_obj.value)
-                        if hasattr(place_obj, "value")
-                        else str(place_obj)
-                    )
-
-                # Extract description for EVEN events
-                description = None
-                if event.tag == "EVEN":
-                    type_obj = event.sub_tag("TYPE")
-                    if type_obj:
-                        description = str(type_obj)
-
-                event_info = {
-                    "tag": event.tag,
-                    "date": date_str,
-                    "place": place_str
-                    if isinstance(place_str, str)
-                    else str(place_str),
-                    "description": description,
-                }
-                events.append(event_info)
-
-                # Special handling for birth and death events
-                if event.tag == "BIRT":
-                    birth_date = date_str
-                    birth_place = (
-                        place_str if isinstance(place_str, str) else str(place_str)
-                    )
-                elif event.tag == "DEAT":
-                    death_date = date_str
-                    death_place = (
-                        place_str if isinstance(place_str, str) else str(place_str)
-                    )
-
-            # Create PersonData object with safe defaults
-            individual = PersonData(
-                id=ind,
-                full_name=full_name or f"{given_name} {surname}".strip(),
-                given_name=given_name,
-                surname=surname,
-                birth_date=birth_date,
-                birth_place=birth_place,
-                death_date=death_date,
-                death_place=death_place,
-                father=None,
-                mother=None,
-                spouse=[],
-                children=[],
-                events=events,
-                sex=sex,
-                title=title,
-                occupation=occupation,
-                birth_flag=None,
-                death_flag=None,
-            )
-
-            family_data["individuals"][ind] = individual
-            print(f"Parsed individual: {individual.full_name} (ID: {ind})")
-
-        print(f"Finished parsing individuals. Total: {len(family_data['individuals'])}")
+        print(f"Finished parsing families. Total: {len(family_data['families'])}")
 
         print(f"Finished parsing families. Total: {len(family_data['families'])}")
         # Identify root individuals (those without parents)

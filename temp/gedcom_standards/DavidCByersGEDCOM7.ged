@@ -2778,7 +2778,7 @@
 3 EXID 4056092
 4 TYPE https://gedcom.io/exid-type/FamilySearch-PlaceId
 1 BURI
-2 PLAC Monmouth City Cemetery, Township of Monmouth, Warren, Illinois, United States
+2 PLAC Monmouth City Cemetery, Monmouth, Warren, Illinois, United States
 3 LANG en-US
 3 NOTE Monmouth City Cemetery, Warren, Illinois, United States
 3 MAP
@@ -5823,7 +5823,7 @@
 3 EXID 392610
 4 TYPE https://gedcom.io/exid-type/FamilySearch-PlaceId
 1 BURI
-2 PLAC Monmouth City Cemetery, Township of Monmouth, Warren, Illinois, United States
+2 PLAC Monmouth City Cemetery, Monmouth, Warren, Illinois, United States
 3 LANG en-US
 3 NOTE Monmouth City Cemetery, Warren, Illinois, United States
 3 MAP
@@ -6001,7 +6001,7 @@
 3 EXID 392610
 4 TYPE https://gedcom.io/exid-type/FamilySearch-PlaceId
 1 BURI
-2 PLAC Monmouth City Cemetery, Township of Monmouth, Warren, Illinois, United States
+2 PLAC Monmouth City Cemetery, Monmouth, Warren, Illinois, United States
 3 LANG en-US
 3 NOTE Monmouth City Cemetery, Warren, Illinois, United States
 3 MAP
@@ -6123,7 +6123,7 @@
 3 EXID 392610
 4 TYPE https://gedcom.io/exid-type/FamilySearch-PlaceId
 1 BURI
-2 PLAC Monmouth City Cemetery, Township of Monmouth, Warren, Illinois, United States
+2 PLAC Monmouth City Cemetery, Monmouth, Warren, Illinois, United States
 3 LANG en-US
 3 NOTE Monmouth City Cemetery, Monmouth Township, Warren, Illinois, United States
 3 MAP
@@ -6227,7 +6227,7 @@
 3 EXID 392610
 4 TYPE https://gedcom.io/exid-type/FamilySearch-PlaceId
 1 BURI
-2 PLAC Monmouth City Cemetery, Township of Monmouth, Warren, Illinois, United States
+2 PLAC Monmouth City Cemetery, Monmouth, Warren, Illinois, United States
 3 LANG en-US
 3 NOTE Monmouth City Cemetery, Monmouth Township, Warren, Illinois, United States
 3 MAP
@@ -18257,7 +18257,7 @@
 1 BIRT
 2 DATE 10 APR 1705
 3 PHRASE 10 April 1705
-2 PLAC Meckesheim, Amt Heidelberg, Baden
+2 PLAC Meckesheim, Heidelberg, Baden
 3 LANG en-US
 3 NOTE Meckesheim, Heidelberg, Baden, Germany
 3 MAP
@@ -18269,7 +18269,7 @@
 2 TYPE Baptism
 2 DATE 13 APR 1705
 3 PHRASE 13 Apr 1705
-2 PLAC Meckesheim, Amt Heidelberg, Baden
+2 PLAC Meckesheim, Heidelberg, Baden
 3 LANG en-US
 3 NOTE Meckesheim, Heidelberg, Baden, Deutschland
 3 MAP
@@ -18281,7 +18281,7 @@
 2 TYPE Baptism
 2 DATE 13 APR 1705
 3 PHRASE 13 Apr 1705
-2 PLAC Mönchzell, Amt Heidelberg, Baden
+2 PLAC Mönchzell, Heidelberg, Baden
 3 LANG en-US
 3 NOTE Mönchzell, Heidelberg, Baden, Deutschland
 3 MAP

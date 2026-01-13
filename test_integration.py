@@ -1,6 +1,12 @@
 import os
 import tempfile
 
+# Set up Django environment
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+import django
+
+django.setup()
+
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -105,11 +111,13 @@ class IntegrationTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Step 2: Access chart adjustment
-        response = self.client.get(reverse("charts:adjust_output"))
+        response = self.client.get(reverse("hud:display_tree"))
         self.assertEqual(response.status_code, 200)
 
         # Step 3: Access chart generation
-        response = self.client.get(reverse("charts:generate_chart"))
+        response = self.client.get(
+            reverse("charts:generate_chart", args=[gedcom_file.id, "I1"])
+        )
         self.assertEqual(response.status_code, 200)
 
     def test_user_profile_with_files(self):

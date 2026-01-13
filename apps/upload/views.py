@@ -4,10 +4,11 @@ from django.core.files.base import ContentFile
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 logger = logging.getLogger(__name__)
 from apps.generator.models import GedcomFile
-from apps.parser.models import PersonData
+from apps.generator.template_mapping import get_template_mapping
 from apps.parser.utils import convert_to_utf8, parse_gedcom_data
 
 # Template mapping moved to HUD
@@ -20,13 +21,13 @@ def upload_file(request):
     return render(
         request,
         "upload/upload_file.html",
-        {"TEMPLATE_MAPPING": TEMPLATE_MAPPING},
+        {"TEMPLATE_MAPPING": get_template_mapping()},
     )
 
 
 def upload_and_generate(request):
     """
-    View for handling the main upload and generate workflow
+    View for handling the main upload and generate workflow.
     """
     if request.method == "POST" and "gedcom_file" in request.FILES:
         gedcom_file = request.FILES["gedcom_file"]
@@ -58,8 +59,6 @@ def upload_and_generate(request):
                 raise
 
             # Store parsed data directly in the GedcomFile model
-            # Convert PersonData objects to dictionaries for JSONField
-            # Ensure parsed_data has the correct structure
             if not isinstance(family_data.get("individuals"), dict):
                 logger.error("family_data['individuals'] is not a dictionary")
                 raise ValueError("family_data['individuals'] must be a dictionary")
@@ -73,19 +72,7 @@ def upload_and_generate(request):
                 "root_individuals": family_data.get("root_individuals", []),
             }
 
-            # Debug logging to verify parsed_data structure
-            logger.debug(
-                f"Stored parsed_data keys: {list(gedcom_model.parsed_data.keys())}"
-            )
-            logger.debug(
-                f"Number of individuals: {len(gedcom_model.parsed_data['individuals'])}"
-            )
-
-            # Debug logging to verify parsed_data structure
-            logger.debug(f"Stored parsed_data keys: {gedcom_model.parsed_data.keys()}")
-            logger.debug(
-                f"Number of individuals: {len(gedcom_model.parsed_data['individuals'])}"
-            )
+            # Set the home person ID
             gedcom_model.home_person_id = (
                 family_data["root_individuals"][0]
                 if family_data["root_individuals"]
@@ -93,6 +80,10 @@ def upload_and_generate(request):
             )
             gedcom_model.is_processed = True
             gedcom_model.processing_date = timezone.now()
+            gedcom_model.save()
+
+            # Update last_activity to track when the file was last accessed
+            gedcom_model.last_activity = timezone.now()
             gedcom_model.save()
 
             # Store reference to the processed file in session
@@ -116,7 +107,7 @@ def upload_and_generate(request):
             return render(
                 request,
                 "upload/upload_file.html",
-                {},
+                {"TEMPLATE_MAPPING": get_template_mapping()},
             )
 
 
@@ -144,13 +135,19 @@ def set_current_gedcom_file(request, file_id):
         return HttpResponse("File not found", status=404)
 
 
-def delete_gedcom_file(request, file_id):
-    """
-    View for deleting a GEDCOM file
-    """
+@require_POST
+def delete_anonymous_file(request):
+    file_id = request.POST.get("file_id")
+    if not file_id:
+        return JsonResponse(
+            {"status": "error", "message": "File ID not provided"}, status=400
+        )
+
     try:
-        gedcom_file = GedcomFile.objects.get(id=file_id)
+        gedcom_file = GedcomFile.objects.get(id=file_id, user=None)
         gedcom_file.delete()
-        return redirect("upload:home")
+        return JsonResponse({"status": "success"})
     except GedcomFile.DoesNotExist:
-        return HttpResponse("File not found", status=404)
+        return JsonResponse(
+            {"status": "error", "message": "File not found"}, status=404
+        )

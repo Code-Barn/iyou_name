@@ -14,8 +14,8 @@ uv run python manage.py migrate
 uv run python manage.py runserver
 
 # Run all tests
-uv run python test_basic_flow.py && uv run python test_edge_cases.py && uv run python test_logged_out_flow.py
-```
+uv run python -m pytest test_basic_flow.py test_logged_out_flow.py test_edge_cases.py test_integration.py test_views.py -v
+
 
 ## 📁 Project Structure
 
@@ -118,6 +118,7 @@ is_anonymous = not request.user.is_authenticated
 
 ## 🌐 URL Patterns Quick Reference
 
+
 ### Main URLs
 ```python
 # Upload
@@ -145,7 +146,8 @@ reverse("hud:hud_preview")            # /hud/api/preview/
 reverse("hud:hud_settings")          # /hud/api/settings/
 
 # Charts
-reverse("charts:generate_chart")      # /charts/generate/
+reverse("charts:generate_chart", args=[file_id, individual_id])  # /charts/generate/<file_id>/<individual_id>/
+
 ```
 
 ## 📦 Key Models
@@ -404,7 +406,7 @@ DATABASE_URL=postgres://user:password@host:port/dbname
 
 ```bash
 # Run specific test
-uv run python test_basic_flow.py BasicFlowTest.test_selector_view
+uv run python -m pytest test_basic_flow.py -v
 
 # Create superuser
 uv run python manage.py createsuperuser

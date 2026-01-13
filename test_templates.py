@@ -14,7 +14,6 @@ class TemplateTests(TestCase):
         """Test upload app templates"""
         templates = [
             "upload/upload_file.html",
-            "upload/select_individual.html",
             "upload/error.html",
         ]
 
@@ -28,12 +27,7 @@ class TemplateTests(TestCase):
         templates = [
             "browse/browse_individuals.html",
             "browse/individual_detail.html",
-            "browse/select_individual.html",
             "browse/error.html",
-            "browse/components/individual_header.html",
-            "browse/components/basic_info.html",
-            "browse/components/family_info.html",
-            "browse/components/locations.html",
         ]
 
         for template_name in templates:
@@ -57,7 +51,6 @@ class TemplateTests(TestCase):
     def test_charts_templates(self):
         """Test charts app templates"""
         templates = [
-            "charts/adjust_output.html",
             "charts/generate_chart.html",
             "charts/generate_success.html",
             "charts/error.html",

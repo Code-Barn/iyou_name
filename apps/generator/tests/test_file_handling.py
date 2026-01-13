@@ -7,11 +7,9 @@ import os
 import tempfile
 
 from django.contrib.auth.models import User
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 
-from apps.models import GedcomFile, PersonData
-from apps.utils.gedcom_parser import parse_gedcom_data
+from apps.models import GedcomFile
 
 
 class FileHandlingComprehensiveTest(TestCase):
@@ -501,7 +499,6 @@ if __name__ == "__main__":
     django.setup()
 
     # Run tests
-    import unittest
 
     from django.test.utils import get_runner
 

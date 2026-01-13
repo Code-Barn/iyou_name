@@ -31,7 +31,13 @@ def select_individual(request, file_id):
                 person = PersonData(**individual)
                 processed_individuals.append(person)
             else:
-                processed_individuals.append(individual)
+                # Ensure that non-dict individuals are PersonData objects
+                if isinstance(individual, PersonData):
+                    processed_individuals.append(individual)
+                else:
+                    # Convert to PersonData if it's not already
+                    person = PersonData(**individual.__dict__)
+                    processed_individuals.append(person)
 
         # Store the file ID in session for subsequent steps
         request.session["current_gedcom_file_id"] = gedcom_file.id

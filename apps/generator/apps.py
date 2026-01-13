@@ -8,4 +8,4 @@ class GeneratorConfig(AppConfig):
 
     def ready(self):
         # Import and register any signals here
-        import apps.generator.signals
+        pass

@@ -5,8 +5,6 @@ Basic flow test to verify the new URL structure and view functionality
 import os
 
 import django
-from django.conf import settings
-from django.db import transaction
 from django.test import RequestFactory, TestCase
 
 # Setup Django
@@ -18,7 +16,6 @@ from django.contrib.sessions.backends.db import SessionStore
 
 from apps.generator.models import GedcomFile
 from apps.selector.views import confirm_selection, select_individual
-from apps.upload.views import upload_and_generate
 from apps.users.views import profile
 
 

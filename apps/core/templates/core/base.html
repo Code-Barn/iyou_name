@@ -80,6 +80,22 @@
         </nav>
 
         <div class="container mt-4">{% block content %}{% endblock %}</div>
+        <!-- Add this to your base template (e.g., core/base.html) -->
+        <script>
+        document.addEventListener('beforeunload', function() {
+            const fileId = '{{ current_gedcom_file_id|default:"" }}';
+            if (fileId) {
+                fetch('/delete-anonymous-file/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ file_id: fileId }),
+                });
+            }
+        });
+        </script>
 
         <!-- Add Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

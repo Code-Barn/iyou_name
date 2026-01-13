@@ -5,7 +5,6 @@ Test the logged-out user flow for the restructured namechart application
 import os
 
 import django
-from django.conf import settings
 
 # Setup Django first
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
@@ -19,7 +18,6 @@ from django.test import RequestFactory, TestCase
 from apps.generator.models import GedcomFile
 from apps.hud.views import display_tree_hud
 from apps.selector.views import confirm_selection, select_individual
-from apps.upload.views import upload_and_generate
 
 
 class LoggedOutUserFlowTest(TestCase):

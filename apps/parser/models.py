@@ -22,6 +22,7 @@ class PersonData:
     adoptive_parents: Optional[List[str]] = None  # List of adoptive parent IDs
     foster_parents: Optional[List[str]] = None  # List of foster parent IDs
     step_parents: Optional[List[str]] = None  # List of step-parent IDs
+    step_siblings: Optional[List[str]] = None  # List of step-sibling IDs
     spouses_children: Optional[Dict[str, List[str]]] = (
         None  # Dictionary to store children for each spouse
     )

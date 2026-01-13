@@ -38,9 +38,13 @@
                                     <div class="position-absolute bg-white border rounded mt-1" style="width: 200px; display: none; z-index: 1000;" id="searchResults{{ file.id }}">
                                     </div>
                                 </div>
-                                <a href="{% url 'browse:browse_individuals' %}" class="btn btn-info btn-sm ms-2">
-                                    Browse
-                                </a>
+                                <form method="post" action="{% url 'browse:browse_individuals' %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="file_id" value="{{ file.id }}">
+                                    <button type="submit" class="btn btn-info btn-sm ms-2">
+                                        Browse
+                                    </button>
+                                </form>
                                 <a href="{% url 'selector:select_individual' file.id %}" class="btn btn-success btn-sm ms-2">
                                     Select Home Person
                                 </a>
@@ -60,10 +64,9 @@
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                <form method="post" class="d-inline">
+                                                <form method="post" action="{% url 'users:delete_gedcom_file' file.id %}" class="d-inline" id="deleteForm{{ file.id }}">
                                                     {% csrf_token %}
-                                                    <input type="hidden" name="file_id" value="{{ file.id }}">
-                                                    <button type="submit" name="delete_file" class="btn btn-danger">
+                                                    <button type="button" class="btn btn-danger" onclick="document.getElementById('deleteForm{{ file.id }}').submit();">
                                                         Delete
                                                     </button>
                                                 </form>

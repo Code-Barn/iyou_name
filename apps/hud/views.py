@@ -6,55 +6,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from apps.generator.models import GedcomFile
+from apps.generator.template_mapping import get_template_mapping
 from apps.parser.models import PersonData
-
-
-def get_template_mapping():
-    """Helper function to get template mapping"""
-    return {
-        "1": {
-            "module": "apps.generator.utils.image_1generator",
-            "function": "generate_family_tree",
-            "filename": "US_LETTER_1GEN_BW.pdf",
-            "name": "1 Generation (Individual Only)",
-        },
-        "2": {
-            "module": "apps.generator.utils.image_2generator",
-            "function": "generate_family_tree",
-            "filename": "US_LETTER_2GEN_BW.pdf",
-            "name": "2 Generation Chart",
-        },
-        "3": {
-            "module": "apps.generator.utils.image_3generator",
-            "function": "generate_family_tree",
-            "filename": "US_LETTER_3GEN_BW.png",
-            "name": "3 Generation Chart",
-        },
-        "4": {
-            "module": "apps.generator.utils.image_4generator",
-            "function": "generate_family_tree",
-            "filename": "US_LETTER_4GEN_BW.pdf",
-            "name": "4 Generation Chart",
-        },
-        "5": {
-            "module": "apps.generator.utils.image_5generator",
-            "function": "generate_family_tree",
-            "filename": "US_LETTER_5GEN_BW.pdf",
-            "name": "5 Generation Chart",
-        },
-        "6": {
-            "module": "apps.generator.utils.image_6generator",
-            "function": "generate_family_tree",
-            "filename": "US_LETTER_6GEN_BW.pdf",
-            "name": "6 Generation Chart",
-        },
-        "7": {
-            "module": "apps.generator.utils.image_7generator",
-            "function": "generate_family_tree",
-            "filename": "US_LETTER_7GEN_BW.pdf",
-            "name": "7 Generation Chart",
-        },
-    }
 
 
 def display_tree_hud(request):
@@ -96,6 +49,9 @@ def display_tree_hud(request):
         individual = individuals[individual_id]
         if isinstance(individual, dict):
             individual = PersonData(**individual)
+        elif not isinstance(individual, PersonData):
+            # Convert to PersonData if it's not already
+            individual = PersonData(**individual.__dict__)
 
         # Get HUD settings from session or use defaults
         hud_settings = request.session.get(

@@ -120,7 +120,7 @@ def generate_family_tree(primary_individual, family_data, template="1gen"):
                 draw.stroke_color = PRIMARY_STROKE_COLOR
                 print(f"Setting fill_color to: {PRIMARY_FONT_COLOR}")
                 draw.fill_color = PRIMARY_FONT_COLOR
-                print(f"Setting gravity to: center")
+                print("Setting gravity to: center")
                 draw.gravity = "center"
                 print(f"Rotating by: {PRIMARY_NAME_ROTATE} degrees")
                 draw.rotate(PRIMARY_NAME_ROTATE)

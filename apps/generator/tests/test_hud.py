@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from apps.models import GedcomFile, PersonData
+from apps.models import GedcomFile
 from apps.utils.gedcom_parser import parse_gedcom_data
 
 

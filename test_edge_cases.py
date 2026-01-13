@@ -5,7 +5,6 @@ Comprehensive edge case tests for the restructured namechart application
 import os
 
 import django
-from django.conf import settings
 
 # Setup Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
@@ -19,7 +18,6 @@ from apps.charts.views import generate_chart
 from apps.generator.models import GedcomFile
 from apps.hud.views import display_tree_hud
 from apps.selector.views import confirm_selection, select_individual
-from apps.upload.views import upload_and_generate
 from apps.users.views import profile
 
 
@@ -164,9 +162,10 @@ class EdgeCaseTests(TestCase):
         # No file or individual selected
         request.session.save()
 
-        response = generate_chart(request)
+        # Pass dummy values for file_id and individual_id to match the function signature
+        response = generate_chart(request, file_id=99999, individual_id="INVALID_ID")
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "No GEDCOM file selected")
+        self.assertContains(response, "GEDCOM file not found")
 
     def test_profile_with_no_files(self):
         """Test user profile with no uploaded files"""

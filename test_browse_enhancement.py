@@ -5,7 +5,6 @@ Test for the browse enhancement: logged-out users with files should see browse p
 import os
 
 import django
-from django.conf import settings
 
 # Setup Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")

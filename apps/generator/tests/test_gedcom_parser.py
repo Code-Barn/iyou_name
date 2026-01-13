@@ -6,7 +6,6 @@ Organized by functionality with clear separation of concerns.
 import os
 import tempfile
 import unittest
-from io import BytesIO
 
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -14,12 +13,8 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from apps.generator.models import GedcomFile
-from apps.generator.views import (
-    get_spouse_and_children,
-    preprocess_family_data,
-)
 from apps.parser.models import PersonData
-from apps.parser.utils.gedcom_parser import convert_to_utf8, parse_gedcom_data
+from apps.parser.utils.gedcom_parser import parse_gedcom_data
 
 
 class GedcomParserTests(TestCase):

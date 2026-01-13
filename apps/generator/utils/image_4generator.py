@@ -413,7 +413,7 @@ def generate_family_tree(primary_individual, family_data, template="4gen"):
                 draw.stroke_color = PRIMARY_STROKE_COLOR
                 print(f"Setting fill_color to: {PRIMARY_FONT_COLOR}")
                 draw.fill_color = PRIMARY_FONT_COLOR
-                print(f"Setting gravity to: center")
+                print("Setting gravity to: center")
                 draw.gravity = "center"
                 print(f"Rotating by: {PRIMARY_NAME_ROTATE} degrees")
                 draw.rotate(PRIMARY_NAME_ROTATE)
@@ -563,7 +563,7 @@ def generate_family_tree(primary_individual, family_data, template="4gen"):
                     )
 
                     # Reset rotate for other elements
-                    print(f"Rotating by: 90 degrees")
+                    print("Rotating by: 90 degrees")
                     draw.rotate(90)
                     print(
                         "Reset rotation to 90 degrees for father's birth date and place"
@@ -654,7 +654,7 @@ def generate_family_tree(primary_individual, family_data, template="4gen"):
                     )
 
                     # Reset rotate for other elements
-                    print(f"Rotating by: 90 degrees")
+                    print("Rotating by: 90 degrees")
                     draw.rotate(90)
                     print(
                         "Reset rotation to 90 degrees for mother's birth date and place"
@@ -1399,9 +1399,9 @@ def generate_family_tree(primary_individual, family_data, template="4gen"):
                     )
 
                 # Apply the drawing to the image
-                print(f"Applying drawing to image...")
+                print("Applying drawing to image...")
                 draw(img)
-                print(f"Drawing applied successfully.")
+                print("Drawing applied successfully.")
 
             # Save the final image to a buffer
             img_buffer = BytesIO()

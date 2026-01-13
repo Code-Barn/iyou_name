@@ -52,27 +52,32 @@ python manage.py runserver
 
 ```bash
 # Run all tests
-python manage.py test generator
+uv run python -m pytest test_basic_flow.py test_logged_out_flow.py test_edge_cases.py test_integration.py test_views.py -v
 
-# Run specific test classes
-python manage.py test generator.tests.GedcomParserTests
-python manage.py test generator.test_gedcom7_comprehensive.Gedcom7ComprehensiveTests
+# Run specific test files
+uv run python -m pytest test_basic_flow.py -v
+uv run python -m pytest test_logged_out_flow.py -v
+uv run python -m pytest test_edge_cases.py -v
+uv run python -m pytest test_integration.py -v
+uv run python -m pytest test_views.py -v
 
 # Run tests with verbose output
-python manage.py test generator -v 2
+uv run python -m pytest -v
 ```
 
 ### Test Coverage
 
-The application includes **36 comprehensive tests** covering:
+The application includes **comprehensive test coverage** with the following test files:
 
-- **GEDCOM Parsing**: 7 tests for core parsing functionality
-- **Models**: 2 tests for data structures
-- **Helper Functions**: 5 tests for utility functions
-- **Edge Cases**: 3 tests for error handling
-- **Views**: 3 tests for web interface
-- **GEDCOM 7.0**: 8 comprehensive tests for modern GEDCOM features
-- **Real File Testing**: Validated with actual GEDCOM 7.0 files
+- **test_basic_flow.py**: 4 tests for basic user flow
+- **test_logged_out_flow.py**: 6 tests for anonymous user flow
+- **test_edge_cases.py**: 10 tests for edge cases and error handling
+- **test_integration.py**: 3 tests for integration between apps
+- **test_views.py**: 5 tests for view functionality
+- **test_templates.py**: Template existence tests
+- **test_urls.py**: URL configuration tests
+- **test_static_files.py**: Static file tests
+- **test_parser_fix.py**: Parser functionality tests
 
 ### Test Results
 
@@ -174,22 +179,24 @@ chardet
 - **File Selection**: Switch between multiple uploaded files
 - **Data Cleanup**: Automatic cleanup when files are deleted
 
-## 🎯 API Endpoints
+### API Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/` | GET | Upload GEDCOM file page |
 | `/` | POST | Process uploaded GEDCOM file |
-| `/select/` | GET | Select primary individual |
-| `/select/` | POST | Generate family tree chart |
+| `/selector/select/<file_id>/` | GET | Select primary individual |
+| `/selector/confirm/<file_id>/` | POST | Generate family tree chart |
 | `/browse/` | GET | Browse all individuals |
-| `/person/<id>/` | GET | Individual detail view |
-| `/profile/` | GET | User profile and files |
+| `/browse/person/<id>/` | GET | Individual detail view |
+| `/users/profile/` | GET | User profile and files |
 | `/select-file/<file_id>/` | GET | Select GEDCOM file to work with |
 | `/delete-file/<file_id>/` | POST | Delete GEDCOM file and associated data |
-| `/register/` | GET/POST | User registration |
-| `/login/` | GET/POST | User login |
-| `/logout/` | POST | User logout |
+| `/users/register/` | GET/POST | User registration |
+| `/users/login/` | GET/POST | User login |
+| `/users/logout/` | POST | User logout |
+| `/hud/display-tree/` | GET | Interactive chart customization |
+| `/charts/generate/<file_id>/<individual_id>/` | GET | Generate family tree chart |
 
 ## 🔍 GEDCOM Parser Features
 
@@ -499,9 +506,9 @@ graph TD
 
 | Endpoint | Method | Description | Parameters |
 |----------|--------|-------------|------------|
-| `/api/family-data/` | GET | Get family data for HUD | None |
-| `/api/preview/` | GET | Generate preview data | `individual_id`, `template`, `generations` |
-| `/api/settings/` | GET/POST | Get/save HUD settings | Settings data (POST) |
+| `/hud/api/family-data/` | GET | Get family data for HUD | None |
+| `/hud/api/preview/` | GET | Generate preview data | `individual_id`, `template`, `generations` |
+| `/hud/api/settings/` | GET/POST | Get/save HUD settings | Settings data (POST) |
 
 ### Technical Implementation
 
@@ -600,10 +607,10 @@ hud.init({
 
 ```bash
 # Run HUD-specific tests
-python manage.py test generator.tests_hud
+uv run python -m pytest test_hud.py -v
 
 # Run all tests including HUD
-python manage.py test generator
+uv run python -m pytest -v
 ```
 
 ### Test Results

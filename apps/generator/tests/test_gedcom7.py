@@ -6,12 +6,10 @@ and real file processing.
 
 import os
 import unittest
-from io import BytesIO
 
 from django.test import TestCase
 
-from apps.models import PersonData
-from apps.utils.gedcom_parser import convert_to_utf8, parse_gedcom_data
+from apps.utils.gedcom_parser import parse_gedcom_data
 
 
 class Gedcom7ComprehensiveTests(TestCase):

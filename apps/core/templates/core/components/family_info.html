@@ -1,8 +1,16 @@
 {% load custom_filters %}
-<!-- Debug: Print individual object -->
-<div class="debug-info">
-    <small></small>Individual: {{ individual }}</small>
-</div>
+<!-- Track children displayed under spouses -->
+{% empty_list as children_displayed_under_spouses %}
+    {% for spouse in spouses %}
+        {% if individual.spouses_children and individual.spouses_children|get_item:spouse.id %}
+            {% for child_id in individual.spouses_children|get_item:spouse.id %}
+                {% if child_id not in children_displayed_under_spouses %}
+                    {% with children_displayed_under_spouses=children_displayed_under_spouses|append:child_id %}
+                    {% endwith %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
 
 <div class="mt-4">
     <h5>Family Information</h5>
@@ -124,62 +132,64 @@
                     </ul>
                 </li>
                 {% endif %}
-            </ul>
-            {% if siblings or individual.step_siblings %}
-            <div class="mt-2">
-                <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="collapse" data-bs-target="#siblingsCollapse" aria-expanded="false" aria-controls="siblingsCollapse">
-                    <strong>Siblings:</strong>
-                </button>
-                <div class="collapse" id="siblingsCollapse">
-                    <ul class="list-group mt-2">
-                        {% for sibling in siblings %}
-                        <li class="list-group-item">
-                            {{ sibling.full_name }}
-                            {% if sibling.id in individual.adoptive_parents %}
-                            <span class="badge bg-info ms-2">Adoptive</span>
-                            {% endif %}
-                            {% if sibling.id in individual.foster_parents %}
-                            <span class="badge bg-warning ms-2">Foster</span>
-                            {% endif %}
-                            {% if sibling.id in individual.step_parents %}
-                            <span class="badge bg-secondary ms-2">Step</span>
-                            {% endif %}
-                            <a href="{% url 'browse:individual_detail' sibling.id %}" class="btn btn-primary btn-sm float-end">
-                                Profile
-                            </a>
-                            {% if sibling.birth_date %}
-                            <div class="mt-2">
-                                <small>
-                                    <strong>Birth Date:</strong> {{ sibling.birth_date }}
-                                    {% if sibling.birth_place %}
-                                    <strong>Place:</strong> {{ sibling.birth_place }}
-                                    {% endif %}
-                                </small>
-                            </div>
-                            {% endif %}
-                        </li>
-                        {% endfor %}
-                        {% if individual.step_siblings %}
-                        <li class="list-group-item">
-                            <strong></strong>Step-Siblings:</strong>
+                {% if siblings or individual.step_siblings %}
+                <li class="list-group-item">
+                    <div class="mt-2">
+                        <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="collapse" data-bs-target="#siblingsCollapse" aria-expanded="false" aria-controls="siblingsCollapse">
+                            <strong>Siblings:</strong>
+                        </button>
+                        <div class="collapse" id="siblingsCollapse">
                             <ul class="list-group mt-2">
-                                {% for sibling_id in individual.step_siblings %}
-                                {% with sibling=individuals_dict|get_item:sibling_id %}
+                                {% for sibling in siblings %}
                                 <li class="list-group-item">
                                     {{ sibling.full_name }}
+                                    {% if sibling.id in individual.adoptive_parents %}
+                                    <span class="badge bg-info ms-2">Adoptive</span>
+                                    {% endif %}
+                                    {% if sibling.id in individual.foster_parents %}
+                                    <span class="badge bg-warning ms-2">Foster</span>
+                                    {% endif %}
+                                    {% if sibling.id in individual.step_parents %}
+                                    <span class="badge bg-secondary ms-2">Step</span>
+                                    {% endif %}
                                     <a href="{% url 'browse:individual_detail' sibling.id %}" class="btn btn-primary btn-sm float-end">
                                         Profile
                                     </a>
+                                    {% if sibling.birth_date %}
+                                    <div class="mt-2">
+                                        <small>
+                                            <strong>Birth Date:</strong> {{ sibling.birth_date }}
+                                            {% if sibling.birth_place %}
+                                            <strong>Place:</strong> {{ sibling.birth_place }}
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                    {% endif %}
                                 </li>
-                                {% endwith %}
                                 {% endfor %}
+                                {% if individual.step_siblings %}
+                                <li class="list-group-item">
+                                    <strong>Step-Siblings:</strong>
+                                    <ul class="list-group mt-2">
+                                        {% for sibling_id in individual.step_siblings %}
+                                        {% with sibling=individuals_dict|get_item:sibling_id %}
+                                        <li class="list-group-item">
+                                            {{ sibling.full_name }}
+                                            <a href="{% url 'browse:individual_detail' sibling.id %}" class="btn btn-primary btn-sm float-end">
+                                                Profile
+                                            </a>
+                                        </li>
+                                        {% endwith %}
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                                {% endif %}
                             </ul>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
-            {% endif %}
+                        </div>
+                    </div>
+                </li>
+                {% endif %}
+            </ul>
         </li>
         {% endif %}
         {% if spouses %}
@@ -231,7 +241,9 @@
                                     <li class="list-group-item">
                                         <small>Debug: Spouse ID {{ spouse.id }}, Children: {{ individual.spouses_children|get_item:spouse.id|length }}</small>
                                     </li>
-                                    {% for child in individual.spouses_children|get_item:spouse.id %}
+                                    {% for child_id in individual.spouses_children|get_item:spouse.id %}
+                                    {% with child=individuals_dict|get_item:child_id %}
+                                    {% if child %}
                                     <li class="list-group-item">
                                         {{ child.full_name }}
                                         <a href="{% url 'browse:individual_detail' child.id %}" class="btn btn-primary btn-sm float-end">
@@ -250,6 +262,8 @@
                                         </div>
                                         {% endif %}
                                     </li>
+                                    {% endif %}
+                                    {% endwith %}
                                     {% endfor %}
                                 {% else %}
                                     <li class="list-group-item">
@@ -269,14 +283,22 @@
 </li>
 
 {% if children %}
-<li class="list-group-item">
-    <div class="mt-2">
-        <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="collapse" data-bs-target="#childrenMainCollapse" aria-expanded="false" aria-controls="childrenMainCollapse">
-            <strong>Children (Main View):</strong>
-        </button>
-        <div class="collapse" id="childrenMainCollapse">
-            <ul class="list-group mt-2">
-                {% for child in children %}
+    {% for child in children %}
+        {% if child.id not in children_displayed_under_spouses %}
+            {% if not forloop.first %}
+            </ul>
+            </div>
+            </li>
+            {% endif %}
+            {% if forloop.first %}
+            <li class="list-group-item">
+                <div class="mt-2">
+                    <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="collapse" data-bs-target="#childrenMainCollapse" aria-expanded="false" aria-controls="childrenMainCollapse">
+                        <strong>Children (Main View):</strong>
+                    </button>
+                    <div class="collapse" id="childrenMainCollapse">
+                        <ul class="list-group mt-2">
+            {% endif %}
                 <li class="list-group-item">
                     {{ child.full_name }}
                     <a href="{% url 'browse:individual_detail' child.id %}" class="btn btn-primary btn-sm float-end">
@@ -289,16 +311,18 @@
                             <strong>Birth Date:</strong> {{ child.birth_date }}
                             {% endif %}
                             {% if child.birth_place %}
-                            <strong>Birth Place:</strong> {{ child.birth_place %}
+                            <strong>Birth Place:</strong> {{ child.birth_place }}
                             {% endif %}
                         </small>
                     </div>
                     {% endif %}
                 </li>
-                {% endfor %}
+            {% if forloop.last %}
             </ul>
         </div>
-    </div>
-</li>
+    </li>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
 {% endif %}
 </div>

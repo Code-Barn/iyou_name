@@ -9,7 +9,6 @@ This test:
 """
 
 import logging
-import os
 
 import pytest
 from playwright.sync_api import Page, expect
@@ -96,7 +95,7 @@ def test_chart_generation_workflow(page: Page):
     try:
         expect(page.locator("h2")).to_contain_text("Chart Generated Successfully")
         logger.info("Chart generated successfully")
-    except Exception as e:
+    except Exception:
         error_message = page.locator(".error-message").text_content()
         logger.error(f"Chart generation failed: {error_message}")
         pytest.fail(f"Chart generation failed: {error_message}")

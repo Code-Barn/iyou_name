@@ -1,7 +1,11 @@
+import logging
+
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+
+logger = logging.getLogger(__name__)
 
 from apps.generator.forms import RegisterForm
 from apps.generator.models import GedcomFile
@@ -87,6 +91,41 @@ def user_login(request):
         form = AuthenticationForm()
 
     return render(request, "users/auth/login.html", {"form": form})
+
+
+def delete_gedcom_file(request, file_id):
+    """
+    View for deleting a GEDCOM file
+    """
+    print(f"delete_gedcom_file called with file_id: {file_id}")
+    if not request.user.is_authenticated:
+        print("User not authenticated")
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+
+    try:
+        print(f"Attempting to delete GEDCOM file with ID: {file_id}")
+        # Retrieve the file and ensure it belongs to the current user
+        gedcom_file = GedcomFile.objects.get(id=file_id)
+        print(f"Found GEDCOM file: {gedcom_file.id}, user: {gedcom_file.user}")
+
+        # Verify the file belongs to the current user
+        if gedcom_file.user != request.user:
+            print(f"File {gedcom_file.id} does not belong to user {request.user}")
+            return HttpResponse("File not found", status=404)
+
+        # Delete the file
+        file_id_to_delete = gedcom_file.id
+        print(f"Before deletion - GEDCOM files count: {GedcomFile.objects.count()}")
+        gedcom_file.delete()
+        print(f"After deletion - GEDCOM files count: {GedcomFile.objects.count()}")
+        print(f"GEDCOM file {file_id_to_delete} deleted successfully")
+        return redirect("users:profile")
+    except GedcomFile.DoesNotExist:
+        print(f"GEDCOM file {file_id} not found")
+        return HttpResponse("File not found", status=404)
+    except Exception as e:
+        print(f"Error deleting GEDCOM file {file_id}: {e}")
+        return HttpResponse(f"Error deleting file: {e}", status=500)
 
 
 def get_user_files(request):

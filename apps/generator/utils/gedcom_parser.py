@@ -100,7 +100,7 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
             print(f"Failed to detect GEDCOM version: {e}")
             raise
 
-        print(f"Starting to parse individuals...")
+        print("Starting to parse individuals...")
         for record in parser.records0("INDI"):
             ind = (
                 record.xref_id.replace("@", "")

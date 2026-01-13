@@ -4,9 +4,7 @@ for each individual in the file, fixing the issue where all individuals
 showed the same name in the dropdown.
 """
 
-import io
 
-from apps.parser.models import PersonData
 from apps.parser.utils.gedcom_parser import parse_gedcom_data
 
 

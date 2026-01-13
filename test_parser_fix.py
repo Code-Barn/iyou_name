@@ -13,7 +13,6 @@ import django
 
 django.setup()
 
-from apps.parser.models import PersonData
 from apps.parser.utils.gedcom_parser import parse_gedcom_data
 
 

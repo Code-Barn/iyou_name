@@ -1,7 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from .views import profile, register, user_login
+from .views import delete_gedcom_file, profile, register, user_login
 
 app_name = "users"
 
@@ -10,6 +10,7 @@ urlpatterns = [
     path("profile/", profile, name="profile"),
     path("auth/login/", user_login, name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
+    path("delete-file/<int:file_id>/", delete_gedcom_file, name="delete_gedcom_file"),
     path(
         "auth/password_change/",
         auth_views.PasswordChangeView.as_view(

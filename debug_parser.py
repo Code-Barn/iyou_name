@@ -13,7 +13,6 @@ import django
 
 django.setup()
 
-from apps.parser.models import PersonData
 from apps.parser.utils.gedcom_parser import parse_gedcom_data
 
 
@@ -57,7 +56,7 @@ def debug_parser():
     try:
         family_data = parse_gedcom_data(gedcom_content)
 
-        print(f"\nParsed data structure:")
+        print("\nParsed data structure:")
         print(f"- Individuals: {len(family_data['individuals'])}")
         print(f"- Families: {len(family_data['families'])}")
         print(f"- Root individuals: {len(family_data['root_individuals'])}")

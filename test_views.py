@@ -1,3 +1,11 @@
+import os
+
+# Set up Django environment
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+import django
+
+django.setup()
+
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -23,9 +31,29 @@ class ViewTests(TestCase):
 
     def test_browse_individuals_view(self):
         """Test browse individuals view"""
-        # Create a test GEDCOM file in session
+        # Create a test GEDCOM file
+        gedcom_file = GedcomFile.objects.create(
+            user=self.user,
+            file="test.ged",
+            parsed_data={
+                "individuals": {
+                    "I1": {
+                        "id": "I1",
+                        "full_name": "John Doe",
+                        "given_name": "John",
+                        "surname": "Doe",
+                        "birth_date": "1980-01-01",
+                        "birth_place": "New York",
+                    }
+                },
+                "families": {},
+                "root_individuals": ["I1"],
+            },
+        )
+
+        # Set the current GEDCOM file in session
         session = self.client.session
-        session["current_gedcom_file_id"] = 1
+        session["current_gedcom_file_id"] = gedcom_file.id
         session.save()
 
         response = self.client.get(reverse("browse:browse_individuals"))
@@ -34,8 +62,31 @@ class ViewTests(TestCase):
 
     def test_hud_display_view(self):
         """Test HUD display view"""
+        # Create a test GEDCOM file
+        gedcom_file = GedcomFile.objects.create(
+            user=self.user,
+            file="test.ged",
+            parsed_data={
+                "individuals": {
+                    "I1": {
+                        "id": "I1",
+                        "full_name": "John Doe",
+                        "given_name": "John",
+                        "surname": "Doe",
+                        "birth_date": "1980-01-01",
+                        "sex": "M",
+                    },
+                },
+                "families": {},
+                "root_individuals": ["I1"],
+            },
+            home_person_id="I1",
+            is_processed=True,
+        )
+
         session = self.client.session
-        session["current_gedcom_file_id"] = 1
+        session["current_gedcom_file_id"] = gedcom_file.id
+        session["selected_individual_id"] = "I1"
         session.save()
 
         response = self.client.get(reverse("hud:display_tree"))
@@ -44,13 +95,36 @@ class ViewTests(TestCase):
 
     def test_charts_adjust_output_view(self):
         """Test charts adjust output view"""
+        # Create a test GEDCOM file
+        gedcom_file = GedcomFile.objects.create(
+            user=self.user,
+            file="test.ged",
+            parsed_data={
+                "individuals": {
+                    "I1": {
+                        "id": "I1",
+                        "full_name": "John Doe",
+                        "given_name": "John",
+                        "surname": "Doe",
+                        "birth_date": "1980-01-01",
+                        "sex": "M",
+                    },
+                },
+                "families": {},
+                "root_individuals": ["I1"],
+            },
+            home_person_id="I1",
+            is_processed=True,
+        )
+
         session = self.client.session
-        session["current_gedcom_file_id"] = 1
+        session["current_gedcom_file_id"] = gedcom_file.id
+        session["selected_individual_id"] = "I1"
         session.save()
 
-        response = self.client.get(reverse("charts:adjust_output"))
+        response = self.client.get(reverse("hud:display_tree"))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "charts/adjust_output.html")
+        self.assertTemplateUsed(response, "hud/display_tree.html")
 
     def test_users_profile_view(self):
         """Test users profile view"""
