@@ -1,5 +1,12 @@
 from django.urls import path
-from .views import display_tree_hud, save_hud_settings, get_hud_family_data, get_hud_preview, get_hud_settings
+
+from .views import (
+    display_tree_hud,
+    get_hud_family_data,
+    get_hud_preview,
+    get_hud_settings,
+    save_hud_settings,
+)
 
 app_name = "hud"
 

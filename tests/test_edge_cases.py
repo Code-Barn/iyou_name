@@ -5,11 +5,6 @@ Comprehensive edge case tests for the restructured namechart application
 import os
 
 import django
-
-# Setup Django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
-django.setup()
-
 from django.contrib.auth.models import User
 from django.contrib.sessions.backends.db import SessionStore
 from django.test import RequestFactory, TestCase
@@ -19,6 +14,10 @@ from apps.generator.models import GedcomFile
 from apps.hud.views import display_tree_hud
 from apps.selector.views import confirm_selection, select_individual
 from apps.users.views import profile
+
+# Setup Django
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+django.setup()
 
 
 class EdgeCaseTests(TestCase):

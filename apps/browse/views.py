@@ -1,6 +1,7 @@
 import json
 import logging
 
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from apps.generator.models import GedcomFile
@@ -21,37 +22,18 @@ def browse_individuals(request):
     else:
         gedcom_file_id = request.session.get("current_gedcom_file_id")
         if not gedcom_file_id:
-            # No file selected, try to find available files for the user
-            if request.user.is_authenticated:
-                # Get user's uploaded files
-                gedcom_files = GedcomFile.objects.filter(user=request.user).order_by(
-                    "-uploaded_at"
-                )
-                if gedcom_files.exists():
-                    # If user has files, redirect to selector for the most recent file
-                    most_recent_file = gedcom_files.first()
-                    return redirect(
-                        "selector:select_individual", file_id=most_recent_file.id
-                    )
-                else:
-                    # User has no files, redirect to upload
-                    return redirect("upload:home")
-            else:
-                # Anonymous user, check for anonymous files
-                anonymous_files = GedcomFile.objects.filter(user=None).order_by(
-                    "-uploaded_at"
-                )
-                if anonymous_files.exists():
-                    # If there are anonymous files, use the most recent one
-                    most_recent_file = anonymous_files.first()
-                    request.session["current_gedcom_file_id"] = most_recent_file.id
-                    gedcom_file_id = most_recent_file.id
-                else:
-                    # No files available, redirect to upload
-                    return redirect("upload:home")
+            # No file selected, redirect to upload
+            return redirect("upload:home")
+            # Logic moved above to handle both authenticated and anonymous users
 
     try:
         gedcom_file = GedcomFile.objects.get(id=gedcom_file_id)
+
+        # Check if the file belongs to the current user or is anonymous
+        if gedcom_file.user and gedcom_file.user != request.user:
+            logger.error("User trying to access another user's file")
+            return redirect("upload:home")
+
         logger.debug(f"Retrieved GEDCOM file: {gedcom_file_id}")
         logger.debug(f"parsed_data exists: {gedcom_file.parsed_data is not None}")
         if gedcom_file.parsed_data:

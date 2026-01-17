@@ -41,15 +41,16 @@ def generate_family_tree(primary_individual, family_data, template="4gen"):
         # Construct the full path to the template file
         template_path = os.path.join(
             settings.BASE_DIR,
-            "apps/generator/static/generator/images/base_image_templates",
+            "apps/charts/static/charts/images/base_image_templates",
             "US_LETTER_4GEN_BW.pdf",
         )
         print(f"DEBUG: Template path: {template_path}")
         print(f"DEBUG: File exists: {os.path.exists(template_path)}")
 
-        # Add detailed debugging
-        print(f"Template path: {template_path}")
-        print(f"File exists: {os.path.exists(template_path)}")
+        # Verify the template file exists
+        if not os.path.exists(template_path):
+            raise FileNotFoundError(f"Template file not found: {template_path}")
+
         print(f"File size: {os.path.getsize(template_path)} bytes")
 
         # Try to open the file directly to verify it's readable
@@ -109,10 +110,8 @@ def generate_family_tree(primary_individual, family_data, template="4gen"):
             # Font settings
             FONT_FAMILY = "Arial"
             DEFAULT_FONT_SIZE = 14
-            SMALL_FONT_SIZE = 11
 
             # Stroke settings
-            DIVIDING_LINE_STROKE_WIDTH = 13
             DEFAULT_STROKE_WIDTH = 0.5
             PRIMARY_STROKE_COLOR = Color("green")
             DEFAULT_STROKE_COLOR = Color("black")
@@ -145,7 +144,7 @@ def generate_family_tree(primary_individual, family_data, template="4gen"):
             PRIMARY_PLACE_ROTATE = -45
 
             # Primary individual font sizes
-            PRIMARY_NAME_FONT_SIZE = 13
+
             PRIMARY_INFO_FONT_SIZE = 13
 
             # =============================================
@@ -203,7 +202,6 @@ def generate_family_tree(primary_individual, family_data, template="4gen"):
 
             # Grandparent colors
             GRANDPARENT_FONT_COLOR = Color("black")
-            GRANDPARENT_INFO_COLOR = Color("black")
 
             # Grandparents coordinates and rotations
             PATERNAL_GRANDFATHER_X = 0

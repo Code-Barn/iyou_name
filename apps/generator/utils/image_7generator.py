@@ -62,10 +62,6 @@ def generate_family_tree(primary_individual, family_data, template="7gen"):
             GREAT_GRANDPARENT_TRANSLATE_X = 0
             GREAT_GRANDPARENT_TRANSLATE_Y = 0
 
-            # 2x Great-grandparent translation
-            TWO_G_GRANDPARENT_TRANSLATE_X = 0
-            TWO_G_GRANDPARENT_TRANSLATE_Y = 0
-
             # 3x Great-grandparent translation
             THREE_G_GRANDPARENT_TRANSLATE_X = 0
             THREE_G_GRANDPARENT_TRANSLATE_Y = 0
@@ -76,21 +72,14 @@ def generate_family_tree(primary_individual, family_data, template="7gen"):
 
             # Font settings
             FONT_FAMILY = "Arial"
-            DEFAULT_FONT_SIZE = 14
-            SMALL_FONT_SIZE = 11
-            TINY_FONT_SIZE = 8
             MINI_FONT_SIZE = 6  # For highest generations
 
             # Stroke settings
-            DIVIDING_LINE_STROKE_WIDTH = 13
             DEFAULT_STROKE_WIDTH = 0.5
             PRIMARY_STROKE_COLOR = Color("green")
-            DEFAULT_STROKE_COLOR = Color("black")
 
             # Drawing quality settings
             STROKE_ANTIALIAS = True
-            FONT_RESOLUTION = (600, 600)
-            TEXT_INTERLINE_SPACING = -15
 
             # =============================================
             # PRIMARY INDIVIDUAL TUNING SETTINGS
@@ -173,7 +162,6 @@ def generate_family_tree(primary_individual, family_data, template="7gen"):
 
             # Grandparent colors
             GRANDPARENT_FONT_COLOR = Color("black")
-            GRANDPARENT_INFO_COLOR = Color("black")
 
             # Grandparents coordinates and rotations
             PATERNAL_GRANDFATHER_X = 0
@@ -222,7 +210,6 @@ def generate_family_tree(primary_individual, family_data, template="7gen"):
 
             # Great-grandparent colors
             GREAT_GRANDPARENT_FONT_COLOR = Color("black")
-            GREAT_GRANDPARENT_INFO_COLOR = Color("black")
 
             # Great-grandparents coordinates and rotations
             FATHERS_PATERNAL_GRANDFATHER_TRANSLATE_X = 600
@@ -327,7 +314,6 @@ def generate_family_tree(primary_individual, family_data, template="7gen"):
 
             # 3x Great-grandparent colors
             THREE_G_GRANDPARENT_FONT_COLOR = Color("black")
-            THREE_G_GRANDPARENT_INFO_COLOR = Color("black")
 
             # 3x Great-grandparents coordinates and rotations (placeholder values)
             # These will need to be tuned for proper positioning

@@ -6,10 +6,11 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-logger = logging.getLogger(__name__)
 from apps.generator.models import GedcomFile
 from apps.generator.template_mapping import get_template_mapping
 from apps.parser.utils import convert_to_utf8, parse_gedcom_data
+
+logger = logging.getLogger(__name__)
 
 # Template mapping moved to HUD
 
@@ -90,7 +91,6 @@ def upload_and_generate(request):
             request.session["current_gedcom_file_id"] = gedcom_model.id
             request.session["selected_template"] = "4"  # Default template
 
-            individuals = list(family_data["individuals"].values())
             return redirect("selector:select_individual", file_id=gedcom_model.id)
 
         except Exception as e:

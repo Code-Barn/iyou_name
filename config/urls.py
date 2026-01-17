@@ -25,6 +25,7 @@ urlpatterns = [
     path("browse/", include("apps.browse.urls")),
     path("hud/", include("apps.hud.urls")),
     path("charts/", include("apps.charts.urls")),
+    path("generator/", include("apps.generator.urls")),
     path("users/", include("apps.users.urls")),
     path("selector/", include("apps.selector.urls")),
     path("admin/", admin.site.urls),

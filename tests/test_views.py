@@ -1,16 +1,16 @@
 import os
 
-# Set up Django environment
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
-import django
-
-django.setup()
-
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 
 from apps.generator.models import GedcomFile
+
+# Set up Django environment
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+import django
+
+django.setup()
 
 
 class ViewTests(TestCase):

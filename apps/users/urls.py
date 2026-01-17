@@ -9,7 +9,9 @@ urlpatterns = [
     path("auth/register/", register, name="register"),
     path("profile/", profile, name="profile"),
     path("auth/login/", user_login, name="login"),
-    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
+    path(
+        "logout/", auth_views.LogoutView.as_view(next_page="upload:home"), name="logout"
+    ),
     path("delete-file/<int:file_id>/", delete_gedcom_file, name="delete_gedcom_file"),
     path(
         "auth/password_change/",

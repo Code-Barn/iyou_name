@@ -5,15 +5,17 @@ Simple test script to verify the GEDCOM parser fix
 import os
 import sys
 
+import django
+
+from apps.parser.utils.gedcom_parser import parse_gedcom_data
+
 sys.path.insert(0, "/home/user/CODE_BASE/namechart")
 
 # Set up Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
-import django
+
 
 django.setup()
-
-from apps.parser.utils.gedcom_parser import parse_gedcom_data
 
 
 def test_parser_fix():

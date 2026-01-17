@@ -1,10 +1,11 @@
+from django.urls import path
+
+from .views import generate_final_chart, test_pdf_generation, test_template_selection
 
 app_name = "generator"
 
-# The generator app URLs are now minimal since most functionality
-# has been moved to specific apps. This serves as a fallback
-# and coordination layer.
-
 urlpatterns = [
-    # Minimal fallback URLs - most functionality is in specific apps
+    path("generate/", generate_final_chart, name="generate_final_chart"),
+    path("test-template/", test_template_selection, name="test_template_selection"),
+    path("test-pdf/", test_pdf_generation, name="test_pdf_generation"),
 ]

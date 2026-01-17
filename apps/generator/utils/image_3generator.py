@@ -29,7 +29,7 @@ def generate_family_tree(primary_individual, family_data, template="3gen"):
         template_path = os.path.join(
             settings.BASE_DIR,
             "apps/charts/static/charts/images/base_image_templates",
-            "US_LETTER_4GEN_BW.pdf",  # Using 4GEN template as base for 3GEN
+            "US_LETTER_3GEN_BW.pdf",  # Using 4GEN template as base for 3GEN
         )
         print(f"DEBUG: Template path: {template_path}")
         print(f"DEBUG: File exists: {os.path.exists(template_path)}")
@@ -64,19 +64,13 @@ def generate_family_tree(primary_individual, family_data, template="3gen"):
 
             # Font settings
             FONT_FAMILY = "Arial"
-            DEFAULT_FONT_SIZE = 14
-            SMALL_FONT_SIZE = 11
 
             # Stroke settings
-            DIVIDING_LINE_STROKE_WIDTH = 13
             DEFAULT_STROKE_WIDTH = 0.5
             PRIMARY_STROKE_COLOR = Color("green")
-            DEFAULT_STROKE_COLOR = Color("black")
 
             # Drawing quality settings
             STROKE_ANTIALIAS = True
-            FONT_RESOLUTION = (600, 600)
-            TEXT_INTERLINE_SPACING = -15
 
             # =============================================
             # PRIMARY INDIVIDUAL TUNING SETTINGS
@@ -159,7 +153,6 @@ def generate_family_tree(primary_individual, family_data, template="3gen"):
 
             # Grandparent colors
             GRANDPARENT_FONT_COLOR = Color("black")
-            GRANDPARENT_INFO_COLOR = Color("black")
 
             # Grandparents coordinates and rotations
             PATERNAL_GRANDFATHER_X = 0

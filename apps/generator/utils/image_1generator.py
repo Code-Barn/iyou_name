@@ -19,6 +19,8 @@ def generate_family_tree(primary_individual, family_data, template="1gen"):
     Returns:
         BytesIO buffer containing the generated image
     """
+    print(f"DEBUG: image_1generator called with template: {template}")
+
     print(
         f"DEBUG: Generating 1-generation family tree for: {primary_individual.full_name}"
     )
@@ -28,7 +30,7 @@ def generate_family_tree(primary_individual, family_data, template="1gen"):
     try:
         template_path = os.path.join(
             settings.BASE_DIR,
-            "apps/generator/static/generator/images/base_image_templates",
+            "apps/charts/static/charts/images/base_image_templates",
             "US_LETTER_1GEN_BW.pdf",
         )
         print(f"DEBUG: Template path: {template_path}")
@@ -56,7 +58,6 @@ def generate_family_tree(primary_individual, family_data, template="1gen"):
 
             # Font settings
             FONT_FAMILY = "Arial"
-            DEFAULT_FONT_SIZE = 14
 
             # Stroke settings
             DEFAULT_STROKE_WIDTH = 0.5
@@ -64,8 +65,6 @@ def generate_family_tree(primary_individual, family_data, template="1gen"):
 
             # Drawing quality settings
             STROKE_ANTIALIAS = True
-            FONT_RESOLUTION = (600, 600)
-            TEXT_INTERLINE_SPACING = -15
 
             # =============================================
             # PRIMARY INDIVIDUAL TUNING SETTINGS

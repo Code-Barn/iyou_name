@@ -2,13 +2,13 @@ import logging
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
-
-logger = logging.getLogger(__name__)
 
 from apps.generator.forms import RegisterForm
 from apps.generator.models import GedcomFile
+
+logger = logging.getLogger(__name__)
 
 
 def profile(request):

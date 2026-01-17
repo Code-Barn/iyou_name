@@ -5,10 +5,11 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Namechart Generator</title>
+
         <!-- Add favicon -->
         <link
             rel="icon"
-            href="{% static 'favicon.ico' %}"
+            href="{% static 'core/favicon.ico' %}"
             type="image/x-icon"
         />
         <!-- Add Bootstrap CSS -->
@@ -23,6 +24,9 @@
                 <a class="navbar-brand" href="{% url 'upload:home' %}">
                     <img src="{% static 'core/images/tinynamelogo.png' %}" alt="Logo" />
                 </a>
+                <span class="navbar-text mx-auto fw-bold fst-italic">
+                    "Explore Your Ancestry!"
+                </span>
                 <button
                     class="navbar-toggler"
                     type="button"
@@ -58,12 +62,11 @@
                             >
                         </li>
                         {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a
-                                class="nav-link"
-                                href="{% url 'users:logout' %}"
-                                >Logout</a
-                            >
+                        <li class="nav-item d-flex align-items-center">
+                            <form method="post" action="{% url 'users:logout' %}" class="d-flex align-items-center">
+                                {% csrf_token %}
+                                <button type="submit" class="nav-link" style="background: none; border: none; padding: 0; margin: 0; cursor: pointer; line-height: 1.5;">Logout</button>
+                            </form>
                         </li>
                         {% else %}
                         <li class="nav-item">
@@ -79,7 +82,26 @@
             </div>
         </nav>
 
-        <div class="container mt-4">{% block content %}{% endblock %}</div>
+
+        <div class="container mt-4">
+            {% block content %}
+            {% endblock %}
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-light py-4 mt-5">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <img src="{% static 'core/images/tinynamelogo.png' %}" alt="Namechart Logo" height="60" class="mb-3">
+                        <p class="mb-0">&copy; 2024 Namechart. All rights reserved.</p>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <img src="{% static 'core/images/createdinDeKalb.png' %}" alt="Created in DeKalb" height="125" class="mt-2">
+                    </div>
+                </div>
+            </div>
+        </footer>
         <!-- Add this to your base template (e.g., core/base.html) -->
         <script>
         document.addEventListener('beforeunload', function() {

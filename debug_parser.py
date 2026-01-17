@@ -11,9 +11,9 @@ sys.path.insert(0, "/home/user/CODE_BASE/namechart")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 import django
 
-django.setup()
-
 from apps.parser.utils.gedcom_parser import parse_gedcom_data
+
+django.setup()
 
 
 def debug_parser():

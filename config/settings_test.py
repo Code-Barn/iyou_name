@@ -4,9 +4,10 @@ Test settings for Family Tree Generator project.
 This settings file is used specifically for running tests and should not be used
 in production environments.
 """
+
 import tempfile
 
-from .settings import *
+from .settings import INSTALLED_APPS, MIDDLEWARE, TEMPLATES
 
 # Use SQLite for testing - faster and doesn't require database permissions
 DATABASES = {

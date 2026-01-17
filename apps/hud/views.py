@@ -89,13 +89,34 @@ def save_hud_settings(request):
     """
     View for saving HUD settings including template selection
     """
-    try:
-        data = json.loads(request.body)
-        request.session["hud_settings"] = data
-        return JsonResponse({"status": "success", "message": "Settings saved"})
+    if request.method == "POST":
+        individual_id = request.POST.get("individual_id")
+        template = request.POST.get("template")
+        generations = request.POST.get("generations")
 
-    except Exception as e:
-        return JsonResponse({"status": "error", "message": str(e)}, status=400)
+        if not individual_id:
+            return JsonResponse(
+                {"status": "error", "message": "Missing individual_id parameter"},
+                status=400,
+            )
+
+        # Save settings to session
+        request.session["hud_settings"] = {
+            "individual_id": individual_id,
+            "template": template,
+            "generations": generations,
+        }
+
+        # Redirect back to display-tree
+        from django.shortcuts import redirect
+
+        return redirect("hud:display_tree")
+
+    # Fallback for invalid request method
+    return JsonResponse(
+        {"status": "error", "message": "Invalid request method"},
+        status=405,
+    )
 
 
 def get_hud_family_data(request):

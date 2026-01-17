@@ -1,17 +1,18 @@
 import os
 import tempfile
 
-# Set up Django environment
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 import django
-
-django.setup()
-
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 
 from apps.generator.models import GedcomFile
+
+# Set up Django environment
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+
+
+django.setup()
 
 
 class IntegrationTests(TestCase):
@@ -124,9 +125,7 @@ class IntegrationTests(TestCase):
         """Test user profile shows uploaded files"""
 
         # Create a GEDCOM file for the user
-        gedcom_file = GedcomFile.objects.create(
-            user=self.user, file="test.ged", is_processed=True
-        )
+        GedcomFile.objects.create(user=self.user, file="test.ged", is_processed=True)
 
         # Access user profile
         response = self.client.get(reverse("users:profile"))

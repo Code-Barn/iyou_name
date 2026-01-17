@@ -17,6 +17,21 @@ from apps.parser.models import PersonData
 from apps.parser.utils.gedcom_parser import parse_gedcom_data
 
 
+def get_spouse_and_children(spouse_id, individual_id, individuals, family):
+    """Placeholder for get_spouse_and_children function."""
+    spouse = individuals.get(spouse_id)
+    children = family.get("children", [])
+    return spouse, children
+
+
+def preprocess_family_data(data):
+    """Placeholder for preprocess_family_data function."""
+    individuals = data.get("individuals", {})
+    families = data.get("families", {})
+    family_children_map = {}
+    return individuals, families, family_children_map
+
+
 class GedcomParserTests(TestCase):
     """Test GEDCOM file parsing functionality"""
 

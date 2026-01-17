@@ -68,19 +68,13 @@ def generate_family_tree(primary_individual, family_data, template="5gen"):
 
             # Font settings
             FONT_FAMILY = "Arial"
-            DEFAULT_FONT_SIZE = 14
-            SMALL_FONT_SIZE = 11
 
             # Stroke settings
-            DIVIDING_LINE_STROKE_WIDTH = 13
             DEFAULT_STROKE_WIDTH = 0.5
             PRIMARY_STROKE_COLOR = Color("green")
-            DEFAULT_STROKE_COLOR = Color("black")
 
             # Drawing quality settings
             STROKE_ANTIALIAS = True
-            FONT_RESOLUTION = (600, 600)
-            TEXT_INTERLINE_SPACING = -15
 
             # =============================================
             # PRIMARY INDIVIDUAL TUNING SETTINGS
@@ -163,7 +157,6 @@ def generate_family_tree(primary_individual, family_data, template="5gen"):
 
             # Grandparent colors
             GRANDPARENT_FONT_COLOR = Color("black")
-            GRANDPARENT_INFO_COLOR = Color("black")
 
             # Grandparents coordinates and rotations
             PATERNAL_GRANDFATHER_X = 0
@@ -212,7 +205,6 @@ def generate_family_tree(primary_individual, family_data, template="5gen"):
 
             # Great-grandparent colors
             GREAT_GRANDPARENT_FONT_COLOR = Color("black")
-            GREAT_GRANDPARENT_INFO_COLOR = Color("black")
 
             # Great-grandparents coordinates and rotations
             FATHERS_PATERNAL_GRANDFATHER_TRANSLATE_X = 600

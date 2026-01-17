@@ -6,10 +6,9 @@ Tests all aspects of the file upload, processing, and management functionality
 import os
 import tempfile
 
+from apps.models import GedcomFile
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
-
-from apps.models import GedcomFile
 
 
 class FileHandlingComprehensiveTest(TestCase):
@@ -378,7 +377,6 @@ class FileHandlingComprehensiveTest(TestCase):
                 self.client.post("/", {"gedcom_file": f})
 
             # Get John Doe's ID
-            gedcom_file = GedcomFile.objects.filter(user=self.user).first()
             john_id = "I1"  # John Doe's ID
 
             # Access individual detail page

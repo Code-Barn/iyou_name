@@ -6,10 +6,6 @@ import os
 
 import django
 
-# Setup Django first
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
-django.setup()
-
 # Now import Django components
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.backends.db import SessionStore
@@ -18,6 +14,10 @@ from django.test import RequestFactory, TestCase
 from apps.generator.models import GedcomFile
 from apps.hud.views import display_tree_hud
 from apps.selector.views import confirm_selection, select_individual
+
+# Setup Django first
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+django.setup()
 
 
 class LoggedOutUserFlowTest(TestCase):

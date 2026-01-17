@@ -5,18 +5,17 @@ Basic flow test to verify the new URL structure and view functionality
 import os
 
 import django
-from django.test import RequestFactory, TestCase
-
-# Setup Django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
-django.setup()
-
 from django.contrib.auth.models import User
 from django.contrib.sessions.backends.db import SessionStore
+from django.test import RequestFactory, TestCase
 
 from apps.generator.models import GedcomFile
 from apps.selector.views import confirm_selection, select_individual
 from apps.users.views import profile
+
+# Setup Django
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+django.setup()
 
 
 class BasicFlowTest(TestCase):

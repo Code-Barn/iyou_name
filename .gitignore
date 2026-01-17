@@ -3,7 +3,8 @@ gitignore_strategy.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[codz]
+*.py[cod]
+*.py[co]
 *$py.class
 
 # C extensions
@@ -53,6 +54,8 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+*.test-results/
+test-results/
 
 # Translations
 *.mo
@@ -147,6 +150,11 @@ ENV/
 env.bak/
 venv.bak/
 
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -173,10 +181,18 @@ cython_debug/
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
+#  later be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# macOS-specific files
+.DS_Store
+*.DS_Store
+
+# Windows-specific files
+Thumbs.db
+desktop.ini
 
 # Abstra
 # Abstra is an AI-powered process automation framework.
@@ -209,6 +225,14 @@ node_modules/
 
 # PyPI configuration file
 .pypirc
+
+# Test databases
+*.test.db
+*.sqlite3-test
+
+# Docker
+.dockerignore
+docker-compose.override.yml
 
 # Cursor
 #  Cursor is an AI-powered code editor. `.cursorignore` specifies files/directories to

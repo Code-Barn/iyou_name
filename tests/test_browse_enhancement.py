@@ -5,17 +5,16 @@ Test for the browse enhancement: logged-out users with files should see browse p
 import os
 
 import django
-
-# Setup Django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
-django.setup()
-
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.backends.db import SessionStore
 from django.test import RequestFactory, TestCase
 
 from apps.generator.models import GedcomFile
 from apps.upload.views import upload_and_generate
+
+# Setup Django
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+django.setup()
 
 
 class BrowseEnhancementTest(TestCase):

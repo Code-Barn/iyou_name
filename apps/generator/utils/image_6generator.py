@@ -6,6 +6,7 @@ from wand.color import Color
 from wand.drawing import Drawing
 from wand.image import Image
 
+
 def generate_family_tree(primary_individual, family_data, template="6gen"):
     """
     Generate a 6-generation family tree chart using Wand (Python ImageMagick binding)
@@ -71,20 +72,14 @@ def generate_family_tree(primary_individual, family_data, template="6gen"):
 
             # Font settings
             FONT_FAMILY = "Arial"
-            DEFAULT_FONT_SIZE = 14
-            SMALL_FONT_SIZE = 11
             TINY_FONT_SIZE = 8  # For higher generations
 
             # Stroke settings
-            DIVIDING_LINE_STROKE_WIDTH = 13
             DEFAULT_STROKE_WIDTH = 0.5
             PRIMARY_STROKE_COLOR = Color("green")
-            DEFAULT_STROKE_COLOR = Color("black")
 
             # Drawing quality settings
             STROKE_ANTIALIAS = True
-            FONT_RESOLUTION = (600, 600)
-            TEXT_INTERLINE_SPACING = -15
 
             # =============================================
             # PRIMARY INDIVIDUAL TUNING SETTINGS
@@ -167,7 +162,6 @@ def generate_family_tree(primary_individual, family_data, template="6gen"):
 
             # Grandparent colors
             GRANDPARENT_FONT_COLOR = Color("black")
-            GRANDPARENT_INFO_COLOR = Color("black")
 
             # Grandparents coordinates and rotations
             PATERNAL_GRANDFATHER_X = 0
@@ -216,7 +210,6 @@ def generate_family_tree(primary_individual, family_data, template="6gen"):
 
             # Great-grandparent colors
             GREAT_GRANDPARENT_FONT_COLOR = Color("black")
-            GREAT_GRANDPARENT_INFO_COLOR = Color("black")
 
             # Great-grandparents coordinates and rotations
             FATHERS_PATERNAL_GRANDFATHER_TRANSLATE_X = 600
@@ -321,19 +314,9 @@ def generate_family_tree(primary_individual, family_data, template="6gen"):
 
             # 2x Great-grandparent colors
             TWO_G_GRANDPARENT_FONT_COLOR = Color("black")
-            TWO_G_GRANDPARENT_INFO_COLOR = Color("black")
 
             # 2x Great-grandparents coordinates and rotations (placeholder values)
             # These will need to be tuned for proper positioning
-            FATHERS_PATERNAL_GG_GRANDFATHER_X = 0
-            FATHERS_PATERNAL_GG_GRANDFATHER_Y = 50
-            FATHERS_PATERNAL_GG_GRANDFATHER_ROTATE = -90
-            FATHERS_PATERNAL_GG_GRANDFATHER_BIRTH_X = 0
-            FATHERS_PATERNAL_GG_GRANDFATHER_BIRTH_Y = 100
-            FATHERS_PATERNAL_GG_GRANDFATHER_DEATH_X = 0
-            FATHERS_PATERNAL_GG_GRANDFATHER_DEATH_Y = 150
-            FATHERS_PATERNAL_GG_GRANDFATHER_PLACE_X = 0
-            FATHERS_PATERNAL_GG_GRANDFATHER_PLACE_Y = 200
 
             # Repeat similar placeholder patterns for all 32 individuals in this generation
             # ... (additional tuning variables would go here)
@@ -365,7 +348,7 @@ def generate_family_tree(primary_individual, family_data, template="6gen"):
                 draw.stroke_color = PRIMARY_STROKE_COLOR
                 print(f"Setting fill_color to: {PRIMARY_FONT_COLOR}")
                 draw.fill_color = PRIMARY_FONT_COLOR
-                print(f"Setting gravity to: center")
+                print("Setting gravity to: center")
                 draw.gravity = "center"
                 print(f"Rotating by: {PRIMARY_NAME_ROTATE} degrees")
                 draw.rotate(PRIMARY_NAME_ROTATE)
@@ -517,7 +500,7 @@ def generate_family_tree(primary_individual, family_data, template="6gen"):
                     )
 
                     # Reset rotate for other elements
-                    print(f"Rotating by: 90 degrees")
+                    print("Rotating by: 90 degrees")
                     draw.rotate(90)
                     print(
                         "Reset rotation to 90 degrees for father's birth date and place"
@@ -609,7 +592,7 @@ def generate_family_tree(primary_individual, family_data, template="6gen"):
                     )
 
                     # Reset rotate for other elements
-                    print(f"Rotating by: 90 degrees")
+                    print("Rotating by: 90 degrees")
                     draw.rotate(90)
                     print(
                         "Reset rotation to 90 degrees for mother's birth date and place"
@@ -1418,46 +1401,10 @@ def generate_family_tree(primary_individual, family_data, template="6gen"):
                 img_buffer.seek(0)
 
                 return img_buffer
-
-    except Exception as e:
-        print(f"ERROR: Failed to generate family tree: {str(e)}")
-        raise
-```
-
-Now let me create the 7-generation chart:
-
-```python
-import os
-from io import BytesIO
-
-from django.conf import settings
-from wand.color import Color
-from wand.drawing import Drawing
-from wand.image import Image
-
-def generate_family_tree(primary_individual, family_data, template="7gen"):
-    """
-    Generate a 7-generation family tree chart using Wand (Python ImageMagick binding)
-
-    Args:
-        primary_individual: PersonData object for the primary individual
-        family_data: Dictionary containing all family data
-        template: Template type (e.g., '7gen' for 7-generation chart)
-
-    Returns:
-        BytesIO buffer containing the generated image
-    """
-    print(
-        f"DEBUG: Generating 7-generation family tree for: {primary_individual.full_name}"
-    )
-    print(f"DEBUG: Primary individual ID: {primary_individual.id}")
-
-    # Construct the full path to the template file
-    try:
         template_path = os.path.join(
             settings.BASE_DIR,
             "apps/charts/static/charts/images/base_image_templates",
-            "US_LETTER_7GEN_BW.pdf",
+            "US_LETTER_6GEN_BW.pdf",
         )
         print(f"DEBUG: Template path: {template_path}")
         print(f"DEBUG: File exists: {os.path.exists(template_path)}")
@@ -1491,8 +1438,6 @@ def generate_family_tree(primary_individual, family_data, template="7gen"):
             GREAT_GRANDPARENT_TRANSLATE_Y = 0
 
             # 2x Great-grandparent translation
-            TWO_G_GRANDPARENT_TRANSLATE_X = 0
-            TWO_G_GRANDPARENT_TRANSLATE_Y = 0
 
             # 3x Great-grandparent translation
             THREE_G_GRANDPARENT_TRANSLATE_X = 0
@@ -1504,21 +1449,16 @@ def generate_family_tree(primary_individual, family_data, template="7gen"):
 
             # Font settings
             FONT_FAMILY = "Arial"
-            DEFAULT_FONT_SIZE = 14
-            SMALL_FONT_SIZE = 11
+
             TINY_FONT_SIZE = 8
             MINI_FONT_SIZE = 6  # For highest generations
 
             # Stroke settings
-            DIVIDING_LINE_STROKE_WIDTH = 13
             DEFAULT_STROKE_WIDTH = 0.5
             PRIMARY_STROKE_COLOR = Color("green")
-            DEFAULT_STROKE_COLOR = Color("black")
 
             # Drawing quality settings
             STROKE_ANTIALIAS = True
-            FONT_RESOLUTION = (600, 600)
-            TEXT_INTERLINE_SPACING = -15
 
             # =============================================
             # PRIMARY INDIVIDUAL TUNING SETTINGS
@@ -1601,7 +1541,6 @@ def generate_family_tree(primary_individual, family_data, template="7gen"):
 
             # Grandparent colors
             GRANDPARENT_FONT_COLOR = Color("black")
-            GRANDPARENT_INFO_COLOR = Color("black")
 
             # Grandparents coordinates and rotations
             PATERNAL_GRANDFATHER_X = 0
@@ -1650,7 +1589,6 @@ def generate_family_tree(primary_individual, family_data, template="7gen"):
 
             # Great-grandparent colors
             GREAT_GRANDPARENT_FONT_COLOR = Color("black")
-            GREAT_GRANDPARENT_INFO_COLOR = Color("black")
 
             # Great-grandparents coordinates and rotations
             FATHERS_PATERNAL_GRANDFATHER_TRANSLATE_X = 600
@@ -1755,7 +1693,6 @@ def generate_family_tree(primary_individual, family_data, template="7gen"):
 
             # 3x Great-grandparent colors
             THREE_G_GRANDPARENT_FONT_COLOR = Color("black")
-            THREE_G_GRANDPARENT_INFO_COLOR = Color("black")
 
             # 3x Great-grandparents coordinates and rotations (placeholder values)
             # These will need to be tuned for proper positioning
@@ -1789,7 +1726,7 @@ def generate_family_tree(primary_individual, family_data, template="7gen"):
                 draw.stroke_color = PRIMARY_STROKE_COLOR
                 print(f"Setting fill_color to: {PRIMARY_FONT_COLOR}")
                 draw.fill_color = PRIMARY_FONT_COLOR
-                print(f"Setting gravity to: center")
+                print("Setting gravity to: center")
                 draw.gravity = "center"
                 print(f"Rotating by: {PRIMARY_NAME_ROTATE} degrees")
                 draw.rotate(PRIMARY_NAME_ROTATE)
@@ -1941,7 +1878,7 @@ def generate_family_tree(primary_individual, family_data, template="7gen"):
                     )
 
                     # Reset rotate for other elements
-                    print(f"Rotating by: 90 degrees")
+                    print("Rotating by: 90 degrees")
                     draw.rotate(90)
                     print(
                         "Reset rotation to 90 degrees for father's birth date and place"
@@ -2033,7 +1970,7 @@ def generate_family_tree(primary_individual, family_data, template="7gen"):
                     )
 
                     # Reset rotate for other elements
-                    print(f"Rotating by: 90 degrees")
+                    print("Rotating by: 90 degrees")
                     draw.rotate(90)
                     print(
                         "Reset rotation to 90 degrees for mother's birth date and place"
@@ -2838,7 +2775,9 @@ def generate_family_tree(primary_individual, family_data, template="7gen"):
                 img_buffer.seek(0)
 
                 return img_buffer
-
+    except Exception as e:
+        print(f"ERROR: Failed to generate family tree: {str(e)}")
+        raise
     except Exception as e:
         print(f"ERROR: Failed to generate family tree: {str(e)}")
         raise
