@@ -9,8 +9,16 @@
 
             <div class="alert alert-info">
                 <strong>Primary Individual:</strong> {{ individual.full_name }}<br>
-                <strong>Template:</strong> {{ TEMPLATE_MAPPING.current_template.name }}<br>
-                <strong>Generations:</strong> 
+                <strong>Birth:</strong>
+                {% if individual.birth_date or individual.birth_place %}
+                    {{ individual.birth_date }}{% if individual.birth_date and individual.birth_place %} in {% endif %}{{ individual.birth_place }}
+                {% else %}
+                    Unknown
+                {% endif %}<br>
+                {% if individual.death_date or individual.death_place %}
+                <strong>Death:</strong>
+                    {{ individual.death_date }}{% if individual.death_date and individual.death_place %} in {% endif %}{{ individual.death_place }}
+                {% endif %}
             </div>
             <div class="mt-3">
                 <!-- Test form removed -->
@@ -20,7 +28,7 @@
 
     <div class="row">
         <!-- Preview Area -->
-        <div class="col-md-8">
+        <div class="col-12">
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Live Preview</h5>
@@ -40,27 +48,15 @@
                             <div class="hud-loading" style="display: none"></div>
                         </div>
                     </div>
-
-                    <div class="mt-3 text-center">
-                        <div class="btn-group" role="group">
-                            <button id="hud-toggle" class="btn btn-outline-secondary">
-                                <i class="bi bi-eye"></i> Toggle Preview
-                            </button>
-                            <button id="hud-refresh" class="btn btn-outline-primary">
-                                <i class="bi bi-arrow-clockwise"></i> Refresh
-                            </button>
-                            <button id="hud-reset" class="btn btn-outline-danger">
-                                <i class="bi bi-arrow-counterclockwise"></i>
-                                Reset
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Settings Panel -->
-        <div class="col-md-4">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
             <div class="card mb-4">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">Chart Settings</h5>
@@ -70,7 +66,7 @@
                         {% csrf_token %}
 
                         <input type="hidden" name="individual_id" value="{{ individual.id }}">
-                        <input type="hidden" name="template" value="{{ hud_settings.template|default:'4' }}">
+                        <input type="hidden" name="template" value="{{ hud_settings.template }}">
                         <input type="hidden" name="generations" value="{{ generations }}">
 
                         <!-- Template Selection -->
@@ -81,7 +77,7 @@
                                 <input type="hidden" name="individual_id" value="{{ individual.id }}">
                                 <select name="template" class="form-select" onchange="this.form.submit()">
                                     {% for key, template in TEMPLATE_MAPPING.items %}
-                                    <option value="{{ key }}" {% if key == hud_settings.template|default:'4' %}selected{% endif %}>
+                                    <option value="{{ key }}" {% if key == hud_settings.template %}selected{% endif %}>
                                         {{ template.name }}
                                     </option>
                                     {% endfor %}
@@ -90,54 +86,184 @@
                                     Select the number of generations to include in your chart
                                 </div>
                             </form>
-                            </form>
+                        </div>
+
+                        <!-- Color Settings -->
+                        <div class="mb-3">
+                            <div class="d-flex flex-wrap gap-3">
+                                <div class="flex-grow-1">
+                                    <label class="form-label">Stroke Color</label>
+                                    <input type="color" name="primary_stroke_color" class="form-control form-control-color" value="{{ hud_settings.primary_stroke_color|default:'#ffffff' }}">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <label class="form-label">Font Color</label>
+                                    <input type="color" name="primary_font_color" class="form-control form-control-color" value="{{ hud_settings.primary_font_color|default:'#ffffff' }}">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <label class="form-label">Birth Color</label>
+                                    <input type="color" name="primary_birth_color" class="form-control form-control-color" value="{{ hud_settings.primary_birth_color|default:'#ffffff' }}">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <label class="form-label">Place Color</label>
+                                    <input type="color" name="primary_place_color" class="form-control form-control-color" value="{{ hud_settings.primary_place_color|default:'#ffffff' }}">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <label class="form-label">Death Color</label>
+                                    <input type="color" name="primary_death_color" class="form-control form-control-color" value="{{ hud_settings.primary_death_color|default:'#ffffff' }}">
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Font Settings -->
                         <div class="mb-3">
                             <label class="form-label">Font Family</label>
                             <select name="font_family" class="form-select">
-                                <option value="Arial" selected>Arial</option>
-                                <option value="Times New Roman">Times New Roman</option>
-                                <option value="Helvetica">Helvetica</option>
-                                <option value="Georgia">Georgia</option>
-                                <option value="Courier New">Courier New</option>
+                                <option value="Arial" {% if hud_settings.font_family == 'Arial' %}selected{% endif %}>Arial</option>
+                                <option value="Times New Roman" {% if hud_settings.font_family == 'Times New Roman' %}selected{% endif %}>Times New Roman</option>
+                                <option value="Helvetica" {% if hud_settings.font_family == 'Helvetica' %}selected{% endif %}>Helvetica</option>
+                                <option value="Georgia" {% if hud_settings.font_family == 'Georgia' %}selected{% endif %}>Georgia</option>
+                                <option value="Courier New" {% if hud_settings.font_family == 'Courier New' %}selected{% endif %}>Courier New</option>
                             </select>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Font Size (px)</label>
-                            <input type="range" name="font_size" class="form-range" min="8" max="24" value="14" id="font-size-slider">
+                            <label class="form-label">Name Font Size (px)</label>
+                            <input type="range" name="primary_name_font_size" class="form-range" min="8" max="24" value="{{ hud_settings.primary_name_font_size|default:13 }}" id="primary-name-font-size-slider">
                             <div class="text-center">
-                                <span id="font-size-value">14</span>px
+                                <span id="primary-name-font-size-value">{{ hud_settings.primary_name_font_size|default:13 }}</span>px
                             </div>
                         </div>
 
-                        <!-- Color Settings -->
                         <div class="mb-3">
-                            <label class="form-label">Primary Color</label>
-                            <input type="color" name="primary_color" class="form-control form-control-color" value="#343a40">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Background Color</label>
-                            <input type="color" name="background_color" class="form-control form-control-color" value="#ffffff">
-                        </div>
-
-                        <!-- Spacing and Layout -->
-                        <div class="mb-3">
-                            <label class="form-label">Line Width</label>
-                            <input type="range" name="line_width" class="form-range" min="1" max="5" value="2" id="line-width-slider">
+                            <label class="form-label">Info Font Size (px)</label>
+                            <input type="range" name="primary_info_font_size" class="form-range" min="8" max="24" value="{{ hud_settings.primary_info_font_size|default:13 }}" id="primary-info-font-size-slider">
                             <div class="text-center">
-                                <span id="line-width-value">2</span>px
+                                <span id="primary-info-font-size-value">{{ hud_settings.primary_info_font_size|default:13 }}</span>px
                             </div>
                         </div>
+
+                        <!-- Stroke Settings -->
+                        <div class="mb-3">
+                            <label class="form-label">Stroke Width</label>
+                            <input type="range" name="default_stroke_width" class="form-range" min="0.1" max="5" step="0.1" value="{{ hud_settings.default_stroke_width|default:0.5 }}" id="default-stroke-width-slider">
+                            <div class="text-center">
+                                <span id="default-stroke-width-value">{{ hud_settings.default_stroke_width|default:0.5 }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Translation Settings -->
+                        <div class="mb-3">
+                            <label class="form-label">Initial Translate X</label>
+                            <input type="range" name="initial_translate_x" class="form-range" min="-100" max="100" value="{{ hud_settings.initial_translate_x|default:0 }}" id="initial-translate-x-slider">
+                            <div class="text-center">
+                                <span id="initial-translate-x-value">{{ hud_settings.initial_translate_x|default:0 }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Initial Translate Y</label>
+                            <input type="range" name="initial_translate_y" class="form-range" min="-100" max="100" value="{{ hud_settings.initial_translate_y|default:0 }}" id="initial-translate-y-slider">
+                            <div class="text-center">
+                                <span id="initial-translate-y-value">{{ hud_settings.initial_translate_y|default:0 }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Subject Translate X</label>
+                            <input type="range" name="subject_translate_x" class="form-range" min="-100" max="100" value="{{ hud_settings.subject_translate_x|default:0 }}" id="subject-translate-x-slider">
+                            <div class="text-center">
+                                <span id="subject-translate-x-value">{{ hud_settings.subject_translate_x|default:0 }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Subject Translate Y</label>
+                            <input type="range" name="subject_translate_y" class="form-range" min="-100" max="100" value="{{ hud_settings.subject_translate_y|default:0 }}" id="subject-translate-y-slider">
+                            <div class="text-center">
+                                <span id="subject-translate-y-value">{{ hud_settings.subject_translate_y|default:0 }}</span>
+                            </div>
+                        </div>
+
+
 
                         <div class="mb-3">
                             <label class="form-label">Spacing</label>
-                            <input type="range" name="spacing" class="form-range" min="10" max="100" value="50" id="spacing-slider">
+                            <input type="range" name="spacing" class="form-range" min="10" max="100" value="{{ hud_settings.spacing|default:50 }}" id="spacing-slider">
                             <div class="text-center">
-                                <span id="spacing-value">50</span>px
+                                <span id="spacing-value">{{ hud_settings.spacing|default:50 }}</span>px
+                            </div>
+                        </div>
+
+                        <!-- Primary Individual Coordinates -->
+                        <div class="mb-3">
+                            <label class="form-label">Name X Position</label>
+                            <input type="range" name="primary_name_x" class="form-range" min="-200" max="200" value="{{ hud_settings.primary_name_x|default:0 }}" id="primary-name-x-slider">
+                            <div class="text-center">
+                                <span id="primary-name-x-value">{{ hud_settings.primary_name_x|default:0 }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Name Y Position</label>
+                            <input type="range" name="primary_name_y" class="form-range" min="-200" max="200" value="{{ hud_settings.primary_name_y|default:0 }}" id="primary-name-y-slider">
+                            <div class="text-center">
+                                <span id="primary-name-y-value">{{ hud_settings.primary_name_y|default:0 }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Name Rotation (degrees)</label>
+                            <input type="range" name="primary_name_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.primary_name_rotate|default:-45 }}" id="primary-name-rotate-slider">
+                            <div class="text-center">
+                                <span id="primary-name-rotate-value">{{ hud_settings.primary_name_rotate|default:-45 }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Birth X Position</label>
+                            <input type="range" name="primary_birth_x" class="form-range" min="-200" max="200" value="{{ hud_settings.primary_birth_x|default:0 }}" id="primary-birth-x-slider">
+                            <div class="text-center">
+                                <span id="primary-birth-x-value">{{ hud_settings.primary_birth_x|default:0 }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Birth Y Position</label>
+                            <input type="range" name="primary_birth_y" class="form-range" min="-200" max="200" value="{{ hud_settings.primary_birth_y|default:135 }}" id="primary-birth-y-slider">
+                            <div class="text-center">
+                                <span id="primary-birth-y-value">{{ hud_settings.primary_birth_y|default:135 }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Birth Rotation (degrees)</label>
+                            <input type="range" name="primary_birth_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.primary_birth_rotate|default:45 }}" id="primary-birth-rotate-slider">
+                            <div class="text-center">
+                                <span id="primary-birth-rotate-value">{{ hud_settings.primary_birth_rotate|default:45 }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Place X Position</label>
+                            <input type="range" name="primary_place_x" class="form-range" min="-200" max="200" value="{{ hud_settings.primary_place_x|default:0 }}" id="primary-place-x-slider">
+                            <div class="text-center">
+                                <span id="primary-place-x-value">{{ hud_settings.primary_place_x|default:0 }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Place Y Position</label>
+                            <input type="range" name="primary_place_y" class="form-range" min="-200" max="200" value="{{ hud_settings.primary_place_y|default:90 }}" id="primary-place-y-slider">
+                            <div class="text-center">
+                                <span id="primary-place-y-value">{{ hud_settings.primary_place_y|default:90 }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Place Rotation (degrees)</label>
+                            <input type="range" name="primary_place_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.primary_place_rotate|default:-45 }}" id="primary-place-rotate-slider">
+                            <div class="text-center">
+                                <span id="primary-place-rotate-value">{{ hud_settings.primary_place_rotate|default:-45 }}</span>
                             </div>
                         </div>
 
@@ -146,14 +272,6 @@
                             <button type="button" id="apply-settings" class="btn btn-primary w-100">
                                 <i class="bi bi-check"></i> Apply Settings
                             </button>
-                            <form method="post" action="{% url 'generator:generate_final_chart' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="individual_id" value="{{ individual.id }}">
-                                <input type="hidden" name="template" value="{{ hud_settings.template|default:'4' }}">
-                                <button type="submit" class="btn btn-success w-100">
-                                    <i class="bi bi-file-earmark-pdf"></i> Generate Final Chart
-                                </button>
-                            </form>
                             <button
                                 type="button"
                                 id="back-to-select"
@@ -169,39 +287,57 @@
         </div>
     </div>
 
-    <!-- Individual Info -->
-    <div class="card mt-4">
-        <div class="card-header bg-info text-white">
-            <h5 class="mb-0">Individual Information</h5>
+    <!-- Generate Final Chart form (moved outside hud-settings-form) -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <form method="post" action="{% url 'generator:generate_final_chart' %}">
+                {% csrf_token %}
+                <input type="hidden" name="individual_id" value="{{ individual.id }}">
+                <input type="hidden" name="template" value="{{ hud_settings.template }}">
+                <button type="submit" class="btn btn-success w-100">
+                    <i class="bi bi-file-earmark-pdf"></i> Generate Final Chart
+                </button>
+            </form>
         </div>
-        <div class="card-body">
-            <dl class="row">
-                <dt class="col-sm-4">Full Name:</dt>
-                <dd class="col-sm-8">{{ individual.full_name }}</dd>
+    </div>
 
-                <dt class="col-sm-4">Given Name:</dt>
-                <dd class="col-sm-8">{{ individual.given_name }}</dd>
+    <!-- Individual Info -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card" style="max-width: 100%;">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Individual Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Full Name:</dt>
+                        <dd class="col-sm-8">{{ individual.full_name }}</dd>
 
-                <dt class="col-sm-4">Surname:</dt>
-                <dd class="col-sm-8">{{ individual.surname }}</dd>
+                        <dt class="col-sm-4">Given Name:</dt>
+                        <dd class="col-sm-8">{{ individual.given_name }}</dd>
 
-                {% if individual.birth_date %}
-                <dt class="col-sm-4">Birth Date:</dt>
-                <dd class="col-sm-8">{{ individual.birth_date }}</dd>
-                {% endif %}
-                {% if individual.birth_place %}
-                <dt class="col-sm-4">Birth Place:</dt>
-                <dd class="col-sm-8">{{ individual.birth_place }}</dd>
-                {% endif %}
-                {% if individual.death_date %}
-                <dt class="col-sm-4">Death Date:</dt>
-                <dd class="col-sm-8">{{ individual.death_date }}</dd>
-                {% endif %}
-                {% if individual.death_place %}
-                <dt class="col-sm-4">Death Place:</dt>
-                <dd class="col-sm-8">{{ individual.death_place }}</dd>
-                {% endif %}
-            </dl>
+                        <dt class="col-sm-4">Surname:</dt>
+                        <dd class="col-sm-8">{{ individual.surname }}</dd>
+
+                        {% if individual.birth_date %}
+                        <dt class="col-sm-4">Birth Date:</dt>
+                        <dd class="col-sm-8">{{ individual.birth_date }}</dd>
+                        {% endif %}
+                        {% if individual.birth_place %}
+                        <dt class="col-sm-4">Birth Place:</dt>
+                        <dd class="col-sm-8">{{ individual.birth_place }}</dd>
+                        {% endif %}
+                        {% if individual.death_date %}
+                        <dt class="col-sm-4">Death Date:</dt>
+                        <dd class="col-sm-8">{{ individual.death_date }}</dd>
+                        {% endif %}
+                        {% if individual.death_place %}
+                        <dt class="col-sm-4">Death Place:</dt>
+                        <dd class="col-sm-8">{{ individual.death_place }}</dd>
+                        {% endif %}
+                    </dl>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -217,112 +353,148 @@
         // Set canvas size
         function resizeCanvas() {
             const container = document.getElementById('hud-canvas-container');
-            canvas.width = container.clientWidth;
-            canvas.height = container.clientHeight;
+            canvas.width = 800;
+            canvas.height = 800;
             drawPreview();
         }
 
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // Draw initial preview
+        // Draw preview using image_1generator.py logic
         function drawPreview() {
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw background
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Get settings from form
+            const form = document.getElementById('hud-settings-form');
+            const formData = new FormData(form);
 
-            // Draw preview content
-            ctx.fillStyle = '#343a40';
-            ctx.font = '16px Arial';
-            ctx.textAlign = 'center';
+            // Extract settings
+            const fontFamily = formData.get('font_family') || 'Arial';
+            const primaryNameFontSize = parseInt(formData.get('primary_name_font_size')) || 13;
+            const primaryInfoFontSize = parseInt(formData.get('primary_info_font_size')) || 13;
+            const defaultStrokeWidth = parseFloat(formData.get('default_stroke_width')) || 0.5;
+            const primaryStrokeColor = formData.get('primary_stroke_color') || '#ffffff';
+            const primaryFontColor = formData.get('primary_font_color') || '#ffffff';
+            const primaryBirthColor = formData.get('primary_birth_color') || '#ffffff';
+            const primaryPlaceColor = formData.get('primary_place_color') || '#ffffff';
+            const primaryDeathColor = formData.get('primary_death_color') || '#ffffff';
+            const initialTranslateX = parseInt(formData.get('initial_translate_x')) || 0;
+            const initialTranslateY = parseInt(formData.get('initial_translate_y')) || 0;
+            const subjectTranslateX = parseInt(formData.get('subject_translate_x')) || 0;
+            const subjectTranslateY = parseInt(formData.get('subject_translate_y')) || 0;
 
-            // Draw title
-            ctx.fillText('Family Tree Preview', canvas.width / 2, 40);
+            // Primary Individual Coordinates
+            const primaryNameX = parseInt(formData.get('primary_name_x')) || 0;
+            const primaryNameY = parseInt(formData.get('primary_name_y')) || 0;
+            const primaryNameRotate = parseInt(formData.get('primary_name_rotate')) || -45;
+            const primaryBirthX = parseInt(formData.get('primary_birth_x')) || 0;
+            const primaryBirthY = parseInt(formData.get('primary_birth_y')) || 135;
+            const primaryBirthRotate = parseInt(formData.get('primary_birth_rotate')) || 45;
+            const primaryPlaceX = parseInt(formData.get('primary_place_x')) || 0;
+            const primaryPlaceY = parseInt(formData.get('primary_place_y')) || 90;
+            const primaryPlaceRotate = parseInt(formData.get('primary_place_rotate')) || -45;
 
-            // Draw individual info
-            ctx.font = '14px Arial';
-            ctx.fillText('{{ individual.full_name }}', canvas.width / 2, 80);
+            // Load the preview template image
+            const previewTemplate = new Image();
+            previewTemplate.src = "{% static 'hud/images/preview_image_templates/1GEN_PREVIEW.png' %}";
 
-            {% if individual.birth_date %}
-            ctx.fillText('Born: {{ individual.birth_date }}', canvas.width / 2, 110);
-            {% endif %}
+            previewTemplate.onload = function() {
+                // Draw the preview template
+                ctx.drawImage(previewTemplate, 0, 0, canvas.width, canvas.height);
 
-            {% if individual.birth_place %}
-            ctx.fillText('{{ individual.birth_place }}', canvas.width / 2, 140);
-            {% endif %}
+                // Apply translation settings
+                ctx.save();
+                ctx.translate(initialTranslateX, initialTranslateY);
+                ctx.translate(subjectTranslateX, subjectTranslateY);
 
-            // Draw simple tree structure
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
+                // Draw primary individual's name
+                ctx.font = `${primaryNameFontSize}px ${fontFamily}`;
+                ctx.fillStyle = primaryFontColor;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
 
-            ctx.strokeStyle = '#0d6efd';
-            ctx.lineWidth = 2;
+                // Split the primary individual's name into parts
+                const nameParts = "{{ individual.full_name }}".split(' ');
+                const firstName = nameParts[0] || "";
+                const middleName = nameParts.length > 2 ? nameParts[1] : "";
+                const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
 
-            // Draw primary individual box
-            ctx.strokeRect(centerX - 100, centerY - 30, 200, 60);
+                // Rotate and draw name
+                ctx.save();
+                ctx.translate(primaryNameX, primaryNameY);
+                ctx.rotate(primaryNameRotate * Math.PI / 180);
+                ctx.fillText(firstName, 0, -primaryNameFontSize);
+                ctx.fillText(middleName, 0, 0);
+                ctx.fillText(lastName, 0, primaryNameFontSize);
+                ctx.restore();
 
-            // Draw connecting lines
-            ctx.beginPath();
-            ctx.moveTo(centerX, centerY + 30);
-            ctx.lineTo(centerX - 150, centerY + 100);
-            ctx.lineTo(centerX + 150, centerY + 100);
-            ctx.stroke();
+                // Draw birth date
+                ctx.font = `${primaryInfoFontSize}px ${fontFamily}`;
+                ctx.fillStyle = primaryBirthColor;
+                ctx.save();
+                ctx.translate(primaryBirthX, primaryBirthY);
+                ctx.rotate(primaryBirthRotate * Math.PI / 180);
+                ctx.fillText("{{ individual.birth_date|default:' ' }}", 0, 0);
+                ctx.restore();
 
-            // Draw parent boxes
-            ctx.strokeRect(centerX - 200, centerY + 100, 100, 60);
-            ctx.strokeRect(centerX + 100, centerY + 100, 100, 60);
+                // Draw birth place
+                ctx.fillStyle = primaryPlaceColor;
+                ctx.save();
+                ctx.translate(primaryPlaceX, primaryPlaceY);
+                ctx.rotate(primaryPlaceRotate * Math.PI / 180);
+                ctx.fillText("{{ individual.birth_place|default:' ' }}", 0, 0);
+                ctx.restore();
 
-            // Add labels
-            ctx.fillStyle = '#6c757d';
-            ctx.font = '12px Arial';
-            ctx.fillText('Primary Individual', centerX, centerY + 10);
-            ctx.fillText('Father', centerX - 150, centerY + 140);
-            ctx.fillText('Mother', centerX + 150, centerY + 140);
+                // Draw death date if available
+                {% if individual.death_date %}
+                ctx.fillStyle = primaryDeathColor;
+                ctx.save();
+                ctx.rotate(180 * Math.PI / 180);
+                ctx.fillText("{{ individual.death_date }}", 0, 0);
+                ctx.restore();
+                {% endif %}
+
+                ctx.restore();
+            };
         }
 
-        // Slider value updates
-        document.getElementById('font-size-slider').addEventListener('input', function() {
-            document.getElementById('font-size-value').textContent = this.value;
+        // Update slider values dynamically
+        document.getElementById('primary-name-font-size-slider').addEventListener('input', function() {
+            document.getElementById('primary-name-font-size-value').textContent = this.value;
         });
 
-        document.getElementById('line-width-slider').addEventListener('input', function() {
-            document.getElementById('line-width-value').textContent = this.value;
+        document.getElementById('primary-info-font-size-slider').addEventListener('input', function() {
+            document.getElementById('primary-info-font-size-value').textContent = this.value;
+        });
+
+        document.getElementById('default-stroke-width-slider').addEventListener('input', function() {
+            document.getElementById('default-stroke-width-value').textContent = this.value;
+        });
+
+        document.getElementById('initial-translate-x-slider').addEventListener('input', function() {
+            document.getElementById('initial-translate-x-value').textContent = this.value;
+        });
+
+        document.getElementById('initial-translate-y-slider').addEventListener('input', function() {
+            document.getElementById('initial-translate-y-value').textContent = this.value;
+        });
+
+        document.getElementById('subject-translate-x-slider').addEventListener('input', function() {
+            document.getElementById('subject-translate-x-value').textContent = this.value;
+        });
+
+        document.getElementById('subject-translate-y-slider').addEventListener('input', function() {
+            document.getElementById('subject-translate-y-value').textContent = this.value;
         });
 
         document.getElementById('spacing-slider').addEventListener('input', function() {
             document.getElementById('spacing-value').textContent = this.value;
         });
 
-        // Button event handlers
-        document.getElementById('hud-toggle').addEventListener('click', function() {
-            const canvas = document.getElementById('hud-canvas');
-            canvas.style.display = canvas.style.display === 'none' ? 'block' : 'none';
-        });
-
-        document.getElementById('hud-refresh').addEventListener('click', function() {
-            drawPreview();
-        });
-
-        document.getElementById('hud-reset').addEventListener('click', function() {
-            // Reset form
-            document.getElementById('hud-settings-form').reset();
-
-            // Update slider displays
-            document.getElementById('font-size-value').textContent = '14';
-            document.getElementById('line-width-value').textContent = '2';
-            document.getElementById('spacing-value').textContent = '50';
-
-            // Redraw preview
-            drawPreview();
-        });
-
+        // Apply settings button
         document.getElementById('apply-settings').addEventListener('click', function() {
-            // In a full implementation, this would update the preview
-            // For now, just show a message
-            alert('Settings applied! Preview would update in full implementation.');
             drawPreview();
         });
     });

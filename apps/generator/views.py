@@ -18,6 +18,12 @@ from apps.generator.utils import (
     image_6generator,
     image_7generator,
 )
+from apps.parser.models import PersonData
+
+logger = logging.getLogger(__name__)
+
+# Use the centralized template mapping
+TEMPLATE_MAPPING = get_template_mapping()
 
 
 @csrf_exempt
@@ -33,11 +39,19 @@ def generate_final_chart(request):
         individual_id = request.POST.get("individual_id") or request.GET.get(
             "individual_id"
         )
-        template = request.POST.get("template") or request.GET.get("template") or "4"
+        template = request.POST.get("template") or request.GET.get("template")
+
+        # Validate parameters
         if not individual_id:
             logger.error("Missing individual_id parameter")
             return JsonResponse(
                 {"status": "error", "message": "Missing individual_id parameter"},
+                status=400,
+            )
+        if not template:
+            logger.error("Missing template parameter")
+            return JsonResponse(
+                {"status": "error", "message": "Missing template parameter"},
                 status=400,
             )
 
@@ -106,17 +120,19 @@ def generate_final_chart(request):
         }
 
         # Get the appropriate generator
-        generator = generator_mapping.get(template, image_4generator)
+        generator = generator_mapping.get(template)
+        if not generator:
+            logger.error("Invalid template parameter: %s", template)
+            return JsonResponse(
+                {"status": "error", "message": "Invalid template parameter"},
+                status=400,
+            )
+
         logger.debug(f"Using generator: {generator.__name__}")
 
         # Generate the family tree with the selected template
         template_name = f"{template}gen"
         logger.debug(f"Generating PDF with template: {template_name}")
-        logger.debug(
-            f"Template mapping: {TEMPLATE_MAPPING.get(template, {}).get('filename', 'Unknown')}"
-        )
-
-        # Call the generator with the correct template
         image_buffer = generator.generate_family_tree(
             primary_individual, family_data, template=template_name
         )
@@ -145,15 +161,6 @@ def test_template_selection(request):
     return HttpResponse(f"Selected template: {template}")
 
 
-from apps.parser.models import PersonData
-
-logger = logging.getLogger(__name__)
-
-# Use the centralized template mapping
-TEMPLATE_MAPPING = get_template_mapping()
-
-
-@csrf_exempt
 def test_pdf_generation(request):
     """
     Test view for generating a PDF directly.
@@ -191,117 +198,6 @@ def test_pdf_generation(request):
 
     except Exception as e:
         return HttpResponse(f"Error generating PDF: {str(e)}", status=500)
-
-    try:
-        # Extract parameters from GET or POST data
-        individual_id = request.POST.get("individual_id") or request.GET.get(
-            "individual_id"
-        )
-        template = request.POST.get("template") or request.GET.get("template") or "4"
-        logger.debug(f"Using template: {template}")
-        if not individual_id:
-            logger.error("Missing individual_id parameter")
-            return JsonResponse(
-                {"status": "error", "message": "Missing individual_id parameter"},
-                status=400,
-            )
-
-        # Get the current GEDCOM file from session
-        file_id = request.session.get("current_gedcom_file_id")
-        if not file_id:
-            logger.error("No GEDCOM file selected")
-            return JsonResponse(
-                {"status": "error", "message": "No GEDCOM file selected"},
-                status=400,
-            )
-
-        # Get the GEDCOM file and parsed data
-        gedcom_file = GedcomFile.objects.get(id=file_id)
-        if not gedcom_file.parsed_data:
-            logger.error("File not processed yet")
-            return JsonResponse(
-                {"status": "error", "message": "File not processed yet"},
-                status=400,
-            )
-
-        # Use parsed_data directly (already a dictionary)
-        family_data = gedcom_file.parsed_data
-        if not family_data:
-            logger.error("No family data found")
-            return JsonResponse(
-                {"status": "error", "message": "No family data found"},
-                status=400,
-            )
-
-        # Get the 'individuals' dictionary
-        individuals = family_data.get("individuals", {})
-        if not individuals:
-            logger.error("No individuals found in the family data")
-            return JsonResponse(
-                {"status": "error", "message": "No individuals found in the file"},
-                status=400,
-            )
-
-        # Convert all individuals to PersonData objects
-        person_data_objects = {}
-        for person_id, person_data in individuals.items():
-            person_data_objects[person_id] = PersonData(**person_data)
-
-        # Get the primary individual
-        primary_individual = person_data_objects.get(individual_id)
-        if not primary_individual:
-            logger.error("Individual %s not found in the file", individual_id)
-            return JsonResponse(
-                {"status": "error", "message": "Individual not found in the file"},
-                status=404,
-            )
-
-        # Update family_data with PersonData objects
-        family_data["individuals"] = person_data_objects
-
-        # Use the default 4-generation generator
-        try:
-            # Map template to the appropriate generator
-            generator_mapping = {
-                "1": image_1generator,
-                "2": image_2generator,
-                "3": image_3generator,
-                "4": image_4generator,
-                "5": image_5generator,
-                "6": image_6generator,
-                "7": image_7generator,
-            }
-
-            # Get the appropriate generator
-            generator = generator_mapping.get(template, image_4generator)
-            logger.debug(f"Using generator: {generator.__name__}")
-
-            # Generate the family tree with the selected template
-            template_name = f"{template}gen"
-            logger.debug(f"Generating PDF with template: {template_name}")
-            image_buffer = generator.generate_family_tree(
-                primary_individual, family_data, template=template_name
-            )
-            image_buffer.seek(0)
-
-            # Return the image as a PDF
-            response = HttpResponse(image_buffer, content_type="application/pdf")
-            response["Content-Disposition"] = 'attachment; filename="family_tree.pdf"'
-            return response
-
-        except Exception as e:
-            logger.error("Error generating family tree: %s", str(e), exc_info=True)
-            return JsonResponse(
-                {"status": "error", "message": f"Failed to generate chart: {str(e)}"},
-                status=500,
-            )
-
-    except Exception as e:
-        logger.error("Error in generate_final_chart: %s", str(e), exc_info=True)
-        return JsonResponse(
-            {"status": "error", "message": "Internal server error"},
-            status=500,
-        )
 
 
 def home(request):

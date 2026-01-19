@@ -1,4 +1,5 @@
 import json
+import logging
 
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -8,6 +9,8 @@ from django.views.decorators.http import require_http_methods
 from apps.generator.models import GedcomFile
 from apps.generator.template_mapping import get_template_mapping
 from apps.parser.models import PersonData
+
+logger = logging.getLogger(__name__)
 
 
 def display_tree_hud(request):
@@ -62,7 +65,7 @@ def display_tree_hud(request):
                 "show_locations": True,
                 "compact_mode": False,
                 "theme": "light",
-                "template": "4",  # Default template
+                "template": "1",  # Default to 1 Generation Chart
             },
         )
 
@@ -94,6 +97,30 @@ def save_hud_settings(request):
         template = request.POST.get("template")
         generations = request.POST.get("generations")
 
+        # Font settings
+        font_family = request.POST.get("font_family")
+        primary_name_font_size = request.POST.get("primary_name_font_size")
+        primary_info_font_size = request.POST.get("primary_info_font_size")
+
+        # Stroke settings
+        default_stroke_width = request.POST.get("default_stroke_width")
+        primary_stroke_color = request.POST.get("primary_stroke_color")
+
+        # Primary individual colors
+        primary_font_color = request.POST.get("primary_font_color")
+        primary_birth_color = request.POST.get("primary_birth_color")
+        primary_place_color = request.POST.get("primary_place_color")
+        primary_death_color = request.POST.get("primary_death_color")
+
+        # Translation settings
+        initial_translate_x = request.POST.get("initial_translate_x")
+        initial_translate_y = request.POST.get("initial_translate_y")
+        subject_translate_x = request.POST.get("subject_translate_x")
+        subject_translate_y = request.POST.get("subject_translate_y")
+
+        # Spacing
+        spacing = request.POST.get("spacing")
+
         if not individual_id:
             return JsonResponse(
                 {"status": "error", "message": "Missing individual_id parameter"},
@@ -105,6 +132,61 @@ def save_hud_settings(request):
             "individual_id": individual_id,
             "template": template,
             "generations": generations,
+            "font_family": font_family,
+            "primary_name_font_size": int(primary_name_font_size)
+            if primary_name_font_size
+            else 13,
+            "primary_info_font_size": int(primary_info_font_size)
+            if primary_info_font_size
+            else 13,
+            "default_stroke_width": float(default_stroke_width)
+            if default_stroke_width
+            else 0.5,
+            "primary_stroke_color": primary_stroke_color,
+            "primary_font_color": primary_font_color,
+            "primary_birth_color": primary_birth_color,
+            "primary_place_color": primary_place_color,
+            "primary_death_color": primary_death_color,
+            "initial_translate_x": int(initial_translate_x)
+            if initial_translate_x
+            else 0,
+            "initial_translate_y": int(initial_translate_y)
+            if initial_translate_y
+            else 0,
+            "subject_translate_x": int(subject_translate_x)
+            if subject_translate_x
+            else 0,
+            "subject_translate_y": int(subject_translate_y)
+            if subject_translate_y
+            else 0,
+            "primary_name_x": int(request.POST.get("primary_name_x"))
+            if request.POST.get("primary_name_x")
+            else 0,
+            "primary_name_y": int(request.POST.get("primary_name_y"))
+            if request.POST.get("primary_name_y")
+            else 0,
+            "primary_name_rotate": int(request.POST.get("primary_name_rotate"))
+            if request.POST.get("primary_name_rotate")
+            else -45,
+            "primary_birth_x": int(request.POST.get("primary_birth_x"))
+            if request.POST.get("primary_birth_x")
+            else 0,
+            "primary_birth_y": int(request.POST.get("primary_birth_y"))
+            if request.POST.get("primary_birth_y")
+            else 135,
+            "primary_birth_rotate": int(request.POST.get("primary_birth_rotate"))
+            if request.POST.get("primary_birth_rotate")
+            else 45,
+            "primary_place_x": int(request.POST.get("primary_place_x"))
+            if request.POST.get("primary_place_x")
+            else 0,
+            "primary_place_y": int(request.POST.get("primary_place_y"))
+            if request.POST.get("primary_place_y")
+            else 90,
+            "primary_place_rotate": int(request.POST.get("primary_place_rotate"))
+            if request.POST.get("primary_place_rotate")
+            else -45,
+            "spacing": int(spacing) if spacing else 50,
         }
 
         # Redirect back to display-tree
