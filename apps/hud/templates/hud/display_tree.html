@@ -138,16 +138,16 @@
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <label class="form-label">Name Font Size (px)</label>
-                                    <input type="range" name="primary_name_font_size" class="form-range" min="8" max="24" value="{{ hud_settings.primary_name_font_size|default:13 }}" id="primary-name-font-size-slider">
+                                    <input type="range" name="primary_name_font_size" class="form-range" min="38" max="138" value="{{ hud_settings.primary_name_font_size|default:88 }}" id="primary-name-font-size-slider">
                                     <div class="text-center">
-                                        <span id="primary-name-font-size-value">{{ hud_settings.primary_name_font_size|default:13 }}</span>px
+                                        <span id="primary-name-font-size-value">{{ hud_settings.primary_name_font_size|default:88 }}</span>px
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Info Font Size (px)</label>
-                                    <input type="range" name="primary_info_font_size" class="form-range" min="8" max="24" value="{{ hud_settings.primary_info_font_size|default:13 }}" id="primary-info-font-size-slider">
+                                    <input type="range" name="primary_info_font_size" class="form-range" min="38" max="138" value="{{ hud_settings.primary_info_font_size|default:88 }}" id="primary-info-font-size-slider">
                                     <div class="text-center">
-                                        <span id="primary-info-font-size-value">{{ hud_settings.primary_info_font_size|default:13 }}</span>px
+                                        <span id="primary-info-font-size-value">{{ hud_settings.primary_info_font_size|default:88 }}</span>px
                                     </div>
                                 </div>
                             </div>
@@ -169,30 +169,14 @@
                         <!-- Translation Settings -->
                         <div class="mb-3">
                             <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label">Initial Translate X</label>
-                                    <input type="range" name="initial_translate_x" class="form-range" min="-100" max="100" value="{{ hud_settings.initial_translate_x|default:0 }}" id="initial-translate-x-slider">
+                                <div class="col-md-6">
+                                    <label class="form-label">Subject Translate X</label>
+                                    <input type="range" name="subject_translate_x" class="form-range" min="-100" max="100" value="{{ hud_settings.subject_translate_x|default:0 }}" id="subject-translate-x-slider">
                                     <div class="text-center">
-                                        <span id="initial-translate-x-value">{{ hud_settings.initial_translate_x|default:0 }}</span>
+                                        <span id="subject-translate-x-value">{{ hud_settings.subject_translate_x|default:0 }}</span>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Initial Translate Y</label>
-                                    <input type="range" name="initial_translate_y" class="form-range" min="-100" max="100" value="{{ hud_settings.initial_translate_y|default:0 }}" id="initial-translate-y-slider">
-                                    <div class="text-center">
-                                        <span id="initial-translate-y-value">{{ hud_settings.initial_translate_y|default:0 }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Subject Translate X</label>
-                                <input type="range" name="subject_translate_x" class="form-range" min="-100" max="100" value="{{ hud_settings.subject_translate_x|default:0 }}" id="subject-translate-x-slider">
-                                <div class="text-center">
-                                    <span id="subject-translate-x-value">{{ hud_settings.subject_translate_x|default:0 }}</span>
-                                </div>
-                            </div>
-                            <div class="row g-3 mt-1">
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <label class="form-label">Subject Translate Y</label>
                                     <input type="range" name="subject_translate_y" class="form-range" min="-100" max="100" value="{{ hud_settings.subject_translate_y|default:0 }}" id="subject-translate-y-slider">
                                     <div class="text-center">
@@ -439,38 +423,72 @@
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Get the selected template from the session (updated after form submission)
-        // Get settings from form
+        // Get settings from form (use hardcoded defaults if not set)
         const form = document.getElementById('hud-settings-form');
         const formData = new FormData(form);
 
-        // Extract settings
-        const fontFamily = formData.get('font_family') || 'Arial';
-        const primaryNameFontSize = parseInt(formData.get('primary_name_font_size')) || 13;
-        const primaryInfoFontSize = parseInt(formData.get('primary_info_font_size')) || 13;
-        const defaultStrokeWidth = parseFloat(formData.get('default_stroke_width')) || 0.5;
-        const primaryStrokeColor = formData.get('primary_stroke_color') || '#000000';
-        const primaryFontColor = formData.get('primary_font_color') || '#000000';
-        const primaryBirthColor = formData.get('primary_birth_color') || '#000000';
-        const primaryPlaceColor = formData.get('primary_place_color') || '#000000';
-        const primaryDeathColor = formData.get('primary_death_color') || '#000000';
-        const initialTranslateX = parseInt(formData.get('initial_translate_x')) || 0;
-        const initialTranslateY = parseInt(formData.get('initial_translate_y')) || 0;
-        const subjectTranslateX = parseInt(formData.get('subject_translate_x')) || 0;
-        const subjectTranslateY = parseInt(formData.get('subject_translate_y')) || 0;
+        // Collect user settings for the preview
+        const userSettings = {
+            font_family: formData.get('font_family') || 'Arial',
+            primary_name_font_size: parseInt(formData.get('primary_name_font_size')) || 88,
+            primary_info_font_size: parseInt(formData.get('primary_info_font_size')) || 88,
+            default_stroke_width: parseFloat(formData.get('default_stroke_width')) || 0.5,
+            primary_stroke_color: formData.get('primary_stroke_color') || '#000000',
+            primary_font_color: formData.get('primary_font_color') || '#000000',
+            primary_birth_color: formData.get('primary_birth_color') || '#000000',
+            primary_place_color: formData.get('primary_place_color') || '#000000',
+            primary_death_color: formData.get('primary_death_color') || '#000000',
+            primary_name_x: parseInt(formData.get('primary_name_x')) || 0,
+            primary_name_y: parseInt(formData.get('primary_name_y')) || 0,
+            primary_name_rotate: parseInt(formData.get('primary_name_rotate')) || -45,
+            primary_birth_x: parseInt(formData.get('primary_birth_x')) || 0,
+            primary_birth_y: parseInt(formData.get('primary_birth_y')) || 135,
+            primary_birth_rotate: parseInt(formData.get('primary_birth_rotate')) || 45,
+            primary_place_x: parseInt(formData.get('primary_place_x')) || 0,
+            primary_place_y: parseInt(formData.get('primary_place_y')) || 90,
+            primary_place_rotate: parseInt(formData.get('primary_place_rotate')) || -45,
+            subject_translate_x: parseInt(formData.get('subject_translate_x')) || 0,
+            subject_translate_y: parseInt(formData.get('subject_translate_y')) || 0,
+        };
 
-        // Primary Individual Coordinates
-        const primaryNameX = parseInt(formData.get('primary_name_x')) || 0;
-        const primaryNameY = parseInt(formData.get('primary_name_y')) || 0;
-        const primaryNameRotate = parseInt(formData.get('primary_name_rotate')) || -45;
-        const primaryBirthX = parseInt(formData.get('primary_birth_x')) || 0;
-        const primaryBirthY = parseInt(formData.get('primary_birth_y')) || 135;
-        const primaryBirthRotate = parseInt(formData.get('primary_birth_rotate')) || 45;
-        const primaryPlaceX = parseInt(formData.get('primary_place_x')) || 0;
-        const primaryPlaceY = parseInt(formData.get('primary_place_y')) || 90;
-        const primaryPlaceRotate = parseInt(formData.get('primary_place_rotate')) || -45;
+        // Call the backend to generate the preview
+        fetch("{% url 'hud:get_1gen_preview' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({
+                individual_id: "{{ individual.id }}",
+                user_settings: userSettings,
+            }),
+        })
+        .then(response => response.blob())
+        .then(blob => {
+            const previewUrl = URL.createObjectURL(blob);
+            const previewImg = new Image();
+            previewImg.src = previewUrl;
 
+            previewImg.onload = function() {
+                // Scale the preview to fit the canvas
+                const size = Math.min(canvas.width, canvas.height);
+                const offsetX = (canvas.width - size) / 2;
+                const offsetY = (canvas.height - size) / 2;
+                ctx.drawImage(previewImg, offsetX, offsetY, size, size);
+                URL.revokeObjectURL(previewUrl);
+            };
+        })
+        .catch(error => {
+            console.error('Error generating preview:', error);
+        });
         // Load the preview template image
+        // Create an off-screen canvas for full-size drawing (1950x1950)
+        const fullSizeCanvas = document.createElement('canvas');
+        fullSizeCanvas.width = 1950;
+        fullSizeCanvas.height = 1950;
+        const fullSizeCtx = fullSizeCanvas.getContext('2d');
+
+        // Load the full-size template
         const previewTemplate = new Image();
         previewTemplate.src = "{% static 'hud/images/preview_image_templates/1GEN_PREVIEW.png' %}";
 
@@ -479,23 +497,23 @@
             console.log(`Template dimensions: ${previewTemplate.width}x${previewTemplate.height}`);
             console.log(`Canvas dimensions: ${canvas.width}x${canvas.height}`);
 
-            // Draw the preview template as a square
-            const size = Math.min(canvas.width, canvas.height);
-            const offsetX = (canvas.width - size) / 2;
-            const offsetY = (canvas.height - size) / 2;
-            console.log(`Drawing template at (${offsetX}, ${offsetY}) with size ${size}x${size}`);
-            ctx.drawImage(previewTemplate, offsetX, offsetY, size, size);
+            // Draw the full-size template
+            fullSizeCtx.drawImage(previewTemplate, 0, 0, 1950, 1950);
 
-            // Apply translation settings
-            ctx.save();
-            ctx.translate(initialTranslateX, initialTranslateY);
-            ctx.translate(subjectTranslateX, subjectTranslateY);
+            // Apply drawing logic to full-size canvas
+            // Subject translate for minor adjustments (hardcoded default: 0)
+            const subjectTranslateX = parseInt(formData.get('subject_translate_x')) || 0;
+            const subjectTranslateY = parseInt(formData.get('subject_translate_y')) || 0;
+            fullSizeCtx.save();
+            fullSizeCtx.translate(975, 975);  // Center of full-size template
+            fullSizeCtx.translate(subjectTranslateX, subjectTranslateY);
 
-            // Draw primary individual's name
-            ctx.font = `${primaryNameFontSize}px ${fontFamily}`;
-            ctx.fillStyle = primaryFontColor;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+            // Draw primary individual's name (same as image_1generator.py)
+            console.log(`Drawing name with font size: ${primaryNameFontSize}px (scaled from ${primaryNameFontSize/scalingFactor}px)`);
+            fullSizeCtx.font = `${primaryNameFontSize}px ${fontFamily}`;
+            fullSizeCtx.fillStyle = primaryFontColor;
+            fullSizeCtx.textAlign = 'center';
+            fullSizeCtx.textBaseline = 'middle';
 
             // Split the primary individual's name into parts
             const nameParts = "{{ individual.full_name }}".split(' ');
@@ -503,40 +521,50 @@
             const middleName = nameParts.length > 2 ? nameParts[1] : "";
             const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
 
-            // Rotate and draw name
-            ctx.save();
-            ctx.translate(primaryNameX, primaryNameY);
-            ctx.rotate(primaryNameRotate * Math.PI / 180);
-            ctx.fillText(firstName, 0, -primaryNameFontSize);
-            ctx.fillText(middleName, 0, 0);
-            ctx.fillText(lastName, 0, primaryNameFontSize);
-            ctx.restore();
+            // Rotate and draw name (same as image_1generator.py)
+            fullSizeCtx.save();
+            fullSizeCtx.translate(primaryNameX, primaryNameY);
+            fullSizeCtx.rotate(primaryNameRotate * Math.PI / 180);
+            fullSizeCtx.fillText(firstName, 0, -primaryNameFontSize);
+            fullSizeCtx.fillText(middleName, 0, 0);
+            fullSizeCtx.fillText(lastName, 0, primaryNameFontSize);
+            fullSizeCtx.restore();
 
-            // Draw birth date
-            ctx.font = `${primaryInfoFontSize}px ${fontFamily}`;
-            ctx.fillStyle = primaryBirthColor;
-            ctx.save();
-            ctx.translate(primaryBirthX, primaryBirthY);
-            ctx.rotate(primaryBirthRotate * Math.PI / 180);
-            ctx.fillText("{{ individual.birth_date|default:' ' }}", 0, 0);
-            ctx.restore();
+            // Draw birth date (same as image_1generator.py)
+            console.log(`Drawing birth date with font size: ${primaryInfoFontSize}px (scaled from ${primaryInfoFontSize/scalingFactor}px)`);
+            fullSizeCtx.font = `${primaryInfoFontSize}px ${fontFamily}`;
+            fullSizeCtx.fillStyle = primaryBirthColor;
+            fullSizeCtx.save();
+            fullSizeCtx.translate(primaryBirthX, primaryBirthY);
+            fullSizeCtx.rotate(primaryBirthRotate * Math.PI / 180);
+            fullSizeCtx.fillText("{{ individual.birth_date|default:' ' }}", 0, 0);
+            fullSizeCtx.restore();
 
-            // Draw birth place
-            ctx.fillStyle = primaryPlaceColor;
-            ctx.save();
-            ctx.translate(primaryPlaceX, primaryPlaceY);
-            ctx.rotate(primaryPlaceRotate * Math.PI / 180);
-            ctx.fillText("{{ individual.birth_place|default:' ' }}", 0, 0);
-            ctx.restore();
+            // Draw birth place (same as image_1generator.py)
+            fullSizeCtx.fillStyle = primaryPlaceColor;
+            fullSizeCtx.save();
+            fullSizeCtx.translate(primaryPlaceX, primaryPlaceY);
+            fullSizeCtx.rotate(primaryPlaceRotate * Math.PI / 180);
+            fullSizeCtx.fillText("{{ individual.birth_place|default:' ' }}", 0, 0);
+            fullSizeCtx.restore();
 
-            // Draw death date if available
+            // Draw death date if available (same as image_1generator.py)
             {% if individual.death_date %}
-            ctx.fillStyle = primaryDeathColor;
-            ctx.save();
-            ctx.rotate(180 * Math.PI / 180);
-            ctx.fillText("{{ individual.death_date }}", 0, 0);
-            ctx.restore();
+            fullSizeCtx.fillStyle = primaryDeathColor;
+            fullSizeCtx.save();
+            fullSizeCtx.rotate(180 * Math.PI / 180);
+            fullSizeCtx.fillText("{{ individual.death_date }}", 0, 0);
+            fullSizeCtx.restore();
             {% endif %}
+
+            fullSizeCtx.restore();
+
+            // Scale the full-size canvas down to 800x800 for display
+            const size = Math.min(canvas.width, canvas.height);
+            const offsetX = (canvas.width - size) / 2;
+            const offsetY = (canvas.height - size) / 2;
+            console.log(`Drawing scaled preview at (${offsetX}, ${offsetY}) with size ${size}x${size}`);
+            ctx.drawImage(fullSizeCanvas, 0, 0, 1950, 1950, offsetX, offsetY, size, size);
         };
     }
 

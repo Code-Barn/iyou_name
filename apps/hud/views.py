@@ -1,13 +1,15 @@
 import json
 import logging
+from io import BytesIO
 
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.generator.models import GedcomFile
 from apps.generator.template_mapping import get_template_mapping
+from apps.generator.utils.image_1generator import generate_1gen_preview
 from apps.parser.models import PersonData
 
 logger = logging.getLogger(__name__)
@@ -112,9 +114,7 @@ def save_hud_settings(request):
         primary_place_color = request.POST.get("primary_place_color") or "#000000"
         primary_death_color = request.POST.get("primary_death_color") or "#000000"
 
-        # Translation settings
-        initial_translate_x = request.POST.get("initial_translate_x")
-        initial_translate_y = request.POST.get("initial_translate_y")
+        # Translation settings (subject_translate only)
         subject_translate_x = request.POST.get("subject_translate_x")
         subject_translate_y = request.POST.get("subject_translate_y")
 
@@ -147,12 +147,6 @@ def save_hud_settings(request):
             "primary_birth_color": primary_birth_color,
             "primary_place_color": primary_place_color,
             "primary_death_color": primary_death_color,
-            "initial_translate_x": int(initial_translate_x)
-            if initial_translate_x
-            else 0,
-            "initial_translate_y": int(initial_translate_y)
-            if initial_translate_y
-            else 0,
             "subject_translate_x": int(subject_translate_x)
             if subject_translate_x
             else 0,
@@ -292,10 +286,50 @@ def get_hud_settings(request):
                 "theme": "light",
                 "font_size": "medium",
                 "color_scheme": "default",
-                "template": "4",  # Default template
+                "template": "1",  # Default template
             },
         )
         return JsonResponse(settings)
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+@require_POST
+def get_1gen_preview(request):
+    """
+    API endpoint for generating the 1-generation preview
+    """
+    try:
+        data = json.loads(request.body)
+        individual_id = data.get("individual_id")
+        user_settings = data.get("user_settings", {})
+
+        # Get the primary individual from the session
+        gedcom_file_id = request.session.get("current_gedcom_file_id")
+        if not gedcom_file_id:
+            return HttpResponse("No GEDCOM file selected", status=400)
+
+        from apps.generator.models import GedcomFile
+
+        gedcom_file = GedcomFile.objects.get(id=gedcom_file_id)
+        if not gedcom_file.parsed_data:
+            return HttpResponse("File not processed yet", status=400)
+
+        individuals = gedcom_file.parsed_data.get("individuals", {})
+        if individual_id not in individuals:
+            return HttpResponse("Individual not found", status=404)
+
+        individual_data = individuals[individual_id]
+        primary_individual = PersonData(**individual_data)
+
+        # Generate the preview
+        preview_buffer = generate_1gen_preview(primary_individual, user_settings)
+
+        # Return the preview as an image
+        return HttpResponse(preview_buffer, content_type="image/png")
+
+    except Exception as e:
+        logger.error(f"Error generating preview: {str(e)}")
+        return HttpResponse(f"Error generating preview: {str(e)}", status=500)
