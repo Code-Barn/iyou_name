@@ -104,13 +104,13 @@ def save_hud_settings(request):
 
         # Stroke settings
         default_stroke_width = request.POST.get("default_stroke_width")
-        primary_stroke_color = request.POST.get("primary_stroke_color")
+        primary_stroke_color = request.POST.get("primary_stroke_color") or "#000000"
 
         # Primary individual colors
-        primary_font_color = request.POST.get("primary_font_color")
-        primary_birth_color = request.POST.get("primary_birth_color")
-        primary_place_color = request.POST.get("primary_place_color")
-        primary_death_color = request.POST.get("primary_death_color")
+        primary_font_color = request.POST.get("primary_font_color") or "#000000"
+        primary_birth_color = request.POST.get("primary_birth_color") or "#000000"
+        primary_place_color = request.POST.get("primary_place_color") or "#000000"
+        primary_death_color = request.POST.get("primary_death_color") or "#000000"
 
         # Translation settings
         initial_translate_x = request.POST.get("initial_translate_x")

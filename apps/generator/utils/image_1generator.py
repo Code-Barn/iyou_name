@@ -61,7 +61,7 @@ def generate_family_tree(primary_individual, family_data, template="1gen"):
 
             # Stroke settings
             DEFAULT_STROKE_WIDTH = 0.5
-            PRIMARY_STROKE_COLOR = Color("white")
+            PRIMARY_STROKE_COLOR = Color("black")
 
             # Drawing quality settings
             STROKE_ANTIALIAS = True
@@ -71,11 +71,11 @@ def generate_family_tree(primary_individual, family_data, template="1gen"):
             # =============================================
 
             # Primary individual colors
-            PRIMARY_FONT_COLOR = Color("white")
-            PRIMARY_BIRTH_COLOR = Color("white")
-            PRIMARY_PLACE_COLOR = Color("white")
-            PRIMARY_DEATH_COLOR = Color("white")
-            PRIMARY_STROKE_COLOR = Color("white")
+            PRIMARY_FONT_COLOR = Color("black")
+            PRIMARY_BIRTH_COLOR = Color("black")
+            PRIMARY_PLACE_COLOR = Color("black")
+            PRIMARY_DEATH_COLOR = Color("black")
+            PRIMARY_STROKE_COLOR = Color("black")
 
             # Primary individual coordinates
             PRIMARY_NAME_X = 0
