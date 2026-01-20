@@ -100,7 +100,7 @@ def save_hud_settings(request):
         generations = request.POST.get("generations")
 
         # Font settings
-        font_family = request.POST.get("font_family")
+        font_family = request.POST.get("font_family") or "Arial"
         primary_name_font_size = request.POST.get("primary_name_font_size")
         primary_info_font_size = request.POST.get("primary_info_font_size")
 
@@ -118,9 +118,6 @@ def save_hud_settings(request):
         subject_translate_x = request.POST.get("subject_translate_x")
         subject_translate_y = request.POST.get("subject_translate_y")
 
-        # Spacing
-        spacing = request.POST.get("spacing")
-
         if not individual_id:
             return JsonResponse(
                 {"status": "error", "message": "Missing individual_id parameter"},
@@ -128,6 +125,7 @@ def save_hud_settings(request):
             )
 
         # Save settings to session
+        logger.debug(f"Saving settings to session: {request.POST}")
         request.session["hud_settings"] = {
             "individual_id": individual_id,
             "template": template,
@@ -135,10 +133,10 @@ def save_hud_settings(request):
             "font_family": font_family,
             "primary_name_font_size": int(primary_name_font_size)
             if primary_name_font_size
-            else 13,
+            else 88,
             "primary_info_font_size": int(primary_info_font_size)
             if primary_info_font_size
-            else 13,
+            else 88,
             "default_stroke_width": float(default_stroke_width)
             if default_stroke_width
             else 0.5,
@@ -147,46 +145,28 @@ def save_hud_settings(request):
             "primary_birth_color": primary_birth_color,
             "primary_place_color": primary_place_color,
             "primary_death_color": primary_death_color,
+            "primary_name_x": int(request.POST.get("primary_name_x", 0)),
+            "primary_name_y": int(request.POST.get("primary_name_y", 0)),
+            "primary_name_rotate": int(request.POST.get("primary_name_rotate", -45)),
+            "primary_birth_x": int(request.POST.get("primary_birth_x", 0)),
+            "primary_birth_y": int(request.POST.get("primary_birth_y", 135)),
+            "primary_birth_rotate": int(request.POST.get("primary_birth_rotate", 45)),
+            "primary_place_x": int(request.POST.get("primary_place_x", 0)),
+            "primary_place_y": int(request.POST.get("primary_place_y", 90)),
+            "primary_place_rotate": int(request.POST.get("primary_place_rotate", -45)),
             "subject_translate_x": int(subject_translate_x)
             if subject_translate_x
             else 0,
             "subject_translate_y": int(subject_translate_y)
             if subject_translate_y
             else 0,
-            "primary_name_x": int(request.POST.get("primary_name_x"))
-            if request.POST.get("primary_name_x")
-            else 0,
-            "primary_name_y": int(request.POST.get("primary_name_y"))
-            if request.POST.get("primary_name_y")
-            else 0,
-            "primary_name_rotate": int(request.POST.get("primary_name_rotate"))
-            if request.POST.get("primary_name_rotate")
-            else -45,
-            "primary_birth_x": int(request.POST.get("primary_birth_x"))
-            if request.POST.get("primary_birth_x")
-            else 0,
-            "primary_birth_y": int(request.POST.get("primary_birth_y"))
-            if request.POST.get("primary_birth_y")
-            else 135,
-            "primary_birth_rotate": int(request.POST.get("primary_birth_rotate"))
-            if request.POST.get("primary_birth_rotate")
-            else 45,
-            "primary_place_x": int(request.POST.get("primary_place_x"))
-            if request.POST.get("primary_place_x")
-            else 0,
-            "primary_place_y": int(request.POST.get("primary_place_y"))
-            if request.POST.get("primary_place_y")
-            else 90,
-            "primary_place_rotate": int(request.POST.get("primary_place_rotate"))
-            if request.POST.get("primary_place_rotate")
-            else -45,
-            "spacing": int(spacing) if spacing else 50,
         }
 
-        # Redirect back to display-tree
-        from django.shortcuts import redirect
-
-        return redirect("hud:display_tree")
+        # Return success response
+        logger.debug(
+            f"Settings saved to session: {request.session.get('hud_settings')}"
+        )
+        return JsonResponse({"status": "success"})
 
     # Fallback for invalid request method
     return JsonResponse(
@@ -305,6 +285,51 @@ def get_1gen_preview(request):
         data = json.loads(request.body)
         individual_id = data.get("individual_id")
         user_settings = data.get("user_settings", {})
+        logger.debug(
+            f"Retrieving settings from session: {request.session.get('hud_settings')}"
+        )
+        logger.debug(f"User settings for preview: {user_settings}")
+
+        # Debug logging
+        logger.debug(f"Generating preview with settings: {user_settings}")
+
+        # If no user_settings provided, use session settings
+        if not user_settings:
+            hud_settings = request.session.get("hud_settings", {})
+            user_settings = {
+                "font_family": hud_settings.get("font_family", "Arial"),
+                "primary_name_font_size": hud_settings.get(
+                    "primary_name_font_size", 88
+                ),
+                "primary_info_font_size": hud_settings.get(
+                    "primary_info_font_size", 88
+                ),
+                "default_stroke_width": hud_settings.get("default_stroke_width", 0.5),
+                "primary_stroke_color": hud_settings.get(
+                    "primary_stroke_color", "#000000"
+                ),
+                "primary_font_color": hud_settings.get("primary_font_color", "#000000"),
+                "primary_birth_color": hud_settings.get(
+                    "primary_birth_color", "#000000"
+                ),
+                "primary_place_color": hud_settings.get(
+                    "primary_place_color", "#000000"
+                ),
+                "primary_death_color": hud_settings.get(
+                    "primary_death_color", "#000000"
+                ),
+                "primary_name_x": hud_settings.get("primary_name_x", 0),
+                "primary_name_y": hud_settings.get("primary_name_y", 0),
+                "primary_name_rotate": hud_settings.get("primary_name_rotate", -45),
+                "primary_birth_x": hud_settings.get("primary_birth_x", 0),
+                "primary_birth_y": hud_settings.get("primary_birth_y", 135),
+                "primary_birth_rotate": hud_settings.get("primary_birth_rotate", 45),
+                "primary_place_x": hud_settings.get("primary_place_x", 0),
+                "primary_place_y": hud_settings.get("primary_place_y", 90),
+                "primary_place_rotate": hud_settings.get("primary_place_rotate", -45),
+                "subject_translate_x": hud_settings.get("subject_translate_x", 0),
+                "subject_translate_y": hud_settings.get("subject_translate_y", 0),
+            }
 
         # Get the primary individual from the session
         gedcom_file_id = request.session.get("current_gedcom_file_id")

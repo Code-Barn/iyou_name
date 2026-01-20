@@ -39,7 +39,69 @@ def generate_final_chart(request):
         individual_id = request.POST.get("individual_id") or request.GET.get(
             "individual_id"
         )
-        template = request.POST.get("template") or request.GET.get("template")
+        template = request.POST.get("template") or request.GET.get("template") or "1"
+
+        # Collect user settings from POST or session
+        user_settings = {
+            "font_family": request.POST.get("font_family"),
+            "primary_name_font_size": request.POST.get("primary_name_font_size"),
+            "primary_info_font_size": request.POST.get("primary_info_font_size"),
+            "default_stroke_width": request.POST.get("default_stroke_width"),
+            "primary_stroke_color": request.POST.get("primary_stroke_color"),
+            "primary_font_color": request.POST.get("primary_font_color"),
+            "primary_birth_color": request.POST.get("primary_birth_color"),
+            "primary_place_color": request.POST.get("primary_place_color"),
+            "primary_death_color": request.POST.get("primary_death_color"),
+            "primary_name_x": request.POST.get("primary_name_x"),
+            "primary_name_y": request.POST.get("primary_name_y"),
+            "primary_name_rotate": request.POST.get("primary_name_rotate"),
+            "primary_birth_x": request.POST.get("primary_birth_x"),
+            "primary_birth_y": request.POST.get("primary_birth_y"),
+            "primary_birth_rotate": request.POST.get("primary_birth_rotate"),
+            "primary_place_x": request.POST.get("primary_place_x"),
+            "primary_place_y": request.POST.get("primary_place_y"),
+            "primary_place_rotate": request.POST.get("primary_place_rotate"),
+            "subject_translate_x": request.POST.get("subject_translate_x"),
+            "subject_translate_y": request.POST.get("subject_translate_y"),
+        }
+
+        # If no POST settings, use session settings
+        if not any(user_settings.values()):
+            hud_settings = request.session.get("hud_settings", {})
+            user_settings = {
+                "font_family": hud_settings.get("font_family", "Arial"),
+                "primary_name_font_size": hud_settings.get(
+                    "primary_name_font_size", 88
+                ),
+                "primary_info_font_size": hud_settings.get(
+                    "primary_info_font_size", 88
+                ),
+                "default_stroke_width": hud_settings.get("default_stroke_width", 0.5),
+                "primary_stroke_color": hud_settings.get(
+                    "primary_stroke_color", "#000000"
+                ),
+                "primary_font_color": hud_settings.get("primary_font_color", "#000000"),
+                "primary_birth_color": hud_settings.get(
+                    "primary_birth_color", "#000000"
+                ),
+                "primary_place_color": hud_settings.get(
+                    "primary_place_color", "#000000"
+                ),
+                "primary_death_color": hud_settings.get(
+                    "primary_death_color", "#000000"
+                ),
+                "primary_name_x": hud_settings.get("primary_name_x", 0),
+                "primary_name_y": hud_settings.get("primary_name_y", 0),
+                "primary_name_rotate": hud_settings.get("primary_name_rotate", -45),
+                "primary_birth_x": hud_settings.get("primary_birth_x", 0),
+                "primary_birth_y": hud_settings.get("primary_birth_y", 135),
+                "primary_birth_rotate": hud_settings.get("primary_birth_rotate", 45),
+                "primary_place_x": hud_settings.get("primary_place_x", 0),
+                "primary_place_y": hud_settings.get("primary_place_y", 90),
+                "primary_place_rotate": hud_settings.get("primary_place_rotate", -45),
+                "subject_translate_x": hud_settings.get("subject_translate_x", 0),
+                "subject_translate_y": hud_settings.get("subject_translate_y", 0),
+            }
 
         # Validate parameters
         if not individual_id:
@@ -129,12 +191,16 @@ def generate_final_chart(request):
             )
 
         logger.debug(f"Using generator: {generator.__name__}")
+        logger.debug(f"User settings for final chart: {user_settings}")
 
         # Generate the family tree with the selected template
         template_name = f"{template}gen"
         logger.debug(f"Generating PDF with template: {template_name}")
         image_buffer = generator.generate_family_tree(
-            primary_individual, family_data, template=template_name
+            primary_individual,
+            family_data,
+            template=template_name,
+            user_settings=user_settings,
         )
         image_buffer.seek(0)
 

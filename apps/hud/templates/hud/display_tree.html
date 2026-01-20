@@ -280,9 +280,38 @@
 
                         <!-- Action Buttons -->
                         <div class="d-grid gap-2">
-                            <button type="button" id="apply-settings" class="btn btn-primary w-100">
+                            <button type="button" id="apply-settings" class="btn btn-primary w-100" onclick="saveAndApplySettings()">
                                 <i class="bi bi-check"></i> Apply Settings
                             </button>
+                            <script>
+                                function saveAndApplySettings() {
+                                    const form = document.getElementById('hud-settings-form');
+                                    const formData = new FormData(form);
+
+                                    // Save settings to session
+                                    fetch("{% url 'hud:save_settings' %}", {
+                                        method: 'POST',
+                                        headers: {
+                                            'X-CSRFToken': '{{ csrf_token }}',
+                                        },
+                                        body: formData,
+                                    })
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            throw new Error('Failed to save settings');
+                                        }
+                                        return response.json();
+                                    })
+                                    .then(data => {
+                                        if (data.status === 'success') {
+                                            drawPreview();  // Update preview after saving
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Error saving settings:', error);
+                                    });
+                                }
+                            </script>
                             <script>
                                 document.getElementById('hud-settings-form').addEventListener('submit', function() {
                                     setTimeout(drawPreview, 100); // Call drawPreview after form submission
@@ -428,6 +457,7 @@
         const formData = new FormData(form);
 
         // Collect user settings for the preview
+        console.log("Starting drawPreview()");
         const userSettings = {
             font_family: formData.get('font_family') || 'Arial',
             primary_name_font_size: parseInt(formData.get('primary_name_font_size')) || 88,
@@ -450,8 +480,10 @@
             subject_translate_x: parseInt(formData.get('subject_translate_x')) || 0,
             subject_translate_y: parseInt(formData.get('subject_translate_y')) || 0,
         };
+        console.log("User settings:", userSettings);
 
         // Call the backend to generate the preview
+        console.log("Fetching preview from backend...");
         fetch("{% url 'hud:get_1gen_preview' %}", {
             method: 'POST',
             headers: {
@@ -463,19 +495,31 @@
                 user_settings: userSettings,
             }),
         })
-        .then(response => response.blob())
+        .then(response => {
+            console.log("Response status:", response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.blob();
+        })
         .then(blob => {
+            console.log("Received blob:", blob.size, "bytes");
             const previewUrl = URL.createObjectURL(blob);
             const previewImg = new Image();
             previewImg.src = previewUrl;
 
             previewImg.onload = function() {
+                console.log("Preview image loaded successfully");
                 // Scale the preview to fit the canvas
                 const size = Math.min(canvas.width, canvas.height);
                 const offsetX = (canvas.width - size) / 2;
                 const offsetY = (canvas.height - size) / 2;
                 ctx.drawImage(previewImg, offsetX, offsetY, size, size);
                 URL.revokeObjectURL(previewUrl);
+            };
+
+            previewImg.onerror = function() {
+                console.error("Failed to load preview image");
             };
         })
         .catch(error => {
@@ -501,6 +545,7 @@
             fullSizeCtx.drawImage(previewTemplate, 0, 0, 1950, 1950);
 
             // Apply drawing logic to full-size canvas
+            // Apply drawing logic (same as image_1generator.py)
             // Subject translate for minor adjustments (hardcoded default: 0)
             const subjectTranslateX = parseInt(formData.get('subject_translate_x')) || 0;
             const subjectTranslateY = parseInt(formData.get('subject_translate_y')) || 0;
@@ -508,9 +553,13 @@
             fullSizeCtx.translate(975, 975);  // Center of full-size template
             fullSizeCtx.translate(subjectTranslateX, subjectTranslateY);
 
+            // Declare fontFamily for all text elements
+            const fontFamily = userSettings.font_family || 'Arial';
+
             // Draw primary individual's name (same as image_1generator.py)
-            console.log(`Drawing name with font size: ${primaryNameFontSize}px (scaled from ${primaryNameFontSize/scalingFactor}px)`);
-            fullSizeCtx.font = `${primaryNameFontSize}px ${fontFamily}`;
+            console.log(`Drawing name with font size: ${userSettings.primary_name_font_size}px`);
+            const primaryFontColor = userSettings.primary_font_color || '#000000';
+            fullSizeCtx.font = `${userSettings.primary_name_font_size}px ${fontFamily}`;
             fullSizeCtx.fillStyle = primaryFontColor;
             fullSizeCtx.textAlign = 'center';
             fullSizeCtx.textBaseline = 'middle';
@@ -523,33 +572,36 @@
 
             // Rotate and draw name (same as image_1generator.py)
             fullSizeCtx.save();
-            fullSizeCtx.translate(primaryNameX, primaryNameY);
-            fullSizeCtx.rotate(primaryNameRotate * Math.PI / 180);
-            fullSizeCtx.fillText(firstName, 0, -primaryNameFontSize);
+            fullSizeCtx.translate(userSettings.primary_name_x, userSettings.primary_name_y);
+            fullSizeCtx.rotate(userSettings.primary_name_rotate * Math.PI / 180);
+            fullSizeCtx.fillText(firstName, 0, -userSettings.primary_name_font_size);
             fullSizeCtx.fillText(middleName, 0, 0);
-            fullSizeCtx.fillText(lastName, 0, primaryNameFontSize);
+            fullSizeCtx.fillText(lastName, 0, userSettings.primary_name_font_size);
             fullSizeCtx.restore();
 
             // Draw birth date (same as image_1generator.py)
-            console.log(`Drawing birth date with font size: ${primaryInfoFontSize}px (scaled from ${primaryInfoFontSize/scalingFactor}px)`);
-            fullSizeCtx.font = `${primaryInfoFontSize}px ${fontFamily}`;
+            console.log(`Drawing birth date with font size: ${userSettings.primary_info_font_size}px`);
+            fullSizeCtx.font = `${userSettings.primary_info_font_size}px ${fontFamily}`;
+            const primaryBirthColor = userSettings.primary_birth_color || '#000000';
             fullSizeCtx.fillStyle = primaryBirthColor;
             fullSizeCtx.save();
-            fullSizeCtx.translate(primaryBirthX, primaryBirthY);
-            fullSizeCtx.rotate(primaryBirthRotate * Math.PI / 180);
+            fullSizeCtx.translate(userSettings.primary_birth_x, userSettings.primary_birth_y);
+            fullSizeCtx.rotate(userSettings.primary_birth_rotate * Math.PI / 180);
             fullSizeCtx.fillText("{{ individual.birth_date|default:' ' }}", 0, 0);
             fullSizeCtx.restore();
 
             // Draw birth place (same as image_1generator.py)
+            const primaryPlaceColor = userSettings.primary_place_color || '#000000';
             fullSizeCtx.fillStyle = primaryPlaceColor;
             fullSizeCtx.save();
-            fullSizeCtx.translate(primaryPlaceX, primaryPlaceY);
-            fullSizeCtx.rotate(primaryPlaceRotate * Math.PI / 180);
+            fullSizeCtx.translate(userSettings.primary_place_x, userSettings.primary_place_y);
+            fullSizeCtx.rotate(userSettings.primary_place_rotate * Math.PI / 180);
             fullSizeCtx.fillText("{{ individual.birth_place|default:' ' }}", 0, 0);
             fullSizeCtx.restore();
 
             // Draw death date if available (same as image_1generator.py)
             {% if individual.death_date %}
+            const primaryDeathColor = userSettings.primary_death_color || '#000000';
             fullSizeCtx.fillStyle = primaryDeathColor;
             fullSizeCtx.save();
             fullSizeCtx.rotate(180 * Math.PI / 180);

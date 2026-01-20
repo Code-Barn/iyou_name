@@ -1,3 +1,4 @@
+import logging
 import os
 from io import BytesIO
 
@@ -5,6 +6,8 @@ from django.conf import settings
 from wand.color import Color
 from wand.drawing import Drawing
 from wand.image import Image
+
+logger = logging.getLogger(__name__)
 
 
 def generate_family_tree(
@@ -70,7 +73,7 @@ def generate_family_tree(
             # =============================================
 
             # Font settings
-            FONT_FAMILY = user_settings.get("font_family", "Arial")
+            FONT_FAMILY = str(user_settings.get("font_family", "Arial"))
 
             # Stroke settings
             DEFAULT_STROKE_WIDTH = user_settings.get("default_stroke_width", 0.5)
@@ -117,6 +120,7 @@ def generate_family_tree(
 
             with Drawing() as draw:
                 # Set initial drawing properties
+                print(f"DEBUG: User settings for final chart: {user_settings}")
                 draw.font = FONT_FAMILY
                 draw.font_size = PRIMARY_NAME_FONT_SIZE
                 draw.stroke_antialias = STROKE_ANTIALIAS
@@ -263,7 +267,7 @@ def generate_1gen_preview(primary_individual, user_settings=None):
             # =============================================
 
             # Font settings
-            FONT_FAMILY = user_settings.get("font_family", "Arial")
+            FONT_FAMILY = str(user_settings.get("font_family", "Arial"))
 
             # Stroke settings
             DEFAULT_STROKE_WIDTH = user_settings.get("default_stroke_width", 0.5)
@@ -310,6 +314,7 @@ def generate_1gen_preview(primary_individual, user_settings=None):
 
             with Drawing() as draw:
                 # Set initial drawing properties
+                print(f"DEBUG: User settings for preview: {user_settings}")
                 draw.font = FONT_FAMILY
                 draw.font_size = PRIMARY_NAME_FONT_SIZE
                 draw.stroke_antialias = STROKE_ANTIALIAS

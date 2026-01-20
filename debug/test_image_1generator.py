@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import logging
 import os
 import sys
 
@@ -34,6 +35,8 @@ class PersonData:
 
 def test_image_generation():
     """Test image_1generator.py with settings"""
+    # Configure logging
+    logging.basicConfig(level=logging.DEBUG)
     try:
         # Create a mock individual
         individual = PersonData(
