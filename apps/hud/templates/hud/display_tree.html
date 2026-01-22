@@ -35,20 +35,19 @@
                 </div>
                 <div class="card-body" style="display: flex; justify-content: center;">
                     <div class="hud-preview-area" style="width: 800px; height: 800px;">
-                        <div id="hud-canvas-container" style="
+                        <div id="hud-preview-container" style="
                                 width: 800px;
                                 height: 800px;
                                 border: 1px solid #dee2e6;
                                 border-radius: 4px;
                                 margin: 0 auto;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
                             ">
-                            <canvas id="hud-canvas" style="
-                                    display: block;
-                                    width: 800px;
-                                    height: 800px;
-                                    background: white;
-                                    margin: 0 auto;
-                                " width="800" height="800"></canvas>
+                                <img id="hud-preview" src="{% url 'hud:get_1gen_preview' %}?individual_id={{ individual.id }}&t={{ hud_settings_timestamp }}" style="max-width: 100%; max-height: 100%;" />
+
+                        </div>
                             <div class="hud-loading" style="display: none"></div>
                         </div>
                     </div>
@@ -75,20 +74,16 @@
                         <!-- Template Selection -->
                         <div class="mb-4">
                             <label class="form-label">Chart Template</label>
-                            <form method="post" action="{% url 'hud:save_settings' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="individual_id" value="{{ individual.id }}">
-                                <select name="template" class="form-select" onchange="this.form.submit(); setTimeout(drawPreview, 100);">
-                                    {% for key, template in TEMPLATE_MAPPING.items %}
-                                    <option value="{{ key }}" {% if key == hud_settings.template|default:'1' %}selected{% endif %}>
-                                        {{ template.name }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                <div class="form-text">
-                                    Select the number of generations to include in your chart
-                                </div>
-                            </form>
+                            <select name="template" class="form-select" id="template-select" onchange="handleTemplateChange()">
+                                {% for key, template in TEMPLATE_MAPPING.items %}
+                                <option value="{{ key }}" {% if key == hud_settings.template|default:'1' %}selected{% endif %}>
+                                    {{ template.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">
+                                Select the number of generations to include in your chart
+                            </div>
                         </div>
 
                         <!-- Color Settings -->
@@ -285,33 +280,127 @@
                             </button>
                             <script>
                                 function saveAndApplySettings() {
+                                    // FIRST: Ensure all form inputs have their current values
+                                    // This is a workaround for potential form value synchronization issues
+                                    updateAllFormInputs();
+                                    
                                     const form = document.getElementById('hud-settings-form');
                                     const formData = new FormData(form);
 
-                                    // Save settings to session
-                                    fetch("{% url 'hud:save_settings' %}", {
+                                    // Debug: Log raw form data values
+                                    console.log("=== RAW FORM DATA ===");
+                                    console.log("font_family:", formData.get('font_family'));
+                                    console.log("primary_name_font_size:", formData.get('primary_name_font_size'));
+                                    console.log("primary_info_font_size:", formData.get('primary_info_font_size'));
+                                    console.log("default_stroke_width:", formData.get('default_stroke_width'));
+                                    console.log("primary_stroke_color:", formData.get('primary_stroke_color'));
+                                    console.log("primary_font_color:", formData.get('primary_font_color'));
+                                    console.log("primary_birth_color:", formData.get('primary_birth_color'));
+                                    console.log("primary_place_color:", formData.get('primary_place_color'));
+                                    console.log("primary_death_color:", formData.get('primary_death_color'));
+                                    
+                                    // Debug: Also log the actual input element values
+                                    console.log("=== DIRECT INPUT VALUES ===");
+                                    const nameFontSizeInput = document.getElementById('primary-name-font-size-slider');
+                                    const infoFontSizeInput = document.getElementById('primary-info-font-size-slider');
+                                    const strokeWidthInput = document.getElementById('default-stroke-width-slider');
+                                    const fontFamilySelect = document.querySelector('select[name="font_family"]');
+                                    
+                                    console.log("nameFontSizeInput.value:", nameFontSizeInput ? nameFontSizeInput.value : 'NOT FOUND');
+                                    console.log("infoFontSizeInput.value:", infoFontSizeInput ? infoFontSizeInput.value : 'NOT FOUND');
+                                    console.log("strokeWidthInput.value:", strokeWidthInput ? strokeWidthInput.value : 'NOT FOUND');
+                                    console.log("fontFamilySelect.value:", fontFamilySelect ? fontFamilySelect.value : 'NOT FOUND');
+
+                                    // Collect user settings for the preview
+                                    const userSettings = {
+                                        font_family: formData.get('font_family') || 'Arial',
+                                        primary_name_font_size: parseInt(formData.get('primary_name_font_size')) || 88,
+                                        primary_info_font_size: parseInt(formData.get('primary_info_font_size')) || 88,
+                                        default_stroke_width: parseFloat(formData.get('default_stroke_width')) || 0.5,
+                                        primary_stroke_color: formData.get('primary_stroke_color') || '#000000',
+                                        primary_font_color: formData.get('primary_font_color') || '#000000',
+                                        primary_birth_color: formData.get('primary_birth_color') || '#000000',
+                                        primary_place_color: formData.get('primary_place_color') || '#000000',
+                                        primary_death_color: formData.get('primary_death_color') || '#000000',
+                                        primary_name_x: parseInt(formData.get('primary_name_x')) || 0,
+                                        primary_name_y: parseInt(formData.get('primary_name_y')) || 0,
+                                        primary_name_rotate: parseInt(formData.get('primary_name_rotate')) || -45,
+                                        primary_birth_x: parseInt(formData.get('primary_birth_x')) || 0,
+                                        primary_birth_y: parseInt(formData.get('primary_birth_y')) || 135,
+                                        primary_birth_rotate: parseInt(formData.get('primary_birth_rotate')) || 45,
+                                        primary_place_x: parseInt(formData.get('primary_place_x')) || 0,
+                                        primary_place_y: parseInt(formData.get('primary_place_y')) || 90,
+                                        primary_place_rotate: parseInt(formData.get('primary_place_rotate')) || -45,
+                                        subject_translate_x: parseInt(formData.get('subject_translate_x')) || 0,
+                                        subject_translate_y: parseInt(formData.get('subject_translate_y')) || 0,
+                                    };
+
+                                    console.log("Sending user settings:", userSettings);
+                                    console.log("Individual ID:", "{{ individual.id }}");
+                                    
+                                    // Enhanced debugging - log each setting individually
+                                    console.log("Detailed settings being sent:");
+                                    console.log("- Font family:", userSettings.font_family);
+                                    console.log("- Primary name font size:", userSettings.primary_name_font_size);
+                                    console.log("- Primary info font size:", userSettings.primary_info_font_size);
+                                    console.log("- Default stroke width:", userSettings.default_stroke_width);
+                                    console.log("- Primary stroke color:", userSettings.primary_stroke_color);
+                                    console.log("- Primary font color:", userSettings.primary_font_color);
+                                    console.log("- Primary birth color:", userSettings.primary_birth_color);
+                                    console.log("- Primary place color:", userSettings.primary_place_color);
+                                    console.log("- Primary death color:", userSettings.primary_death_color);
+                                    
+                                    // Fetch the preview with the updated settings
+                                    fetch("{% url 'hud:get_1gen_preview' %}", {
                                         method: 'POST',
                                         headers: {
                                             'X-CSRFToken': '{{ csrf_token }}',
+                                            'Content-Type': 'application/json',
                                         },
-                                        body: formData,
+                                        body: JSON.stringify({
+                                            individual_id: "{{ individual.id }}",
+                                            user_settings: userSettings,
+                                        }),
                                     })
                                     .then(response => {
                                         if (!response.ok) {
-                                            throw new Error('Failed to save settings');
+                                            throw new Error('Failed to generate preview: ' + response.status);
                                         }
-                                        return response.json();
+                                        return response.blob();
                                     })
-                                    .then(data => {
-                                        if (data.status === 'success') {
-                                            drawPreview();  // Update preview after saving
+                                    .then(blob => {
+                                        const previewImg = document.getElementById('hud-preview');
+                                        
+                                        // Revoke any existing object URL to prevent memory leaks
+                                        if (previewImg.dataset.currentUrl) {
+                                            URL.revokeObjectURL(previewImg.dataset.currentUrl);
                                         }
+                                        
+                                        // Create object URL and set it directly
+                                        const previewUrl = URL.createObjectURL(blob);
+                                        previewImg.src = previewUrl;
+                                        previewImg.dataset.currentUrl = previewUrl;
+                                        
+                                        console.log('Preview image loaded successfully');
+                                        
+                                        // Add error handler in case the image fails to load
+                                        previewImg.onerror = function() {
+                                            console.error('Failed to load preview image');
+                                            URL.revokeObjectURL(previewUrl);
+                                        };
+                                        
+                                        // Add load handler
+                                        previewImg.onload = function() {
+                                            console.log('Preview image displayed successfully');
+                                            URL.revokeObjectURL(previewUrl);
+                                        };
                                     })
                                     .catch(error => {
-                                        console.error('Error saving settings:', error);
+                                        console.error('Error generating preview:', error);
                                     });
                                 }
                             </script>
+
                             <script>
                                 document.getElementById('hud-settings-form').addEventListener('submit', function() {
                                     setTimeout(drawPreview, 100); // Call drawPreview after form submission
@@ -334,6 +423,29 @@
                         {% csrf_token %}
                         <input type="hidden" name="individual_id" value="{{ individual.id }}">
                         <input type="hidden" name="template" value="{{ hud_settings.template }}">
+
+                        <!-- Include user settings as hidden inputs -->
+                        <input type="hidden" name="font_family" value="{{ hud_settings.font_family|default:'Arial' }}">
+                        <input type="hidden" name="primary_name_font_size" value="{{ hud_settings.primary_name_font_size|default:88 }}">
+                        <input type="hidden" name="primary_info_font_size" value="{{ hud_settings.primary_info_font_size|default:88 }}">
+                        <input type="hidden" name="default_stroke_width" value="{{ hud_settings.default_stroke_width|default:0.5 }}">
+                        <input type="hidden" name="primary_stroke_color" value="{{ hud_settings.primary_stroke_color|default:'#000000' }}">
+                        <input type="hidden" name="primary_font_color" value="{{ hud_settings.primary_font_color|default:'#000000' }}">
+                        <input type="hidden" name="primary_birth_color" value="{{ hud_settings.primary_birth_color|default:'#000000' }}">
+                        <input type="hidden" name="primary_place_color" value="{{ hud_settings.primary_place_color|default:'#000000' }}">
+                        <input type="hidden" name="primary_death_color" value="{{ hud_settings.primary_death_color|default:'#000000' }}">
+                        <input type="hidden" name="primary_name_x" value="{{ hud_settings.primary_name_x|default:0 }}">
+                        <input type="hidden" name="primary_name_y" value="{{ hud_settings.primary_name_y|default:0 }}">
+                        <input type="hidden" name="primary_name_rotate" value="{{ hud_settings.primary_name_rotate|default:-45 }}">
+                        <input type="hidden" name="primary_birth_x" value="{{ hud_settings.primary_birth_x|default:0 }}">
+                        <input type="hidden" name="primary_birth_y" value="{{ hud_settings.primary_birth_y|default:135 }}">
+                        <input type="hidden" name="primary_birth_rotate" value="{{ hud_settings.primary_birth_rotate|default:45 }}">
+                        <input type="hidden" name="primary_place_x" value="{{ hud_settings.primary_place_x|default:0 }}">
+                        <input type="hidden" name="primary_place_y" value="{{ hud_settings.primary_place_y|default:90 }}">
+                        <input type="hidden" name="primary_place_rotate" value="{{ hud_settings.primary_place_rotate|default:-45 }}">
+                        <input type="hidden" name="subject_translate_x" value="{{ hud_settings.subject_translate_x|default:0 }}">
+                        <input type="hidden" name="subject_translate_y" value="{{ hud_settings.subject_translate_y|default:0 }}">
+
                         <button type="submit" class="btn btn-success w-100">
                             <i class="bi bi-file-earmark-pdf"></i> Generate Final Chart
                         </button>
@@ -382,249 +494,119 @@
             </div>
         </div>
     </div>
-</div>
-
-<!-- JavaScript for Live Preview and Slider Updates -->
-<script>
-    const canvas = document.getElementById('hud-canvas');
-    const ctx = canvas.getContext('2d');
-
-    // Update slider values in real-time
-    function setupSlider(sliderId, valueId) {
-        const slider = document.getElementById(sliderId);
-        const valueDisplay = document.getElementById(valueId);
-        if (slider && valueDisplay) {
-            slider.addEventListener('input', function() {
-                valueDisplay.textContent = this.value;
-            });
-        }
-    }
-
-    // Initialize all sliders
-    function initializeSliders() {
-        // Font size sliders
-        setupSlider('primary-name-font-size-slider', 'primary-name-font-size-value');
-        setupSlider('primary-info-font-size-slider', 'primary-info-font-size-value');
-
-        // Stroke width slider
-        setupSlider('default-stroke-width-slider', 'default-stroke-width-value');
-
-        // Translation sliders
-        setupSlider('initial-translate-x-slider', 'initial-translate-x-value');
-        setupSlider('initial-translate-y-slider', 'initial-translate-y-value');
-        setupSlider('subject-translate-x-slider', 'subject-translate-x-value');
-        setupSlider('subject-translate-y-slider', 'subject-translate-y-value');
-
-        // Spacing slider
-        setupSlider('spacing-slider', 'spacing-value');
-
-        // Primary individual coordinates sliders
-        setupSlider('primary-name-x-slider', 'primary-name-x-value');
-        setupSlider('primary-name-y-slider', 'primary-name-y-value');
-        setupSlider('primary-name-rotate-slider', 'primary-name-rotate-value');
-        setupSlider('primary-birth-x-slider', 'primary-birth-x-value');
-        setupSlider('primary-birth-y-slider', 'primary-birth-y-value');
-        setupSlider('primary-birth-rotate-slider', 'primary-birth-rotate-value');
-        setupSlider('primary-place-x-slider', 'primary-place-x-value');
-        setupSlider('primary-place-y-slider', 'primary-place-y-value');
-        setupSlider('primary-place-rotate-slider', 'primary-place-rotate-value');
-    }
-
-    // Initialize sliders when the page loads
-    document.addEventListener('DOMContentLoaded', initializeSliders);
-
-    // Set canvas size
-    function resizeCanvas() {
-        const container = document.getElementById('hud-canvas-container');
-        container.style.width = '800px';
-        container.style.height = '800px';
-        canvas.width = 800;
-        canvas.height = 800;
-        console.log(`Canvas resized to: ${canvas.width}x${canvas.height}`);
-        drawPreview();
-    }
-
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    // Draw preview using image_1generator.py logic
-    function drawPreview() {
-        // Clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Get settings from form (use hardcoded defaults if not set)
-        const form = document.getElementById('hud-settings-form');
-        const formData = new FormData(form);
-
-        // Collect user settings for the preview
-        console.log("Starting drawPreview()");
-        const userSettings = {
-            font_family: formData.get('font_family') || 'Arial',
-            primary_name_font_size: parseInt(formData.get('primary_name_font_size')) || 88,
-            primary_info_font_size: parseInt(formData.get('primary_info_font_size')) || 88,
-            default_stroke_width: parseFloat(formData.get('default_stroke_width')) || 0.5,
-            primary_stroke_color: formData.get('primary_stroke_color') || '#000000',
-            primary_font_color: formData.get('primary_font_color') || '#000000',
-            primary_birth_color: formData.get('primary_birth_color') || '#000000',
-            primary_place_color: formData.get('primary_place_color') || '#000000',
-            primary_death_color: formData.get('primary_death_color') || '#000000',
-            primary_name_x: parseInt(formData.get('primary_name_x')) || 0,
-            primary_name_y: parseInt(formData.get('primary_name_y')) || 0,
-            primary_name_rotate: parseInt(formData.get('primary_name_rotate')) || -45,
-            primary_birth_x: parseInt(formData.get('primary_birth_x')) || 0,
-            primary_birth_y: parseInt(formData.get('primary_birth_y')) || 135,
-            primary_birth_rotate: parseInt(formData.get('primary_birth_rotate')) || 45,
-            primary_place_x: parseInt(formData.get('primary_place_x')) || 0,
-            primary_place_y: parseInt(formData.get('primary_place_y')) || 90,
-            primary_place_rotate: parseInt(formData.get('primary_place_rotate')) || -45,
-            subject_translate_x: parseInt(formData.get('subject_translate_x')) || 0,
-            subject_translate_y: parseInt(formData.get('subject_translate_y')) || 0,
-        };
-        console.log("User settings:", userSettings);
-
-        // Call the backend to generate the preview
-        console.log("Fetching preview from backend...");
-        fetch("{% url 'hud:get_1gen_preview' %}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}',
-            },
-            body: JSON.stringify({
-                individual_id: "{{ individual.id }}",
-                user_settings: userSettings,
-            }),
-        })
-        .then(response => {
-            console.log("Response status:", response.status);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+    <!-- JavaScript for Slider Updates -->
+    <script>
+        // Update slider values in real-time
+        function setupSlider(sliderId, valueId) {
+            const slider = document.getElementById(sliderId);
+            const valueDisplay = document.getElementById(valueId);
+            if (slider && valueDisplay) {
+                slider.addEventListener('input', function() {
+                    valueDisplay.textContent = this.value;
+                    console.log(`Slider ${sliderId} changed to: ${this.value}`);
+                    // Ensure the value attribute is updated
+                    this.setAttribute('value', this.value);
+                });
             }
-            return response.blob();
-        })
-        .then(blob => {
-            console.log("Received blob:", blob.size, "bytes");
-            const previewUrl = URL.createObjectURL(blob);
-            const previewImg = new Image();
-            previewImg.src = previewUrl;
+        }
+        
+        // Handle template selection changes
+        function handleTemplateChange() {
+            const templateSelect = document.getElementById('template-select');
+            const templateValue = templateSelect.value;
+            
+            console.log("Template changed to:", templateValue);
+            
+            // Update the hidden template input
+            const hiddenTemplateInput = document.querySelector('input[name="template"]');
+            if (hiddenTemplateInput) {
+                hiddenTemplateInput.value = templateValue;
+            }
+            
+            // Submit the form to save the template change
+            const form = document.getElementById('hud-settings-form');
+            if (form) {
+                // Create a minimal form submission for just the template change
+                const tempForm = document.createElement('form');
+                tempForm.method = 'post';
+                tempForm.action = "{% url 'hud:save_settings' %}";
+                
+                // Add CSRF token
+                const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]');
+                if (csrfToken) {
+                    tempForm.appendChild(csrfToken.cloneNode(true));
+                }
+                
+                // Add individual_id
+                const individualIdInput = form.querySelector('[name=individual_id]');
+                if (individualIdInput) {
+                    tempForm.appendChild(individualIdInput.cloneNode(true));
+                }
+                
+                // Add template
+                const templateInput = document.createElement('input');
+                templateInput.type = 'hidden';
+                templateInput.name = 'template';
+                templateInput.value = templateValue;
+                tempForm.appendChild(templateInput);
+                
+                document.body.appendChild(tempForm);
+                tempForm.submit();
+                
+                // Call drawPreview after a delay
+                setTimeout(drawPreview, 100);
+            }
+        }
+        
+        // Ensure all form inputs have their current values
+        function updateAllFormInputs() {
+            console.log("Updating all form inputs to ensure current values...");
+            
+            // Get all input elements in the form
+            const form = document.getElementById('hud-settings-form');
+            const inputs = form.querySelectorAll('input, select');
+            
+            inputs.forEach(input => {
+                if (input.type === 'range' || input.type === 'text' || input.type === 'color' || input.tagName === 'SELECT') {
+                    // For range inputs, ensure the value attribute matches the current value
+                    if (input.type === 'range') {
+                        input.setAttribute('value', input.value);
+                    }
+                }
+            });
+            
+            console.log("Form inputs updated.");
+        }
 
-            previewImg.onload = function() {
-                console.log("Preview image loaded successfully");
-                // Scale the preview to fit the canvas
-                const size = Math.min(canvas.width, canvas.height);
-                const offsetX = (canvas.width - size) / 2;
-                const offsetY = (canvas.height - size) / 2;
-                ctx.drawImage(previewImg, offsetX, offsetY, size, size);
-                URL.revokeObjectURL(previewUrl);
-            };
+        // Initialize all sliders
+        function initializeSliders() {
+            // Font size sliders
+            setupSlider('primary-name-font-size-slider', 'primary-name-font-size-value');
+            setupSlider('primary-info-font-size-slider', 'primary-info-font-size-value');
 
-            previewImg.onerror = function() {
-                console.error("Failed to load preview image");
-            };
-        })
-        .catch(error => {
-            console.error('Error generating preview:', error);
-        });
-        // Load the preview template image
-        // Create an off-screen canvas for full-size drawing (1950x1950)
-        const fullSizeCanvas = document.createElement('canvas');
-        fullSizeCanvas.width = 1950;
-        fullSizeCanvas.height = 1950;
-        const fullSizeCtx = fullSizeCanvas.getContext('2d');
+            // Stroke width slider
+            setupSlider('default-stroke-width-slider', 'default-stroke-width-value');
 
-        // Load the full-size template
-        const previewTemplate = new Image();
-        previewTemplate.src = "{% static 'hud/images/preview_image_templates/1GEN_PREVIEW.png' %}";
+            // Translation sliders
+            setupSlider('subject-translate-x-slider', 'subject-translate-x-value');
+            setupSlider('subject-translate-y-slider', 'subject-translate-y-value');
 
-        previewTemplate.onload = function() {
-            // Debug: Log template dimensions
-            console.log(`Template dimensions: ${previewTemplate.width}x${previewTemplate.height}`);
-            console.log(`Canvas dimensions: ${canvas.width}x${canvas.height}`);
+            // Primary individual coordinates sliders
+            setupSlider('primary-name-x-slider', 'primary-name-x-value');
+            setupSlider('primary-name-y-slider', 'primary-name-y-value');
+            setupSlider('primary-name-rotate-slider', 'primary-name-rotate-value');
+            setupSlider('primary-birth-x-slider', 'primary-birth-x-value');
+            setupSlider('primary-birth-y-slider', 'primary-birth-y-value');
+            setupSlider('primary-birth-rotate-slider', 'primary-birth-rotate-value');
+            setupSlider('primary-place-x-slider', 'primary-place-x-value');
+            setupSlider('primary-place-y-slider', 'primary-place-y-value');
+            setupSlider('primary-place-rotate-slider', 'primary-place-rotate-value');
+        }
 
-            // Draw the full-size template
-            fullSizeCtx.drawImage(previewTemplate, 0, 0, 1950, 1950);
-
-            // Apply drawing logic to full-size canvas
-            // Apply drawing logic (same as image_1generator.py)
-            // Subject translate for minor adjustments (hardcoded default: 0)
-            const subjectTranslateX = parseInt(formData.get('subject_translate_x')) || 0;
-            const subjectTranslateY = parseInt(formData.get('subject_translate_y')) || 0;
-            fullSizeCtx.save();
-            fullSizeCtx.translate(975, 975);  // Center of full-size template
-            fullSizeCtx.translate(subjectTranslateX, subjectTranslateY);
-
-            // Declare fontFamily for all text elements
-            const fontFamily = userSettings.font_family || 'Arial';
-
-            // Draw primary individual's name (same as image_1generator.py)
-            console.log(`Drawing name with font size: ${userSettings.primary_name_font_size}px`);
-            const primaryFontColor = userSettings.primary_font_color || '#000000';
-            fullSizeCtx.font = `${userSettings.primary_name_font_size}px ${fontFamily}`;
-            fullSizeCtx.fillStyle = primaryFontColor;
-            fullSizeCtx.textAlign = 'center';
-            fullSizeCtx.textBaseline = 'middle';
-
-            // Split the primary individual's name into parts
-            const nameParts = "{{ individual.full_name }}".split(' ');
-            const firstName = nameParts[0] || "";
-            const middleName = nameParts.length > 2 ? nameParts[1] : "";
-            const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
-
-            // Rotate and draw name (same as image_1generator.py)
-            fullSizeCtx.save();
-            fullSizeCtx.translate(userSettings.primary_name_x, userSettings.primary_name_y);
-            fullSizeCtx.rotate(userSettings.primary_name_rotate * Math.PI / 180);
-            fullSizeCtx.fillText(firstName, 0, -userSettings.primary_name_font_size);
-            fullSizeCtx.fillText(middleName, 0, 0);
-            fullSizeCtx.fillText(lastName, 0, userSettings.primary_name_font_size);
-            fullSizeCtx.restore();
-
-            // Draw birth date (same as image_1generator.py)
-            console.log(`Drawing birth date with font size: ${userSettings.primary_info_font_size}px`);
-            fullSizeCtx.font = `${userSettings.primary_info_font_size}px ${fontFamily}`;
-            const primaryBirthColor = userSettings.primary_birth_color || '#000000';
-            fullSizeCtx.fillStyle = primaryBirthColor;
-            fullSizeCtx.save();
-            fullSizeCtx.translate(userSettings.primary_birth_x, userSettings.primary_birth_y);
-            fullSizeCtx.rotate(userSettings.primary_birth_rotate * Math.PI / 180);
-            fullSizeCtx.fillText("{{ individual.birth_date|default:' ' }}", 0, 0);
-            fullSizeCtx.restore();
-
-            // Draw birth place (same as image_1generator.py)
-            const primaryPlaceColor = userSettings.primary_place_color || '#000000';
-            fullSizeCtx.fillStyle = primaryPlaceColor;
-            fullSizeCtx.save();
-            fullSizeCtx.translate(userSettings.primary_place_x, userSettings.primary_place_y);
-            fullSizeCtx.rotate(userSettings.primary_place_rotate * Math.PI / 180);
-            fullSizeCtx.fillText("{{ individual.birth_place|default:' ' }}", 0, 0);
-            fullSizeCtx.restore();
-
-            // Draw death date if available (same as image_1generator.py)
-            {% if individual.death_date %}
-            const primaryDeathColor = userSettings.primary_death_color || '#000000';
-            fullSizeCtx.fillStyle = primaryDeathColor;
-            fullSizeCtx.save();
-            fullSizeCtx.rotate(180 * Math.PI / 180);
-            fullSizeCtx.fillText("{{ individual.death_date }}", 0, 0);
-            fullSizeCtx.restore();
-            {% endif %}
-
-            fullSizeCtx.restore();
-
-            // Scale the full-size canvas down to 800x800 for display
-            const size = Math.min(canvas.width, canvas.height);
-            const offsetX = (canvas.width - size) / 2;
-            const offsetY = (canvas.height - size) / 2;
-            console.log(`Drawing scaled preview at (${offsetX}, ${offsetY}) with size ${size}x${size}`);
-            ctx.drawImage(fullSizeCanvas, 0, 0, 1950, 1950, offsetX, offsetY, size, size);
-        };
-    }
-
-    // Apply settings when the "Apply Settings" button is clicked
-    document.getElementById('apply-settings').addEventListener('click', function() {
-        drawPreview();
-    });
-</script>
+        // Initialize sliders when the page loads
+        document.addEventListener('DOMContentLoaded', initializeSliders);
+    </script>
 
 </div>
+
 {% endblock %}

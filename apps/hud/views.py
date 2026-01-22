@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from io import BytesIO
 
 from django.http import HttpResponse, JsonResponse
@@ -78,6 +79,9 @@ def display_tree_hud(request):
                 "gedcom_file_id": gedcom_file_id,
                 "individual": individual,
                 "hud_settings": hud_settings,
+                "hud_settings_timestamp": request.session.get(
+                    "hud_settings_timestamp", "0"
+                ),
                 "TEMPLATE_MAPPING": get_template_mapping(),
             },
         )
@@ -90,6 +94,25 @@ def display_tree_hud(request):
 
 @require_http_methods(["POST"])
 @csrf_exempt
+@require_POST
+def update_settings_timestamp(request):
+    """
+    Update the timestamp in the session to force a preview reload.
+    """
+    try:
+        data = json.loads(request.body)
+        timestamp = data.get("timestamp")
+        if timestamp:
+            request.session["hud_settings_timestamp"] = timestamp
+            return JsonResponse({"status": "success"})
+        return JsonResponse(
+            {"status": "error", "message": "No timestamp provided"}, status=400
+        )
+    except Exception as e:
+        logger.error(f"Error updating settings timestamp: {str(e)}")
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+
 def save_hud_settings(request):
     """
     View for saving HUD settings including template selection
@@ -276,25 +299,15 @@ def get_hud_settings(request):
 
 
 @csrf_exempt
-@require_POST
 def get_1gen_preview(request):
     """
-    API endpoint for generating the 1-generation preview
+    API endpoint for generating the 1-generation preview.
+    Supports both GET and POST requests.
     """
     try:
-        data = json.loads(request.body)
-        individual_id = data.get("individual_id")
-        user_settings = data.get("user_settings", {})
-        logger.debug(
-            f"Retrieving settings from session: {request.session.get('hud_settings')}"
-        )
-        logger.debug(f"User settings for preview: {user_settings}")
-
-        # Debug logging
-        logger.debug(f"Generating preview with settings: {user_settings}")
-
-        # If no user_settings provided, use session settings
-        if not user_settings:
+        if request.method == "GET":
+            individual_id = request.GET.get("individual_id")
+            # Use session settings for GET requests
             hud_settings = request.session.get("hud_settings", {})
             user_settings = {
                 "font_family": hud_settings.get("font_family", "Arial"),
@@ -330,8 +343,41 @@ def get_1gen_preview(request):
                 "subject_translate_x": hud_settings.get("subject_translate_x", 0),
                 "subject_translate_y": hud_settings.get("subject_translate_y", 0),
             }
+        elif request.method == "POST":
+            data = json.loads(request.body)
+            individual_id = data.get("individual_id")
+            user_settings = data.get("user_settings", {})
+            # Enhanced debugging to trace the exact issue
+            logger.debug(f"=== DEBUG: Full POST request body ===")
+            logger.debug(f"Raw request body: {request.body}")
+            logger.debug(f"Parsed data: {data}")
+            logger.debug(f"Individual ID: {individual_id}")
+            logger.debug(f"User settings received: {user_settings}")
 
-        # Get the primary individual from the session
+            # Check if user_settings is empty or contains defaults
+            if not user_settings or all(
+                v == 88
+                or v == 0.5
+                or v == "#000000"
+                or v == 0
+                or v == -45
+                or v == 135
+                or v == 90
+                or v == 45
+                for v in user_settings.values()
+            ):
+                logger.warning("WARNING: User settings appear to be default values!")
+            else:
+                logger.info("SUCCESS: User settings contain non-default values!")
+        else:
+            return HttpResponse("Method not allowed", status=405)
+
+        # Get the primary individual from the session or GET parameters
+        if not individual_id:
+            individual_id = request.session.get("selected_individual_id")
+        if not individual_id:
+            return HttpResponse("No individual selected", status=400)
+
         gedcom_file_id = request.session.get("current_gedcom_file_id")
         if not gedcom_file_id:
             return HttpResponse("No GEDCOM file selected", status=400)

@@ -7,6 +7,7 @@ from .views import (
     get_hud_preview,
     get_hud_settings,
     save_hud_settings,
+    update_settings_timestamp,
 )
 
 app_name = "hud"
@@ -18,4 +19,9 @@ urlpatterns = [
     path("get-preview/", get_hud_preview, name="get_preview"),
     path("get-settings/", get_hud_settings, name="get_settings"),
     path("get-1gen-preview/", get_1gen_preview, name="get_1gen_preview"),
+    path(
+        "update-settings-timestamp/",
+        update_settings_timestamp,
+        name="update_settings_timestamp",
+    ),
 ]

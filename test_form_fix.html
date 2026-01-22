@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Form Fix Test</title>
+</head>
+<body>
+    <h1>Form Fix Test</h1>
+    
+    <form id="test-form">
+        <input type="hidden" name="individual_id" value="I1">
+        
+        <div>
+            <label>Font Size: <span id="font-size-value">88</span></label>
+            <input type="range" name="font_size" id="font-size-slider" min="38" max="138" value="88">
+        </div>
+        
+        <div>
+            <label>Font Family:</label>
+            <select name="font_family">
+                <option value="Arial">Arial</option>
+                <option value="Times New Roman">Times New Roman</option>
+            </select>
+        </div>
+        
+        <button type="button" onclick="testFormData()">Test Form Data</button>
+    </form>
+    
+    <script>
+        // Set up slider event listener
+        document.getElementById('font-size-slider').addEventListener('input', function() {
+            document.getElementById('font-size-value').textContent = this.value;
+            console.log(`Slider changed to: ${this.value}`);
+            this.setAttribute('value', this.value);
+        });
+        
+        function testFormData() {
+            const form = document.getElementById('test-form');
+            const formData = new FormData(form);
+            
+            console.log("=== FORM DATA TEST ===");
+            console.log("individual_id:", formData.get('individual_id'));
+            console.log("font_size:", formData.get('font_size'));
+            console.log("font_family:", formData.get('font_family'));
+            
+            // Check if any values are null
+            const values = {
+                individual_id: formData.get('individual_id'),
+                font_size: formData.get('font_size'),
+                font_family: formData.get('font_family')
+            };
+            
+            const nullValues = Object.entries(values).filter(([key, value]) => value === null);
+            
+            if (nullValues.length > 0) {
+                console.error("ERROR: Found null values:", nullValues);
+            } else {
+                console.log("SUCCESS: All form values are non-null!");
+            }
+        }
+    </script>
+</body>
+</html>
