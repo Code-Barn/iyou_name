@@ -10,9 +10,6 @@ from apps.generator.models import PersonData
 # Set up logger
 logger = logging.getLogger(__name__)
 
-# THIS GEDCOM PARSER IS NOT BEING USED BY THE PROGRAM CURRENTLY
-# IT HAS BEEN MODIFIED TO DISCERN ALTERNATE NAMES AND
-# ALWAYS ASSIGNS "BIRTHNAME"
 
 def detect_encoding(file_path: str) -> Optional[str]:
     """
@@ -124,32 +121,14 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
             occupation = None
             events = []
 
-            # Extract name information safely, prioritizing birth names
+            # Extract name information safely
             name_obj = getattr(record, "name", None)
-            birth_name_obj = None
             if name_obj:
-                # Check if there are multiple name records
-                name_records = record.sub_tags("NAME")
-                for name_record in name_records:
-                    # Check for TYPE BIRTH
-                    type_tag = name_record.sub_tag("TYPE")
-                    if type_tag and hasattr(type_tag, "value") and str(type_tag.value).upper() == "BIRTH":
-                        birth_name_obj = name_record
-                        break
-
-                # Use birth name if available, otherwise use the first name
-                if birth_name_obj:
-                    given_name = getattr(birth_name_obj, "given", "")
-                    surname = getattr(birth_name_obj, "surname", "")
-                    full_name = getattr(
-                        birth_name_obj, "format", lambda: f"{given_name} {surname}"
-                    )()
-                else:
-                    given_name = getattr(name_obj, "given", "")
-                    surname = getattr(name_obj, "surname", "")
-                    full_name = getattr(
-                        name_obj, "format", lambda: f"{given_name} {surname}"
-                    )()
+                given_name = getattr(name_obj, "given", "")
+                surname = getattr(name_obj, "surname", "")
+                full_name = getattr(
+                    name_obj, "format", lambda: f"{given_name} {surname}"
+                )()
 
             # Extract sex information safely
             sex = getattr(record, "sex", None)
@@ -395,32 +374,14 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
             occupation = None
             events = []
 
-            # Extract name information safely, prioritizing birth names
+            # Extract name information safely
             name_obj = getattr(record, "name", None)
-            birth_name_obj = None
             if name_obj:
-                # Check if there are multiple name records
-                name_records = record.sub_tags("NAME")
-                for name_record in name_records:
-                    # Check for TYPE BIRTH
-                    type_tag = name_record.sub_tag("TYPE")
-                    if type_tag and hasattr(type_tag, "value") and str(type_tag.value).upper() == "BIRTH":
-                        birth_name_obj = name_record
-                        break
-
-                # Use birth name if available, otherwise use the first name
-                if birth_name_obj:
-                    given_name = getattr(birth_name_obj, "given", "")
-                    surname = getattr(birth_name_obj, "surname", "")
-                    full_name = getattr(
-                        birth_name_obj, "format", lambda: f"{given_name} {surname}"
-                    )()
-                else:
-                    given_name = getattr(name_obj, "given", "")
-                    surname = getattr(name_obj, "surname", "")
-                    full_name = getattr(
-                        name_obj, "format", lambda: f"{given_name} {surname}"
-                    )()
+                given_name = getattr(name_obj, "given", "")
+                surname = getattr(name_obj, "surname", "")
+                full_name = getattr(
+                    name_obj, "format", lambda: f"{given_name} {surname}"
+                )()
 
             # Extract sex information safely
             sex = getattr(record, "sex", None)

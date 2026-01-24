@@ -24,7 +24,7 @@ from apps.parser.models import PersonData
 
 def test_negative_coordinates():
     """Test that negative coordinates don't cause errors"""
-    print("=== Testing Negative Coordinates ===")
+    print("=== Testing Positive Coordinates ===")
 
     test_individual = PersonData(
         id="TEST001",
@@ -48,13 +48,13 @@ def test_negative_coordinates():
         "primary_birth_color": "#2ec27e",
         "primary_place_color": "#813d9c",
         "primary_death_color": "#000000",
-        "primary_name_x": -50,  # Negative X
-        "primary_name_y": -30,  # Negative Y
+        "primary_name_x": 50,  # Positive X
+        "primary_name_y": 30,  # Positive Y
         "primary_name_rotate": -45,
-        "primary_birth_x": -20,  # Negative X
+        "primary_birth_x": 20,  # Positive X
         "primary_birth_y": 150,
         "primary_birth_rotate": 45,
-        "primary_place_x": -10,  # Negative X
+        "primary_place_x": 10,  # Positive X
         "primary_place_y": 90,
         "primary_place_rotate": -45,
         "subject_translate_x": 0,

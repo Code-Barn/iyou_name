@@ -59,20 +59,28 @@ def generate_final_chart(request):
             "primary_name_font_size": get_int("primary_name_font_size", 88),
             "primary_info_font_size": get_int("primary_info_font_size", 88),
             "default_stroke_width": get_float("default_stroke_width", 0.5),
+            "primary_background_color": request.POST.get("primary_background_color", "#FFFFFF"),
             "primary_stroke_color": request.POST.get("primary_stroke_color", "#000000"),
             "primary_font_color": request.POST.get("primary_font_color", "#000000"),
             "primary_birth_color": request.POST.get("primary_birth_color", "#000000"),
-            "primary_place_color": request.POST.get("primary_place_color", "#000000"),
+            "primary_birth_place_color": request.POST.get("primary_place_color", "#000000"),
             "primary_death_color": request.POST.get("primary_death_color", "#000000"),
+            "primary_death_place_color": hud_settings.get("primary_death_place_color", "#000000"),
             "primary_name_x": get_int("primary_name_x", 0),
             "primary_name_y": get_int("primary_name_y", 0),
             "primary_name_rotate": get_int("primary_name_rotate", -45),
             "primary_birth_x": get_int("primary_birth_x", 0),
-            "primary_birth_y": get_int("primary_birth_y", 135),
-            "primary_birth_rotate": get_int("primary_birth_rotate", 45),
-            "primary_place_x": get_int("primary_place_x", 0),
-            "primary_place_y": get_int("primary_place_y", 90),
-            "primary_place_rotate": get_int("primary_place_rotate", -45),
+            "primary_birth_y": get_int("primary_birth_y", 0),
+            "primary_birth_rotate": get_int("primary_birth_rotate", -90),
+            "primary_birth_place_x": get_int("primary_place_x", 0),
+            "primary_birth_place_y": get_int("primary_place_y", 0),
+            "primary_birth_place_rotate": get_int("primary_place_rotate", 0),
+            "primary_death_x": get_int("primary_death_x", 0),
+            "primary_death_y": get_int("primary_death_y", 0),
+            "primary_death_rotate": get_int("primary_death_rotate", 0),
+            "primary_death_place_x": get_int("primary_death_place_x", 0),
+            "primary_death_place_y": get_int("primary_death_place_y", 0),
+            "primary_death_place_rotate": get_int("primary_death_place_rotate", -90),
             "subject_translate_x": get_int("subject_translate_x", 0),
             "subject_translate_y": get_int("subject_translate_y", 0),
         }
@@ -82,35 +90,31 @@ def generate_final_chart(request):
             hud_settings = request.session.get("hud_settings", {})
             user_settings = {
                 "font_family": hud_settings.get("font_family", "Arial"),
-                "primary_name_font_size": hud_settings.get(
-                    "primary_name_font_size", 88
-                ),
-                "primary_info_font_size": hud_settings.get(
-                    "primary_info_font_size", 88
-                ),
+                "primary_name_font_size": hud_settings.get("primary_name_font_size", 88),
+                "primary_info_font_size": hud_settings.get("primary_info_font_size", 88),
                 "default_stroke_width": hud_settings.get("default_stroke_width", 0.5),
-                "primary_stroke_color": hud_settings.get(
-                    "primary_stroke_color", "#000000"
-                ),
+                "primary_background_color": hud_settings.get("primary_background_color", "#FFFFFF"),
+                "primary_stroke_color": hud_settings.get("primary_stroke_color", "#000000"),
                 "primary_font_color": hud_settings.get("primary_font_color", "#000000"),
-                "primary_birth_color": hud_settings.get(
-                    "primary_birth_color", "#000000"
-                ),
-                "primary_place_color": hud_settings.get(
-                    "primary_place_color", "#000000"
-                ),
-                "primary_death_color": hud_settings.get(
-                    "primary_death_color", "#000000"
-                ),
+                "primary_birth_color": hud_settings.get("primary_birth_color", "#000000"),
+                "primary_birth_place_color": hud_settings.get("primary_birth_place_color", "#000000"),
+                "primary_death_color": hud_settings.get("primary_death_color", "#000000"),
+                "primary_death_place_color": hud_settings.get("primary_death_place_color", "#000000"),
                 "primary_name_x": hud_settings.get("primary_name_x", 0),
                 "primary_name_y": hud_settings.get("primary_name_y", 0),
                 "primary_name_rotate": hud_settings.get("primary_name_rotate", -45),
                 "primary_birth_x": hud_settings.get("primary_birth_x", 0),
-                "primary_birth_y": hud_settings.get("primary_birth_y", 135),
-                "primary_birth_rotate": hud_settings.get("primary_birth_rotate", 45),
-                "primary_place_x": hud_settings.get("primary_place_x", 0),
-                "primary_place_y": hud_settings.get("primary_place_y", 90),
-                "primary_place_rotate": hud_settings.get("primary_place_rotate", -45),
+                "primary_birth_y": hud_settings.get("primary_birth_y", 0),
+                "primary_birth_rotate": hud_settings.get("primary_birth_rotate", -90),
+                "primary_birth_place_x": hud_settings.get("primary_place_x", 0),
+                "primary_birth_place_y": hud_settings.get("primary_place_y", 0),
+                "primary_birth_place_rotate": hud_settings.get("primary_place_rotate", 0),
+                "primary_death_x": hud_settings.get("primary_death_x", 0),
+                "primary_death_y": hud_settings.get("primary_death_y", 0),
+                "primary_death_rotate": hud_settings.get("primary_death_rotate", 0),
+                "primary_death_place_x": hud_settings.get("primary_death_place_x", 0),
+                "primary_death_place_y": hud_settings.get("primary_death_place_y", 0),
+                "primary_death_place_rotate": hud_settings.get("primary_death_place_rotate", -90),
                 "subject_translate_x": hud_settings.get("subject_translate_x", 0),
                 "subject_translate_y": hud_settings.get("subject_translate_y", 0),
             }

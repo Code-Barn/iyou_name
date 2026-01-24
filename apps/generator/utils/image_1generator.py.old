@@ -34,7 +34,11 @@ def generate_family_tree(primary_individual, family_data, template="1gen", user_
 
     # Construct the full path to the template file
     try:
-        template_path = os.path.join(settings.BASE_DIR, "apps/charts/static/charts/images/base_image_templates", "US_LETTER_1GEN_BW.pdf")
+        template_path = os.path.join(
+            settings.BASE_DIR,
+            "apps/charts/static/charts/images/base_image_templates",
+            "US_LETTER_1GEN_BW.pdf",
+        )
 
         print(f"DEBUG: Template path: {template_path}")
         print(f"DEBUG: File exists: {os.path.exists(template_path)}")
@@ -42,16 +46,7 @@ def generate_family_tree(primary_individual, family_data, template="1gen", user_
         # Create a new image with the same dimensions as your template
         with Image(filename=template_path, resolution=300) as img:
 
-            print(f"Preview image loaded successfully: {img.width}x{img.height}")
-
-            # =============================================
-            # COLORED BACKGROUND COORDINATES
-            # =============================================
-            # Color square coordinates
-            BACKGROUND_LEFT = 7
-            BACKGROUND_TOP = 7
-            BACKGROUND_WIDTH = 1936
-            BACKGROUND_HEIGHT = 1936
+            print(f"Image loaded successfully: {img.width}x{img.height}")
 
             # =============================================
             # TRANSLATION SETTINGS TUNING
@@ -62,11 +57,8 @@ def generate_family_tree(primary_individual, family_data, template="1gen", user_
             INITIAL_TRANSLATE_Y = 0
 
             # Subject translation (not used in final PDF)
-            SUBJECT_TRANSLATE_X = int(user_settings.get("subject_translate_x", 0))
-            SUBJECT_TRANSLATE_Y = int(user_settings.get("subject_translate_y", 0))
-
-            print(f"DEBUG: SUBJECT_TRANSLATE_X set to: {SUBJECT_TRANSLATE_X}")
-            print(f"DEBUG: SUBJECT_TRANSLATE_Y set to: {SUBJECT_TRANSLATE_Y}")
+            SUBJECT_TRANSLATE_X = 0
+            SUBJECT_TRANSLATE_Y = 0
 
             # =============================================
             # DRAWING SETTINGS TUNING
@@ -74,7 +66,6 @@ def generate_family_tree(primary_individual, family_data, template="1gen", user_
 
             # Font settings
             FONT_FAMILY = str(user_settings.get("font_family", "Arial"))
-
             print(f"DEBUG: FONT_FAMILY set to: {FONT_FAMILY}")
 
             # Stroke settings
@@ -92,37 +83,37 @@ def generate_family_tree(primary_individual, family_data, template="1gen", user_
             # =============================================
 
             # Primary individual colors
-            PRIMARY_BACKGROUND_COLOR = Color(user_settings.get("primary_background_color", "#FFFFFF"))
             PRIMARY_FONT_COLOR = Color(user_settings.get("primary_font_color", "black"))
             PRIMARY_BIRTH_COLOR = Color(user_settings.get("primary_birth_color", "black"))
-            PRIMARY_BIRTH_PLACE_COLOR = Color(user_settings.get("primary_birth_place_color", "black"))
+            PRIMARY_BIRTH_PLACE_COLOR = Color(user_settings.get("primary_place_color", "black"))
             PRIMARY_DEATH_COLOR = Color(user_settings.get("primary_death_color", "black"))
             PRIMARY_DEATH_PLACE_COLOR = Color(user_settings.get("primary_death_place_color", "black"))
             PRIMARY_STROKE_COLOR = Color(user_settings.get("primary_stroke_color", "black"))
 
-            print(f"DEBUG: PRIMARY_BACKGROUND_COLOR set to: {PRIMARY_BACKGROUND_COLOR}")
             print(f"DEBUG: PRIMARY_FONT_COLOR set to: {PRIMARY_FONT_COLOR}")
             print(f"DEBUG: PRIMARY_BIRTH_COLOR set to: {PRIMARY_BIRTH_COLOR}")
             print(f"DEBUG: PRIMARY_BIRTH_PLACE_COLOR set to: {PRIMARY_BIRTH_PLACE_COLOR}")
             print(f"DEBUG: PRIMARY_DEATH_COLOR set to: {PRIMARY_DEATH_COLOR}")
             print(f"DEBUG: PRIMARY_DEATH_PLACE_COLOR set to: {PRIMARY_DEATH_PLACE_COLOR}")
+            print(f"DEBUG: PRIMARY_STROKE_COLOR set to: {PRIMARY_STROKE_COLOR}")
+
 
             # Primary individual coordinates
             PRIMARY_NAME_X = int(user_settings.get("primary_name_x", 0))
             PRIMARY_NAME_Y = int(user_settings.get("primary_name_y", 0))
             PRIMARY_NAME_ROTATE = int(user_settings.get("primary_name_rotate", -45))
             PRIMARY_BIRTH_X = int(user_settings.get("primary_birth_x", 0))
-            PRIMARY_BIRTH_Y = int(user_settings.get("primary_birth_y", 0))
-            PRIMARY_BIRTH_ROTATE = int(user_settings.get("primary_birth_rotate", -90))
-            PRIMARY_BIRTH_PLACE_X = int(user_settings.get("primary_birth_place_x", 0))
-            PRIMARY_BIRTH_PLACE_Y = int(user_settings.get("primary_birth_place_y", 0))
-            PRIMARY_BIRTH_PLACE_ROTATE = int(user_settings.get("primary_birth_place_rotate", 0))
+            PRIMARY_BIRTH_Y = int(user_settings.get("primary_birth_y", 135))
+            PRIMARY_BIRTH_ROTATE = int(user_settings.get("primary_birth_rotate", 45))
+            PRIMARY_BIRTH_PLACE_X = int(user_settings.get("primary_place_x", 0))
+            PRIMARY_BIRTH_PLACE_Y = int(user_settings.get("primary_place_y", 90))
+            PRIMARY_BIRTH_PLACE_ROTATE = int(user_settings.get("primary_place_rotate", -45))
             PRIMARY_DEATH_X = int(user_settings.get("primary_death_x", 0))
             PRIMARY_DEATH_Y = int(user_settings.get("primary_death_y", 0))
             PRIMARY_DEATH_ROTATE = int(user_settings.get("primary_death_rotate", 0))
             PRIMARY_DEATH_PLACE_X = int(user_settings.get("primary_death_place_x", 0))
             PRIMARY_DEATH_PLACE_Y = int(user_settings.get("primary_death_place_y", 0))
-            PRIMARY_DEATH_PLACE_ROTATE = int(user_settings.get("primary_death_place_rotate", -90))
+            PRIMARY_DEATH_PLACE_ROTATE = int(user_settings.get("primary_death_place_rotate", 0))
 
             print(f"DEBUG: PRIMARY_NAME_X set to: {PRIMARY_NAME_X}")
             print(f"DEBUG: PRIMARY_NAME_Y set to: {PRIMARY_NAME_Y}")
@@ -147,31 +138,22 @@ def generate_family_tree(primary_individual, family_data, template="1gen", user_
             print(f"DEBUG: PRIMARY_NAME_FONT_SIZE set to: {PRIMARY_NAME_FONT_SIZE}")
             print(f"DEBUG: PRIMARY_INFO_FONT_SIZE set to: {PRIMARY_INFO_FONT_SIZE}")
 
+            # Debug: Print a summary of all settings being used
+            print(f"DEBUG: Using settings - Font: {FONT_FAMILY}, Name Size: {PRIMARY_NAME_FONT_SIZE}, Info Size: {PRIMARY_INFO_FONT_SIZE}")
+            print(f"DEBUG: Colors - Font: {PRIMARY_FONT_COLOR}, Birth: {PRIMARY_BIRTH_COLOR}, Place: {PRIMARY_BIRTH_PLACE_COLOR}")
+
             with Drawing() as draw:
 
-                draw.push()
-
                 # Set initial drawing properties
-                print(f"DEBUG: User settings for preview: {user_settings}")
+                print(f"DEBUG: User settings for final chart: {user_settings}")
 
                 draw.font = FONT_FAMILY
                 draw.font_size = PRIMARY_NAME_FONT_SIZE
                 draw.stroke_antialias = STROKE_ANTIALIAS
 
-                # Draw background square
-                draw.fill_color = PRIMARY_BACKGROUND_COLOR
-                print(f"Drawing rectangle at (left={BACKGROUND_LEFT}, top={BACKGROUND_TOP}, width={BACKGROUND_WIDTH}, height={BACKGROUND_HEIGHT})")
-                draw.rectangle(
-                    left=BACKGROUND_LEFT,
-                    top=BACKGROUND_TOP,
-                    width=BACKGROUND_WIDTH,
-                    height=BACKGROUND_HEIGHT,
-                )
-
                 # Initial translation
-                #print(f"Translating coordinates by (x={INITIAL_TRANSLATE_X}, y={INITIAL_TRANSLATE_Y})")
-
-                #draw.translate(x=INITIAL_TRANSLATE_X, y=INITIAL_TRANSLATE_Y)
+                print(f"Translating coordinates by (x={INITIAL_TRANSLATE_X}, y={INITIAL_TRANSLATE_Y})")
+                draw.translate(x=INITIAL_TRANSLATE_X, y=INITIAL_TRANSLATE_Y)
 
                 # =============================================
                 # PRIMARY INDIVIDUAL DRAWING
@@ -206,61 +188,45 @@ def generate_family_tree(primary_individual, family_data, template="1gen", user_
                 last_name = name_parts[-1] if len(name_parts) > 1 else ""
 
                 # Draw each part of the name with newline characters and centered alignment
-                draw.text(PRIMARY_NAME_X, PRIMARY_NAME_Y, f"{first_name}\n{middle_name}\n{last_name}")
+                # Draw each part of the name with newline characters and centered alignment
+                draw.text(
+                    PRIMARY_NAME_X,
+                    PRIMARY_NAME_Y,
+                    f"{first_name}\n{middle_name}\n{last_name}",
+                )
                 print(f"Drawn text at ({PRIMARY_NAME_X}, {PRIMARY_NAME_Y}): {first_name}\n{middle_name}\n{last_name}")
 
-                # REVERSE
-                #reset_value = PRIMARY_NAME_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
-                draw.pop()
-                print("Setting gravity to: west")
-                draw.gravity = "west"
-                draw.push()
-
-                # Primary info font size
-                print(f"Setting font_size to: {PRIMARY_INFO_FONT_SIZE}")
-                draw.font_size = PRIMARY_INFO_FONT_SIZE
-
-                draw
                 # Draw statements for birthdate
                 print(f"Rotating by: {PRIMARY_BIRTH_ROTATE} degrees")
                 draw.rotate(PRIMARY_BIRTH_ROTATE)
-
+                print(f"Setting font_size to: {PRIMARY_INFO_FONT_SIZE}")
+                draw.font_size = PRIMARY_INFO_FONT_SIZE
                 print(f"Setting fill_color to: {PRIMARY_BIRTH_COLOR}")
                 draw.fill_color = PRIMARY_BIRTH_COLOR
 
-                pifx_birth, pify_birth = PRIMARY_BIRTH_X, PRIMARY_BIRTH_Y
-                draw.text(pifx_birth, pify_birth, primary_individual.birth_date or " ")
-                print(f"Drawn text at ({pifx_birth}, {pify_birth}): {primary_individual.birth_date or ' '}")
-
-                # REVERSE
-                #reset_value = PRIMARY_BIRTH_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
-                draw.pop()
-                draw.push()
+                draw.text(
+                    PRIMARY_BIRTH_X,
+                    PRIMARY_BIRTH_Y,
+                    primary_individual.birth_date or " ",
+                )
+                print(f"Drawn text at ({PRIMARY_BIRTH_X}, {PRIMARY_BIRTH_Y}): {primary_individual.birth_date or ' '}")
 
                 # Draw statements for birthplace
-                print(f"Rotating by: {PRIMARY_BIRTH_PLACE_ROTATE} degrees")
-                draw.rotate(PRIMARY_BIRTH_PLACE_ROTATE)
-
                 print(f"Setting fill_color to: {PRIMARY_BIRTH_PLACE_COLOR}")
                 draw.fill_color = PRIMARY_BIRTH_PLACE_COLOR
 
-                pifx_birth_place, pify_birth_place = PRIMARY_BIRTH_PLACE_X, PRIMARY_BIRTH_PLACE_Y
-                draw.text(pifx_birth_place, pify_birth_place, primary_individual.birth_place or " ")
-                print(f"Drawn text at ({pifx_birth_place}, {pify_birth_place}): {primary_individual.birth_place or ' '}")
+                print(f"Rotating by: {PRIMARY_BIRTH_PLACE_ROTATE} degrees")
+                draw.rotate(PRIMARY_BIRTH_PLACE_ROTATE)
 
-                # REVERSE
-                #reset_value = PRIMARY_BIRTH_PLACE_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
-                draw.pop()
-                draw.push()
+                draw.text(
+                    PRIMARY_BIRTH_PLACE_X,
+                    PRIMARY_BIRTH_PLACE_Y,
+                    primary_individual.birth_place or " ",
+                )
+                print(f"Drawn text at ({PRIMARY_BIRTH_PLACE_X}, {PRIMARY_BIRTH_PLACE_Y}): {primary_individual.birth_place or ' '}")
 
                 # Draw statements for deathdate
-                #draw.rotate(180)
+                draw.rotate(180)
                 draw.stroke_width = DEFAULT_STROKE_WIDTH
                 print(f"Setting fill_color to: {PRIMARY_DEATH_COLOR}")
                 draw.fill_color = PRIMARY_DEATH_COLOR
@@ -269,10 +235,16 @@ def generate_family_tree(primary_individual, family_data, template="1gen", user_
                 PRIMARY_DEATH_X = int(user_settings.get("primary_death_x", 0))
                 PRIMARY_DEATH_Y = int(user_settings.get("primary_death_y", 0))
                 PRIMARY_DEATH_ROTATE = int(user_settings.get("primary_death_rotate", 0))
+                PRIMARY_DEATH_PLACE_X = int(user_settings.get("primary_death_place_x", 0))
+                PRIMARY_DEATH_PLACE_Y = int(user_settings.get("primary_death_place_y", 0))
+                PRIMARY_DEATH_PLACE_ROTATE = int(user_settings.get("primary_death_place_rotate", 0))
 
                 print(f"DEBUG: PRIMARY_DEATH_X set to: {PRIMARY_DEATH_X}")
                 print(f"DEBUG: PRIMARY_DEATH_Y set to: {PRIMARY_DEATH_Y}")
                 print(f"DEBUG: PRIMARY_DEATH_ROTATE set to: {PRIMARY_DEATH_ROTATE}")
+                print(f"DEBUG: PRIMARY_DEATH_PLACE_X set to: {PRIMARY_DEATH_PLACE_X}")
+                print(f"DEBUG: PRIMARY_DEATH_PLACE_Y set to: {PRIMARY_DEATH_PLACE_Y}")
+                print(f"DEBUG: PRIMARY_DEATH_PLACE_ROTATE set to: {PRIMARY_DEATH_PLACE_ROTATE}")
 
                 # Apply death date rotation
                 print(f"Rotating by: {PRIMARY_DEATH_ROTATE} degrees")
@@ -282,41 +254,15 @@ def generate_family_tree(primary_individual, family_data, template="1gen", user_
                 draw.text(pifx_death, pify_death, primary_individual.death_date or " ")
                 print(f"Drawn text at ({pifx_death}, {pify_death}): {primary_individual.death_date or ' '}")
 
-                # REVERSE
-                #reset_value = PRIMARY_DEATH_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
-                draw.pop()
-                draw.push()
-
-                # Draw statements for deathplace
-                #draw.rotate(180)
-                draw.stroke_width = DEFAULT_STROKE_WIDTH
+                # Draw primary individual's deathplace if available
                 print(f"Setting fill_color to: {PRIMARY_DEATH_PLACE_COLOR}")
                 draw.fill_color = PRIMARY_DEATH_PLACE_COLOR
-
-                # Draw primary individual's death date if available
-                PRIMARY_DEATH_PLACE_X = int(user_settings.get("primary_death_place_x", 0))
-                PRIMARY_DEATH_PLACE_Y = int(user_settings.get("primary_death_place_y", 0))
-                PRIMARY_DEATH_PLACE_ROTATE = int(user_settings.get("primary_death_place_rotate", 0))
-
-                print(f"DEBUG: PRIMARY_DEATH_PLACE_X set to: {PRIMARY_DEATH_PLACE_X}")
-                print(f"DEBUG: PRIMARY_DEATH_PLACE_Y set to: {PRIMARY_DEATH_PLACE_Y}")
-                print(f"DEBUG: PRIMARY_DEATH_PLACE_ROTATE set to: {PRIMARY_DEATH_PLACE_ROTATE}")
-
-                # Apply death date rotation
                 print(f"Rotating by: {PRIMARY_DEATH_PLACE_ROTATE} degrees")
                 draw.rotate(PRIMARY_DEATH_PLACE_ROTATE)
 
                 pifx_death_place, pify_death_place = PRIMARY_DEATH_PLACE_X, PRIMARY_DEATH_PLACE_Y
                 draw.text(pifx_death_place, pify_death_place, primary_individual.death_place or " ")
                 print(f"Drawn text at ({pifx_death_place}, {pify_death_place}): {primary_individual.death_place or ' '}")
-
-                # REVERSE
-                #reset_value = PRIMARY_DEATH_PLACE_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
-                draw.pop()
 
                 # Apply the drawing to the image
                 draw(img)
@@ -329,7 +275,7 @@ def generate_family_tree(primary_individual, family_data, template="1gen", user_
                 return img_buffer
 
     except Exception as e:
-        print(f"ERROR: Failed to generate preview: {str(e)}")
+        print(f"ERROR: Failed to generate family tree: {str(e)}")
         raise
 
 
@@ -351,7 +297,11 @@ def generate_1gen_preview(primary_individual, user_settings=None):
 
     try:
         # Construct the full path to the preview template file
-        template_path = os.path.join(settings.BASE_DIR, "apps/hud/static/hud/images/preview_image_templates", "1GEN_PREVIEW.png")
+        template_path = os.path.join(
+            settings.BASE_DIR,
+            "apps/hud/static/hud/images/preview_image_templates",
+            "1GEN_PREVIEW.png",
+        )
 
         print(f"DEBUG: Preview template path: {template_path}")
         print(f"DEBUG: File exists: {os.path.exists(template_path)}")
@@ -360,15 +310,6 @@ def generate_1gen_preview(primary_individual, user_settings=None):
         with Image(filename=template_path, resolution=300) as img:
 
             print(f"Preview image loaded successfully: {img.width}x{img.height}")
-
-            # =============================================
-            # COLORED BACKGROUND COORDINATES
-            # =============================================
-            # Color square coordinates
-            BACKGROUND_LEFT = 7
-            BACKGROUND_TOP = 7
-            BACKGROUND_WIDTH = 1936
-            BACKGROUND_HEIGHT = 1936
 
             # =============================================
             # TRANSLATION SETTINGS TUNING
@@ -409,37 +350,31 @@ def generate_1gen_preview(primary_individual, user_settings=None):
             # =============================================
 
             # Primary individual colors
-            PRIMARY_BACKGROUND_COLOR = Color(user_settings.get("primary_background_color", "#FFFFFF"))
             PRIMARY_FONT_COLOR = Color(user_settings.get("primary_font_color", "black"))
             PRIMARY_BIRTH_COLOR = Color(user_settings.get("primary_birth_color", "black"))
-            PRIMARY_BIRTH_PLACE_COLOR = Color(user_settings.get("primary_birth_place_color", "black"))
+            PRIMARY_BIRTH_PLACE_COLOR = Color(user_settings.get("primary_place_color", "black"))
             PRIMARY_DEATH_COLOR = Color(user_settings.get("primary_death_color", "black"))
             PRIMARY_DEATH_PLACE_COLOR = Color(user_settings.get("primary_death_place_color", "black"))
             PRIMARY_STROKE_COLOR = Color(user_settings.get("primary_stroke_color", "black"))
 
-            print(f"DEBUG: PRIMARY_BACKGROUND_COLOR set to: {PRIMARY_BACKGROUND_COLOR}")
             print(f"DEBUG: PRIMARY_FONT_COLOR set to: {PRIMARY_FONT_COLOR}")
             print(f"DEBUG: PRIMARY_BIRTH_COLOR set to: {PRIMARY_BIRTH_COLOR}")
             print(f"DEBUG: PRIMARY_BIRTH_PLACE_COLOR set to: {PRIMARY_BIRTH_PLACE_COLOR}")
             print(f"DEBUG: PRIMARY_DEATH_COLOR set to: {PRIMARY_DEATH_COLOR}")
             print(f"DEBUG: PRIMARY_DEATH_PLACE_COLOR set to: {PRIMARY_DEATH_PLACE_COLOR}")
 
+
+
             # Primary individual coordinates
             PRIMARY_NAME_X = int(user_settings.get("primary_name_x", 0))
             PRIMARY_NAME_Y = int(user_settings.get("primary_name_y", 0))
             PRIMARY_NAME_ROTATE = int(user_settings.get("primary_name_rotate", -45))
             PRIMARY_BIRTH_X = int(user_settings.get("primary_birth_x", 0))
-            PRIMARY_BIRTH_Y = int(user_settings.get("primary_birth_y", 0))
-            PRIMARY_BIRTH_ROTATE = int(user_settings.get("primary_birth_rotate", -90))
-            PRIMARY_BIRTH_PLACE_X = int(user_settings.get("primary_birth_place_x", 0))
-            PRIMARY_BIRTH_PLACE_Y = int(user_settings.get("primary_birth_place_y", 0))
-            PRIMARY_BIRTH_PLACE_ROTATE = int(user_settings.get("primary_birth_place_rotate", 0))
-            PRIMARY_DEATH_X = int(user_settings.get("primary_death_x", 0))
-            PRIMARY_DEATH_Y = int(user_settings.get("primary_death_y", 0))
-            PRIMARY_DEATH_ROTATE = int(user_settings.get("primary_death_rotate", 0))
-            PRIMARY_DEATH_PLACE_X = int(user_settings.get("primary_death_place_x", 0))
-            PRIMARY_DEATH_PLACE_Y = int(user_settings.get("primary_death_place_y", 0))
-            PRIMARY_DEATH_PLACE_ROTATE = int(user_settings.get("primary_death_place_rotate", -90))
+            PRIMARY_BIRTH_Y = int(user_settings.get("primary_birth_y", 135))
+            PRIMARY_BIRTH_ROTATE = int(user_settings.get("primary_birth_rotate", 45))
+            PRIMARY_BIRTH_PLACE_X = int(user_settings.get("primary_place_x", 0))
+            PRIMARY_BIRTH_PLACE_Y = int(user_settings.get("primary_place_y", 90))
+            PRIMARY_BIRTH_PLACE_ROTATE = int(user_settings.get("primary_place_rotate", -45))
 
             print(f"DEBUG: PRIMARY_NAME_X set to: {PRIMARY_NAME_X}")
             print(f"DEBUG: PRIMARY_NAME_Y set to: {PRIMARY_NAME_Y}")
@@ -450,12 +385,6 @@ def generate_1gen_preview(primary_individual, user_settings=None):
             print(f"DEBUG: PRIMARY_BIRTH_PLACE_X set to: {PRIMARY_BIRTH_PLACE_X}")
             print(f"DEBUG: PRIMARY_BIRTH_PLACE_Y set to: {PRIMARY_BIRTH_PLACE_Y}")
             print(f"DEBUG: PRIMARY_BIRTH_PLACE_ROTATE set to: {PRIMARY_BIRTH_PLACE_ROTATE}")
-            print(f"DEBUG: PRIMARY_DEATH_X set to: {PRIMARY_DEATH_X}")
-            print(f"DEBUG: PRIMARY_DEATH_Y set to: {PRIMARY_DEATH_Y}")
-            print(f"DEBUG: PRIMARY_DEATH_ROTATE set to: {PRIMARY_DEATH_ROTATE}")
-            print(f"DEBUG: PRIMARY_DEATH_PLACE_X set to: {PRIMARY_DEATH_PLACE_X}")
-            print(f"DEBUG: PRIMARY_DEATH_PLACE_Y set to: {PRIMARY_DEATH_PLACE_Y}")
-            print(f"DEBUG: PRIMARY_DEATH_PLACE_ROTATE set to: {PRIMARY_DEATH_PLACE_ROTATE}")
 
             # Primary individual font sizes
             PRIMARY_NAME_FONT_SIZE = int(user_settings.get("primary_name_font_size", 88))
@@ -466,24 +395,12 @@ def generate_1gen_preview(primary_individual, user_settings=None):
 
             with Drawing() as draw:
 
-                draw.push()
-
                 # Set initial drawing properties
                 print(f"DEBUG: User settings for preview: {user_settings}")
 
                 draw.font = FONT_FAMILY
                 draw.font_size = PRIMARY_NAME_FONT_SIZE
                 draw.stroke_antialias = STROKE_ANTIALIAS
-
-                # Draw background square
-                draw.fill_color = PRIMARY_BACKGROUND_COLOR
-                print(f"Drawing rectangle at (left={BACKGROUND_LEFT}, top={BACKGROUND_TOP}, width={BACKGROUND_WIDTH}, height={BACKGROUND_HEIGHT})")
-                draw.rectangle(
-                    left=BACKGROUND_LEFT,
-                    top=BACKGROUND_TOP,
-                    width=BACKGROUND_WIDTH,
-                    height=BACKGROUND_HEIGHT,
-                )
 
                 # Initial translation
                 print(f"Translating coordinates by (x={INITIAL_TRANSLATE_X}, y={INITIAL_TRANSLATE_Y})")
@@ -523,22 +440,17 @@ def generate_1gen_preview(primary_individual, user_settings=None):
                 last_name = name_parts[-1] if len(name_parts) > 1 else ""
 
                 # Draw each part of the name with newline characters and centered alignment
-                draw.text(PRIMARY_NAME_X, PRIMARY_NAME_Y, f"{first_name}\n{middle_name}\n{last_name}")
+                draw.text(
+                    PRIMARY_NAME_X,
+                    PRIMARY_NAME_Y,
+                    f"{first_name}\n{middle_name}\n{last_name}",
+                )
                 print(f"Drawn text at ({PRIMARY_NAME_X}, {PRIMARY_NAME_Y}): {first_name}\n{middle_name}\n{last_name}")
-
-                # REVERSE
-                #reset_value = PRIMARY_NAME_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
-                draw.pop()
-                print("Setting gravity to: forget")
-                draw.gravity = "forget"
-                draw.push()
 
                 # Primary info font size
                 print(f"Setting font_size to: {PRIMARY_INFO_FONT_SIZE}")
                 draw.font_size = PRIMARY_INFO_FONT_SIZE
-
+                
                 # Draw statements for birthdate
                 print(f"Rotating by: {PRIMARY_BIRTH_ROTATE} degrees")
                 draw.rotate(PRIMARY_BIRTH_ROTATE)
@@ -547,15 +459,10 @@ def generate_1gen_preview(primary_individual, user_settings=None):
                 draw.fill_color = PRIMARY_BIRTH_COLOR
 
                 pifx_birth, pify_birth = PRIMARY_BIRTH_X, PRIMARY_BIRTH_Y
+                
                 draw.text(pifx_birth, pify_birth, primary_individual.birth_date or " ")
                 print(f"Drawn text at ({pifx_birth}, {pify_birth}): {primary_individual.birth_date or ' '}")
 
-                # REVERSE
-                #reset_value = PRIMARY_BIRTH_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
-                draw.pop()
-                draw.push()
 
                 # Draw statements for birthplace
                 print(f"Rotating by: {PRIMARY_BIRTH_PLACE_ROTATE} degrees")
@@ -565,23 +472,24 @@ def generate_1gen_preview(primary_individual, user_settings=None):
                 draw.fill_color = PRIMARY_BIRTH_PLACE_COLOR
 
                 pifx_birth_place, pify_birth_place = PRIMARY_BIRTH_PLACE_X, PRIMARY_BIRTH_PLACE_Y
+
                 draw.text(pifx_birth_place, pify_birth_place, primary_individual.birth_place or " ")
                 print(f"Drawn text at ({pifx_birth_place}, {pify_birth_place}): {primary_individual.birth_place or ' '}")
 
-                # REVERSE
-                #reset_value = PRIMARY_BIRTH_PLACE_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
-                draw.pop()
-                draw.push()
-
                 # Draw statements for deathdate
-                #draw.rotate(180)
+                draw.rotate(180)
                 draw.stroke_width = DEFAULT_STROKE_WIDTH
                 print(f"Setting fill_color to: {PRIMARY_DEATH_COLOR}")
                 draw.fill_color = PRIMARY_DEATH_COLOR
 
                 # Draw primary individual's death date if available
+                PRIMARY_DEATH_X = int(user_settings.get("primary_death_x", 0))
+                PRIMARY_DEATH_Y = int(user_settings.get("primary_death_y", 0))
+                PRIMARY_DEATH_ROTATE = int(user_settings.get("primary_death_rotate", 0))
+
+                print(f"DEBUG: PRIMARY_DEATH_X set to: {PRIMARY_DEATH_X}")
+                print(f"DEBUG: PRIMARY_DEATH_Y set to: {PRIMARY_DEATH_Y}")
+                print(f"DEBUG: PRIMARY_DEATH_ROTATE set to: {PRIMARY_DEATH_ROTATE}")
 
                 # Apply death date rotation
                 print(f"Rotating by: {PRIMARY_DEATH_ROTATE} degrees")
@@ -591,34 +499,31 @@ def generate_1gen_preview(primary_individual, user_settings=None):
                 draw.text(pifx_death, pify_death, primary_individual.death_date or " ")
                 print(f"Drawn text at ({pifx_death}, {pify_death}): {primary_individual.death_date or ' '}")
 
-                # REVERSE
-                #reset_value = PRIMARY_DEATH_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
-                draw.pop()
-                draw.push()
 
                 # Draw statements for deathplace
-                #draw.rotate(180)
+                draw.rotate(180)
                 draw.stroke_width = DEFAULT_STROKE_WIDTH
                 print(f"Setting fill_color to: {PRIMARY_DEATH_PLACE_COLOR}")
                 draw.fill_color = PRIMARY_DEATH_PLACE_COLOR
 
-                # Draw primary individual's death place if available
+                # Draw primary individual's death date if available
+                PRIMARY_DEATH_PLACE_X = int(user_settings.get("primary_death_place_x", 0))
+                PRIMARY_DEATH_PLACE_Y = int(user_settings.get("primary_death_place_y", 0))
+                PRIMARY_DEATH_PLACE_ROTATE = int(user_settings.get("primary_death_place_rotate", 0))
+
+                print(f"DEBUG: PRIMARY_DEATH_PLACE_X set to: {PRIMARY_DEATH_PLACE_X}")
+                print(f"DEBUG: PRIMARY_DEATH_PLACE_Y set to: {PRIMARY_DEATH_PLACE_Y}")
+                print(f"DEBUG: PRIMARY_DEATH_PLACE_ROTATE set to: {PRIMARY_DEATH_PLACE_ROTATE}")
 
                 # Apply death date rotation
                 print(f"Rotating by: {PRIMARY_DEATH_PLACE_ROTATE} degrees")
                 draw.rotate(PRIMARY_DEATH_PLACE_ROTATE)
 
                 pifx_death_place, pify_death_place = PRIMARY_DEATH_PLACE_X, PRIMARY_DEATH_PLACE_Y
-                draw.text(pifx_death_place, pify_death_place, primary_individual.death_place or " ")
-                print(f"Drawn text at ({pifx_death_place}, {pify_death_place}): {primary_individual.death_place or ' '}")
+                draw.text(pifx_death_place, pify_death_place, primary_individual.death_date or " ")
+                print(f"Drawn text at ({pifx_death_place}, {pify_death_place}): {primary_individual.death_date or ' '}")
 
-                # REVERSE
-                #reset_value = PRIMARY_DEATH_PLACE_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
-                draw.pop()
+
 
                 # Apply the drawing to the image
                 draw(img)
