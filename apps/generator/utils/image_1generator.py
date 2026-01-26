@@ -531,13 +531,14 @@ def generate_1gen_preview(primary_individual, user_settings=None):
                 #draw.rotate(reset_value)
                 #print(f"Resetting rotation by: {reset_value} degrees")
                 draw.pop()
-                print("Setting gravity to: forget")
-                draw.gravity = "forget"
+
                 draw.push()
 
-                # Primary info font size
-                print(f"Setting font_size to: {PRIMARY_INFO_FONT_SIZE}")
+                draw.font = FONT_FAMILY
                 draw.font_size = PRIMARY_INFO_FONT_SIZE
+                draw.stroke_color = PRIMARY_STROKE_COLOR
+                draw.stroke_width = DEFAULT_STROKE_WIDTH
+                draw.stroke_antialias = STROKE_ANTIALIAS
 
                 # Draw statements for birthdate
                 print(f"Rotating by: {PRIMARY_BIRTH_ROTATE} degrees")
@@ -545,6 +546,8 @@ def generate_1gen_preview(primary_individual, user_settings=None):
 
                 print(f"Setting fill_color to: {PRIMARY_BIRTH_COLOR}")
                 draw.fill_color = PRIMARY_BIRTH_COLOR
+
+                draw.gravity = "west"
 
                 pifx_birth, pify_birth = PRIMARY_BIRTH_X, PRIMARY_BIRTH_Y
                 draw.text(pifx_birth, pify_birth, primary_individual.birth_date or " ")
@@ -555,11 +558,20 @@ def generate_1gen_preview(primary_individual, user_settings=None):
                 #draw.rotate(reset_value)
                 #print(f"Resetting rotation by: {reset_value} degrees")
                 draw.pop()
+
                 draw.push()
+
+                draw.font = FONT_FAMILY
+                draw.font_size = PRIMARY_INFO_FONT_SIZE
+                draw.stroke_color = PRIMARY_STROKE_COLOR
+                draw.stroke_width = DEFAULT_STROKE_WIDTH
+                draw.stroke_antialias = STROKE_ANTIALIAS
 
                 # Draw statements for birthplace
                 print(f"Rotating by: {PRIMARY_BIRTH_PLACE_ROTATE} degrees")
                 draw.rotate(PRIMARY_BIRTH_PLACE_ROTATE)
+
+                draw.gravity = "south"
 
                 print(f"Setting fill_color to: {PRIMARY_BIRTH_PLACE_COLOR}")
                 draw.fill_color = PRIMARY_BIRTH_PLACE_COLOR
@@ -573,7 +585,14 @@ def generate_1gen_preview(primary_individual, user_settings=None):
                 #draw.rotate(reset_value)
                 #print(f"Resetting rotation by: {reset_value} degrees")
                 draw.pop()
+
                 draw.push()
+
+                draw.font = FONT_FAMILY
+                draw.font_size = PRIMARY_INFO_FONT_SIZE
+                draw.stroke_color = PRIMARY_STROKE_COLOR
+                draw.stroke_width = DEFAULT_STROKE_WIDTH
+                draw.stroke_antialias = STROKE_ANTIALIAS
 
                 # Draw statements for deathdate
                 #draw.rotate(180)
@@ -582,6 +601,7 @@ def generate_1gen_preview(primary_individual, user_settings=None):
                 draw.fill_color = PRIMARY_DEATH_COLOR
 
                 # Draw primary individual's death date if available
+                draw.gravity = "north"
 
                 # Apply death date rotation
                 print(f"Rotating by: {PRIMARY_DEATH_ROTATE} degrees")
@@ -596,7 +616,14 @@ def generate_1gen_preview(primary_individual, user_settings=None):
                 #draw.rotate(reset_value)
                 #print(f"Resetting rotation by: {reset_value} degrees")
                 draw.pop()
+
                 draw.push()
+
+                draw.font = FONT_FAMILY
+                draw.font_size = PRIMARY_INFO_FONT_SIZE
+                draw.stroke_color = PRIMARY_STROKE_COLOR
+                draw.stroke_width = DEFAULT_STROKE_WIDTH
+                draw.stroke_antialias = STROKE_ANTIALIAS
 
                 # Draw statements for deathplace
                 #draw.rotate(180)
@@ -609,6 +636,8 @@ def generate_1gen_preview(primary_individual, user_settings=None):
                 # Apply death date rotation
                 print(f"Rotating by: {PRIMARY_DEATH_PLACE_ROTATE} degrees")
                 draw.rotate(PRIMARY_DEATH_PLACE_ROTATE)
+
+                draw.gravity = "east"
 
                 pifx_death_place, pify_death_place = PRIMARY_DEATH_PLACE_X, PRIMARY_DEATH_PLACE_Y
                 draw.text(pifx_death_place, pify_death_place, primary_individual.death_place or " ")

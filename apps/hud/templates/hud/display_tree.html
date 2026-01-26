@@ -419,9 +419,10 @@
                                     console.log("- Default stroke width:", userSettings.default_stroke_width);
                                     console.log("- Primary stroke color:", userSettings.primary_stroke_color);
                                     console.log("- Primary font color:", userSettings.primary_font_color);
-                                    console.log("- Primary birth color:", userSettings.primary_birth_color);
-                                    console.log("- Primary place color:", userSettings.primary_birth_place_color);
-                                    console.log("- Primary death color:", userSettings.primary_death_color);
+                                    console.log("- Primary birth date color:", userSettings.primary_birth_color);
+                                    console.log("- Primary birth place color:", userSettings.primary_birth_place_color);
+                                    console.log("- Primary death date color:", userSettings.primary_death_color);
+                                    console.log("- Primary death place color:", userSettings.primary_death_place_color);
 
                                     // Fetch the preview with the updated settings
                                     fetch("{% url 'hud:get_1gen_preview' %}", {

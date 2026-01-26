@@ -132,10 +132,12 @@ def save_hud_settings(request):
         primary_stroke_color = request.POST.get("primary_stroke_color") or "#000000"
 
         # Primary individual colors
+        primary_background_color = request.POST.get("primary_background_color") or "#ffffff"
         primary_font_color = request.POST.get("primary_font_color") or "#000000"
         primary_birth_color = request.POST.get("primary_birth_color") or "#000000"
-        primary_place_color = request.POST.get("primary_place_color") or "#000000"
+        primary_birth_place_color = request.POST.get("primary_birth_place_color") or "#000000"
         primary_death_color = request.POST.get("primary_death_color") or "#000000"
+        primary_death_place_color = request.POST.get("primary_death_place_color") or "#000000"
 
         # Translation settings (subject_translate only)
         subject_translate_x = request.POST.get("subject_translate_x")
@@ -163,32 +165,31 @@ def save_hud_settings(request):
             "default_stroke_width": float(default_stroke_width)
             if default_stroke_width
             else 0.5,
+            "primary_background_color": primary_background_color,
             "primary_stroke_color": primary_stroke_color,
             "primary_font_color": primary_font_color,
             "primary_birth_color": primary_birth_color,
-            "primary_place_color": primary_place_color,
+            "primary_birth_place_color": primary_birth_place_color,
             "primary_death_color": primary_death_color,
+            "primary_death_place_color": primary_death_place_color,
             "primary_name_x": int(request.POST.get("primary_name_x", 0)),
             "primary_name_y": int(request.POST.get("primary_name_y", 0)),
             "primary_name_rotate": int(request.POST.get("primary_name_rotate", -45)),
             "primary_birth_x": int(request.POST.get("primary_birth_x", 0)),
-            "primary_birth_y": int(request.POST.get("primary_birth_y", 135)),
-            "primary_birth_rotate": int(request.POST.get("primary_birth_rotate", 45)),
-            "primary_place_x": int(request.POST.get("primary_place_x", 0)),
-            "primary_place_y": int(request.POST.get("primary_place_y", 90)),
-            "primary_place_rotate": int(request.POST.get("primary_place_rotate", -45)),
-            "subject_translate_x": int(subject_translate_x)
-            if subject_translate_x
-            else 0,
-            "subject_translate_y": int(subject_translate_y)
-            if subject_translate_y
-            else 0,
-        }
+            "primary_birth_y": int(request.POST.get("primary_birth_y", 0)),
+            "primary_birth_rotate": int(request.POST.get("primary_birth_rotate", -90)),
+            "primary_birth_place_x": int(request.POST.get("primary_birth_place_x", 0)),
+            "primary_birth_place_y": int(request.POST.get("primary_birth_place_y", 0)),
+            "primary_birth_place_rotate": int(request.POST.get("primary_birth_place_rotate", 0)),
+            "primary_death_x": int(request.POST.get("primary_death_x", 0)),
+            "primary_death_y": int(request.POST.get("primary_death_y", 0)),
+            "primary_death_rotate": int(request.POST.get("primary_death_rotate", 0)),
+            "primary_death_place_x": int(request.POST.get("primary_death_place_x", 0)),
+            "primary_death_place_y": int(request.POST.get("primary_death_place_y", 0)),
+            "primary_death_place_rotate": int(request.POST.get("primary_death_place_rotate", -90)),
 
-        # Return success response
-        logger.debug(
-            f"Settings saved to session: {request.session.get('hud_settings')}"
-        )
+            "Settings saved to session": request.session.get('hud_settings')
+        }
         return JsonResponse({"status": "success"})
 
     # Fallback for invalid request method
@@ -311,35 +312,28 @@ def get_1gen_preview(request):
             hud_settings = request.session.get("hud_settings", {})
             user_settings = {
                 "font_family": hud_settings.get("font_family", "Arial"),
-                "primary_name_font_size": hud_settings.get(
-                    "primary_name_font_size", 88
-                ),
-                "primary_info_font_size": hud_settings.get(
-                    "primary_info_font_size", 88
-                ),
+                "primary_name_font_size": hud_settings.get("primary_name_font_size", 88),
+                "primary_info_font_size": hud_settings.get("primary_info_font_size", 88),
                 "default_stroke_width": hud_settings.get("default_stroke_width", 0.5),
-                "primary_stroke_color": hud_settings.get(
-                    "primary_stroke_color", "#000000"
-                ),
+                "primary_stroke_color": hud_settings.get("primary_stroke_color", "#000000"),
+                "primary_background_color": hud_settings.get("primary_background_color", "#ffffff"),
                 "primary_font_color": hud_settings.get("primary_font_color", "#000000"),
-                "primary_birth_color": hud_settings.get(
-                    "primary_birth_color", "#000000"
-                ),
-                "primary_place_color": hud_settings.get(
-                    "primary_place_color", "#000000"
-                ),
-                "primary_death_color": hud_settings.get(
-                    "primary_death_color", "#000000"
-                ),
+                "primary_birth_color": hud_settings.get("primary_birth_color", "#000000"),
+                "primary_birth_place_color": hud_settings.get("primary_birth_place_color", "#000000"),
+                "primary_death_color": hud_settings.get("primary_death_color", "#000000"),
+                "primary_death_place_color": hud_settings.get("primary_death_place_color", "#000000"),
                 "primary_name_x": hud_settings.get("primary_name_x", 0),
                 "primary_name_y": hud_settings.get("primary_name_y", 0),
                 "primary_name_rotate": hud_settings.get("primary_name_rotate", -45),
                 "primary_birth_x": hud_settings.get("primary_birth_x", 0),
-                "primary_birth_y": hud_settings.get("primary_birth_y", 135),
-                "primary_birth_rotate": hud_settings.get("primary_birth_rotate", 45),
-                "primary_place_x": hud_settings.get("primary_place_x", 0),
-                "primary_place_y": hud_settings.get("primary_place_y", 90),
-                "primary_place_rotate": hud_settings.get("primary_place_rotate", -45),
+                "primary_birth_y": hud_settings.get("primary_birth_y", 0),
+                "primary_birth_rotate": hud_settings.get("primary_birth_rotate", -90),
+                "primary_birth_place_x": hud_settings.get("primary_birth_place_x", 0),
+                "primary_birth_place_y": hud_settings.get("primary_birth_place_y", 0),
+                "primary_birth_place_rotate": hud_settings.get("primary_birth_place_rotate", 0),
+                "primary_death_place_x": hud_settings.get("primary_death_place_x", 0),
+                "primary_death_place_y": hud_settings.get("primary_death_place_y", 0),
+                "primary_death_place_rotate": hud_settings.get("primary_death_place_rotate", -90),
                 "subject_translate_x": hud_settings.get("subject_translate_x", 0),
                 "subject_translate_y": hud_settings.get("subject_translate_y", 0),
             }
@@ -359,11 +353,10 @@ def get_1gen_preview(request):
                 v == 88
                 or v == 0.5
                 or v == "#000000"
+                or v == "#FFFFFF"
                 or v == 0
                 or v == -45
-                or v == 135
-                or v == 90
-                or v == 45
+                or v == -90
                 for v in user_settings.values()
             ):
                 logger.warning("WARNING: User settings appear to be default values!")
