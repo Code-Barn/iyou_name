@@ -25,7 +25,7 @@ class PreviewEndpointTest(TestCase):
             "user_settings": {
                 "font_family": "Times New Roman",
                 "primary_name_font_size": 120,  # Changed from default 88
-                "primary_info_font_size": 100,  # Changed from default 88
+                "primary_date_info_font_size": 100,  # Changed from default 88
                 "default_stroke_width": 1.5,  # Changed from default 0.5
                 "primary_stroke_color": "#FF0000",  # Changed from default #000000
                 "primary_font_color": "#00FF00",  # Changed from default #000000

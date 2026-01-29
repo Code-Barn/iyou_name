@@ -139,16 +139,23 @@
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <label class="form-label">Name Font Size (px)</label>
-                                    <input type="range" name="primary_name_font_size" class="form-range" min="38" max="138" value="{{ hud_settings.primary_name_font_size|default:88 }}" id="primary-name-font-size-slider">
+                                    <input type="range" name="primary_name_font_size" class="form-range" min="38" max="138" value="{{ hud_settings.primary_name_font_size|default:84 }}" id="primary-name-font-size-slider">
                                     <div class="text-center">
-                                        <span id="primary-name-font-size-value">{{ hud_settings.primary_name_font_size|default:88 }}</span>px
+                                        <span id="primary-name-font-size-value">{{ hud_settings.primary_name_font_size|default:84 }}</span>px
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">Info Font Size (px)</label>
-                                    <input type="range" name="primary_info_font_size" class="form-range" min="38" max="138" value="{{ hud_settings.primary_info_font_size|default:88 }}" id="primary-info-font-size-slider">
+                                    <label class="form-label">Date Info Font Size (px)</label>
+                                    <input type="range" name="primary_date_info_font_size" class="form-range" min="38" max="68" value="{{ hud_settings.primary_date_info_font_size|default:60 }}" id="primary-date-info-font-size-slider">
                                     <div class="text-center">
-                                        <span id="primary-info-font-size-value">{{ hud_settings.primary_info_font_size|default:88 }}</span>px
+                                        <span id="primary-date-info-font-size-value">{{ hud_settings.primary_date_info_font_size|default:60 }}</span>px
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Place Info Font Size (px)</label>
+                                    <input type="range" name="primary_place_info_font_size" class="form-range" min="18" max="48" value="{{ hud_settings.primary_place_info_font_size|default:28 }}" id="primary-place-info-font-size-slider">
+                                    <div class="text-center">
+                                        <span id="primary-place-info-font-size-value">{{ hud_settings.primary_place_info_font_size|default:28 }}</span>px
                                     </div>
                                 </div>
                             </div>
@@ -233,7 +240,7 @@
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <label class="form-label">Birthdate X Position</label>
-                                    <input type="range" name="primary_birth_x" class="form-range" min="0" max="1900" value="{{ hud_settings.primary_birth_x|default:0 }}" id="primary-birth-x-slider">
+                                    <input type="range" name="primary_birth_x" class="form-range" min="0" max="300" value="{{ hud_settings.primary_birth_x|default:0 }}" id="primary-birth-x-slider">
                                     <div class="text-center">
                                         <span id="primary-birth-x-value">{{ hud_settings.primary_birth_x|default:0 }}</span>
                                     </div>
@@ -267,7 +274,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Birthplace Y Position</label>
-                                    <input type="range" name="primary_birth_place_y" class="form-range" min="0" max="1900" value="{{ hud_settings.primary_birth_place_y|default:0 }}" id="primary-place-y-slider">
+                                    <input type="range" name="primary_birth_place_y" class="form-range" min="0" max="300" value="{{ hud_settings.primary_birth_place_y|default:0 }}" id="primary-place-y-slider">
                                     <div class="text-center">
                                         <span id="primary-place-y-value">{{ hud_settings.primary_birth_place_y|default:0 }}</span>
                                     </div>
@@ -294,7 +301,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Death Date Y Position</label>
-                                    <input type="range" name="primary_death_y" class="form-range" min="0" max="1900" value="{{ hud_settings.primary_death_y|default:0 }}" id="primary-death-y-slider">
+                                    <input type="range" name="primary_death_y" class="form-range" min="0" max="300" value="{{ hud_settings.primary_death_y|default:0 }}" id="primary-death-y-slider">
                                     <div class="text-center">
                                         <span id="primary-death-y-value">{{ hud_settings.primary_death_y|default:0 }}</span>
                                     </div>
@@ -314,7 +321,7 @@
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <label class="form-label">Death Place X Position</label>
-                                    <input type="range" name="primary_death_place_x" class="form-range" min="0" max="1900" value="{{ hud_settings.primary_death_place_x|default:0 }}" id="primary-death-place-x-slider">
+                                    <input type="range" name="primary_death_place_x" class="form-range" min="0" max="300" value="{{ hud_settings.primary_death_place_x|default:0 }}" id="primary-death-place-x-slider">
                                     <div class="text-center">
                                         <span id="primary-death-place-x-value">{{ hud_settings.primary_death_place_x|default:0 }}</span>
                                     </div>
@@ -355,7 +362,8 @@
                                     console.log("font_family:", formData.get('font_family'));
                                     console.log("primary_background_color:", formData.get('primary_background_color'));
                                     console.log("primary_name_font_size:", formData.get('primary_name_font_size'));
-                                    console.log("primary_info_font_size:", formData.get('primary_info_font_size'));
+                                    console.log("primary_date_info_font_size:", formData.get('primary_date_info_font_size'));
+                                    console.log("primary_place_info_font_size:", formData.get('primary_place_info_font_size'));
                                     console.log("default_stroke_width:", formData.get('default_stroke_width'));
                                     console.log("primary_stroke_color:", formData.get('primary_stroke_color'));
                                     console.log("primary_font_color:", formData.get('primary_font_color'));
@@ -366,7 +374,7 @@
                                     // Debug: Also log the actual input element values
                                     console.log("=== DIRECT INPUT VALUES ===");
                                     const nameFontSizeInput = document.getElementById('primary-name-font-size-slider');
-                                    const infoFontSizeInput = document.getElementById('primary-info-font-size-slider');
+                                    const infoFontSizeInput = document.getElementById('primary-date-info-font-size-slider');
                                     const strokeWidthInput = document.getElementById('default-stroke-width-slider');
                                     const fontFamilySelect = document.querySelector('select[name="font_family"]');
 
@@ -385,8 +393,9 @@
                                         primary_death_color: formData.get('primary_death_color') || '#000000',
                                         primary_death_place_color: formData.get('primary_death_place_color') || '#000000',
                                         font_family: formData.get('font_family') || 'Arial',
-                                        primary_name_font_size: parseInt(formData.get('primary_name_font_size')) || 88,
-                                        primary_info_font_size: parseInt(formData.get('primary_info_font_size')) || 88,
+                                        primary_name_font_size: parseInt(formData.get('primary_name_font_size')) || 84,
+                                        primary_date_info_font_size: parseInt(formData.get('primary_date_info_font_size')) || 60,
+                                        primary_place_info_font_size: parseInt(formData.get('primary_place_info_font_size')) || 28,
                                         default_stroke_width: parseFloat(formData.get('default_stroke_width')) || 0.5,
                                         primary_name_x: parseInt(formData.get('primary_name_x')) || 0,
                                         primary_name_y: parseInt(formData.get('primary_name_y')) || 0,
@@ -414,7 +423,8 @@
                                     console.log("Detailed settings being sent:");
                                     console.log("- Font family:", userSettings.font_family);
                                     console.log("- Primary name font size:", userSettings.primary_name_font_size);
-                                    console.log("- Primary info font size:", userSettings.primary_info_font_size);
+                                    console.log("- Primary date info font size:", userSettings.primary_date_info_font_size);
+                                    console.log("- Primary place info font size:", userSettings.primary_place_info_font_size);
                                     console.log("- Primary background color:", userSettings.primary_background_color);
                                     console.log("- Default stroke width:", userSettings.default_stroke_width);
                                     console.log("- Primary stroke color:", userSettings.primary_stroke_color);
@@ -501,8 +511,9 @@
 
                         <!-- Include user settings as hidden inputs -->
                         <input type="hidden" name="font_family" value="{{ hud_settings.font_family|default:'Arial' }}">
-                        <input type="hidden" name="primary_name_font_size" value="{{ hud_settings.primary_name_font_size|default:88 }}">
-                        <input type="hidden" name="primary_info_font_size" value="{{ hud_settings.primary_info_font_size|default:88 }}">
+                        <input type="hidden" name="primary_name_font_size" value="{{ hud_settings.primary_name_font_size|default:84 }}">
+                        <input type="hidden" name="primary_date_info_font_size" value="{{ hud_settings.primary_date_info_font_size|default:60 }}">
+                        <input type="hidden" name="primary_place_info_font_size" value="{{ hud_settings.primary_place_info_font_size|default:28 }}">
                         <input type="hidden" name="default_stroke_width" value="{{ hud_settings.default_stroke_width|default:0.5 }}">
                         <input type="hidden" name="primary_background_color" value="{{ hud_settings.primary_background_color|default:'#FFFFFF' }}">
                         <input type="hidden" name="primary_stroke_color" value="{{ hud_settings.primary_stroke_color|default:'#000000' }}">
@@ -666,7 +677,8 @@
         function initializeSliders() {
             // Font size sliders
             setupSlider('primary-name-font-size-slider', 'primary-name-font-size-value');
-            setupSlider('primary-info-font-size-slider', 'primary-info-font-size-value');
+            setupSlider('primary-date-info-font-size-slider', 'primary-date-info-font-size-value');
+            setupSlider('primary-place-info-font-size-slider', 'primary-place-info-font-size-value');
 
             // Stroke width slider
             setupSlider('default-stroke-width-slider', 'default-stroke-width-value');

@@ -125,7 +125,8 @@ def save_hud_settings(request):
         # Font settings
         font_family = request.POST.get("font_family") or "Arial"
         primary_name_font_size = request.POST.get("primary_name_font_size")
-        primary_info_font_size = request.POST.get("primary_info_font_size")
+        primary_date_info_font_size = request.POST.get("primary_date_info_font_size")
+        primary_place_info_font_size = request.POST.get("primary_place_info_font_size")
 
         # Stroke settings
         default_stroke_width = request.POST.get("default_stroke_width")
@@ -158,10 +159,13 @@ def save_hud_settings(request):
             "font_family": font_family,
             "primary_name_font_size": int(primary_name_font_size)
             if primary_name_font_size
-            else 88,
-            "primary_info_font_size": int(primary_info_font_size)
-            if primary_info_font_size
-            else 88,
+            else 84,
+            "primary_date_info_font_size": int(primary_date_info_font_size)
+            if primary_date_info_font_size
+            else 60,
+            "primary_place_info_font_size": int(primary_place_info_font_size)
+            if primary_place_info_font_size
+            else 48,
             "default_stroke_width": float(default_stroke_width)
             if default_stroke_width
             else 0.5,
@@ -298,7 +302,7 @@ def get_hud_settings(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
-
+# THIS IS THE ONE BEING USED/SEEN IN CONSOLE
 @csrf_exempt
 def get_1gen_preview(request):
     """
@@ -312,8 +316,9 @@ def get_1gen_preview(request):
             hud_settings = request.session.get("hud_settings", {})
             user_settings = {
                 "font_family": hud_settings.get("font_family", "Arial"),
-                "primary_name_font_size": hud_settings.get("primary_name_font_size", 88),
-                "primary_info_font_size": hud_settings.get("primary_info_font_size", 88),
+                "primary_name_font_size": hud_settings.get("primary_name_font_size", 84),
+                "primary_date_info_font_size": hud_settings.get("primary_date_info_font_size", 60),
+                "primary_place_info_font_size": hud_settings.get("primary_place_info_font_size", 28),
                 "default_stroke_width": hud_settings.get("default_stroke_width", 0.5),
                 "primary_stroke_color": hud_settings.get("primary_stroke_color", "#000000"),
                 "primary_background_color": hud_settings.get("primary_background_color", "#ffffff"),
@@ -331,6 +336,9 @@ def get_1gen_preview(request):
                 "primary_birth_place_x": hud_settings.get("primary_birth_place_x", 0),
                 "primary_birth_place_y": hud_settings.get("primary_birth_place_y", 0),
                 "primary_birth_place_rotate": hud_settings.get("primary_birth_place_rotate", 0),
+                "primary_death_x": hud_settings.get("primary_death_x", 0),
+                "primary_death_y": hud_settings.get("primary_death_y", 0),
+                "primary_death_rotate": hud_settings.get("primary_death_rotate", 0),
                 "primary_death_place_x": hud_settings.get("primary_death_place_x", 0),
                 "primary_death_place_y": hud_settings.get("primary_death_place_y", 0),
                 "primary_death_place_rotate": hud_settings.get("primary_death_place_rotate", -90),
@@ -350,7 +358,9 @@ def get_1gen_preview(request):
 
             # Check if user_settings is empty or contains defaults
             if not user_settings or all(
-                v == 88
+                v == 84
+                or v == 60
+                or v == 28
                 or v == 0.5
                 or v == "#000000"
                 or v == "#FFFFFF"

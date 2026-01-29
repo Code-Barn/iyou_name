@@ -55,7 +55,8 @@ def test_image_generation():
         # Test settings - these should be clearly visible in the output
         test_settings = {
             "primary_name_font_size": 60,  # Large font size
-            "primary_info_font_size": 40,
+            "primary_date_info_font_size": 40,
+            "primary_place_info_font_size": 32,
             "font_family": "Arial",
             "primary_font_color": "red",  # Bright color
             "primary_name_x": 200,  # Move text away from edge

@@ -141,11 +141,14 @@ def generate_family_tree(primary_individual, family_data, template="1gen", user_
             print(f"DEBUG: PRIMARY_DEATH_PLACE_ROTATE set to: {PRIMARY_DEATH_PLACE_ROTATE}")
 
             # Primary individual font sizes
-            PRIMARY_NAME_FONT_SIZE = int(user_settings.get("primary_name_font_size", 88))
-            PRIMARY_INFO_FONT_SIZE = int(user_settings.get("primary_info_font_size", 88))
+            PRIMARY_NAME_FONT_SIZE = int(user_settings.get("primary_name_font_size", 84))
+            PRIMARY_DATE_INFO_FONT_SIZE = int(user_settings.get("primary_date_info_font_size", 60))
+            PRIMARY_PLACE_INFO_FONT_SIZE = int(user_settings.get("primary_place_info_font_size", 28))
 
             print(f"DEBUG: PRIMARY_NAME_FONT_SIZE set to: {PRIMARY_NAME_FONT_SIZE}")
-            print(f"DEBUG: PRIMARY_INFO_FONT_SIZE set to: {PRIMARY_INFO_FONT_SIZE}")
+            print(f"DEBUG: PRIMARY_DATE_INFO_FONT_SIZE set to: {PRIMARY_DATE_INFO_FONT_SIZE}")
+            print(f"DEBUG: PRIMARY_PLACE_INFO_FONT_SIZE set to: {PRIMARY_PLACE_INFO_FONT_SIZE}")
+
 
             with Drawing() as draw:
 
@@ -169,9 +172,9 @@ def generate_family_tree(primary_individual, family_data, template="1gen", user_
                 )
 
                 # Initial translation
-                #print(f"Translating coordinates by (x={INITIAL_TRANSLATE_X}, y={INITIAL_TRANSLATE_Y})")
+                print(f"Translating coordinates by (x={INITIAL_TRANSLATE_X}, y={INITIAL_TRANSLATE_Y})")
 
-                #draw.translate(x=INITIAL_TRANSLATE_X, y=INITIAL_TRANSLATE_Y)
+                draw.translate(x=INITIAL_TRANSLATE_X, y=INITIAL_TRANSLATE_Y)
 
                 # =============================================
                 # PRIMARY INDIVIDUAL DRAWING
@@ -209,37 +212,87 @@ def generate_family_tree(primary_individual, family_data, template="1gen", user_
                 draw.text(PRIMARY_NAME_X, PRIMARY_NAME_Y, f"{first_name}\n{middle_name}\n{last_name}")
                 print(f"Drawn text at ({PRIMARY_NAME_X}, {PRIMARY_NAME_Y}): {first_name}\n{middle_name}\n{last_name}")
 
-                # REVERSE
-                #reset_value = PRIMARY_NAME_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
+
                 draw.pop()
-                print("Setting gravity to: west")
-                draw.gravity = "west"
+
+                draw.font = FONT_FAMILY
+                draw.stroke_color = PRIMARY_STROKE_COLOR
+                draw.stroke_width = DEFAULT_STROKE_WIDTH
+                draw.stroke_antialias = STROKE_ANTIALIAS
+
+                # =============================================
+                # DRAW THE PRIMARY_BIRTH INFO
+                # =============================================
+
+                # Push the current drawing context
+                # draw.push()
+                # print("Pushed drawing context.")
+
+                dpi = 300
+                pixel_ratio = dpi / 72  # Approx 4.1667
+
+                # Push the current drawing context
                 draw.push()
+                print("Pushed drawing context.")
 
-                # Primary info font size
-                print(f"Setting font_size to: {PRIMARY_INFO_FONT_SIZE}")
-                draw.font_size = PRIMARY_INFO_FONT_SIZE
-
-                draw
-                # Draw statements for birthdate
-                print(f"Rotating by: {PRIMARY_BIRTH_ROTATE} degrees")
-                draw.rotate(PRIMARY_BIRTH_ROTATE)
-
-                print(f"Setting fill_color to: {PRIMARY_BIRTH_COLOR}")
+                draw.font_size = PRIMARY_DATE_INFO_FONT_SIZE
                 draw.fill_color = PRIMARY_BIRTH_COLOR
+                print(f"Setting font to: {PRIMARY_DATE_INFO_FONT_SIZE} & fill color to: {PRIMARY_BIRTH_COLOR}")
 
-                pifx_birth, pify_birth = PRIMARY_BIRTH_X, PRIMARY_BIRTH_Y
-                draw.text(pifx_birth, pify_birth, primary_individual.birth_date or " ")
-                print(f"Drawn text at ({pifx_birth}, {pify_birth}): {primary_individual.birth_date or ' '}")
+                text = primary_individual.birth_date or " "
+                print(f"Text to draw: '{text}'")
 
-                # REVERSE
-                #reset_value = PRIMARY_BIRTH_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
+                # Get text metrics
+                metrics = draw.get_font_metrics(img, text, False)
+                text_width = metrics.text_width
+                text_height = metrics.text_height
+                print(f"Text dimensions: width={text_width}, height={text_height}")
+
+                # Convert points to pixels
+                text_width_px = metrics.text_width * pixel_ratio
+                text_height_px = metrics.text_height * pixel_ratio
+
+                print(f"Points: {metrics.text_width}, Actual Pixels: {text_width_px}")
+                print(f"Points: {metrics.text_height}, Actual Pixels: {text_height_px}")
+
+                # Translate to the correct position: 58px from the left, vertically centered
+                translate_x = 227
+                translate_y = img.height // 2
+                print(f"Translating to: ({translate_x}, {translate_y})")
+
+                draw.translate(translate_x, translate_y)
+
+                # Rotate the drawing context by -90 degrees
+                draw.rotate(-90)
+                print("Rotated by -90 degrees.")
+
+                # Adjust the origin to account for the text's width after rotation
+                # adjust_y = text_width // 2
+                # print(f"Adjusting origin by: (0, {adjust_y})")
+                # draw.translate(-705, adjust_y)
+
+                # Adjust the origin to account for the text's width after rotation
+                adjust_y = -text_width_px // 2
+                print(f"Adjusting origin by: (0, {adjust_y})")
+                draw.translate(adjust_y, 0)
+
+                # Draw the text at the new origin (0, 0) after translation and rotation
+                print("Drawing text at (0, 0) after transformations.")
+                draw.text(0, 0, text)
+
+                # Pop the drawing context
                 draw.pop()
+                print("Popped drawing context.")
+
+                # =============================================
+                # DRAW THE PRIMARY_BIRTH_PLACE INFO
+                # =============================================
+
                 draw.push()
+
+                draw.font_size = PRIMARY_PLACE_INFO_FONT_SIZE
+
+                draw.gravity = "south"
 
                 # Draw statements for birthplace
                 print(f"Rotating by: {PRIMARY_BIRTH_PLACE_ROTATE} degrees")
@@ -252,28 +305,27 @@ def generate_family_tree(primary_individual, family_data, template="1gen", user_
                 draw.text(pifx_birth_place, pify_birth_place, primary_individual.birth_place or " ")
                 print(f"Drawn text at ({pifx_birth_place}, {pify_birth_place}): {primary_individual.birth_place or ' '}")
 
-                # REVERSE
-                #reset_value = PRIMARY_BIRTH_PLACE_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
                 draw.pop()
+
+                # =============================================
+                # DRAW THE PRIMARY_DEATH INFO
+                # =============================================
+
                 draw.push()
+
+                draw.font_size = PRIMARY_DATE_INFO_FONT_SIZE
+                draw.fill_color = PRIMARY_DEATH_COLOR
+                print(f"Setting font to: {PRIMARY_DATE_INFO_FONT_SIZE} & fill color to: {PRIMARY_DEATH_COLOR}")
+
+                draw.gravity = "north"
 
                 # Draw statements for deathdate
                 #draw.rotate(180)
                 draw.stroke_width = DEFAULT_STROKE_WIDTH
-                print(f"Setting fill_color to: {PRIMARY_DEATH_COLOR}")
-                draw.fill_color = PRIMARY_DEATH_COLOR
+
+
 
                 # Draw primary individual's death date if available
-                PRIMARY_DEATH_X = int(user_settings.get("primary_death_x", 0))
-                PRIMARY_DEATH_Y = int(user_settings.get("primary_death_y", 0))
-                PRIMARY_DEATH_ROTATE = int(user_settings.get("primary_death_rotate", 0))
-
-                print(f"DEBUG: PRIMARY_DEATH_X set to: {PRIMARY_DEATH_X}")
-                print(f"DEBUG: PRIMARY_DEATH_Y set to: {PRIMARY_DEATH_Y}")
-                print(f"DEBUG: PRIMARY_DEATH_ROTATE set to: {PRIMARY_DEATH_ROTATE}")
-
                 # Apply death date rotation
                 print(f"Rotating by: {PRIMARY_DEATH_ROTATE} degrees")
                 draw.rotate(PRIMARY_DEATH_ROTATE)
@@ -282,41 +334,57 @@ def generate_family_tree(primary_individual, family_data, template="1gen", user_
                 draw.text(pifx_death, pify_death, primary_individual.death_date or " ")
                 print(f"Drawn text at ({pifx_death}, {pify_death}): {primary_individual.death_date or ' '}")
 
-                # REVERSE
-                #reset_value = PRIMARY_DEATH_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
                 draw.pop()
-                draw.push()
 
-                # Draw statements for deathplace
-                #draw.rotate(180)
-                draw.stroke_width = DEFAULT_STROKE_WIDTH
-                print(f"Setting fill_color to: {PRIMARY_DEATH_PLACE_COLOR}")
+                # =============================================
+                # DRAW THE PRIMARY_DEATH_PLACE INFO
+                # =============================================
+
+                # Push the current drawing context
+                draw.push()
+                print("Pushed drawing context.")
+
+                draw.font_size = PRIMARY_PLACE_INFO_FONT_SIZE
                 draw.fill_color = PRIMARY_DEATH_PLACE_COLOR
 
-                # Draw primary individual's death date if available
-                PRIMARY_DEATH_PLACE_X = int(user_settings.get("primary_death_place_x", 0))
-                PRIMARY_DEATH_PLACE_Y = int(user_settings.get("primary_death_place_y", 0))
-                PRIMARY_DEATH_PLACE_ROTATE = int(user_settings.get("primary_death_place_rotate", 0))
+                text = primary_individual.death_place or " "
+                print(f"Text to draw: '{text}'")
 
-                print(f"DEBUG: PRIMARY_DEATH_PLACE_X set to: {PRIMARY_DEATH_PLACE_X}")
-                print(f"DEBUG: PRIMARY_DEATH_PLACE_Y set to: {PRIMARY_DEATH_PLACE_Y}")
-                print(f"DEBUG: PRIMARY_DEATH_PLACE_ROTATE set to: {PRIMARY_DEATH_PLACE_ROTATE}")
+                # Get text metrics
+                metrics = draw.get_font_metrics(img, text, False)
+                text_width = metrics.text_width
+                text_height = metrics.text_height
+                print(f"Text dimensions: width={text_width}, height={text_height}")
 
-                # Apply death date rotation
-                print(f"Rotating by: {PRIMARY_DEATH_PLACE_ROTATE} degrees")
-                draw.rotate(PRIMARY_DEATH_PLACE_ROTATE)
+                # Translate to the correct position: 58px from the left, vertically centered
+                translate_x = 1850
+                translate_y = img.height // 2
+                print(f"Translating to: ({translate_x}, {translate_y})")
 
-                pifx_death_place, pify_death_place = PRIMARY_DEATH_PLACE_X, PRIMARY_DEATH_PLACE_Y
-                draw.text(pifx_death_place, pify_death_place, primary_individual.death_place or " ")
-                print(f"Drawn text at ({pifx_death_place}, {pify_death_place}): {primary_individual.death_place or ' '}")
+                draw.translate(translate_x, translate_y)
 
-                # REVERSE
-                #reset_value = PRIMARY_DEATH_PLACE_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
+                # Rotate the drawing context by -90 degrees
+                draw.rotate(-90)
+                print("Rotated by -90 degrees.")
+
+                # Adjust the origin to account for the text's width after rotation
+                adjust_x = -1500
+                #adjust_y = text_width // 2
+                print(f"Adjusting origin by: ({adjust_x}, 0)")
+                draw.translate(adjust_x, 0)
+
+                # Draw the text at the new origin (0, 0) after translation and rotation
+                print("Drawing text at (0, 0) after transformations.")
+                draw.text(0, 0, text)
+
+                # Pop the drawing context
                 draw.pop()
+                print("Popped drawing context.")
+
+
+                # =============================================
+                # DRAW THE IMAGE
+                # =============================================
 
                 # Apply the drawing to the image
                 draw(img)
@@ -458,11 +526,14 @@ def generate_1gen_preview(primary_individual, user_settings=None):
             print(f"DEBUG: PRIMARY_DEATH_PLACE_ROTATE set to: {PRIMARY_DEATH_PLACE_ROTATE}")
 
             # Primary individual font sizes
-            PRIMARY_NAME_FONT_SIZE = int(user_settings.get("primary_name_font_size", 88))
-            PRIMARY_INFO_FONT_SIZE = int(user_settings.get("primary_info_font_size", 88))
+            PRIMARY_NAME_FONT_SIZE = int(user_settings.get("primary_name_font_size", 84))
+            PRIMARY_DATE_INFO_FONT_SIZE = int(user_settings.get("primary_date_info_font_size", 60))
+            PRIMARY_PLACE_INFO_FONT_SIZE = int(user_settings.get("primary_place_info_font_size", 28))
 
             print(f"DEBUG: PRIMARY_NAME_FONT_SIZE set to: {PRIMARY_NAME_FONT_SIZE}")
-            print(f"DEBUG: PRIMARY_INFO_FONT_SIZE set to: {PRIMARY_INFO_FONT_SIZE}")
+            print(f"DEBUG: PRIMARY_DATE_INFO_FONT_SIZE set to: {PRIMARY_DATE_INFO_FONT_SIZE}")
+            print(f"DEBUG: PRIMARY_PLACE_INFO_FONT_SIZE set to: {PRIMARY_PLACE_INFO_FONT_SIZE}")
+
 
             with Drawing() as draw:
 
@@ -526,52 +597,86 @@ def generate_1gen_preview(primary_individual, user_settings=None):
                 draw.text(PRIMARY_NAME_X, PRIMARY_NAME_Y, f"{first_name}\n{middle_name}\n{last_name}")
                 print(f"Drawn text at ({PRIMARY_NAME_X}, {PRIMARY_NAME_Y}): {first_name}\n{middle_name}\n{last_name}")
 
-                # REVERSE
-                #reset_value = PRIMARY_NAME_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
+
                 draw.pop()
 
-                draw.push()
-
                 draw.font = FONT_FAMILY
-                draw.font_size = PRIMARY_INFO_FONT_SIZE
                 draw.stroke_color = PRIMARY_STROKE_COLOR
                 draw.stroke_width = DEFAULT_STROKE_WIDTH
                 draw.stroke_antialias = STROKE_ANTIALIAS
 
-                # Draw statements for birthdate
-                print(f"Rotating by: {PRIMARY_BIRTH_ROTATE} degrees")
-                draw.rotate(PRIMARY_BIRTH_ROTATE)
+                # =============================================
+                # DRAW THE PRIMARY_BIRTH INFO
+                # =============================================
 
-                print(f"Setting fill_color to: {PRIMARY_BIRTH_COLOR}")
+                # Push the current drawing context
+                # draw.push()
+                # print("Pushed drawing context.")
+
+                dpi = 300
+                pixel_ratio = dpi / 72  # Approx 4.1667
+
+                # Push the current drawing context
+                draw.push()
+                print("Pushed drawing context.")
+
+                draw.font_size = PRIMARY_DATE_INFO_FONT_SIZE
                 draw.fill_color = PRIMARY_BIRTH_COLOR
+                print(f"Setting font to: {PRIMARY_DATE_INFO_FONT_SIZE} & fill color to: {PRIMARY_BIRTH_COLOR}")
 
-                draw.gravity = "west"
+                text = primary_individual.birth_date or " "
+                print(f"Text to draw: '{text}'")
 
-                pifx_birth, pify_birth = PRIMARY_BIRTH_X, PRIMARY_BIRTH_Y
-                draw.text(pifx_birth, pify_birth, primary_individual.birth_date or " ")
-                print(f"Drawn text at ({pifx_birth}, {pify_birth}): {primary_individual.birth_date or ' '}")
+                # Get text metrics
+                metrics = draw.get_font_metrics(img, text, False)
+                text_width = metrics.text_width
+                text_height = metrics.text_height
+                print(f"Text dimensions: width={text_width}, height={text_height}")
 
-                # REVERSE
-                #reset_value = PRIMARY_BIRTH_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
+                # Convert points to pixels
+                text_width_px = metrics.text_width * pixel_ratio
+                text_height_px = metrics.text_height * pixel_ratio
+
+                print(f"Points: {metrics.text_width}, Actual Pixels: {text_width_px}")
+                print(f"Points: {metrics.text_height}, Actual Pixels: {text_height_px}")
+
+                # Translate to the correct position: 58px from the left, vertically centered
+                translate_x = 200
+                translate_y = img.height // 2
+                print(f"Translating to: ({translate_x}, {translate_y})")
+
+                draw.translate(translate_x, translate_y)
+
+                # Rotate the drawing context by -90 degrees
+                draw.rotate(-90)
+                print("Rotated by -90 degrees.")
+
+                # Adjust the origin to account for the text's width after rotation
+                adjust_y = -text_width_px // 2
+                print(f"Adjusting origin by: (0, {adjust_y})")
+                draw.translate(adjust_y, 0)
+
+                # Draw the text at the new origin (0, 0) after translation and rotation
+                print("Drawing text at (0, 0) after transformations.")
+                draw.text(0, 0, text)
+
+                # Pop the drawing context
                 draw.pop()
+                print("Popped drawing context.")
+
+                # =============================================
+                # DRAW THE PRIMARY_BIRTH_PLACE INFO
+                # =============================================
 
                 draw.push()
 
-                draw.font = FONT_FAMILY
-                draw.font_size = PRIMARY_INFO_FONT_SIZE
-                draw.stroke_color = PRIMARY_STROKE_COLOR
-                draw.stroke_width = DEFAULT_STROKE_WIDTH
-                draw.stroke_antialias = STROKE_ANTIALIAS
+                draw.font_size = PRIMARY_PLACE_INFO_FONT_SIZE
+
+                draw.gravity = "south"
 
                 # Draw statements for birthplace
                 print(f"Rotating by: {PRIMARY_BIRTH_PLACE_ROTATE} degrees")
                 draw.rotate(PRIMARY_BIRTH_PLACE_ROTATE)
-
-                draw.gravity = "south"
 
                 print(f"Setting fill_color to: {PRIMARY_BIRTH_PLACE_COLOR}")
                 draw.fill_color = PRIMARY_BIRTH_PLACE_COLOR
@@ -580,29 +685,27 @@ def generate_1gen_preview(primary_individual, user_settings=None):
                 draw.text(pifx_birth_place, pify_birth_place, primary_individual.birth_place or " ")
                 print(f"Drawn text at ({pifx_birth_place}, {pify_birth_place}): {primary_individual.birth_place or ' '}")
 
-                # REVERSE
-                #reset_value = PRIMARY_BIRTH_PLACE_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
                 draw.pop()
+
+                # =============================================
+                # DRAW THE PRIMARY_DEATH INFO
+                # =============================================
 
                 draw.push()
 
-                draw.font = FONT_FAMILY
-                draw.font_size = PRIMARY_INFO_FONT_SIZE
-                draw.stroke_color = PRIMARY_STROKE_COLOR
-                draw.stroke_width = DEFAULT_STROKE_WIDTH
-                draw.stroke_antialias = STROKE_ANTIALIAS
+                draw.font_size = PRIMARY_DATE_INFO_FONT_SIZE
+                draw.fill_color = PRIMARY_DEATH_COLOR
+                print(f"Setting font to: {PRIMARY_DATE_INFO_FONT_SIZE} & fill color to: {PRIMARY_DEATH_COLOR}")
+
+                draw.gravity = "north"
 
                 # Draw statements for deathdate
                 #draw.rotate(180)
                 draw.stroke_width = DEFAULT_STROKE_WIDTH
-                print(f"Setting fill_color to: {PRIMARY_DEATH_COLOR}")
-                draw.fill_color = PRIMARY_DEATH_COLOR
+
+
 
                 # Draw primary individual's death date if available
-                draw.gravity = "north"
-
                 # Apply death date rotation
                 print(f"Rotating by: {PRIMARY_DEATH_ROTATE} degrees")
                 draw.rotate(PRIMARY_DEATH_ROTATE)
@@ -611,43 +714,63 @@ def generate_1gen_preview(primary_individual, user_settings=None):
                 draw.text(pifx_death, pify_death, primary_individual.death_date or " ")
                 print(f"Drawn text at ({pifx_death}, {pify_death}): {primary_individual.death_date or ' '}")
 
-                # REVERSE
-                #reset_value = PRIMARY_DEATH_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
                 draw.pop()
 
+                # =============================================
+                # DRAW THE PRIMARY_DEATH_PLACE INFO
+                # =============================================
+
+                # Push the current drawing context
                 draw.push()
+                print("Pushed drawing context.")
 
-                draw.font = FONT_FAMILY
-                draw.font_size = PRIMARY_INFO_FONT_SIZE
-                draw.stroke_color = PRIMARY_STROKE_COLOR
-                draw.stroke_width = DEFAULT_STROKE_WIDTH
-                draw.stroke_antialias = STROKE_ANTIALIAS
-
-                # Draw statements for deathplace
-                #draw.rotate(180)
-                draw.stroke_width = DEFAULT_STROKE_WIDTH
-                print(f"Setting fill_color to: {PRIMARY_DEATH_PLACE_COLOR}")
+                draw.font_size = PRIMARY_PLACE_INFO_FONT_SIZE
                 draw.fill_color = PRIMARY_DEATH_PLACE_COLOR
 
-                # Draw primary individual's death place if available
+                text = primary_individual.death_place or " "
+                print(f"Text to draw: '{text}'")
 
-                # Apply death date rotation
-                print(f"Rotating by: {PRIMARY_DEATH_PLACE_ROTATE} degrees")
-                draw.rotate(PRIMARY_DEATH_PLACE_ROTATE)
+                # Get text metrics
+                metrics = draw.get_font_metrics(img, text, False)
+                text_width = metrics.text_width
+                text_height = metrics.text_height
+                print(f"Text dimensions: width={text_width}, height={text_height}")
 
-                draw.gravity = "east"
+                # Convert points to pixels
+                text_width_px = metrics.text_width * pixel_ratio
+                text_height_px = metrics.text_height * pixel_ratio
 
-                pifx_death_place, pify_death_place = PRIMARY_DEATH_PLACE_X, PRIMARY_DEATH_PLACE_Y
-                draw.text(pifx_death_place, pify_death_place, primary_individual.death_place or " ")
-                print(f"Drawn text at ({pifx_death_place}, {pify_death_place}): {primary_individual.death_place or ' '}")
+                print(f"Points: {metrics.text_width}, Actual Pixels: {text_width_px}")
+                print(f"Points: {metrics.text_height}, Actual Pixels: {text_height_px}")
 
-                # REVERSE
-                #reset_value = PRIMARY_DEATH_PLACE_ROTATE * -1
-                #draw.rotate(reset_value)
-                #print(f"Resetting rotation by: {reset_value} degrees")
+                # Translate to the correct position: 1850px from the left, vertically centered
+                translate_x = 1850
+                translate_y = img.height // 2
+                print(f"Translating to: ({translate_x}, {translate_y})")
+
+                draw.translate(translate_x, translate_y)
+
+                # Rotate the drawing context by -90 degrees
+                draw.rotate(-90)
+                print("Rotated by -90 degrees.")
+
+                # Adjust the origin to account for the text's width after rotation
+                adjust_y = -text_width_px // 2
+                print(f"Adjusting origin by: (0, {adjust_y})")
+                draw.translate(adjust_y, 0)
+
+                # Draw the text at the new origin (0, 0) after translation and rotation
+                print("Drawing text at (0, 0) after transformations.")
+                draw.text(0, 0, text)
+
+                # Pop the drawing context
                 draw.pop()
+                print("Popped drawing context.")
+
+
+                # =============================================
+                # DRAW THE IMAGE
+                # =============================================
 
                 # Apply the drawing to the image
                 draw(img)

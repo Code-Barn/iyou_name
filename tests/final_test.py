@@ -41,7 +41,7 @@ def test_negative_coordinates():
     test_settings = {
         "font_family": "Helvetica",
         "primary_name_font_size": 66,
-        "primary_info_font_size": 61,
+        "primary_date_info_font_size": 61,
         "default_stroke_width": 0.5,
         "primary_stroke_color": "#e66100",
         "primary_font_color": "#f5c211",
@@ -103,7 +103,7 @@ def test_font_family():
             test_settings = {
                 "font_family": font,
                 "primary_name_font_size": 88,
-                "primary_info_font_size": 88,
+                "primary_date_info_font_size": 88,
                 "default_stroke_width": 0.5,
                 "primary_stroke_color": "#000000",
                 "primary_font_color": "#000000",
@@ -152,7 +152,7 @@ def test_extreme_values():
     test_settings = {
         "font_family": "Arial",
         "primary_name_font_size": 138,  # Max value
-        "primary_info_font_size": 138,  # Max value
+        "primary_date_info_font_size": 138,  # Max value
         "default_stroke_width": 5.0,  # Max value
         "primary_stroke_color": "#FF0000",
         "primary_font_color": "#00FF00",

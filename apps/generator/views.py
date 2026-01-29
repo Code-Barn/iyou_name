@@ -41,6 +41,9 @@ def generate_final_chart(request):
         )
         template = request.POST.get("template") or request.GET.get("template") or "1"
 
+        # Initialize hud_settings early to avoid UnboundLocalError
+        hud_settings = request.session.get("hud_settings", {})
+
         # Collect user settings from POST or session with proper type conversion
         def get_int(name, default):
             try:
@@ -56,8 +59,9 @@ def generate_final_chart(request):
 
         user_settings = {
             "font_family": request.POST.get("font_family", "Arial"),
-            "primary_name_font_size": get_int("primary_name_font_size", 88),
-            "primary_info_font_size": get_int("primary_info_font_size", 88),
+            "primary_name_font_size": get_int("primary_name_font_size", 84),
+            "primary_date_info_font_size": get_int("primary_date_info_font_size", 60),
+            "primary_place_info_font_size": get_int("primary_place_info_font_size", 28),
             "default_stroke_width": get_float("default_stroke_width", 0.5),
             "primary_background_color": request.POST.get("primary_background_color", "#FFFFFF"),
             "primary_stroke_color": request.POST.get("primary_stroke_color", "#000000"),
@@ -87,11 +91,11 @@ def generate_final_chart(request):
 
         # If no POST settings, use session settings
         if not any(user_settings.values()):
-            hud_settings = request.session.get("hud_settings", {})
             user_settings = {
                 "font_family": hud_settings.get("font_family", "Arial"),
-                "primary_name_font_size": hud_settings.get("primary_name_font_size", 88),
-                "primary_info_font_size": hud_settings.get("primary_info_font_size", 88),
+                "primary_name_font_size": hud_settings.get("primary_name_font_size", 84),
+                "primary_date_info_font_size": hud_settings.get("primary_date_info_font_size", 60),
+                "primary_place_info_font_size": get_int("primary_place_info_font_size", 28),
                 "default_stroke_width": hud_settings.get("default_stroke_width", 0.5),
                 "primary_background_color": hud_settings.get("primary_background_color", "#FFFFFF"),
                 "primary_stroke_color": hud_settings.get("primary_stroke_color", "#000000"),
