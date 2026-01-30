@@ -180,14 +180,14 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label">Subject Translate X</label>
-                                    <input type="range" name="subject_translate_x" class="form-range" min="-100" max="100" value="{{ hud_settings.subject_translate_x|default:0 }}" id="subject-translate-x-slider">
+                                    <input type="range" name="subject_translate_x" class="form-range" min="-300" max="300" value="{{ hud_settings.subject_translate_x|default:0 }}" id="subject-translate-x-slider">
                                     <div class="text-center">
                                         <span id="subject-translate-x-value">{{ hud_settings.subject_translate_x|default:0 }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Subject Translate Y</label>
-                                    <input type="range" name="subject_translate_y" class="form-range" min="-100" max="100" value="{{ hud_settings.subject_translate_y|default:0 }}" id="subject-translate-y-slider">
+                                    <input type="range" name="subject_translate_y" class="form-range" min="-300" max="300" value="{{ hud_settings.subject_translate_y|default:0 }}" id="subject-translate-y-slider">
                                     <div class="text-center">
                                         <span id="subject-translate-y-value">{{ hud_settings.subject_translate_y|default:0 }}</span>
                                     </div>
@@ -478,6 +478,58 @@
                                             console.log('Preview image displayed successfully');
                                             URL.revokeObjectURL(previewUrl);
                                         };
+
+                                        // Update the hidden form inputs in the final chart form
+                                        // so that when user clicks "Generate Final Chart", it uses the same settings
+                                        try {
+                                            console.log('=== FORM UPDATE DEBUG ===');
+                                            console.log('Attempting to update final chart form with current settings...');
+                                            
+                                            // Try multiple selectors to find the form
+                                            let finalChartForm = document.querySelector('form[action*="generate_final_chart"]');
+                                            if (!finalChartForm) {
+                                                finalChartForm = document.querySelector('form[action*="generate"]');
+                                            }
+                                            if (!finalChartForm) {
+                                                finalChartForm = document.querySelector('form');
+                                            }
+                                            
+                                            if (finalChartForm) {
+                                                console.log('Found form:', finalChartForm);
+                                                console.log('Form action:', finalChartForm.action);
+                                                
+                                                // Update all the hidden inputs with the current userSettings
+                                                let updatedCount = 0;
+                                                for (const [key, value] of Object.entries(userSettings)) {
+                                                    const input = finalChartForm.querySelector(`input[name="${key}"]`);
+                                                    if (input) {
+                                                        console.log(`Updating ${key}: ${input.value} -> ${value}`);
+                                                        input.value = value;
+                                                        updatedCount++;
+                                                    } else {
+                                                        console.warn(`No input found for ${key}`);
+                                                    }
+                                                }
+                                                console.log(`Successfully updated ${updatedCount} settings in final chart form`);
+                                                console.log('=== FORM UPDATE COMPLETE ===');
+                                                
+                                                // Add visual feedback
+                                                const previewImg = document.getElementById('hud-preview');
+                                                if (previewImg) {
+                                                    previewImg.style.border = '5px solid #00FF00';
+                                                    setTimeout(() => {
+                                                        previewImg.style.border = '';
+                                                    }, 1000);
+                                                }
+                                                
+                                            } else {
+                                                console.error('CRITICAL: Could not find final chart form to update');
+                                                alert('ERROR: Could not find the final chart form. Settings will not be saved for PDF generation.');
+                                            }
+                                        } catch (error) {
+                                            console.error('ERROR in form update:', error);
+                                            alert('ERROR: Failed to update final chart form. Check console for details.');
+                                        }
                                     })
                                     .catch(error => {
                                         console.error('Error generating preview:', error);

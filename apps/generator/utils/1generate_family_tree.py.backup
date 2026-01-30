@@ -1,53 +1,45 @@
-import logging
-import os
-from io import BytesIO
-
-from django.conf import settings
-from wand.color import Color
-from wand.drawing import Drawing
-from wand.image import Image
-
-logger = logging.getLogger(__name__)
-
-
-def generate_1gen_preview(primary_individual, family_data, template="preview", user_settings=None):
+def generate_family_tree(primary_individual, family_data, template="1gen", user_settings=None):
     """
-    Generate a 1-generation chart using Wand (Python ImageMagick binding)
+    Generate a 1-generation family tree chart using Wand (Python ImageMagick binding)
 
     Args:
         primary_individual: PersonData object for the primary individual
         family_data: Dictionary containing all family data
-        template: Template type ('preview' for PNG preview, 'final' for PDF final chart)
+        template: Template type (e.g., '1gen' for 1-generation chart)
         user_settings: Dictionary of user settings to override hardcoded defaults
 
     Returns:
-        BytesIO buffer containing the generated image (PNG for preview, PDF for final)
+        BytesIO buffer containing the generated image
     """
+
     # Get user settings or use empty dict if not provided
     user_settings = user_settings or {}
 
-    print(f"DEBUG: generate_1gen_preview received user_settings: {user_settings}")
-    print(f"DEBUG: Generating template type: {template}")
+    print(f"DEBUG: generate_family_tree received user_settings: {user_settings}")
+    print(f"DEBUG: image_1generator called with template: {template}")
+    print(f"DEBUG: Generating 1-generation family tree for: {primary_individual.full_name}")
+    print(f"DEBUG: Primary individual ID: {primary_individual.id}")
 
+    # Construct the full path to the template file
     try:
-        # First, generate the content image (same for both preview and final)
-        preview_template_path = os.path.join(settings.BASE_DIR, "apps/hud/static/hud/images/preview_image_templates", "1GEN_PREVIEW.png")
+        template_path = os.path.join(settings.BASE_DIR, "apps/charts/static/charts/images/base_image_templates", "US_LETTER_1GEN_BW.pdf")
 
-        print(f"DEBUG: Preview template path: {preview_template_path}")
-        print(f"DEBUG: Preview template exists: {os.path.exists(preview_template_path)}")
+        print(f"DEBUG: Template path: {template_path}")
+        print(f"DEBUG: File exists: {os.path.exists(template_path)}")
 
-        # Generate the content image (this is what the user sees in preview)
-        with Image(filename=preview_template_path, resolution=300) as content_img:
-            print(f"Content image loaded: {content_img.width}x{content_img.height}")
+        # Create a new image with the same dimensions as your template
+        with Image(filename=template_path, resolution=300) as img:
+
+            print(f"Preview image loaded successfully: {img.width}x{img.height}")
 
             # =============================================
             # COLORED BACKGROUND COORDINATES
             # =============================================
             # Color square coordinates
-            BACKGROUND_LEFT = 13
-            BACKGROUND_TOP = 13
-            BACKGROUND_WIDTH = 1923
-            BACKGROUND_HEIGHT = 1923
+            BACKGROUND_LEFT = 7
+            BACKGROUND_TOP = 7
+            BACKGROUND_WIDTH = 1936
+            BACKGROUND_HEIGHT = 1936
 
             # =============================================
             # TRANSLATION SETTINGS TUNING
@@ -220,10 +212,6 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
                 # DRAW THE PRIMARY_BIRTH INFO
                 # =============================================
 
-                # Push the current drawing context
-                # draw.push()
-                # print("Pushed drawing context.")
-
                 dpi = 300
                 pixel_ratio = dpi / 72  # Approx 4.1667
 
@@ -239,7 +227,7 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
                 print(f"Text to draw: '{text}'")
 
                 # Get text metrics
-                metrics = draw.get_font_metrics(content_img, text, False)
+                metrics = draw.get_font_metrics(img, text, False)
                 text_width = metrics.text_width
                 text_height = metrics.text_height
                 print(f"Text dimensions: width={text_width}, height={text_height}")
@@ -251,11 +239,10 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
                 print(f"Points: {metrics.text_width}, Actual Pixels: {text_width_px}")
                 print(f"Points: {metrics.text_height}, Actual Pixels: {text_height_px}")
 
-                # Translate to the correct position: 58px from the left, vertically centered
-                translate_x = 200
-                translate_y = content_img.height // 2
+                # Translate to the correct position: 227px from the left, vertically centered
+                translate_x = 227
+                translate_y = img.height // 2
                 print(f"Translating to: ({translate_x}, {translate_y})")
-
                 draw.translate(translate_x, translate_y)
 
                 # Rotate the drawing context by -90 degrees
@@ -264,10 +251,10 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
 
                 # Adjust the origin to account for the text's width after rotation
                 adjust_y = -text_width_px // 2
-                print(f"Adjusting origin by: (0, {adjust_y})")
+                print(f"Adjusting origin by: ({adjust_y}, 0)")
                 draw.translate(adjust_y, 0)
 
-                # Draw the text at the new origin (0, 0) after translation and rotation
+                # Draw the text at the new origin (0, 0) after transformations
                 print("Drawing text at (0, 0) after transformations.")
                 draw.text(0, 0, text)
 
@@ -315,6 +302,7 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
                 draw.stroke_width = DEFAULT_STROKE_WIDTH
 
 
+
                 # Draw primary individual's death date if available
                 # Apply death date rotation
                 print(f"Rotating by: {PRIMARY_DEATH_ROTATE} degrees")
@@ -341,21 +329,14 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
                 print(f"Text to draw: '{text}'")
 
                 # Get text metrics
-                metrics = draw.get_font_metrics(content_img, text, False)
+                metrics = draw.get_font_metrics(img, text, False)
                 text_width = metrics.text_width
                 text_height = metrics.text_height
                 print(f"Text dimensions: width={text_width}, height={text_height}")
 
-                # Convert points to pixels
-                text_width_px = metrics.text_width * pixel_ratio
-                text_height_px = metrics.text_height * pixel_ratio
-
-                print(f"Points: {metrics.text_width}, Actual Pixels: {text_width_px}")
-                print(f"Points: {metrics.text_height}, Actual Pixels: {text_height_px}")
-
                 # Translate to the correct position: 1850px from the left, vertically centered
                 translate_x = 1850
-                translate_y = content_img.height // 2
+                translate_y = img.height // 2
                 print(f"Translating to: ({translate_x}, {translate_y})")
 
                 draw.translate(translate_x, translate_y)
@@ -365,9 +346,10 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
                 print("Rotated by -90 degrees.")
 
                 # Adjust the origin to account for the text's width after rotation
-                adjust_y = -text_width_px // 2
-                print(f"Adjusting origin by: (0, {adjust_y})")
-                draw.translate(adjust_y, 0)
+                adjust_x = -1500
+                #adjust_y = text_width // 2
+                print(f"Adjusting origin by: ({adjust_x}, 0)")
+                draw.translate(adjust_x, 0)
 
                 # Draw the text at the new origin (0, 0) after translation and rotation
                 print("Drawing text at (0, 0) after transformations.")
@@ -377,50 +359,21 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
                 draw.pop()
                 print("Popped drawing context.")
 
+
                 # =============================================
                 # DRAW THE IMAGE
                 # =============================================
 
-                # Apply the drawing to the content image
-                draw(content_img)
+                # Apply the drawing to the image
+                draw(img)
 
-                # For preview mode, return the content image directly
-                if template == "preview":
-                    print("DEBUG: Returning preview image")
-                    img_buffer = BytesIO()
-                    content_img.save(file=img_buffer)
-                    img_buffer.seek(0)
-                    return img_buffer
+                # Save the result to a BytesIO buffer
+                img_buffer = BytesIO()
+                img.save(file=img_buffer)
+                img_buffer.seek(0)
 
-                # For final chart mode, composite the content image onto the PDF base template
-                elif template == "final":
-                    print("DEBUG: Compositing content onto PDF base template")
-
-                    # Load the PDF base template
-                    base_template_path = os.path.join(settings.BASE_DIR, "apps/charts/static/charts/images/base_image_templates", "US_LETTER_1GEN_BW.pdf")
-                    print(f"DEBUG: Base template path: {base_template_path}")
-                    print(f"DEBUG: Base template exists: {os.path.exists(base_template_path)}")
-
-                    with Image(filename=base_template_path, resolution=300) as base_img:
-                        print(f"Base template loaded: {base_img.width}x{base_img.height}")
-
-                        # Composite the content image onto the base template
-                        # Position: 300px right, 570px down
-                        composite_x = 300
-                        composite_y = 570
-
-                        print(f"DEBUG: Compositing content image at position ({composite_x}, {composite_y})")
-                        base_img.composite(content_img, left=composite_x, top=composite_y)
-
-                        # Save the final result as PDF
-                        img_buffer = BytesIO()
-                        base_img.save(file=img_buffer)
-                        img_buffer.seek(0)
-
-                        return img_buffer
+                return img_buffer
 
     except Exception as e:
-        print(f"ERROR: Failed to generate chart: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        print(f"ERROR: Failed to generate preview: {str(e)}")
         raise

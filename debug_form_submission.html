@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Form Submission</title>
+    <script>
+        function debugFormSubmission(event) {
+            event.preventDefault(); // Prevent actual submission for debugging
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            console.log('=== FORM SUBMISSION DEBUG ===');
+            console.log('Form action:', form.action);
+            console.log('Form method:', form.method);
+            console.log('Form data:');
+            
+            // Log all form data
+            for (let [name, value] of formData.entries()) {
+                console.log(`  ${name}: ${value}`);
+            }
+            
+            // Check if settings are present
+            const settingsKeys = [
+                'font_family', 'primary_name_font_size', 'primary_date_info_font_size',
+                'primary_place_info_font_size', 'default_stroke_width', 'primary_background_color',
+                'primary_stroke_color', 'primary_font_color', 'primary_birth_color',
+                'primary_birth_place_color', 'primary_death_color', 'primary_death_place_color',
+                'primary_name_x', 'primary_name_y', 'primary_name_rotate', 'primary_birth_x',
+                'primary_birth_y', 'primary_birth_rotate', 'primary_birth_place_x',
+                'primary_birth_place_y', 'primary_birth_place_rotate', 'primary_death_x',
+                'primary_death_y', 'primary_death_rotate', 'primary_death_place_x',
+                'primary_death_place_y', 'primary_death_place_rotate', 'subject_translate_x',
+                'subject_translate_y'
+            ];
+            
+            const missingSettings = settingsKeys.filter(key => !formData.has(key));
+            
+            if (missingSettings.length > 0) {
+                console.warn('⚠️  MISSING SETTINGS:', missingSettings);
+            } else {
+                console.log('✅ All settings present in form submission');
+            }
+            
+            // Show alert with summary
+            if (missingSettings.length > 0) {
+                alert('⚠️  Form submission is missing settings: ' + missingSettings.join(', '));
+            } else {
+                alert('✅ Form submission includes all settings!');
+            }
+        }
+        
+        function checkFormInputs() {
+            const form = document.querySelector('form');
+            if (!form) {
+                alert('No form found on page');
+                return;
+            }
+            
+            const inputs = form.querySelectorAll('input[name]');
+            console.log('=== FORM INPUTS ANALYSIS ===');
+            console.log('Total inputs:', inputs.length);
+            
+            let settingsCount = 0;
+            inputs.forEach(input => {
+                console.log(`  ${input.name}: ${input.value} (type: ${input.type})`);
+                if (input.name !== 'individual_id' && input.name !== 'template' && input.name !== 'csrfmiddlewaretoken') {
+                    settingsCount++;
+                }
+            });
+            
+            console.log('Settings inputs:', settingsCount);
+            alert('Found ' + settingsCount + ' settings inputs in the form');
+        }
+    </script>
+</head>
+<body>
+    <h1>Debug Form Submission</h1>
+    
+    <h2>Test Form</h2>
+    <form method="post" action="/generator/generate/" onsubmit="debugFormSubmission(event)">
+        {% csrf_token %}
+        <input type="hidden" name="individual_id" value="I1">
+        <input type="hidden" name="template" value="1">
+        
+        <!-- Settings inputs (these should be updated by JavaScript) -->
+        <input type="hidden" name="font_family" value="Arial">
+        <input type="hidden" name="primary_name_font_size" value="200">
+        <input type="hidden" name="primary_date_info_font_size" value="150">
+        <input type="hidden" name="primary_place_info_font_size" value="100">
+        <input type="hidden" name="default_stroke_width" value="5.0">
+        <input type="hidden" name="primary_background_color" value="#FF00FF">
+        <input type="hidden" name="primary_stroke_color" value="#00FF00">
+        <input type="hidden" name="primary_font_color" value="#FF0000">
+        <input type="hidden" name="primary_birth_color" value="#0000FF">
+        <input type="hidden" name="primary_birth_place_color" value="#FFFF00">
+        <input type="hidden" name="primary_death_color" value="#FF00FF">
+        <input type="hidden" name="primary_death_place_color" value="#00FFFF">
+        <input type="hidden" name="primary_name_x" value="500">
+        <input type="hidden" name="primary_name_y" value="500">
+        <input type="hidden" name="primary_name_rotate" value="0">
+        <input type="hidden" name="primary_birth_x" value="600">
+        <input type="hidden" name="primary_birth_y" value="600">
+        <input type="hidden" name="primary_birth_rotate" value="0">
+        <input type="hidden" name="primary_birth_place_x" value="700">
+        <input type="hidden" name="primary_birth_place_y" value="700">
+        <input type="hidden" name="primary_birth_place_rotate" value="0">
+        <input type="hidden" name="primary_death_x" value="800">
+        <input type="hidden" name="primary_death_y" value="800">
+        <input type="hidden" name="primary_death_rotate" value="0">
+        <input type="hidden" name="primary_death_place_x" value="900">
+        <input type="hidden" name="primary_death_place_y" value="900">
+        <input type="hidden" name="primary_death_place_rotate" value="0">
+        <input type="hidden" name="subject_translate_x" value="100">
+        <input type="hidden" name="subject_translate_y" value="100">
+        
+        <button type="submit">Test Form Submission</button>
+    </form>
+    
+    <h2>Debug Tools</h2>
+    <button onclick="checkFormInputs()">Check Form Inputs</button>
+    
+    <h2>Instructions</h2>
+    <ol>
+        <li>Open browser console (F12 > Console)</li>
+        <li>Click "Check Form Inputs" to see current form state</li>
+        <li>Click "Test Form Submission" to see what would be submitted</li>
+        <li>Check console output for detailed debugging info</li>
+    </ol>
+    
+    <h2>Expected Results</h2>
+    <p>✅ All settings should be present in form submission</p>
+    <p>✅ No warnings about missing settings</p>
+    <p>✅ Settings values should match what user selected in HUD</p>
+</body>
+</html>

@@ -399,7 +399,7 @@ def get_1gen_preview(request):
         primary_individual = PersonData(**individual_data)
 
         # Generate the preview
-        preview_buffer = generate_1gen_preview(primary_individual, user_settings)
+        preview_buffer = generate_1gen_preview(primary_individual, gedcom_file.parsed_data, "preview", user_settings)
 
         # Return the preview as an image
         return HttpResponse(preview_buffer, content_type="image/png")
