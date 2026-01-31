@@ -83,8 +83,8 @@ def generate_family_tree(primary_individual, family_data, template="2gen"):
             PRIMARY_NAME_X = 0
             PRIMARY_NAME_Y = 0
             PRIMARY_NAME_ROTATE = -45
-            PRIMARY_BIRTH_X = 0
-            PRIMARY_BIRTH_Y = 135
+            PRIMARY_BIRTH_TRANSLATE_X = 0
+            PRIMARY_BIRTH_TRANSLATE_Y = 0
             PRIMARY_BIRTH_ROTATE = 45
             PRIMARY_PLACE_X = 0
             PRIMARY_PLACE_Y = 90
@@ -202,7 +202,8 @@ def generate_family_tree(primary_individual, family_data, template="2gen"):
                 print(f"Setting fill_color to: {PRIMARY_BIRTH_COLOR}")
                 draw.fill_color = PRIMARY_BIRTH_COLOR
 
-                pifx_birth, pify_birth = PRIMARY_BIRTH_X, PRIMARY_BIRTH_Y
+                pifx_birth, pify_birth = 0, 135
+                draw.translate(PRIMARY_BIRTH_TRANSLATE_X, PRIMARY_BIRTH_TRANSLATE_Y)
                 draw.text(pifx_birth, pify_birth, primary_individual.birth_date or " ")
                 print(
                     f"Drawn text at ({pifx_birth}, {pify_birth}): {primary_individual.birth_date or ' '}"

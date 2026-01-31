@@ -175,26 +175,6 @@
                             </div>
                         </div>
 
-                        <!-- Translation Settings -->
-                        <div class="mb-3">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Subject Translate X</label>
-                                    <input type="range" name="subject_translate_x" class="form-range" min="-300" max="300" value="{{ hud_settings.subject_translate_x|default:0 }}" id="subject-translate-x-slider">
-                                    <div class="text-center">
-                                        <span id="subject-translate-x-value">{{ hud_settings.subject_translate_x|default:0 }}</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Subject Translate Y</label>
-                                    <input type="range" name="subject_translate_y" class="form-range" min="-300" max="300" value="{{ hud_settings.subject_translate_y|default:0 }}" id="subject-translate-y-slider">
-                                    <div class="text-center">
-                                        <span id="subject-translate-y-value">{{ hud_settings.subject_translate_y|default:0 }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Spacing Settings -->
                         <div class="mb-3">
                             <div class="row g-3">
@@ -212,17 +192,17 @@
                         <div class="mb-3">
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <label class="form-label">Name X Position</label>
-                                    <input type="range" name="primary_name_x" class="form-range" min="0" max="1900" value="{{ hud_settings.primary_name_x|default:0 }}" id="primary-name-x-slider">
+                                    <label class="form-label">Subject Translate X</label>
+                                    <input type="range" name="subject_translate_x" class="form-range" min="-300" max="300" value="{{ hud_settings.subject_translate_x|default:0 }}" id="subject-translate-x-slider">
                                     <div class="text-center">
-                                        <span id="primary-name-x-value">{{ hud_settings.primary_name_x|default:0 }}</span>
+                                        <span id="subject-translate-x-value">{{ hud_settings.subject_translate_x|default:0 }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">Name Y Position</label>
-                                    <input type="range" name="primary_name_y" class="form-range" min="0" max="1900" value="{{ hud_settings.primary_name_y|default:0 }}" id="primary-name-y-slider">
+                                    <label class="form-label">Subject Translate Y</label>
+                                    <input type="range" name="subject_translate_y" class="form-range" min="-300" max="300" value="{{ hud_settings.subject_translate_y|default:0 }}" id="subject-translate-y-slider">
                                     <div class="text-center">
-                                        <span id="primary-name-y-value">{{ hud_settings.primary_name_y|default:0 }}</span>
+                                        <span id="subject-translate-y-value">{{ hud_settings.subject_translate_y|default:0 }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -239,17 +219,17 @@
                         <div class="mb-3">
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <label class="form-label">Birthdate X Position</label>
-                                    <input type="range" name="primary_birth_x" class="form-range" min="0" max="300" value="{{ hud_settings.primary_birth_x|default:0 }}" id="primary-birth-x-slider">
+                                    <label class="form-label">Birthdate Translate X</label>
+                                    <input type="range" name="primary_birth_translate_x" class="form-range" min="-100" max="300" value="{{ hud_settings.primary_birth_translate_x|default:0 }}" id="primary-birth-translate-x-slider">
                                     <div class="text-center">
-                                        <span id="primary-birth-x-value">{{ hud_settings.primary_birth_x|default:0 }}</span>
+                                        <span id="primary-birth-translate-x-value">{{ hud_settings.primary_birth_translate_x|default:0 }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">Birthdate Y Position</label>
-                                    <input type="range" name="primary_birth_y" class="form-range" min="0" max="1900" value="{{ hud_settings.primary_birth_y|default:0 }}" id="primary-birth-y-slider">
+                                    <label class="form-label">Birthdate Translate Y</label>
+                                    <input type="range" name="primary_birth_translate_y" class="form-range" min="-300" max="300" value="{{ hud_settings.primary_birth_translate_y|default:0 }}" id="primary-birth-translate-y-slider">
                                     <div class="text-center">
-                                        <span id="primary-birth-y-value">{{ hud_settings.primary_birth_y|default:0 }}</span>
+                                        <span id="primary-birth-translate-y-value">{{ hud_settings.primary_birth_translate_y|default:0 }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -262,28 +242,29 @@
                             </div>
                         </div>
 
+
                         <!-- Birth Place Position Controls -->
                         <div class="mb-3">
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <label class="form-label">Birthplace X Position</label>
-                                    <input type="range" name="primary_birth_place_x" class="form-range" min="0" max="1900" value="{{ hud_settings.primary_birth_place_x|default:0 }}" id="primary-place-x-slider">
+                                    <label class="form-label">Birthplace Translate X</label>
+                                    <input type="range" name="primary_birth_place_translate_x" class="form-range" min="-300" max="300" value="{{ hud_settings.primary_birth_place_translate_x|default:0 }}" id="primary-birth-place-translate-x-slider">
                                     <div class="text-center">
-                                        <span id="primary-place-x-value">{{ hud_settings.primary_birth_place_x|default:0 }}</span>
+                                        <span id="primary-birth-place-translate-x-value">{{ hud_settings.primary_birth_place_translate_x|default:0 }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">Birthplace Y Position</label>
-                                    <input type="range" name="primary_birth_place_y" class="form-range" min="0" max="300" value="{{ hud_settings.primary_birth_place_y|default:0 }}" id="primary-place-y-slider">
+                                    <label class="form-label">Birthplace Translate Y</label>
+                                    <input type="range" name="primary_birth_place_translate_y" class="form-range" min="-300" max="100" value="{{ hud_settings.primary_birth_place_translate_y|default:0 }}" id="primary-birth-place-translate-y-slider">
                                     <div class="text-center">
-                                        <span id="primary-place-y-value">{{ hud_settings.primary_birth_place_y|default:0 }}</span>
+                                        <span id="primary-birth-place-translate-y-value">{{ hud_settings.primary_birth_place_translate_y|default:0 }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Birthplace Rotation (degrees)</label>
-                                    <input type="range" name="primary_birth_place_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.primary_birth_place_rotate|default:0 }}" id="primary-place-rotate-slider">
+                                    <input type="range" name="primary_birth_place_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.primary_birth_place_rotate|default:0 }}" id="primary-birth-place-rotate-slider">
                                     <div class="text-center">
-                                        <span id="primary-place-rotate-value">{{ hud_settings.primary_birth_place_rotate|default:0 }}</span>
+                                        <span id="primary-birth-place-rotate-value">{{ hud_settings.primary_birth_place_rotate|default:0 }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -293,21 +274,21 @@
                         <div class="mb-3">
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <label class="form-label">Death Date X Position</label>
-                                    <input type="range" name="primary_death_x" class="form-range" min="0" max="1900" value="{{ hud_settings.primary_death_x|default:0 }}" id="primary-death-x-slider">
+                                    <label class="form-label">Deathdate Translate X</label>
+                                    <input type="range" name="primary_death_translate_x" class="form-range" min="-300" max="300" value="{{ hud_settings.primary_death_translate_x|default:0 }}" id="primary-death-translate-x-slider">
                                     <div class="text-center">
-                                        <span id="primary-death-x-value">{{ hud_settings.primary_death_x|default:0 }}</span>
+                                        <span id="primary-death-translate-x-value">{{ hud_settings.primary_death_translate_x|default:0 }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">Death Date Y Position</label>
-                                    <input type="range" name="primary_death_y" class="form-range" min="0" max="300" value="{{ hud_settings.primary_death_y|default:0 }}" id="primary-death-y-slider">
+                                    <label class="form-label">Deathdate Translate Y</label>
+                                    <input type="range" name="primary_death_translate_y" class="form-range" min="-100" max="300" value="{{ hud_settings.primary_death_translate_y|default:0 }}" id="primary-death-translate-y-slider">
                                     <div class="text-center">
-                                        <span id="primary-death-y-value">{{ hud_settings.primary_death_y|default:0 }}</span>
+                                        <span id="primary-death-translate-y-value">{{ hud_settings.primary_death_translate_y|default:0 }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">Death Date Rotation (degrees)</label>
+                                    <label class="form-label">Deathdate Rotation (degrees)</label>
                                     <input type="range" name="primary_death_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.primary_death_rotate|default:0 }}" id="primary-death-rotate-slider">
                                     <div class="text-center">
                                         <span id="primary-death-rotate-value">{{ hud_settings.primary_death_rotate|default:0 }}</span>
@@ -320,21 +301,21 @@
                         <div class="mb-3">
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <label class="form-label">Death Place X Position</label>
-                                    <input type="range" name="primary_death_place_x" class="form-range" min="0" max="300" value="{{ hud_settings.primary_death_place_x|default:0 }}" id="primary-death-place-x-slider">
+                                    <label class="form-label">Deathplace Translate X</label>
+                                    <input type="range" name="primary_death_place_translate_x" class="form-range" min="-300" max="100" value="{{ hud_settings.primary_death_place_x|default:0 }}" id="primary-death-place-translate-x-slider">
                                     <div class="text-center">
-                                        <span id="primary-death-place-x-value">{{ hud_settings.primary_death_place_x|default:0 }}</span>
+                                        <span id="primary-death-place-translate-x-value">{{ hud_settings.primary_death_place_translate_x|default:0 }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">Death Place Y Position</label>
-                                    <input type="range" name="primary_death_place_y" class="form-range" min="0" max="1900" value="{{ hud_settings.primary_death_place_y|default:0 }}" id="primary-death-place-y-slider">
+                                    <label class="form-label">Deathplace Translate Y</label>
+                                    <input type="range" name="primary_death_place_translate_y" class="form-range" min="-300" max="300" value="{{ hud_settings.primary_death_place_y|default:0 }}" id="primary-death-place-translate-y-slider">
                                     <div class="text-center">
-                                        <span id="primary-death-place-y-value">{{ hud_settings.primary_death_place_y|default:0 }}</span>
+                                        <span id="primary-death-place-translate-y-value">{{ hud_settings.primary_death_place_translate_y|default:0 }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">Death Place Rotation (degrees)</label>
+                                    <label class="form-label">Deathplace Rotation (degrees)</label>
                                     <input type="range" name="primary_death_place_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.primary_death_place_rotate|default:-90 }}" id="primary-death-place-rotate-slider">
                                     <div class="text-center">
                                         <span id="primary-death-place-rotate-value">{{ hud_settings.primary_death_place_rotate|default:-90 }}</span>
@@ -348,6 +329,122 @@
                             <button type="button" id="apply-settings" class="btn btn-primary w-100" onclick="saveAndApplySettings()">
                                 <i class="bi bi-check"></i> Apply Settings
                             </button>
+
+                            <button type="button" class="btn btn-secondary w-100" onclick="resetToDefaults()">
+                                <i class="bi bi-arrow-counterclockwise"></i> Reset to Defaults
+                            </button>
+
+                            <script>
+                                function resetToDefaults() {
+                                    console.log("Resetting all settings to defaults...");
+
+                                    // Define all default values based on the template defaults
+                                    const defaults = {
+                                        'primary_background_color': '#FFFFFF',
+                                        'primary_stroke_color': '#000000',
+                                        'primary_font_color': '#000000',
+                                        'primary_birth_color': '#000000',
+                                        'primary_birth_place_color': '#000000',
+                                        'primary_death_color': '#000000',
+                                        'primary_death_place_color': '#000000',
+                                        'font_family': 'Arial',
+                                        'primary_name_font_size': 84,
+                                        'primary_date_info_font_size': 60,
+                                        'primary_place_info_font_size': 28,
+                                        'default_stroke_width': 0.5,
+                                        'subject_translate_x': 0,
+                                        'subject_translate_y': 0,
+                                        'primary_name_rotate': -45,
+                                        'primary_birth_translate_x': 0,
+                                        'primary_birth_translate_y': 0,
+                                        'primary_birth_rotate': -90,
+                                        'primary_birth_place_translate_x': 0,
+                                        'primary_birth_place_translate_y': 0,
+                                        'primary_birth_place_rotate': 0,
+                                        'primary_death_translate_x': 0,
+                                        'primary_death_translate_y': 0,
+                                        'primary_death_rotate': 0,
+                                        'primary_death_place_translate_x': 0,
+                                        'primary_death_place_translate_y': 0,
+                                        'primary_death_place_rotate': -90,
+                                        'spacing': 50
+                                    };
+
+                                    // Reset all form inputs to defaults
+                                    const form = document.getElementById('hud-settings-form');
+                                    if (!form) {
+                                        console.error('Could not find HUD settings form');
+                                        return;
+                                    }
+
+                                    // Reset color inputs
+                                    const colorInputs = form.querySelectorAll('input[type="color"]');
+                                    colorInputs.forEach(input => {
+                                        const name = input.getAttribute('name');
+                                        if (defaults[name]) {
+                                            input.value = defaults[name];
+                                            console.log(`Reset ${name} to ${defaults[name]}`);
+                                        }
+                                    });
+
+                                    // Reset select inputs
+                                    const selectInputs = form.querySelectorAll('select');
+                                    selectInputs.forEach(select => {
+                                        const name = select.getAttribute('name');
+                                        if (defaults[name]) {
+                                            select.value = defaults[name];
+                                            console.log(`Reset ${name} to ${defaults[name]}`);
+                                        }
+                                    });
+
+                                    // Reset range inputs and their displays
+                                    const rangeInputs = form.querySelectorAll('input[type="range"]');
+                                    rangeInputs.forEach(input => {
+                                        const name = input.getAttribute('name');
+                                        if (defaults[name]) {
+                                            console.log(`DEBUG: Resetting slider ${name} from ${input.value} to ${defaults[name]}`);
+                                            input.value = defaults[name];
+                                            input.setAttribute('value', defaults[name]);
+
+                                            // Update the corresponding display span
+                                            const displayId = input.id.replace('-slider', '-value');
+                                            const displaySpan = document.getElementById(displayId);
+                                            if (displaySpan) {
+                                                displaySpan.textContent = defaults[name];
+                                                console.log(`DEBUG: Updated display span ${displayId} to ${defaults[name]}`);
+                                            } else {
+                                                console.log(`DEBUG: Display span ${displayId} not found`);
+                                            }
+
+                                            // Trigger input event to ensure visual update
+                                            const event = new Event('input', { bubbles: true });
+                                            input.dispatchEvent(event);
+                                            console.log(`DEBUG: Triggered input event for ${name}`);
+
+                                            console.log(`Reset ${name} to ${defaults[name]}`);
+                                        } else {
+                                            console.log(`DEBUG: No default value found for slider ${name}`);
+                                        }
+                                    });
+
+                                    // Update the final chart form with default values
+                                    const finalChartForm = document.querySelector('form[action*="generate_final_chart"]');
+                                    if (finalChartForm) {
+                                        for (const [key, value] of Object.entries(defaults)) {
+                                            const input = finalChartForm.querySelector(`input[name="${key}"]`);
+                                            if (input) {
+                                                input.value = value;
+                                            }
+                                        }
+                                    }
+
+                                    console.log("All settings reset to defaults. Now generating preview...");
+
+                                    // Generate preview with default settings
+                                    saveAndApplySettings();
+                                }
+                            </script>
+
                             <script>
                                 function saveAndApplySettings() {
                                     // FIRST: Ensure all form inputs have their current values
@@ -397,23 +494,21 @@
                                         primary_date_info_font_size: parseInt(formData.get('primary_date_info_font_size')) || 60,
                                         primary_place_info_font_size: parseInt(formData.get('primary_place_info_font_size')) || 28,
                                         default_stroke_width: parseFloat(formData.get('default_stroke_width')) || 0.5,
-                                        primary_name_x: parseInt(formData.get('primary_name_x')) || 0,
-                                        primary_name_y: parseInt(formData.get('primary_name_y')) || 0,
-                                        primary_name_rotate: parseInt(formData.get('primary_name_rotate')) || -45,
-                                        primary_birth_x: parseInt(formData.get('primary_birth_x')) || 0,
-                                        primary_birth_y: parseInt(formData.get('primary_birth_y')) || 0,
-                                        primary_birth_rotate: parseInt(formData.get('primary_birth_rotate')) || -90,
-                                        primary_birth_place_x: parseInt(formData.get('primary_birth_place_x')) || 0,
-                                        primary_birth_place_y: parseInt(formData.get('primary_birth_place_y')) || 0,
-                                        primary_birth_place_rotate: parseInt(formData.get('primary_birth_place_rotate')) || 0,
-                                        primary_death_x: parseInt(formData.get('primary_death_x')) || 0,
-                                        primary_death_y: parseInt(formData.get('primary_death_y')) || 0,
-                                        primary_death_rotate: parseInt(formData.get('primary_death_rotate')) || 0,
-                                        primary_death_place_x: parseInt(formData.get('primary_death_place_x')) || 0,
-                                        primary_death_place_y: parseInt(formData.get('primary_death_place_y')) || 0,
-                                        primary_death_place_rotate: parseInt(formData.get('primary_death_place_rotate')) || -90,
                                         subject_translate_x: parseInt(formData.get('subject_translate_x')) || 0,
                                         subject_translate_y: parseInt(formData.get('subject_translate_y')) || 0,
+                                        primary_name_rotate: parseInt(formData.get('primary_name_rotate')) || -45,
+                                        primary_birth_translate_x: parseInt(formData.get('primary_birth_translate_x')) || 0,
+                                        primary_birth_translate_y: parseInt(formData.get('primary_birth_translate_y')) || 0,
+                                        primary_birth_rotate: parseInt(formData.get('primary_birth_rotate')) || -90,
+                                        primary_birth_place_translate_x: parseInt(formData.get('primary_birth_place_translate_x')) || 0,
+                                        primary_birth_place_translate_y: parseInt(formData.get('primary_birth_place_translate_y')) || 0,
+                                        primary_birth_place_rotate: parseInt(formData.get('primary_birth_place_rotate')) || 0,
+                                        primary_death_translate_x: parseInt(formData.get('primary_death_translate_x')) || 0,
+                                        primary_death_translate_y: parseInt(formData.get('primary_death_translate_y')) || 0,
+                                        primary_death_rotate: parseInt(formData.get('primary_death_rotate')) || 0,
+                                        primary_death_place_translate_x: parseInt(formData.get('primary_death_place_translate_x')) || 0,
+                                        primary_death_place_translate_y: parseInt(formData.get('primary_death_place_translate_y')) || 0,
+                                        primary_death_place_rotate: parseInt(formData.get('primary_death_place_rotate')) || -90,
                                     };
 
                                     console.log("Sending user settings:", userSettings);
@@ -484,7 +579,7 @@
                                         try {
                                             console.log('=== FORM UPDATE DEBUG ===');
                                             console.log('Attempting to update final chart form with current settings...');
-                                            
+
                                             // Try multiple selectors to find the form
                                             let finalChartForm = document.querySelector('form[action*="generate_final_chart"]');
                                             if (!finalChartForm) {
@@ -493,11 +588,11 @@
                                             if (!finalChartForm) {
                                                 finalChartForm = document.querySelector('form');
                                             }
-                                            
+
                                             if (finalChartForm) {
                                                 console.log('Found form:', finalChartForm);
                                                 console.log('Form action:', finalChartForm.action);
-                                                
+
                                                 // Update all the hidden inputs with the current userSettings
                                                 let updatedCount = 0;
                                                 for (const [key, value] of Object.entries(userSettings)) {
@@ -512,7 +607,7 @@
                                                 }
                                                 console.log(`Successfully updated ${updatedCount} settings in final chart form`);
                                                 console.log('=== FORM UPDATE COMPLETE ===');
-                                                
+
                                                 // Add visual feedback
                                                 const previewImg = document.getElementById('hud-preview');
                                                 if (previewImg) {
@@ -521,7 +616,7 @@
                                                         previewImg.style.border = '';
                                                     }, 1000);
                                                 }
-                                                
+
                                             } else {
                                                 console.error('CRITICAL: Could not find final chart form to update');
                                                 alert('ERROR: Could not find the final chart form. Settings will not be saved for PDF generation.');
@@ -574,23 +669,21 @@
                         <input type="hidden" name="primary_birth_place_color" value="{{ hud_settings.primary_birth_place_color|default:'#000000' }}">
                         <input type="hidden" name="primary_death_color" value="{{ hud_settings.primary_death_color|default:'#000000' }}">
                         <input type="hidden" name="primary_death_place_color" value="{{ hud_settings.primary_death_place_color|default:'#000000' }}">
-                        <input type="hidden" name="primary_name_x" value="{{ hud_settings.primary_name_x|default:0 }}">
-                        <input type="hidden" name="primary_name_y" value="{{ hud_settings.primary_name_y|default:0 }}">
-                        <input type="hidden" name="primary_name_rotate" value="{{ hud_settings.primary_name_rotate|default:-45 }}">
-                        <input type="hidden" name="primary_birth_x" value="{{ hud_settings.primary_birth_x|default:0 }}">
-                        <input type="hidden" name="primary_birth_y" value="{{ hud_settings.primary_birth_y|default:0 }}">
-                        <input type="hidden" name="primary_birth_rotate" value="{{ hud_settings.primary_birth_rotate|default:-90 }}">
-                        <input type="hidden" name="primary_birth_place_x" value="{{ hud_settings.primary_birth_place_x|default:0 }}">
-                        <input type="hidden" name="primary_birth_place_y" value="{{ hud_settings.primary_birth_place_y|default:0 }}">
-                        <input type="hidden" name="primary_birth_place_rotate" value="{{ hud_settings.primary_birth_place_rotate|default:0 }}">
-                        <input type="hidden" name="primary_death_x" value="{{ hud_settings.primary_death_x|default:0 }}">
-                        <input type="hidden" name="primary_death_y" value="{{ hud_settings.primary_death_y|default:0 }}">
-                        <input type="hidden" name="primary_death_rotate" value="{{ hud_settings.primary_death_rotate|default:0 }}">
-                        <input type="hidden" name="primary_death_place_x" value="{{ hud_settings.primary_death_place_x|default:0 }}">
-                        <input type="hidden" name="primary_death_place_y" value="{{ hud_settings.primary_death_place_y|default:0 }}">
-                        <input type="hidden" name="primary_death_place_rotate" value="{{ hud_settings.primary_death_place_rotate|default:-90 }}">
                         <input type="hidden" name="subject_translate_x" value="{{ hud_settings.subject_translate_x|default:0 }}">
                         <input type="hidden" name="subject_translate_y" value="{{ hud_settings.subject_translate_y|default:0 }}">
+                        <input type="hidden" name="primary_name_rotate" value="{{ hud_settings.primary_name_rotate|default:-45 }}">
+                        <input type="hidden" name="primary_birth_translate_x" value="{{ hud_settings.primary_birth_translate_x|default:0 }}">
+                        <input type="hidden" name="primary_birth_translate_y" value="{{ hud_settings.primary_birth_translate_y|default:0 }}">
+                        <input type="hidden" name="primary_birth_rotate" value="{{ hud_settings.primary_birth_rotate|default:-90 }}">
+                        <input type="hidden" name="primary_birth_place_translate_x" value="{{ hud_settings.primary_birth_place_translate_x|default:0 }}">
+                        <input type="hidden" name="primary_birth_place_translate_y" value="{{ hud_settings.primary_birth_place_translate_y|default:0 }}">
+                        <input type="hidden" name="primary_birth_place_rotate" value="{{ hud_settings.primary_birth_place_rotate|default:0 }}">
+                        <input type="hidden" name="primary_death_translate_x" value="{{ hud_settings.primary_death_translate_x|default:0 }}">
+                        <input type="hidden" name="primary_death_translate_y" value="{{ hud_settings.primary_death_translate_y|default:0 }}">
+                        <input type="hidden" name="primary_death_rotate" value="{{ hud_settings.primary_death_rotate|default:0 }}">
+                        <input type="hidden" name="primary_death_place_translate_x" value="{{ hud_settings.primary_death_place_translate_x|default:0 }}">
+                        <input type="hidden" name="primary_death_place_translate_y" value="{{ hud_settings.primary_death_place_translate_y|default:0 }}">
+                        <input type="hidden" name="primary_death_place_rotate" value="{{ hud_settings.primary_death_place_rotate|default:-90 }}">
 
                         <button type="submit" class="btn btn-success w-100">
                             <i class="bi bi-file-earmark-pdf"></i> Generate Final Chart
@@ -647,8 +740,10 @@
         function setupSlider(sliderId, valueId) {
             const slider = document.getElementById(sliderId);
             const valueDisplay = document.getElementById(valueId);
+
             if (slider && valueDisplay) {
                 slider.addEventListener('input', function() {
+
                     valueDisplay.textContent = this.value;
                     console.log(`Slider ${sliderId} changed to: ${this.value}`);
                     // Ensure the value attribute is updated
@@ -745,23 +840,23 @@
             setupSlider('primary-name-rotate-slider', 'primary-name-rotate-value');
 
             // Birth date sliders
-            setupSlider('primary-birth-x-slider', 'primary-birth-x-value');
-            setupSlider('primary-birth-y-slider', 'primary-birth-y-value');
+            setupSlider('primary-birth-translate-x-slider', 'primary-birth-translate-x-value');
+            setupSlider('primary-birth-translate-y-slider', 'primary-birth-translate-y-value');
             setupSlider('primary-birth-rotate-slider', 'primary-birth-rotate-value');
 
             // Birth place sliders
-            setupSlider('primary-place-x-slider', 'primary-place-x-value');
-            setupSlider('primary-place-y-slider', 'primary-place-y-value');
-            setupSlider('primary-place-rotate-slider', 'primary-place-rotate-value');
+            setupSlider('primary-birth-place-translate-x-slider', 'primary-birth-place-translate-x-value');
+            setupSlider('primary-birth-place-translate-y-slider', 'primary-birth-place-translate-y-value');
+            setupSlider('primary-birth-place-rotate-slider', 'primary-birth-place-rotate-value');
 
             // Death date sliders
-            setupSlider('primary-death-x-slider', 'primary-death-x-value');
-            setupSlider('primary-death-y-slider', 'primary-death-y-value');
+            setupSlider('primary-death-translate-x-slider', 'primary-death-translate-x-value');
+            setupSlider('primary-death-translate-y-slider', 'primary-death-translate-y-value');
             setupSlider('primary-death-rotate-slider', 'primary-death-rotate-value');
 
             // Death place sliders
-            setupSlider('primary-death-place-x-slider', 'primary-death-place-x-value');
-            setupSlider('primary-death-place-y-slider', 'primary-death-place-y-value');
+            setupSlider('primary-death-place-translate-x-slider', 'primary-death-place-translate-x-value');
+            setupSlider('primary-death-place-translate-y-slider', 'primary-death-place-translate-y-value');
             setupSlider('primary-death-place-rotate-slider', 'primary-death-place-rotate-value');
         }
 

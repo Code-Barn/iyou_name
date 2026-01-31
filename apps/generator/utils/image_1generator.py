@@ -103,37 +103,33 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
             print(f"DEBUG: PRIMARY_DEATH_COLOR set to: {PRIMARY_DEATH_COLOR}")
             print(f"DEBUG: PRIMARY_DEATH_PLACE_COLOR set to: {PRIMARY_DEATH_PLACE_COLOR}")
 
-            # Primary individual coordinates
-            PRIMARY_NAME_X = int(user_settings.get("primary_name_x", 0))
-            PRIMARY_NAME_Y = int(user_settings.get("primary_name_y", 0))
+            # Primary individual coordinates (using subject translation instead of direct positioning)
             PRIMARY_NAME_ROTATE = int(user_settings.get("primary_name_rotate", -45))
-            PRIMARY_BIRTH_X = int(user_settings.get("primary_birth_x", 0))
-            PRIMARY_BIRTH_Y = int(user_settings.get("primary_birth_y", 0))
+            PRIMARY_BIRTH_TRANSLATE_X = int(user_settings.get("primary_birth_translate_x", 0))
+            PRIMARY_BIRTH_TRANSLATE_Y = int(user_settings.get("primary_birth_translate_y", 0))
             PRIMARY_BIRTH_ROTATE = int(user_settings.get("primary_birth_rotate", -90))
-            PRIMARY_BIRTH_PLACE_X = int(user_settings.get("primary_birth_place_x", 0))
-            PRIMARY_BIRTH_PLACE_Y = int(user_settings.get("primary_birth_place_y", 0))
+            PRIMARY_BIRTH_PLACE_TRANSLATE_X = int(user_settings.get("primary_birth_place_translate_x", 0))
+            PRIMARY_BIRTH_PLACE_TRANSLATE_Y = int(user_settings.get("primary_birth_place_translate_y", 0))
             PRIMARY_BIRTH_PLACE_ROTATE = int(user_settings.get("primary_birth_place_rotate", 0))
-            PRIMARY_DEATH_X = int(user_settings.get("primary_death_x", 0))
-            PRIMARY_DEATH_Y = int(user_settings.get("primary_death_y", 0))
+            PRIMARY_DEATH_TRANSLATE_X = int(user_settings.get("primary_death_translate_x", 0))
+            PRIMARY_DEATH_TRANSLATE_Y = int(user_settings.get("primary_death_translate_y", 0))
             PRIMARY_DEATH_ROTATE = int(user_settings.get("primary_death_rotate", 0))
-            PRIMARY_DEATH_PLACE_X = int(user_settings.get("primary_death_place_x", 0))
-            PRIMARY_DEATH_PLACE_Y = int(user_settings.get("primary_death_place_y", 0))
+            PRIMARY_DEATH_PLACE_TRANSLATE_X = int(user_settings.get("primary_death_place_translate_x", 0))
+            PRIMARY_DEATH_PLACE_TRANSLATE_Y = int(user_settings.get("primary_death_place_translate_y", 0))
             PRIMARY_DEATH_PLACE_ROTATE = int(user_settings.get("primary_death_place_rotate", -90))
 
-            print(f"DEBUG: PRIMARY_NAME_X set to: {PRIMARY_NAME_X}")
-            print(f"DEBUG: PRIMARY_NAME_Y set to: {PRIMARY_NAME_Y}")
             print(f"DEBUG: PRIMARY_NAME_ROTATE set to: {PRIMARY_NAME_ROTATE}")
-            print(f"DEBUG: PRIMARY_BIRTH_X set to: {PRIMARY_BIRTH_X}")
-            print(f"DEBUG: PRIMARY_BIRTH_Y set to: {PRIMARY_BIRTH_Y}")
+            print(f"DEBUG: PRIMARY_BIRTH_TRANSLATE_X set to: {PRIMARY_BIRTH_TRANSLATE_X}")
+            print(f"DEBUG: PRIMARY_BIRTH_TRANSLATE_Y set to: {PRIMARY_BIRTH_TRANSLATE_Y}")
             print(f"DEBUG: PRIMARY_BIRTH_ROTATE set to: {PRIMARY_BIRTH_ROTATE}")
-            print(f"DEBUG: PRIMARY_BIRTH_PLACE_X set to: {PRIMARY_BIRTH_PLACE_X}")
-            print(f"DEBUG: PRIMARY_BIRTH_PLACE_Y set to: {PRIMARY_BIRTH_PLACE_Y}")
+            print(f"DEBUG: PRIMARY_BIRTH_PLACE_TRANSLATE_X set to: {PRIMARY_BIRTH_PLACE_TRANSLATE_X}")
+            print(f"DEBUG: PRIMARY_BIRTH_PLACE_TRANSLATE_Y set to: {PRIMARY_BIRTH_PLACE_TRANSLATE_Y}")
             print(f"DEBUG: PRIMARY_BIRTH_PLACE_ROTATE set to: {PRIMARY_BIRTH_PLACE_ROTATE}")
-            print(f"DEBUG: PRIMARY_DEATH_X set to: {PRIMARY_DEATH_X}")
-            print(f"DEBUG: PRIMARY_DEATH_Y set to: {PRIMARY_DEATH_Y}")
+            print(f"DEBUG: PRIMARY_DEATH_TRANSLATE_X set to: {PRIMARY_DEATH_TRANSLATE_X}")
+            print(f"DEBUG: PRIMARY_DEATH_TRANSLATE_Y set to: {PRIMARY_DEATH_TRANSLATE_Y}")
             print(f"DEBUG: PRIMARY_DEATH_ROTATE set to: {PRIMARY_DEATH_ROTATE}")
-            print(f"DEBUG: PRIMARY_DEATH_PLACE_X set to: {PRIMARY_DEATH_PLACE_X}")
-            print(f"DEBUG: PRIMARY_DEATH_PLACE_Y set to: {PRIMARY_DEATH_PLACE_Y}")
+            print(f"DEBUG: PRIMARY_DEATH_PLACE_TRANSLATE_X set to: {PRIMARY_DEATH_PLACE_TRANSLATE_X}")
+            print(f"DEBUG: PRIMARY_DEATH_PLACE_TRANSLATE_Y set to: {PRIMARY_DEATH_PLACE_TRANSLATE_Y}")
             print(f"DEBUG: PRIMARY_DEATH_PLACE_ROTATE set to: {PRIMARY_DEATH_PLACE_ROTATE}")
 
             # Primary individual font sizes
@@ -205,8 +201,9 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
                 last_name = name_parts[-1] if len(name_parts) > 1 else ""
 
                 # Draw each part of the name with newline characters and centered alignment
-                draw.text(PRIMARY_NAME_X, PRIMARY_NAME_Y, f"{first_name}\n{middle_name}\n{last_name}")
-                print(f"Drawn text at ({PRIMARY_NAME_X}, {PRIMARY_NAME_Y}): {first_name}\n{middle_name}\n{last_name}")
+                # Using 0,0 coordinates since subject translation handles positioning
+                draw.text(0, 0, f"{first_name}\n{middle_name}\n{last_name}")
+                print(f"Drawn text at (0, 0) with subject translation ({SUBJECT_TRANSLATE_X}, {SUBJECT_TRANSLATE_Y}): {first_name}\n{middle_name}\n{last_name}")
 
 
                 draw.pop()
@@ -217,15 +214,15 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
                 draw.stroke_antialias = STROKE_ANTIALIAS
 
                 # =============================================
-                # DRAW THE PRIMARY_BIRTH INFO
+                # CALCULATE DPI
                 # =============================================
-
-                # Push the current drawing context
-                # draw.push()
-                # print("Pushed drawing context.")
 
                 dpi = 300
                 pixel_ratio = dpi / 72  # Approx 4.1667
+
+                # =============================================
+                # DRAW THE PRIMARY_BIRTH INFO
+                # =============================================
 
                 # Push the current drawing context
                 draw.push()
@@ -251,16 +248,16 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
                 print(f"Points: {metrics.text_width}, Actual Pixels: {text_width_px}")
                 print(f"Points: {metrics.text_height}, Actual Pixels: {text_height_px}")
 
-                # Translate to the correct position: 58px from the left, vertically centered
-                translate_x = 200
-                translate_y = content_img.height // 2
+                # Translate to the correct position: 200px from the left, vertically centered
+                translate_x = 200 + PRIMARY_BIRTH_TRANSLATE_X
+                translate_y = content_img.height // 2 + PRIMARY_BIRTH_TRANSLATE_Y
                 print(f"Translating to: ({translate_x}, {translate_y})")
 
                 draw.translate(translate_x, translate_y)
 
                 # Rotate the drawing context by -90 degrees
-                draw.rotate(-90)
-                print("Rotated by -90 degrees.")
+                draw.rotate(PRIMARY_BIRTH_ROTATE)
+                print(f"Rotated by {PRIMARY_BIRTH_ROTATE} degrees.")
 
                 # Adjust the origin to account for the text's width after rotation
                 adjust_y = -text_width_px // 2
@@ -282,50 +279,97 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
                 draw.push()
 
                 draw.font_size = PRIMARY_PLACE_INFO_FONT_SIZE
+                draw.fill_color = PRIMARY_BIRTH_PLACE_COLOR
+                print(f"Setting font to: {PRIMARY_PLACE_INFO_FONT_SIZE} & fill color to: {PRIMARY_BIRTH_PLACE_COLOR}")
 
-                draw.gravity = "south"
+                text = primary_individual.birth_place or " "
+                print(f"Text to draw: '{text}'")
+
+                # Get text metrics
+                metrics = draw.get_font_metrics(content_img, text, False)
+                text_width = metrics.text_width
+                text_height = metrics.text_height
+                print(f"Text dimensions: width={text_width}, height={text_height}")
+
+                # Convert points to pixels
+                text_width_px = metrics.text_width * pixel_ratio
+                text_height_px = metrics.text_height * pixel_ratio
+
+                print(f"Points: {metrics.text_width}, Actual Pixels: {text_width_px}")
+                print(f"Points: {metrics.text_height}, Actual Pixels: {text_height_px}")
+
+                # Translate to the correct position: 200px from the left, vertically centered
+                translate_x = content_img.width // 2 + PRIMARY_BIRTH_PLACE_TRANSLATE_X
+                translate_y = 1875 + PRIMARY_BIRTH_PLACE_TRANSLATE_Y
+                print(f"Translating to: ({translate_x}, {translate_y})")
+
+                draw.translate(translate_x, translate_y)
 
                 # Draw statements for birthplace
                 print(f"Rotating by: {PRIMARY_BIRTH_PLACE_ROTATE} degrees")
                 draw.rotate(PRIMARY_BIRTH_PLACE_ROTATE)
 
-                print(f"Setting fill_color to: {PRIMARY_BIRTH_PLACE_COLOR}")
-                draw.fill_color = PRIMARY_BIRTH_PLACE_COLOR
+                # Adjust the origin to account for the text's width after rotation
+                adjust_y = -text_width_px // 2
+                print(f"Adjusting origin by: (0, {adjust_y})")
+                draw.translate(adjust_y, 0)
 
-                pifx_birth_place, pify_birth_place = PRIMARY_BIRTH_PLACE_X, PRIMARY_BIRTH_PLACE_Y
-                draw.text(pifx_birth_place, pify_birth_place, primary_individual.birth_place or " ")
-                print(f"Drawn text at ({pifx_birth_place}, {pify_birth_place}): {primary_individual.birth_place or ' '}")
+                # Draw the text at the new origin (0, 0) after translation and rotation
+                print("Drawing text at (0, 0) after transformations.")
+                draw.text(0, 0, text)
 
+                # Pop the drawing context
                 draw.pop()
+                print("Popped drawing context.")
 
                 # =============================================
                 # DRAW THE PRIMARY_DEATH INFO
                 # =============================================
-
                 draw.push()
 
                 draw.font_size = PRIMARY_DATE_INFO_FONT_SIZE
                 draw.fill_color = PRIMARY_DEATH_COLOR
-                print(f"Setting font to: {PRIMARY_DATE_INFO_FONT_SIZE} & fill color to: {PRIMARY_DEATH_COLOR}")
+                print(f"Setting font to: {PRIMARY_PLACE_INFO_FONT_SIZE} & fill color to: {PRIMARY_DEATH_COLOR}")
 
-                draw.gravity = "north"
+                text = primary_individual.death_date or " "
+                print(f"Text to draw: '{text}'")
 
-                # Draw statements for deathdate
-                #draw.rotate(180)
-                draw.stroke_width = DEFAULT_STROKE_WIDTH
+                # Get text metrics
+                metrics = draw.get_font_metrics(content_img, text, False)
+                text_width = metrics.text_width
+                text_height = metrics.text_height
+                print(f"Text dimensions: width={text_width}, height={text_height}")
 
+                # Convert points to pixels
+                text_width_px = metrics.text_width * pixel_ratio
+                text_height_px = metrics.text_height * pixel_ratio
 
-                # Draw primary individual's death date if available
-                # Apply death date rotation
-                print(f"Rotating by: {PRIMARY_DEATH_ROTATE} degrees")
-                draw.rotate(PRIMARY_DEATH_ROTATE)
+                print(f"Points: {metrics.text_width}, Actual Pixels: {text_width_px}")
+                print(f"Points: {metrics.text_height}, Actual Pixels: {text_height_px}")
 
-                pifx_death, pify_death = PRIMARY_DEATH_X, PRIMARY_DEATH_Y
-                draw.text(pifx_death, pify_death, primary_individual.death_date or " ")
-                print(f"Drawn text at ({pifx_death}, {pify_death}): {primary_individual.death_date or ' '}")
+                # Translate to the correct position: 200px from the left, vertically centered
+                translate_x = content_img.width // 2 + PRIMARY_DEATH_TRANSLATE_X
+                translate_y = 200 + PRIMARY_DEATH_TRANSLATE_Y
+                print(f"Translating to: ({translate_x}, {translate_y})")
 
+                draw.translate(translate_x, translate_y)
+
+                # Draw statements for birthplace
+                print(f"Rotating by: {PRIMARY_BIRTH_PLACE_ROTATE} degrees")
+                draw.rotate(PRIMARY_BIRTH_PLACE_ROTATE)
+
+                # Adjust the origin to account for the text's width after rotation
+                adjust_y = -text_width_px // 2
+                print(f"Adjusting origin by: (0, {adjust_y})")
+                draw.translate(adjust_y, 0)
+
+                # Draw the text at the new origin (0, 0) after translation and rotation
+                print("Drawing text at (0, 0) after transformations.")
+                draw.text(0, 0, text)
+
+                # Pop the drawing context
                 draw.pop()
-
+                print("Popped drawing context.")
                 # =============================================
                 # DRAW THE PRIMARY_DEATH_PLACE INFO
                 # =============================================
@@ -354,15 +398,15 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
                 print(f"Points: {metrics.text_height}, Actual Pixels: {text_height_px}")
 
                 # Translate to the correct position: 1850px from the left, vertically centered
-                translate_x = 1850
-                translate_y = content_img.height // 2
+                translate_x = 1875 + PRIMARY_DEATH_PLACE_TRANSLATE_X
+                translate_y = content_img.height // 2 + PRIMARY_DEATH_PLACE_TRANSLATE_Y
                 print(f"Translating to: ({translate_x}, {translate_y})")
 
                 draw.translate(translate_x, translate_y)
 
                 # Rotate the drawing context by -90 degrees
-                draw.rotate(-90)
-                print("Rotated by -90 degrees.")
+                draw.rotate(PRIMARY_DEATH_PLACE_ROTATE)
+                print(f"Rotated by {PRIMARY_DEATH_PLACE_ROTATE} degrees.")
 
                 # Adjust the origin to account for the text's width after rotation
                 adjust_y = -text_width_px // 2
