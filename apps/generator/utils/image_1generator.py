@@ -71,10 +71,12 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
             print(f"DEBUG: FONT_FAMILY set to: {FONT_FAMILY}")
 
             # Stroke settings
-            DEFAULT_STROKE_WIDTH = float(user_settings.get("default_stroke_width", 0.5))
+            PRIMARY_STROKE_WIDTH = float(user_settings.get("primary_stroke_width", 0.5))
             PRIMARY_STROKE_COLOR = Color(user_settings.get("primary_stroke_color", "black"))
+            INFO_STROKE_WIDTH = float(user_settings.get("info_stroke_width", 0.25))
+            INFO_STROKE_COLOR = Color(user_settings.get("info_stroke_color", "gray"))
 
-            print(f"DEBUG: DEFAULT_STROKE_WIDTH set to: {DEFAULT_STROKE_WIDTH}")
+            print(f"DEBUG: PRIMARY_STROKE_WIDTH set to: {PRIMARY_STROKE_WIDTH}")
             print(f"DEBUG: PRIMARY_STROKE_COLOR set to: {PRIMARY_STROKE_COLOR}")
 
             # Drawing quality settings
@@ -100,9 +102,9 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
             print(f"DEBUG: PRIMARY_DEATH_COLOR set to: {PRIMARY_DEATH_COLOR}")
             print(f"DEBUG: PRIMARY_DEATH_PLACE_COLOR set to: {PRIMARY_DEATH_PLACE_COLOR}")
 
-            # Primary individual coordinates (using subject translation instead of direct positioning)
-            SUBJECT_TRANSLATE_X = int(user_settings.get("subject_translate_x", 0))
-            SUBJECT_TRANSLATE_Y = int(user_settings.get("subject_translate_y", 0))
+            # Primary individual coordinates (using primary translation instead of direct positioning)
+            PRIMARY_TRANSLATE_X = int(user_settings.get("primary_translate_x", 0))
+            PRIMARY_TRANSLATE_Y = int(user_settings.get("primary_translate_y", 0))
             PRIMARY_NAME_ROTATE = int(user_settings.get("primary_name_rotate", -45))
             PRIMARY_BIRTH_TRANSLATE_X = int(user_settings.get("primary_birth_translate_x", 0))
             PRIMARY_BIRTH_TRANSLATE_Y = int(user_settings.get("primary_birth_translate_y", 0))
@@ -117,8 +119,8 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
             PRIMARY_DEATH_PLACE_TRANSLATE_Y = int(user_settings.get("primary_death_place_translate_y", 0))
             PRIMARY_DEATH_PLACE_ROTATE = int(user_settings.get("primary_death_place_rotate", -90))
 
-            print(f"DEBUG: SUBJECT_TRANSLATE_X set to: {SUBJECT_TRANSLATE_X}")
-            print(f"DEBUG: SUBJECT_TRANSLATE_Y set to: {SUBJECT_TRANSLATE_Y}")
+            print(f"DEBUG: PRIMARY_TRANSLATE_X set to: {PRIMARY_TRANSLATE_X}")
+            print(f"DEBUG: PRIMARY_TRANSLATE_Y set to: {PRIMARY_TRANSLATE_Y}")
             print(f"DEBUG: PRIMARY_NAME_ROTATE set to: {PRIMARY_NAME_ROTATE}")
             print(f"DEBUG: PRIMARY_BIRTH_TRANSLATE_X set to: {PRIMARY_BIRTH_TRANSLATE_X}")
             print(f"DEBUG: PRIMARY_BIRTH_TRANSLATE_Y set to: {PRIMARY_BIRTH_TRANSLATE_Y}")
@@ -174,23 +176,22 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
                 # =============================================
 
                 # Subject translation
-                print(f"Translating coordinates by (x={SUBJECT_TRANSLATE_X}, y={SUBJECT_TRANSLATE_Y})")
-                draw.translate(x=SUBJECT_TRANSLATE_X, y=SUBJECT_TRANSLATE_Y)
+                draw.translate(x=PRIMARY_TRANSLATE_X, y=PRIMARY_TRANSLATE_Y)
+                print(f"Translating coordinates by (x={PRIMARY_TRANSLATE_X}, y={PRIMARY_TRANSLATE_Y})")
 
-                print(f"Setting stroke_width to: {DEFAULT_STROKE_WIDTH}")
-                draw.stroke_width = DEFAULT_STROKE_WIDTH
-
-                print(f"Setting stroke_color to: {PRIMARY_STROKE_COLOR}")
+                draw.stroke_width = PRIMARY_STROKE_WIDTH
                 draw.stroke_color = PRIMARY_STROKE_COLOR
+                print(f"Setting stroke_width to: {PRIMARY_STROKE_WIDTH}")
+                print(f"Setting stroke_color to: {PRIMARY_STROKE_COLOR}")
 
-                print(f"Setting fill_color to: {PRIMARY_FONT_COLOR}")
                 draw.fill_color = PRIMARY_FONT_COLOR
+                print(f"Setting fill_color to: {PRIMARY_FONT_COLOR}")
 
-                print("Setting gravity to: center")
                 draw.gravity = "center"
+                print("Setting gravity to: center")
 
-                print(f"Rotating by: {PRIMARY_NAME_ROTATE} degrees")
                 draw.rotate(PRIMARY_NAME_ROTATE)
+                print(f"Rotating by: {PRIMARY_NAME_ROTATE} degrees")
 
                 # Surname 0, Self / Subject, Surname 0 (Primary individual)
                 print(f"Drawing primary individual: {primary_individual.full_name}")
@@ -202,16 +203,16 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
                 last_name = name_parts[-1] if len(name_parts) > 1 else ""
 
                 # Draw each part of the name with newline characters and centered alignment
-                # Using 0,0 coordinates since subject translation handles positioning
+                # Using 0,0 coordinates since primary translation handles positioning
                 draw.text(0, 0, f"{first_name}\n{middle_name}\n{last_name}")
-                print(f"Drawn text at (0, 0) with subject translation ({SUBJECT_TRANSLATE_X}, {SUBJECT_TRANSLATE_Y}): {first_name}\n{middle_name}\n{last_name}")
+                print(f"Drawn text at (0, 0) with primary translation ({PRIMARY_TRANSLATE_X}, {PRIMARY_TRANSLATE_Y}): {first_name}\n{middle_name}\n{last_name}")
 
 
                 draw.pop()
 
                 draw.font = FONT_FAMILY
-                draw.stroke_color = PRIMARY_STROKE_COLOR
-                draw.stroke_width = DEFAULT_STROKE_WIDTH
+                draw.stroke_color = INFO_STROKE_COLOR
+                draw.stroke_width = INFO_STROKE_WIDTH
                 draw.stroke_antialias = STROKE_ANTIALIAS
 
                 # =============================================
@@ -432,10 +433,10 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
                 # For preview mode, return the content image directly
                 if template == "preview":
                     print("DEBUG: Returning preview image")
-                    img_buffer = BytesIO()
-                    content_img.save(file=img_buffer)
-                    img_buffer.seek(0)
-                    return img_buffer
+                    gen1_img_buffer = BytesIO()
+                    content_img.save(file=gen1_img_buffer)
+                    gen1_img_buffer.seek(0)
+                    return gen1_img_buffer
 
                 # For final chart mode, composite the content image onto the PDF base template
                 elif template == "final":
@@ -458,11 +459,11 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
                         base_img.composite(content_img, left=composite_x, top=composite_y)
 
                         # Save the final result as PDF
-                        img_buffer = BytesIO()
-                        base_img.save(file=img_buffer)
-                        img_buffer.seek(0)
+                        gen1_img_buffer = BytesIO()
+                        base_img.save(file=gen1_img_buffer)
+                        gen1_img_buffer.seek(0)
 
-                        return img_buffer
+                        return gen1_img_buffer
 
     except Exception as e:
         print(f"ERROR: Failed to generate chart: {str(e)}")

@@ -193,20 +193,20 @@
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <label class="form-label">Subject Translate X</label>
-                                    <input type="range" name="subject_translate_x" class="form-range" min="-300" max="300" value="{{ hud_settings.subject_translate_x|default:0 }}" id="subject-translate-x-slider">
+                                    <input type="range" name="primary_translate_x" class="form-range" min="-300" max="300" value="{{ hud_settings.primary_translate_x|default:0 }}" id="primary-translate-x-slider">
                                     <div class="text-center">
-                                        <span id="subject-translate-x-value">{{ hud_settings.subject_translate_x|default:0 }}</span>
+                                        <span id="primary-translate-x-value">{{ hud_settings.primary_translate_x|default:0 }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Subject Translate Y</label>
-                                    <input type="range" name="subject_translate_y" class="form-range" min="-300" max="300" value="{{ hud_settings.subject_translate_y|default:0 }}" id="subject-translate-y-slider">
+                                    <input type="range" name="primary_translate_y" class="form-range" min="-300" max="300" value="{{ hud_settings.primary_translate_y|default:0 }}" id="primary-translate-y-slider">
                                     <div class="text-center">
-                                        <span id="subject-translate-y-value">{{ hud_settings.subject_translate_y|default:0 }}</span>
+                                        <span id="primary-translate-y-value">{{ hud_settings.primary_translate_y|default:0 }}</span>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">Name Rotation (degrees)</label>
+                                    <label class="form-label">Subject Rotation (degrees)</label>
                                     <input type="range" name="primary_name_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.primary_name_rotate|default:-45 }}" id="primary-name-rotate-slider">
                                     <div class="text-center">
                                         <span id="primary-name-rotate-value">{{ hud_settings.primary_name_rotate|default:-45 }}</span>
@@ -352,8 +352,8 @@
                                         'primary_date_info_font_size': 60,
                                         'primary_place_info_font_size': 28,
                                         'default_stroke_width': 0.5,
-                                        'subject_translate_x': 0,
-                                        'subject_translate_y': 0,
+                                        'primary_translate_x': 0,
+                                        'primary_translate_y': 0,
                                         'primary_name_rotate': -45,
                                         'primary_birth_translate_x': 0,
                                         'primary_birth_translate_y': 0,
@@ -494,8 +494,8 @@
                                         primary_date_info_font_size: parseInt(formData.get('primary_date_info_font_size')) || 60,
                                         primary_place_info_font_size: parseInt(formData.get('primary_place_info_font_size')) || 28,
                                         default_stroke_width: parseFloat(formData.get('default_stroke_width')) || 0.5,
-                                        subject_translate_x: parseInt(formData.get('subject_translate_x')) || 0,
-                                        subject_translate_y: parseInt(formData.get('subject_translate_y')) || 0,
+                                        primary_translate_x: parseInt(formData.get('primary_translate_x')) || 0,
+                                        primary_translate_y: parseInt(formData.get('primary_translate_y')) || 0,
                                         primary_name_rotate: parseInt(formData.get('primary_name_rotate')) || -45,
                                         primary_birth_translate_x: parseInt(formData.get('primary_birth_translate_x')) || 0,
                                         primary_birth_translate_y: parseInt(formData.get('primary_birth_translate_y')) || 0,
@@ -669,8 +669,8 @@
                         <input type="hidden" name="primary_birth_place_color" value="{{ hud_settings.primary_birth_place_color|default:'#000000' }}">
                         <input type="hidden" name="primary_death_color" value="{{ hud_settings.primary_death_color|default:'#000000' }}">
                         <input type="hidden" name="primary_death_place_color" value="{{ hud_settings.primary_death_place_color|default:'#000000' }}">
-                        <input type="hidden" name="subject_translate_x" value="{{ hud_settings.subject_translate_x|default:0 }}">
-                        <input type="hidden" name="subject_translate_y" value="{{ hud_settings.subject_translate_y|default:0 }}">
+                        <input type="hidden" name="primary_translate_x" value="{{ hud_settings.primary_translate_x|default:0 }}">
+                        <input type="hidden" name="primary_translate_y" value="{{ hud_settings.primary_translate_y|default:0 }}">
                         <input type="hidden" name="primary_name_rotate" value="{{ hud_settings.primary_name_rotate|default:-45 }}">
                         <input type="hidden" name="primary_birth_translate_x" value="{{ hud_settings.primary_birth_translate_x|default:0 }}">
                         <input type="hidden" name="primary_birth_translate_y" value="{{ hud_settings.primary_birth_translate_y|default:0 }}">
@@ -831,8 +831,8 @@
             setupSlider('default-stroke-width-slider', 'default-stroke-width-value');
 
             // Primary individual coordinates sliders
-            setupSlider('subject-translate-x-slider', 'subject-translate-x-value');
-            setupSlider('subject-translate-y-slider', 'subject-translate-y-value');
+            setupSlider('primary-translate-x-slider', 'primary-translate-x-value');
+            setupSlider('primary-translate-y-slider', 'primary-translate-y-value');
             setupSlider('primary-name-rotate-slider', 'primary-name-rotate-value');
 
             // Birth date sliders
