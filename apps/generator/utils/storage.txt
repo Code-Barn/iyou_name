@@ -1,8 +1,0 @@
-    except Exception as e:
-        print(f"Failed to parse GEDCOM data: {e}")
-        raise
-
-
-    except Exception as e:
-        print(f"Failed to iterate over families: {e}")
-        raise

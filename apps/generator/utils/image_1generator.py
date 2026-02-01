@@ -29,6 +29,9 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
     print(f"DEBUG: generate_1gen_preview received user_settings: {user_settings}")
     print(f"DEBUG: Generating template type: {template}")
 
+    print(f"DEBUG: Generating 1-generation family tree for: {primary_individual.full_name}")
+    print(f"DEBUG: Primary individual ID: {primary_individual.id}")
+
     try:
         # First, generate the content image (same for both preview and final)
         preview_template_path = os.path.join(settings.BASE_DIR, "apps/hud/static/hud/images/preview_image_templates", "1GEN_PREVIEW.png")
@@ -57,12 +60,6 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
             INITIAL_TRANSLATE_X = 0
             INITIAL_TRANSLATE_Y = 0
 
-            # Subject translation (not used in final PDF)
-            SUBJECT_TRANSLATE_X = int(user_settings.get("subject_translate_x", 0))
-            SUBJECT_TRANSLATE_Y = int(user_settings.get("subject_translate_y", 0))
-
-            print(f"DEBUG: SUBJECT_TRANSLATE_X set to: {SUBJECT_TRANSLATE_X}")
-            print(f"DEBUG: SUBJECT_TRANSLATE_Y set to: {SUBJECT_TRANSLATE_Y}")
 
             # =============================================
             # DRAWING SETTINGS TUNING
@@ -104,6 +101,8 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
             print(f"DEBUG: PRIMARY_DEATH_PLACE_COLOR set to: {PRIMARY_DEATH_PLACE_COLOR}")
 
             # Primary individual coordinates (using subject translation instead of direct positioning)
+            SUBJECT_TRANSLATE_X = int(user_settings.get("subject_translate_x", 0))
+            SUBJECT_TRANSLATE_Y = int(user_settings.get("subject_translate_y", 0))
             PRIMARY_NAME_ROTATE = int(user_settings.get("primary_name_rotate", -45))
             PRIMARY_BIRTH_TRANSLATE_X = int(user_settings.get("primary_birth_translate_x", 0))
             PRIMARY_BIRTH_TRANSLATE_Y = int(user_settings.get("primary_birth_translate_y", 0))
@@ -118,6 +117,8 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
             PRIMARY_DEATH_PLACE_TRANSLATE_Y = int(user_settings.get("primary_death_place_translate_y", 0))
             PRIMARY_DEATH_PLACE_ROTATE = int(user_settings.get("primary_death_place_rotate", -90))
 
+            print(f"DEBUG: SUBJECT_TRANSLATE_X set to: {SUBJECT_TRANSLATE_X}")
+            print(f"DEBUG: SUBJECT_TRANSLATE_Y set to: {SUBJECT_TRANSLATE_Y}")
             print(f"DEBUG: PRIMARY_NAME_ROTATE set to: {PRIMARY_NAME_ROTATE}")
             print(f"DEBUG: PRIMARY_BIRTH_TRANSLATE_X set to: {PRIMARY_BIRTH_TRANSLATE_X}")
             print(f"DEBUG: PRIMARY_BIRTH_TRANSLATE_Y set to: {PRIMARY_BIRTH_TRANSLATE_Y}")
@@ -169,7 +170,7 @@ def generate_1gen_preview(primary_individual, family_data, template="preview", u
                 draw.translate(x=INITIAL_TRANSLATE_X, y=INITIAL_TRANSLATE_Y)
 
                 # =============================================
-                # PRIMARY INDIVIDUAL DRAWING
+                # INDI 0 - Surname 0 (Subject) DRAWING aka "Primary Individual"
                 # =============================================
 
                 # Subject translation
