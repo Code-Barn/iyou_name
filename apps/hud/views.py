@@ -84,6 +84,27 @@ def display_tree_hud(request):
             },
         )
 
+        # Determine which settings template to use based on current template
+        current_template = hud_settings.get("template", "1")
+        template_mapping = get_template_mapping()
+        template_config = template_mapping.get(current_template, {})
+        template_name = template_config.get("name", f"Template {current_template}")
+
+        # Map template IDs to settings templates
+        settings_template_map = {
+            "1": "1gen_settings.html",
+            "2": "2gen_settings.html",
+        }
+        current_settings_template = settings_template_map.get(
+            current_template, "default_settings.html"
+        )
+
+        # Add template context for default template
+        if current_settings_template == "default_settings.html":
+            generations = current_template  # Use template ID as generations count
+        else:
+            generations = current_template
+
         return render(
             request,
             "hud/display_tree.html",
@@ -95,6 +116,9 @@ def display_tree_hud(request):
                     "hud_settings_timestamp", "0"
                 ),
                 "TEMPLATE_MAPPING": get_template_mapping(),
+                "current_settings_template": current_settings_template,
+                "template_name": template_name,
+                "generations": generations,
             },
         )
 
@@ -474,7 +498,10 @@ def get_template_preview(request, template_id):
 
         # Generate the preview
         preview_buffer = generator_function(
-            primary_individual, family_data_with_person_objects, "preview", user_settings
+            primary_individual,
+            family_data_with_person_objects,
+            "preview",
+            user_settings,
         )
 
         # Return the preview as an image
@@ -628,3 +655,53 @@ def get_1gen_preview(request):
     except Exception as e:
         logger.error(f"Error generating preview: {str(e)}")
         return HttpResponse(f"Error generating preview: {str(e)}", status=500)
+
+
+def get_settings_panel(request, template_name):
+    """
+    AJAX endpoint to return settings panel HTML for dynamic template switching.
+    """
+    try:
+        # Debug logging
+        logger.debug(f"get_settings_panel called with template_name: {template_name}")
+        logger.debug(f"Request GET params: {dict(request.GET)}")
+
+        # Get template information for context
+        template_id = request.GET.get("template", "1")
+        template_mapping = get_template_mapping()
+        template_config = template_mapping.get(template_id, {})
+        display_name = template_config.get("name", f"Template {template_id}")
+
+        logger.debug(f"Template ID: {template_id}, Display Name: {display_name}")
+
+        # Determine generations count
+        if template_id == "1":
+            generations = "1"
+        elif template_id == "2":
+            generations = "2"
+        else:
+            generations = template_id  # Use template ID for higher generations
+
+        # Render the settings template (use template_name from URL parameter)
+        template_path = f"hud/settings/{template_name}"
+        logger.debug(f"Template path: {template_path}")
+
+        context = {
+            "hud_settings": request.session.get("hud_settings", {}),
+            "template_name": display_name,  # Use display name for context
+            "generations": generations,
+        }
+
+        return render(request, template_path, context)
+
+    except Exception as e:
+        logger.error(f"Error loading settings panel {template_name}: {str(e)}")
+        logger.error(f"Exception details: {type(e).__name__}: {e}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+
+        # Return error HTML for AJAX requests
+        return HttpResponse(
+            f'<div class="alert alert-danger">Error loading settings: {str(e)}<br><small>Template: {template_name}</small></div>',
+            content_type="text/html"
+        )

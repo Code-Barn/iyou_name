@@ -7,6 +7,7 @@ from .views import (
     get_hud_preview,
     get_hud_settings,
     get_template_preview,
+    get_settings_panel,
     save_hud_settings,
     update_settings_timestamp,
 )
@@ -24,6 +25,11 @@ urlpatterns = [
         "get-template-preview/<str:template_id>/",
         get_template_preview,
         name="get_template_preview",
+    ),
+    path(
+        "get-settings-panel/<str:template_name>/",
+        get_settings_panel,
+        name="get_settings_panel",
     ),
     path(
         "update-settings-timestamp/",

@@ -1,0 +1,51 @@
+<!-- Default Settings Template (for templates 3-10) -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Settings for {{ template_name }}</h6>
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i>
+        <strong>Coming Soon:</strong> Detailed settings for {{ template_name }} will be available in a future update.
+        For now, this template uses default settings optimized for {{ generations }} generations.
+    </div>
+</div>
+
+<!-- Basic Color Settings (inherited) -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Basic Color Settings</h6>
+    <div class="d-flex flex-wrap gap-3">
+        <div class="flex-grow-1">
+            <label class="form-label">Background Color</label>
+            <input type="color" name="primary_background_color" class="form-control form-control-color" value="{{ hud_settings.primary_background_color|default:'#FFFFFF' }}">
+        </div>
+        <div class="flex-grow-1">
+            <label class="form-label">Text Color</label>
+            <input type="color" name="primary_font_color" class="form-control form-control-color" value="{{ hud_settings.primary_font_color|default:'#000000' }}">
+        </div>
+        <div class="flex-grow-1">
+            <label class="form-label">Stroke Color</label>
+            <input type="color" name="primary_stroke_color" class="form-control form-control-color" value="{{ hud_settings.primary_stroke_color|default:'#000000' }}">
+        </div>
+    </div>
+</div>
+
+<!-- Basic Font Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Basic Font Settings</h6>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Font Family</label>
+            <select name="font_family" class="form-select">
+                <option value="Arial" {% if hud_settings.font_family|default:'Arial' == 'Arial' %}selected{% endif %}>Arial</option>
+                <option value="Times New Roman" {% if hud_settings.font_family|default:'Arial' == 'Times New Roman' %}selected{% endif %}>Times New Roman</option>
+                <option value="Helvetica" {% if hud_settings.font_family|default:'Arial' == 'Helvetica' %}selected{% endif %}>Helvetica</option>
+                <option value="Georgia" {% if hud_settings.font_family|default:'Arial' == 'Georgia' %}selected{% endif %}>Georgia</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Base Font Size (px)</label>
+            <input type="range" name="primary_name_font_size" class="form-range" min="20" max="100" value="{{ hud_settings.primary_name_font_size|default:48 }}" id="primary-name-font-size-slider">
+            <div class="text-center">
+                <span id="primary-name-font-size-value">{{ hud_settings.primary_name_font_size|default:48 }}</span>px
+            </div>
+        </div>
+    </div>
+</div>

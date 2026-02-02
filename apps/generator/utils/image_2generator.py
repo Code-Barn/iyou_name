@@ -11,9 +11,7 @@ from apps.generator.utils.image_1generator import generate_1gen_preview
 from apps.generator.utils.settings_helper import extract_generation_settings
 
 
-def generate_2gen_preview(
-    primary_individual, family_data, template="preview", user_settings=None
-):
+def generate_2gen_preview(primary_individual, family_data, template="preview", user_settings=None):
     """
     Generate a 2-generation family tree chart using Wand (Python ImageMagick binding)
 
@@ -37,9 +35,7 @@ def generate_2gen_preview(
     parent_settings = extract_generation_settings(user_settings, "PARENT")
     print(f"DEBUG: Extracted PARENT settings: {parent_settings}")
 
-    print(
-        f"DEBUG: Generating 2-generation family tree for: {primary_individual.full_name}"
-    )
+    print(f"DEBUG: Generating 2-generation family tree for: {primary_individual.full_name}")
     print(f"DEBUG: Primary individual ID: {primary_individual.id}")
 
     try:
@@ -51,9 +47,7 @@ def generate_2gen_preview(
         )
 
         print(f"DEBUG: Preview template path: {preview_template_path}")
-        print(
-            f"DEBUG: Preview template exists: {os.path.exists(preview_template_path)}"
-        )
+        print(f"DEBUG: Preview template exists: {os.path.exists(preview_template_path)}")
 
         # Generate the content image (this is what the user sees in preview)
         with Image(filename=preview_template_path, resolution=300) as content_img:
@@ -64,8 +58,8 @@ def generate_2gen_preview(
             # =============================================
 
             # Initial translation
-            INITIAL_TRANSLATE_X = 0
-            INITIAL_TRANSLATE_Y = 0
+            INITIAL_TRANSLATE_X = 350
+            INITIAL_TRANSLATE_Y = 350
 
             # Parent translation
             PARENT_TRANSLATE_X = int(user_settings.get("parent_translate_x", 0))
@@ -82,9 +76,7 @@ def generate_2gen_preview(
 
             # Stroke settings
             DEFAULT_STROKE_WIDTH = float(user_settings.get("default_stroke_width", 0.5))
-            PARENT_STROKE_COLOR = Color(
-                user_settings.get("parent_stroke_color", "black")
-            )
+            PARENT_STROKE_COLOR = Color(user_settings.get("parent_stroke_color", "black"))
             INFO_STROKE_COLOR = Color(user_settings.get("info_stroke_color", "black"))
             print(f"DEBUG: DEFAULT_STROKE_WIDTH set to: {DEFAULT_STROKE_WIDTH}")
             print(f"DEBUG: PARENT_STROKE_COLOR set to: {PARENT_STROKE_COLOR}")
@@ -99,144 +91,66 @@ def generate_2gen_preview(
             # Parent colors
             FATHER_FONT_COLOR = Color(user_settings.get("father_font_color", "black"))
             FATHER_BIRTH_COLOR = Color(user_settings.get("father_birth_color", "black"))
-            FATHER_BIRTH_PLACE_COLOR = Color(
-                user_settings.get("father_birth_place_color", "black")
-            )
+            FATHER_BIRTH_PLACE_COLOR = Color(user_settings.get("father_birth_place_color", "black"))
             FATHER_DEATH_COLOR = Color(user_settings.get("father_death_color", "black"))
-            FATHER_DEATH_PLACE_COLOR = Color(
-                user_settings.get("father_death_place_color", "black")
-            )
+            FATHER_DEATH_PLACE_COLOR = Color(user_settings.get("father_death_place_color", "black"))
 
             MOTHER_FONT_COLOR = Color(user_settings.get("mother_font_color", "black"))
             MOTHER_BIRTH_COLOR = Color(user_settings.get("mother_birth_color", "black"))
-            MOTHER_BIRTH_PLACE_COLOR = Color(
-                user_settings.get("mother_birth_place_color", "black")
-            )
+            MOTHER_BIRTH_PLACE_COLOR = Color(user_settings.get("mother_birth_place_color", "black"))
             MOTHER_DEATH_COLOR = Color(user_settings.get("mother_death_color", "black"))
-            MOTHER_DEATH_PLACE_COLOR = Color(
-                user_settings.get("mother_death_place_color", "black")
-            )
+            MOTHER_DEATH_PLACE_COLOR = Color(user_settings.get("mother_death_place_color", "black"))
 
             # Parent font sizes
-            PARENT_NAME_FONT_SIZE = int(
-                user_settings.get("primary_place_info_font_size", 28)
-            )
-            PARENT_DATE_INFO_FONT_SIZE = int(
-                user_settings.get("primary_place_info_font_size", 28)
-            )
-            PARENT_PLACE_INFO_FONT_SIZE = int(
-                user_settings.get("primary_place_info_font_size", 28)
-            )
+            PARENT_NAME_FONT_SIZE = int(user_settings.get("primary_place_info_font_size", 28))
+            PARENT_DATE_INFO_FONT_SIZE = int(user_settings.get("primary_place_info_font_size", 28))
+            PARENT_PLACE_INFO_FONT_SIZE = int(user_settings.get("primary_place_info_font_size", 28))
 
             # Father coordinates
-            FATHER_FIRST_TRANSLATE_X = int(
-                user_settings.get("father_first_translate_x", 0)
-            )
-            FATHER_FIRST_TRANSLATE_Y = int(
-                user_settings.get("father_first_translate_y", 0)
-            )
+            FATHER_FIRST_TRANSLATE_X = int(user_settings.get("father_first_translate_x", 975))
+            FATHER_FIRST_TRANSLATE_Y = int(user_settings.get("father_first_translate_y", 1700))
             FATHER_FIRST_ROTATE = int(user_settings.get("father_first_rotate", 0))
-            FATHER_MIDDLE_TRANSLATE_X = int(
-                user_settings.get("father_middle_translate_x", 0)
-            )
-            FATHER_MIDDLE_TRANSLATE_Y = int(
-                user_settings.get("father_middle_translate_y", 0)
-            )
+            FATHER_MIDDLE_TRANSLATE_X = int(user_settings.get("father_middle_translate_x", 0))
+            FATHER_MIDDLE_TRANSLATE_Y = int(user_settings.get("father_middle_translate_y", 0))
             FATHER_MIDDLE_ROTATE = int(user_settings.get("father_middle_rotate", 0))
-            FATHER_LAST_TRANSLATE_X = int(
-                user_settings.get("father_last_translate_x", 0)
-            )
-            FATHER_LAST_TRANSLATE_Y = int(
-                user_settings.get("father_last_translate_y", 0)
-            )
+            FATHER_LAST_TRANSLATE_X = int(user_settings.get("father_last_translate_x", 0))
+            FATHER_LAST_TRANSLATE_Y = int(user_settings.get("father_last_translate_y", 0))
             FATHER_LAST_ROTATE = int(user_settings.get("father_last_rotate", 0))
-            FATHER_BIRTH_TRANSLATE_X = int(
-                user_settings.get("father_birth_translate_x", 0)
-            )
-            FATHER_BIRTH_TRANSLATE_Y = int(
-                user_settings.get("father_birth_translate_y", 0)
-            )
+            FATHER_BIRTH_TRANSLATE_X = int(user_settings.get("father_birth_translate_x", 0))
+            FATHER_BIRTH_TRANSLATE_Y = int(user_settings.get("father_birth_translate_y", 0))
             FATHER_BIRTH_ROTATE = int(user_settings.get("father_birth_rotate", 0))
-            FATHER_BIRTH_PLACE_TRANSLATE_X = int(
-                user_settings.get("father_birth_place_translate_x", 0)
-            )
-            FATHER_BIRTH_PLACE_TRANSLATE_Y = int(
-                user_settings.get("father_birth_place_translate_y", 0)
-            )
-            FATHER_BIRTH_PLACE_ROTATE = int(
-                user_settings.get("father_birth_place_rotate", 0)
-            )
-            FATHER_DEATH_TRANSLATE_X = int(
-                user_settings.get("father_death_translate_x", 0)
-            )
-            FATHER_DEATH_TRANSLATE_Y = int(
-                user_settings.get("father_death_translate_y", 280)
-            )
+            FATHER_BIRTH_PLACE_TRANSLATE_X = int(user_settings.get("father_birth_place_translate_x", 0))
+            FATHER_BIRTH_PLACE_TRANSLATE_Y = int(user_settings.get("father_birth_place_translate_y", 0))
+            FATHER_BIRTH_PLACE_ROTATE = int(user_settings.get("father_birth_place_rotate", 0))
+            FATHER_DEATH_TRANSLATE_X = int(user_settings.get("father_death_translate_x", 0))
+            FATHER_DEATH_TRANSLATE_Y = int(user_settings.get("father_death_translate_y", 280))
             FATHER_DEATH_ROTATE = int(user_settings.get("father_death_rotate", -90))
-            FATHER_DEATH_PLACE_TRANSLATE_X = int(
-                user_settings.get("father_death_place_translate_x", 0)
-            )
-            FATHER_DEATH_PLACE_TRANSLATE_Y = int(
-                user_settings.get("father_death_place_translate_y", 280)
-            )
-            FATHER_DEATH_PLACE_ROTATE = int(
-                user_settings.get("father_death_place_rotate", -90)
-            )
+            FATHER_DEATH_PLACE_TRANSLATE_X = int(user_settings.get("father_death_place_translate_x", 0))
+            FATHER_DEATH_PLACE_TRANSLATE_Y = int(user_settings.get("father_death_place_translate_y", 280))
+            FATHER_DEATH_PLACE_ROTATE = int(user_settings.get("father_death_place_rotate", -90))
 
             # Mother coordinates
-            MOTHER_FIRST_TRANSLATE_X = int(
-                user_settings.get("mother_first_translate_x", 0)
-            )
-            MOTHER_FIRST_TRANSLATE_Y = int(
-                user_settings.get("mother_first_translate_y", 0)
-            )
+            MOTHER_FIRST_TRANSLATE_X = int(user_settings.get("mother_first_translate_x", 0))
+            MOTHER_FIRST_TRANSLATE_Y = int(user_settings.get("mother_first_translate_y", 0))
             MOTHER_FIRST_ROTATE = int(user_settings.get("mother_first_rotate", 0))
-            MOTHER_MIDDLE_TRANSLATE_X = int(
-                user_settings.get("mother_middle_translate_x", 0)
-            )
-            MOTHER_MIDDLE_TRANSLATE_Y = int(
-                user_settings.get("mother_middle_translate_y", 0)
-            )
+            MOTHER_MIDDLE_TRANSLATE_X = int(user_settings.get("mother_middle_translate_x", 0))
+            MOTHER_MIDDLE_TRANSLATE_Y = int(user_settings.get("mother_middle_translate_y", 0))
             MOTHER_MIDDLE_ROTATE = int(user_settings.get("mother_middle_rotate", 0))
-            MOTHER_LAST_TRANSLATE_X = int(
-                user_settings.get("mother_last_translate_x", 0)
-            )
-            MOTHER_LAST_TRANSLATE_Y = int(
-                user_settings.get("mother_last_translate_y", 0)
-            )
+            MOTHER_LAST_TRANSLATE_X = int(user_settings.get("mother_last_translate_x", 0))
+            MOTHER_LAST_TRANSLATE_Y = int(user_settings.get("mother_last_translate_y", 0))
             MOTHER_LAST_ROTATE = int(user_settings.get("mother_last_rotate", 0))
-            MOTHER_BIRTH_TRANSLATE_X = int(
-                user_settings.get("mother_birth_translate_x", 0)
-            )
-            MOTHER_BIRTH_TRANSLATE_Y = int(
-                user_settings.get("mother_birth_translate_y", 0)
-            )
+            MOTHER_BIRTH_TRANSLATE_X = int(user_settings.get("mother_birth_translate_x", 0))
+            MOTHER_BIRTH_TRANSLATE_Y = int(user_settings.get("mother_birth_translate_y", 0))
             MOTHER_BIRTH_ROTATE = int(user_settings.get("mother_birth_rotate", 0))
-            MOTHER_BIRTH_PLACE_TRANSLATE_X = int(
-                user_settings.get("mother_birth_place_translate_x", 0)
-            )
-            MOTHER_BIRTH_PLACE_TRANSLATE_Y = int(
-                user_settings.get("mother_birth_place_translate_y", 0)
-            )
-            MOTHER_BIRTH_PLACE_ROTATE = int(
-                user_settings.get("mother_birth_place_rotate", 0)
-            )
-            MOTHER_DEATH_TRANSLATE_X = int(
-                user_settings.get("mother_death_translate_x", 0)
-            )
-            MOTHER_DEATH_TRANSLATE_Y = int(
-                user_settings.get("mother_death_translate_y", 280)
-            )
+            MOTHER_BIRTH_PLACE_TRANSLATE_X = int(user_settings.get("mother_birth_place_translate_x", 0))
+            MOTHER_BIRTH_PLACE_TRANSLATE_Y = int(user_settings.get("mother_birth_place_translate_y", 0))
+            MOTHER_BIRTH_PLACE_ROTATE = int(user_settings.get("mother_birth_place_rotate", 0))
+            MOTHER_DEATH_TRANSLATE_X = int(user_settings.get("mother_death_translate_x", 0))
+            MOTHER_DEATH_TRANSLATE_Y = int(user_settings.get("mother_death_translate_y", 280))
             MOTHER_DEATH_ROTATE = int(user_settings.get("mother_death_rotate", -90))
-            MOTHER_DEATH_PLACE_TRANSLATE_X = int(
-                user_settings.get("mother_death_place_translate_x", 0)
-            )
-            MOTHER_DEATH_PLACE_TRANSLATE_Y = int(
-                user_settings.get("mother_death_place_translate_y", 280)
-            )
-            MOTHER_DEATH_PLACE_ROTATE = int(
-                user_settings.get("mother_death_place_rotate", -90)
-            )
+            MOTHER_DEATH_PLACE_TRANSLATE_X = int(user_settings.get("mother_death_place_translate_x", 0))
+            MOTHER_DEATH_PLACE_TRANSLATE_Y = int(user_settings.get("mother_death_place_translate_y", 280))
+            MOTHER_DEATH_PLACE_ROTATE = int(user_settings.get("mother_death_place_rotate", -90))
 
             with Drawing() as draw:
                 draw.push()
@@ -247,9 +161,7 @@ def generate_2gen_preview(
                 draw.stroke_antialias = STROKE_ANTIALIAS
 
                 # Initial translation
-                print(
-                    f"Translating coordinates by (x={INITIAL_TRANSLATE_X}, y={INITIAL_TRANSLATE_Y})"
-                )
+                print(f"Translating coordinates by (x={INITIAL_TRANSLATE_X}, y={INITIAL_TRANSLATE_Y})")
                 draw.translate(x=INITIAL_TRANSLATE_X, y=INITIAL_TRANSLATE_Y)
 
                 # =============================================
@@ -273,9 +185,7 @@ def generate_2gen_preview(
                 # =============================================
 
                 print(f"Primary individual: {primary_individual.full_name}")
-                print(
-                    f"Birth date: {primary_individual.birth_date} (type: {type(primary_individual.birth_date)})"
-                )
+                print(f"Birth date: {primary_individual.birth_date} (type: {type(primary_individual.birth_date)})")
                 print(f"Birth place: {primary_individual.birth_place}")
                 print(f"Father ID: {primary_individual.father}")
                 print(f"Mother ID: {primary_individual.mother}")
@@ -324,13 +234,13 @@ def generate_2gen_preview(
                 )
                 draw.rotate(fr_first)
 
+                draw.translate(fx_first, fy_first)
+
                 print(f"Setting fill_color to: {FATHER_FONT_COLOR}")
                 draw.fill_color = FATHER_FONT_COLOR
 
                 draw.text(fx_first, fy_first, first_name)
-                print(
-                    f"Drawn father's first name at ({fx_first}, {fy_first}) with rotation {fr_first}: {first_name}"
-                )
+                print(f"Drawn father's first name at ({fx_first}, {fy_first}) with rotation {fr_first}: {first_name}")
 
                 draw.pop()
 
@@ -346,12 +256,12 @@ def generate_2gen_preview(
                     FATHER_MIDDLE_ROTATE,
                 )
 
+                draw.translate(fx_middle, fy_middle)
+
                 draw.rotate(fr_middle)
 
                 draw.text(fx_middle, fy_middle, middle_name)
-                print(
-                    f"Drawn father's middle name at ({fx_middle}, {fy_middle}) with rotation {fr_middle}: {middle_name}"
-                )
+                print(f"Drawn father's middle name at ({fx_middle}, {fy_middle}) with rotation {fr_middle}: {middle_name}")
 
                 draw.pop()
 
@@ -372,9 +282,7 @@ def generate_2gen_preview(
                 draw.rotate(fr_last)
 
                 draw.text(fx_last, fy_last, last_name)
-                print(
-                    f"Drawn father's last name at ({fx_last}, {fy_last}) with rotation {fr_last}: {last_name}"
-                )
+                print(f"Drawn father's last name at ({fx_last}, {fy_last}) with rotation {fr_last}: {last_name}")
 
                 draw.pop()
 
@@ -394,16 +302,12 @@ def generate_2gen_preview(
 
                 draw.fill_color = FATHER_BIRTH_COLOR
                 draw.font_size = PARENT_DATE_INFO_FONT_SIZE
-                print(
-                    f"Setting fill_color to: {FATHER_BIRTH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}"
-                )
+                print(f"Setting fill_color to: {FATHER_BIRTH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}")
 
                 draw.rotate(fr_birth)
 
                 draw.text(0, 0, father.birth_date or " ")
-                print(
-                    f"Drawn text at ({fx_birth}, {fy_birth}) with rotation {fr_birth}: {father.birth_date or ' '}"
-                )
+                print(f"Drawn text at ({fx_birth}, {fy_birth}) with rotation {fr_birth}: {father.birth_date or ' '}")
 
                 draw.pop()
 
@@ -423,16 +327,12 @@ def generate_2gen_preview(
 
                 draw.fill_color = FATHER_BIRTH_PLACE_COLOR
                 draw.font_size = PARENT_PLACE_INFO_FONT_SIZE
-                print(
-                    f"Setting fill_color to: {FATHER_BIRTH_PLACE_COLOR} and font_size to: {PARENT_PLACE_INFO_FONT_SIZE}"
-                )
+                print(f"Setting fill_color to: {FATHER_BIRTH_PLACE_COLOR} and font_size to: {PARENT_PLACE_INFO_FONT_SIZE}")
 
                 draw.rotate(fr_birth_place)
 
                 draw.text(0, 0, father.birth_place or " ")
-                print(
-                    f"Drawn text at ({fx_birth_place}, {fy_birth_place}) with rotation {fr_birth_place}: {father.birth_place or ' '}"
-                )
+                print(f"Drawn text at ({fx_birth_place}, {fy_birth_place}) with rotation {fr_birth_place}: {father.birth_place or ' '}")
 
                 draw.pop()
 
@@ -452,16 +352,12 @@ def generate_2gen_preview(
 
                 draw.fill_color = FATHER_DEATH_COLOR
                 draw.font_size = PARENT_DATE_INFO_FONT_SIZE
-                print(
-                    f"Setting fill_color to: {FATHER_DEATH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}"
-                )
+                print(f"Setting fill_color to: {FATHER_DEATH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}")
 
                 draw.rotate(fr_death)
 
                 draw.text(0, 0, father.death_date)
-                print(
-                    f"Drawn text at ({fx_death}, {fy_death}) with rotation {fr_death}: {father.death_date or ' '}"
-                )
+                print(f"Drawn text at ({fx_death}, {fy_death}) with rotation {fr_death}: {father.death_date or ' '}")
 
                 draw.pop()
 
@@ -481,16 +377,12 @@ def generate_2gen_preview(
 
                 draw.fill_color = FATHER_DEATH_COLOR
                 draw.font_size = PARENT_PLACE_INFO_FONT_SIZE
-                print(
-                    f"Setting fill_color to: {FATHER_DEATH_COLOR} and font_size to: {PARENT_PLACE_INFO_FONT_SIZE}"
-                )
+                print(f"Setting fill_color to: {FATHER_DEATH_COLOR} and font_size to: {PARENT_PLACE_INFO_FONT_SIZE}")
 
                 draw.rotate(fr_death_place)
 
                 draw.text(0, 0, father.death_place or " ")
-                print(
-                    f"Drawn text at ({fx_death_place}, {fy_death_place}) with rotation {fr_death_place}: {father.death_place or ' '}"
-                )
+                print(f"Drawn text at ({fx_death_place}, {fy_death_place}) with rotation {fr_death_place}: {father.death_place or ' '}")
 
                 draw.pop()
 
@@ -518,15 +410,15 @@ def generate_2gen_preview(
                     MOTHER_FIRST_ROTATE,
                 )
 
+                draw.translate(mx_first, my_first)
+
                 draw.rotate(mr_first)
 
                 print(f"Setting fill_color to: {MOTHER_FONT_COLOR}")
                 draw.fill_color = MOTHER_FONT_COLOR
 
                 draw.text(mx_first, my_first, first_name)
-                print(
-                    f"Drawn mother's first name at ({mx_first}, {my_first}) with rotation {mr_first}: {first_name}"
-                )
+                print(f"Drawn mother's first name at ({mx_first}, {my_first}) with rotation {mr_first}: {first_name}")
 
                 draw.pop()
 
@@ -542,12 +434,12 @@ def generate_2gen_preview(
                     MOTHER_MIDDLE_ROTATE,
                 )
 
+                draw.translate(mx_middle, my_middle)
+
                 draw.rotate(mr_middle)
 
                 draw.text(mx_middle, my_middle, middle_name)
-                print(
-                    f"Drawn mother's middle name at ({mx_middle}, {my_middle}) with rotation {mr_middle}: {middle_name}"
-                )
+                print(f"Drawn mother's middle name at ({mx_middle}, {my_middle}) with rotation {mr_middle}: {middle_name}")
 
                 draw.pop()
 
@@ -563,12 +455,12 @@ def generate_2gen_preview(
                     MOTHER_LAST_ROTATE,
                 )
 
+                draw.translate(mx_last, my_last)
+
                 draw.rotate(mr_last)
 
                 draw.text(mx_last, my_last, last_name)
-                print(
-                    f"Drawn mother's last name at ({mx_last}, {my_last}) with rotation {mr_last}: {last_name}"
-                )
+                print(f"Drawn mother's last name at ({mx_last}, {my_last}) with rotation {mr_last}: {last_name}")
 
                 draw.pop()
 
@@ -588,16 +480,12 @@ def generate_2gen_preview(
 
                 draw.fill_color = MOTHER_BIRTH_COLOR
                 draw.font_size = PARENT_DATE_INFO_FONT_SIZE
-                print(
-                    f"Setting fill_color to: {MOTHER_BIRTH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}"
-                )
+                print(f"Setting fill_color to: {MOTHER_BIRTH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}")
 
                 draw.rotate(mr_birth)
 
                 draw.text(0, 0, mother.birth_date or " ")
-                print(
-                    f"Drawn text at ({mx_birth}, {my_birth}) with rotation {mr_birth}: {mother.birth_date or ' '}"
-                )
+                print(f"Drawn text at ({mx_birth}, {my_birth}) with rotation {mr_birth}: {mother.birth_date or ' '}")
 
                 draw.pop()
 
@@ -617,16 +505,12 @@ def generate_2gen_preview(
 
                 draw.fill_color = MOTHER_BIRTH_PLACE_COLOR
                 draw.font_size = PARENT_PLACE_INFO_FONT_SIZE
-                print(
-                    f"Setting fill_color to: {MOTHER_BIRTH_PLACE_COLOR} and font_size to: {PARENT_PLACE_INFO_FONT_SIZE}"
-                )
+                print(f"Setting fill_color to: {MOTHER_BIRTH_PLACE_COLOR} and font_size to: {PARENT_PLACE_INFO_FONT_SIZE}")
 
                 draw.rotate(mr_birth_place)
 
                 draw.text(0, 0, mother.birth_place or " ")
-                print(
-                    f"Drawn text at ({mx_birth_place}, {my_birth_place}) with rotation {mr_birth_place}: {mother.birth_place or ' '}"
-                )
+                print(f"Drawn text at ({mx_birth_place}, {my_birth_place}) with rotation {mr_birth_place}: {mother.birth_place or ' '}")
 
                 draw.pop()
 
@@ -646,16 +530,12 @@ def generate_2gen_preview(
 
                 draw.fill_color = MOTHER_DEATH_COLOR
                 draw.font_size = PARENT_DATE_INFO_FONT_SIZE
-                print(
-                    f"Setting fill_color to: {MOTHER_DEATH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}"
-                )
+                print(f"Setting fill_color to: {MOTHER_DEATH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}")
 
                 draw.rotate(mr_death)
 
                 draw.text(0, 0, mother.death_date or " ")
-                print(
-                    f"Drawn text at ({mx_death}, {my_death}) with rotation {mr_death}: {mother.death_date or ' '}"
-                )
+                print(f"Drawn text at ({mx_death}, {my_death}) with rotation {mr_death}: {mother.death_date or ' '}")
 
                 draw.pop()
 
@@ -675,37 +555,45 @@ def generate_2gen_preview(
 
                 draw.fill_color = MOTHER_DEATH_COLOR
                 draw.font_size = PARENT_PLACE_INFO_FONT_SIZE
-                print(
-                    f"Setting fill_color to: {MOTHER_DEATH_COLOR} and font_size to: {PARENT_PLACE_INFO_FONT_SIZE}"
-                )
+                print(f"Setting fill_color to: {MOTHER_DEATH_COLOR} and font_size to: {PARENT_PLACE_INFO_FONT_SIZE}")
 
                 draw.rotate(mr_death_place)
 
                 draw.text(0, 0, mother.death_place or " ")
-                print(
-                    f"Drawn text at ({mx_death_place}, {my_death_place}) with rotation {mr_death_place}: {mother.death_place or ' '}"
-                )
+                print(f"Drawn text at ({mx_death_place}, {my_death_place}) with rotation {mr_death_place}: {mother.death_place or ' '}")
 
                 draw.pop()
 
+
+
+                # =============================================
                 # Generate the 1gen overlay with PRIMARY settings before applying 2gen drawing
+                # =============================================
+
                 primary_settings = extract_generation_settings(user_settings, "PRIMARY")
-                print(
-                    f"DEBUG: Generating 1gen overlay with PRIMARY settings: {primary_settings}"
-                )
+                print(f"DEBUG: Generating 1gen overlay with PRIMARY settings: {primary_settings}")
                 gen1_img_buffer = generate_1gen_preview(
                     primary_individual, family_data, "preview", primary_settings
                 )
                 print(f"DEBUG: Generated 1gen overlay buffer")
 
+                # =============================================
                 # Apply the drawing to the image
+                # =============================================
+
                 draw(content_img)
 
+                # =============================================
                 # Composite the 1gen overlay onto the 2gen image
+                # =============================================
+
                 gen1_img_buffer.seek(0)  # Reset buffer position
                 gen1_bytes = gen1_img_buffer.getvalue()
 
+                # =============================================
                 # Create image from blob
+                # =============================================
+
                 with Image(blob=gen1_bytes) as gen1_overlay:
                     gen1_overlay.resize(
                         int(gen1_overlay.width * 0.48), int(gen1_overlay.height * 0.48)
@@ -713,7 +601,10 @@ def generate_2gen_preview(
                     content_img.composite(gen1_overlay, left=508, top=508)
                     print(f"DEBUG: Composited 1gen overlay onto 2gen image")
 
+                # =============================================
                 # For preview mode, return the content image directly
+                # =============================================
+
                 if template == "preview":
                     print("DEBUG: Returning preview image")
                     gen2_image_buffer = BytesIO()
@@ -721,39 +612,43 @@ def generate_2gen_preview(
                     gen2_image_buffer.seek(0)
                     return gen2_image_buffer
 
+                # =============================================
                 # For final chart mode, composite the content image onto the PDF base template
+                # =============================================
+
                 elif template == "final":
                     print("DEBUG: Compositing content onto PDF base template")
 
+                    # =============================================
                     # Load the PDF base template
+                    # =============================================
+
                     base_template_path = os.path.join(
                         settings.BASE_DIR,
                         "apps/charts/static/charts/images/base_image_templates",
                         "US_LETTER_2GEN_BW.pdf",
                     )
                     print(f"DEBUG: Base template path: {base_template_path}")
-                    print(
-                        f"DEBUG: Base template exists: {os.path.exists(base_template_path)}"
-                    )
+                    print(f"DEBUG: Base template exists: {os.path.exists(base_template_path)}")
 
                     with Image(filename=base_template_path, resolution=300) as base_img:
-                        print(
-                            f"Base template loaded: {base_img.width}x{base_img.height}"
-                        )
+                        print(f"Base template loaded: {base_img.width}x{base_img.height}")
 
+                        # =============================================
                         # Composite the content image onto the base template
                         # Position: 300px right, 570px down
+                        # =============================================
+
                         composite_x = 300
                         composite_y = 570
 
-                        print(
-                            f"DEBUG: Compositing content image at position ({composite_x}, {composite_y})"
-                        )
-                        base_img.composite(
-                            content_img, left=composite_x, top=composite_y
-                        )
+                        print(f"DEBUG: Compositing content image at position ({composite_x}, {composite_y})")
+                        base_img.composite(content_img, left=composite_x, top=composite_y)
 
+                        # =============================================
                         # Save the final result as PDF
+                        # =============================================
+
                         pdf_buffer = BytesIO()
                         base_img.save(file=pdf_buffer)
                         pdf_buffer.seek(0)

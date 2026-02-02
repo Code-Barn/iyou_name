@@ -1,0 +1,239 @@
+<!-- 1 Generation Chart Settings -->
+<!-- Color Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Color Settings</h6>
+    <div class="d-flex flex-wrap gap-3">
+        <div class="flex-grow-1">
+            <label class="form-label">Background Color</label>
+            <input type="color" name="primary_background_color" class="form-control form-control-color" value="{{ hud_settings.primary_background_color|default:'#FFFFFF' }}">
+        </div>
+        <div class="flex-grow-1">
+            <label class="form-label">Stroke Color</label>
+            <input type="color" name="primary_stroke_color" class="form-control form-control-color" value="{{ hud_settings.primary_stroke_color|default:'#000000' }}">
+        </div>
+        <div class="flex-grow-1">
+            <label class="form-label">Name Color</label>
+            <input type="color" name="primary_font_color" class="form-control form-control-color" value="{{ hud_settings.primary_font_color|default:'#000000' }}">
+        </div>
+        <div class="flex-grow-1">
+            <label class="form-label">Birthdate Color</label>
+            <input type="color" name="primary_birth_color" class="form-control form-control-color" value="{{ hud_settings.primary_birth_color|default:'#000000' }}">
+        </div>
+        <div class="flex-grow-1">
+            <label class="form-label">Birthplace Color</label>
+            <input type="color" name="primary_birth_place_color" class="form-control form-control-color" value="{{ hud_settings.primary_birth_place_color|default:'#000000' }}">
+        </div>
+        <div class="flex-grow-1">
+            <label class="form-label">Deathdate Color</label>
+            <input type="color" name="primary_death_color" class="form-control form-control-color" value="{{ hud_settings.primary_death_color|default:'#000000' }}">
+        </div>
+        <div class="flex-grow-1">
+            <label class="form-label">Deathplace Color</label>
+            <input type="color" name="primary_death_place_color" class="form-control form-control-color" value="{{ hud_settings.primary_death_place_color|default:'#000000' }}">
+        </div>
+    </div>
+</div>
+
+<!-- Font Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Font Settings</h6>
+    <div class="row g-3">
+        <div class="col-md-12">
+            <label class="form-label">Font Family</label>
+            <select name="font_family" class="form-select">
+                <option value="Arial" {% if hud_settings.font_family|default:'Arial' == 'Arial' %}selected{% endif %}>Arial</option>
+                <option value="Times New Roman" {% if hud_settings.font_family|default:'Arial' == 'Times New Roman' %}selected{% endif %}>Times New Roman</option>
+                <option value="Helvetica" {% if hud_settings.font_family|default:'Arial' == 'Helvetica' %}selected{% endif %}>Helvetica</option>
+                <option value="Georgia" {% if hud_settings.font_family|default:'Arial' == 'Georgia' %}selected{% endif %}>Georgia</option>
+                <option value="Courier New" {% if hud_settings.font_family|default:'Arial' == 'Courier New' %}selected{% endif %}>Courier New</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Font Size Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Font Size Settings</h6>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Name Font Size (px)</label>
+            <input type="range" name="primary_name_font_size" class="form-range" min="38" max="138" value="{{ hud_settings.primary_name_font_size|default:84 }}" id="primary-name-font-size-slider">
+            <div class="text-center">
+                <span id="primary-name-font-size-value">{{ hud_settings.primary_name_font_size|default:84 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Date Info Font Size (px)</label>
+            <input type="range" name="primary_date_info_font_size" class="form-range" min="38" max="68" value="{{ hud_settings.primary_date_info_font_size|default:60 }}" id="primary-date-info-font-size-slider">
+            <div class="text-center">
+                <span id="primary-date-info-font-size-value">{{ hud_settings.primary_date_info_font_size|default:60 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Place Info Font Size (px)</label>
+            <input type="range" name="primary_place_info_font_size" class="form-range" min="18" max="48" value="{{ hud_settings.primary_place_info_font_size|default:28 }}" id="primary-place-info-font-size-slider">
+            <div class="text-center">
+                <span id="primary-place-info-font-size-value">{{ hud_settings.primary_place_info_font_size|default:28 }}</span>px
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stroke Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Stroke Settings</h6>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Stroke Width</label>
+            <input type="range" name="default_stroke_width" class="form-range" min="0.1" max="5" step="0.1" value="{{ hud_settings.default_stroke_width|default:0.5 }}" id="default-stroke-width-slider">
+            <div class="text-center">
+                <span id="default-stroke-width-value">{{ hud_settings.default_stroke_width|default:0.5 }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Position Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Position Settings</h6>
+    
+    <!-- Primary Individual Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-primary">Primary Individual Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Subject Translate X</label>
+            <input type="range" name="primary_translate_x" class="form-range" min="-300" max="300" value="{{ hud_settings.primary_translate_x|default:0 }}" id="primary-translate-x-slider">
+            <div class="text-center">
+                <span id="primary-translate-x-value">{{ hud_settings.primary_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Subject Translate Y</label>
+            <input type="range" name="primary_translate_y" class="form-range" min="-300" max="300" value="{{ hud_settings.primary_translate_y|default:0 }}" id="primary-translate-y-slider">
+            <div class="text-center">
+                <span id="primary-translate-y-value">{{ hud_settings.primary_translate_y|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Subject Rotation (degrees)</label>
+            <input type="range" name="primary_name_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.primary_name_rotate|default:-45 }}" id="primary-name-rotate-slider">
+            <div class="text-center">
+                <span id="primary-name-rotate-value">{{ hud_settings.primary_name_rotate|default:-45 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Birth Date Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-success">Birth Date Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Birthdate Translate X</label>
+            <input type="range" name="primary_birth_translate_x" class="form-range" min="-100" max="300" value="{{ hud_settings.primary_birth_translate_x|default:0 }}" id="primary-birth-translate-x-slider">
+            <div class="text-center">
+                <span id="primary-birth-translate-x-value">{{ hud_settings.primary_birth_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Birthdate Translate Y</label>
+            <input type="range" name="primary_birth_translate_y" class="form-range" min="-300" max="300" value="{{ hud_settings.primary_birth_translate_y|default:0 }}" id="primary-birth-translate-y-slider">
+            <div class="text-center">
+                <span id="primary-birth-translate-y-value">{{ hud_settings.primary_birth_translate_y|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Birthdate Rotation (degrees)</label>
+            <input type="range" name="primary_birth_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.primary_birth_rotate|default:-90 }}" id="primary-birth-rotate-slider">
+            <div class="text-center">
+                <span id="primary-birth-rotate-value">{{ hud_settings.primary_birth_rotate|default:-90 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Birth Place Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-info">Birth Place Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Birthplace Translate X</label>
+            <input type="range" name="primary_birth_place_translate_x" class="form-range" min="-300" max="300" value="{{ hud_settings.primary_birth_place_translate_x|default:0 }}" id="primary-birth-place-translate-x-slider">
+            <div class="text-center">
+                <span id="primary-birth-place-translate-x-value">{{ hud_settings.primary_birth_place_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Birthplace Translate Y</label>
+            <input type="range" name="primary_birth_place_translate_y" class="form-range" min="-300" max="100" value="{{ hud_settings.primary_birth_place_translate_y|default:0 }}" id="primary-birth-place-translate-y-slider">
+            <div class="text-center">
+                <span id="primary-birth-place-translate-y-value">{{ hud_settings.primary_birth_place_translate_y|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Birthplace Rotation (degrees)</label>
+            <input type="range" name="primary_birth_place_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.primary_birth_place_rotate|default:0 }}" id="primary-birth-place-rotate-slider">
+            <div class="text-center">
+                <span id="primary-birth-place-rotate-value">{{ hud_settings.primary_birth_place_rotate|default:0 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Death Date Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-danger">Death Date Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Deathdate Translate X</label>
+            <input type="range" name="primary_death_translate_x" class="form-range" min="-300" max="300" value="{{ hud_settings.primary_death_translate_x|default:0 }}" id="primary-death-translate-x-slider">
+            <div class="text-center">
+                <span id="primary-death-translate-x-value">{{ hud_settings.primary_death_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Deathdate Translate Y</label>
+            <input type="range" name="primary_death_translate_y" class="form-range" min="-100" max="300" value="{{ hud_settings.primary_death_translate_y|default:0 }}" id="primary-death-translate-y-slider">
+            <div class="text-center">
+                <span id="primary-death-translate-y-value">{{ hud_settings.primary_death_translate_y|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Deathdate Rotation (degrees)</label>
+            <input type="range" name="primary_death_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.primary_death_rotate|default:0 }}" id="primary-death-rotate-slider">
+            <div class="text-center">
+                <span id="primary-death-rotate-value">{{ hud_settings.primary_death_rotate|default:0 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Death Place Position -->
+    <div class="row g-3">
+        <div class="col-md-12">
+            <h6 class="text-warning">Death Place Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Deathplace Translate X</label>
+            <input type="range" name="primary_death_place_translate_x" class="form-range" min="-300" max="100" value="{{ hud_settings.primary_death_place_translate_x|default:0 }}" id="primary-death-place-translate-x-slider">
+            <div class="text-center">
+                <span id="primary-death-place-translate-x-value">{{ hud_settings.primary_death_place_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Deathplace Translate Y</label>
+            <input type="range" name="primary_death_place_translate_y" class="form-range" min="-300" max="300" value="{{ hud_settings.primary_death_place_translate_y|default:0 }}" id="primary-death-place-translate-y-slider">
+            <div class="text-center">
+                <span id="primary-death-place-translate-y-value">{{ hud_settings.primary_death_place_translate_y|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Deathplace Rotation (degrees)</label>
+            <input type="range" name="primary_death_place_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.primary_death_place_rotate|default:-90 }}" id="primary-death-place-rotate-slider">
+            <div class="text-center">
+                <span id="primary-death-place-rotate-value">{{ hud_settings.primary_death_place_rotate|default:-90 }}</span>
+            </div>
+        </div>
+    </div>
+</div>
