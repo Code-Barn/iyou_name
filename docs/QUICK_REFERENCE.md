@@ -70,9 +70,45 @@ with Image(blob=overlay_bytes) as overlay:
 ```javascript
 function updatePreviewImage(templateValue) {
     const previewImg = document.getElementById('hud-preview');
-    const timestamp = Date.now();
-    previewImg.src = `/hud/get-template-preview/${templateValue}/?individual_id=${id}&t=${timestamp}`;
+    
+    if (templateValue === '2') {
+        // 2gen needs POST with stored 1gen settings
+        const stored1GenSettings = HUD.Storage.getStored1GenSettings();
+        if (stored1GenSettings) {
+            const form = HUD.Main.getForm();
+            const formData = new FormData(form);
+            const userSettings = HUD.Utils.collectUserSettings(formData);
+            userSettings.primary_settings = stored1GenSettings;
+            HUD.Preview.generatePreview(userSettings);
+        }
+    } else {
+        // Other templates use GET request
+        const timestamp = Date.now();
+        const individualId = document.querySelector('input[name="individual_id"]').value;
+        previewImg.src = `/hud/get-template-preview/${templateValue}/?individual_id=${individualId}&t=${timestamp}`;
+    }
 }
+```
+
+### Settings Persistence
+```javascript
+// Store 1gen settings for 2gen overlay
+if (HUD.Main.getCurrentTemplate() === '1') {
+    HUD.Storage.store1GenSettings(userSettings);
+}
+
+// Load settings when switching templates
+HUD.Session.loadSettingsFromSession().then(settings => {
+    if (settings) {
+        HUD.Utils.updateFormWithStoredSettings(settings);
+    } else {
+        // Fallback to localStorage
+        const stored1GenSettings = HUD.Storage.getStored1GenSettings();
+        if (stored1GenSettings) {
+            HUD.Utils.updateFormWithStoredSettings(stored1GenSettings);
+        }
+    }
+});
 ```
 
 ## 🐛 Common Issues & Fixes
@@ -148,11 +184,18 @@ apps/generator/
 - [ ] Prefix: Use correct generation prefix (PRIMARY_, PARENT_, etc.)
 - [ ] Extraction: Call `extract_generation_settings(user_settings, "PREFIX")`
 - [ ] Defaults: Check `get_default_settings("PREFIX")` in settings_helper.py
+- [ ] 2gen overlay: Check `primary_settings` in request data
 
 ### Frontend Issues?
 - [ ] URL: `/hud/get-template-preview/{template_id}/`
 - [ ] Parameters: `individual_id` and timestamp `t`
 - [ ] Console: Check for JavaScript errors
+
+### Edge Cases: Missing Parents
+- [ ] Wrap drawing in `if parent:` blocks
+- [ ] Safe attribute access: `parent.attr if parent and parent.attr else " "`
+- [ ] Empty string check: `if name: draw.text(x, y, name)`
+- [ ] Clear logging: `print("Parent not found - skipping")`
 
 ## 🚀 Performance Tips
 

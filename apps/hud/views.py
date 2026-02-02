@@ -164,6 +164,16 @@ def save_hud_settings(request):
         primary_date_info_font_size = request.POST.get("primary_date_info_font_size")
         primary_place_info_font_size = request.POST.get("primary_place_info_font_size")
 
+        # Debug logging
+        logger.debug(f"POST data received: {dict(request.POST)}")
+        logger.debug(f"primary_name_font_size raw: '{primary_name_font_size}'")
+        logger.debug(
+            f"primary_date_info_font_size raw: '{primary_date_info_font_size}'"
+        )
+        logger.debug(
+            f"primary_place_info_font_size raw: '{primary_place_info_font_size}'"
+        )
+
         # Stroke settings
         default_stroke_width = request.POST.get("default_stroke_width")
         primary_stroke_color = request.POST.get("primary_stroke_color") or "#000000"
@@ -192,9 +202,35 @@ def save_hud_settings(request):
                 status=400,
             )
 
+        # Debug logging
+        logger.debug(f"POST data received: {dict(request.POST)}")
+        logger.debug(f"primary_name_font_size raw: '{primary_name_font_size}'")
+        logger.debug(
+            f"primary_date_info_font_size raw: '{primary_date_info_font_size}'"
+        )
+        logger.debug(
+            f"primary_place_info_font_size raw: '{primary_place_info_font_size}'"
+        )
+
+        # Check for validation issues
+        try:
+            if primary_name_font_size:
+                int(primary_name_font_size)
+            if primary_date_info_font_size:
+                int(primary_date_info_font_size)
+            if primary_place_info_font_size:
+                int(primary_place_info_font_size)
+            logger.debug("Field validation passed")
+        except ValueError as e:
+            logger.error(f"Field validation failed: {e}")
+            return JsonResponse(
+                {"status": "error", "message": f"Invalid field value: {e}"},
+                status=400,
+            )
+
         # Save settings to session
         logger.debug(f"Saving settings to session: {request.POST}")
-        request.session["hud_settings"] = {
+        hud_settings = {
             "individual_id": individual_id,
             "template": template,
             "generations": generations,
@@ -253,9 +289,223 @@ def save_hud_settings(request):
             "primary_death_place_rotate": int(
                 request.POST.get("primary_death_place_rotate", -90)
             ),
-            "Settings saved to session": request.session.get("hud_settings"),
         }
-        return JsonResponse({"status": "success"})
+
+        # Add 2gen specific settings if present
+        if template == "2 Generation Chart":
+            hud_settings.update(
+                {
+                    # Parent generation colors
+                    "father_font_color": request.POST.get(
+                        "father_font_color", "#000000"
+                    ),
+                    "mother_font_color": request.POST.get(
+                        "mother_font_color", "#000000"
+                    ),
+                    "father_birth_color": request.POST.get(
+                        "father_birth_color", "#000000"
+                    ),
+                    "mother_birth_color": request.POST.get(
+                        "mother_birth_color", "#000000"
+                    ),
+                    "father_death_color": request.POST.get(
+                        "father_death_color", "#000000"
+                    ),
+                    "mother_death_color": request.POST.get(
+                        "mother_death_color", "#000000"
+                    ),
+                    "father_birth_place_color": request.POST.get(
+                        "father_birth_place_color", "#000000"
+                    ),
+                    "mother_birth_place_color": request.POST.get(
+                        "mother_birth_place_color", "#000000"
+                    ),
+                    "father_death_place_color": request.POST.get(
+                        "father_death_place_color", "#000000"
+                    ),
+                    "mother_death_place_color": request.POST.get(
+                        "mother_death_place_color", "#000000"
+                    ),
+                    # Parent generation font sizes
+                    "parent_father_name_font_size": int(
+                        request.POST.get("parent_father_name_font_size", 60)
+                    ),
+                    "parent_mother_name_font_size": int(
+                        request.POST.get("parent_mother_name_font_size", 60)
+                    ),
+                    "parent_date_info_font_size": int(
+                        request.POST.get("parent_date_info_font_size", 40)
+                    ),
+                    "parent_place_info_font_size": int(
+                        request.POST.get("parent_place_info_font_size", 28)
+                    ),
+                    # Parent generation positioning
+                    "parent_translate_x": int(
+                        request.POST.get("parent_translate_x", 0)
+                    ),
+                    "parent_translate_y": int(
+                        request.POST.get("parent_translate_y", 0)
+                    ),
+                    "parent_rotate": int(request.POST.get("parent_rotate", 0)),
+                    # Father positioning
+                    "father_first_translate_x": int(
+                        request.POST.get("father_first_translate_x", 975)
+                    ),
+                    "father_first_translate_y": int(
+                        request.POST.get("father_first_translate_y", 1700)
+                    ),
+                    "father_first_rotate": int(
+                        request.POST.get("father_first_rotate", 0)
+                    ),
+                    "father_middle_translate_x": int(
+                        request.POST.get("father_middle_translate_x", 0)
+                    ),
+                    "father_middle_translate_y": int(
+                        request.POST.get("father_middle_translate_y", 0)
+                    ),
+                    "father_middle_rotate": int(
+                        request.POST.get("father_middle_rotate", 0)
+                    ),
+                    "father_last_translate_x": int(
+                        request.POST.get("father_last_translate_x", 0)
+                    ),
+                    "father_last_translate_y": int(
+                        request.POST.get("father_last_translate_y", 0)
+                    ),
+                    "father_last_rotate": int(
+                        request.POST.get("father_last_rotate", 0)
+                    ),
+                    "father_birth_translate_x": int(
+                        request.POST.get("father_birth_translate_x", 0)
+                    ),
+                    "father_birth_translate_y": int(
+                        request.POST.get("father_birth_translate_y", 0)
+                    ),
+                    "father_birth_rotate": int(
+                        request.POST.get("father_birth_rotate", 0)
+                    ),
+                    "father_birth_place_translate_x": int(
+                        request.POST.get("father_birth_place_translate_x", 0)
+                    ),
+                    "father_birth_place_translate_y": int(
+                        request.POST.get("father_birth_place_translate_y", 0)
+                    ),
+                    "father_birth_place_rotate": int(
+                        request.POST.get("father_birth_place_rotate", 0)
+                    ),
+                    "father_death_translate_x": int(
+                        request.POST.get("father_death_translate_x", 0)
+                    ),
+                    "father_death_translate_y": int(
+                        request.POST.get("father_death_translate_y", 280)
+                    ),
+                    "father_death_rotate": int(
+                        request.POST.get("father_death_rotate", -90)
+                    ),
+                    "father_death_place_translate_x": int(
+                        request.POST.get("father_death_place_translate_x", 0)
+                    ),
+                    "father_death_place_translate_y": int(
+                        request.POST.get("father_death_place_translate_y", 280)
+                    ),
+                    "father_death_place_rotate": int(
+                        request.POST.get("father_death_place_rotate", -90)
+                    ),
+                    # Mother positioning
+                    "mother_first_translate_x": int(
+                        request.POST.get("mother_first_translate_x", 0)
+                    ),
+                    "mother_first_translate_y": int(
+                        request.POST.get("mother_first_translate_y", 0)
+                    ),
+                    "mother_first_rotate": int(
+                        request.POST.get("mother_first_rotate", 0)
+                    ),
+                    "mother_middle_translate_x": int(
+                        request.POST.get("mother_middle_translate_x", 0)
+                    ),
+                    "mother_middle_translate_y": int(
+                        request.POST.get("mother_middle_translate_y", 0)
+                    ),
+                    "mother_middle_rotate": int(
+                        request.POST.get("mother_middle_rotate", 0)
+                    ),
+                    "mother_last_translate_x": int(
+                        request.POST.get("mother_last_translate_x", 0)
+                    ),
+                    "mother_last_translate_y": int(
+                        request.POST.get("mother_last_translate_y", 0)
+                    ),
+                    "mother_last_rotate": int(
+                        request.POST.get("mother_last_rotate", 0)
+                    ),
+                    "mother_birth_translate_x": int(
+                        request.POST.get("mother_birth_translate_x", 0)
+                    ),
+                    "mother_birth_translate_y": int(
+                        request.POST.get("mother_birth_translate_y", 0)
+                    ),
+                    "mother_birth_rotate": int(
+                        request.POST.get("mother_birth_rotate", 0)
+                    ),
+                    "mother_birth_place_translate_x": int(
+                        request.POST.get("mother_birth_place_translate_x", 0)
+                    ),
+                    "mother_birth_place_translate_y": int(
+                        request.POST.get("mother_birth_place_translate_y", 0)
+                    ),
+                    "mother_birth_place_rotate": int(
+                        request.POST.get("mother_birth_place_rotate", 0)
+                    ),
+                    "mother_death_translate_x": int(
+                        request.POST.get("mother_death_translate_x", 0)
+                    ),
+                    "mother_death_translate_y": int(
+                        request.POST.get("mother_death_translate_y", 280)
+                    ),
+                    "mother_death_rotate": int(
+                        request.POST.get("mother_death_rotate", -90)
+                    ),
+                    "mother_death_place_translate_x": int(
+                        request.POST.get("mother_death_place_translate_x", 0)
+                    ),
+                    "mother_death_place_translate_y": int(
+                        request.POST.get("mother_death_place_translate_y", 280)
+                    ),
+                    "mother_death_place_rotate": int(
+                        request.POST.get("mother_death_place_rotate", -90)
+                    ),
+                    # Composite settings
+                    "composite_1gen_scale": float(
+                        request.POST.get("composite_1gen_scale", 48)
+                    ),
+                    "composite_overlay_x": int(
+                        request.POST.get("composite_overlay_x", 508)
+                    ),
+                    "composite_overlay_y": int(
+                        request.POST.get("composite_overlay_y", 508)
+                    ),
+                    # Stroke settings
+                    "parent_stroke_color": request.POST.get(
+                        "parent_stroke_color", "#000000"
+                    ),
+                    "info_stroke_color": request.POST.get(
+                        "info_stroke_color", "#666666"
+                    ),
+                }
+            )
+
+        # Save to session
+        request.session["hud_settings"] = hud_settings
+        logger.debug(f"Settings saved to session: {hud_settings}")
+
+        return JsonResponse(
+            {
+                "status": "success",
+                "message": "Settings saved successfully",
+                "Settings saved to session": hud_settings,
+            }
+        )
 
     # Fallback for invalid request method
     return JsonResponse(
@@ -443,10 +693,56 @@ def get_template_preview(request, template_id):
                 "subject_translate_x": hud_settings.get("subject_translate_x", 0),
                 "subject_translate_y": hud_settings.get("subject_translate_y", 0),
             }
+
+            # Add 2gen specific settings from session if using 2gen template
+            if template_id == "2":
+                # Essential 2gen settings from session
+                user_settings.update(
+                    {
+                        "father_font_color": hud_settings.get(
+                            "father_font_color", "#000000"
+                        ),
+                        "mother_font_color": hud_settings.get(
+                            "mother_font_color", "#000000"
+                        ),
+                        "parent_translate_x": hud_settings.get("parent_translate_x", 0),
+                        "parent_translate_y": hud_settings.get("parent_translate_y", 0),
+                        "parent_rotate": hud_settings.get("parent_rotate", 0),
+                        "composite_1gen_scale": hud_settings.get(
+                            "composite_1gen_scale", 48
+                        ),
+                        "composite_overlay_x": hud_settings.get(
+                            "composite_overlay_x", 508
+                        ),
+                        "composite_overlay_y": hud_settings.get(
+                            "composite_overlay_y", 508
+                        ),
+                        "default_stroke_width": hud_settings.get(
+                            "default_stroke_width", 2
+                        ),
+                        "parent_stroke_color": hud_settings.get(
+                            "parent_stroke_color", "#000000"
+                        ),
+                        "info_stroke_color": hud_settings.get(
+                            "info_stroke_color", "#666666"
+                        ),
+                    }
+                )
+
         elif request.method == "POST":
             data = json.loads(request.body)
             individual_id = data.get("individual_id")
             user_settings = data.get("user_settings", {})
+            primary_settings = data.get("primary_settings", {})
+
+            # For 2gen template, merge stored primary settings if provided
+            if template_id == "2" and primary_settings:
+                # Store primary settings in user_settings for the 2generator
+                user_settings["primary_settings"] = primary_settings
+                logger.debug(
+                    f"Template {template_id} preview - Including stored primary settings for overlay"
+                )
+
             logger.debug(
                 f"Template {template_id} preview - User settings: {user_settings}"
             )
@@ -698,10 +994,11 @@ def get_settings_panel(request, template_name):
         logger.error(f"Error loading settings panel {template_name}: {str(e)}")
         logger.error(f"Exception details: {type(e).__name__}: {e}")
         import traceback
+
         logger.error(f"Traceback: {traceback.format_exc()}")
 
         # Return error HTML for AJAX requests
         return HttpResponse(
             f'<div class="alert alert-danger">Error loading settings: {str(e)}<br><small>Template: {template_name}</small></div>',
-            content_type="text/html"
+            content_type="text/html",
         )

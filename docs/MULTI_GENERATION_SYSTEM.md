@@ -46,6 +46,25 @@ user_settings = {
     "PARENT_name_font_size": 60,    # Smaller for parent generation
     "GRANDPARENT_name_font_size": 48, # Even smaller for grandparents
 }
+
+# 2gen overlay settings (Nested Settings Architecture)
+request_data = {
+    "individual_id": "I123",
+    "user_settings": {
+        # Current 2gen settings
+        "father_font_color": "#000000",
+        "mother_font_color": "#000000",
+        "composite_1gen_scale": 48,
+        # ... other 2gen settings
+    },
+    "primary_settings": {
+        # Stored 1gen settings for overlay
+        "primary_background_color": "#1a5fb4",
+        "primary_name_font_size": 91,
+        "primary_stroke_color": "#000000",
+        # ... other 1gen settings
+    }
+}
 ```
 
 ## Implementation Guide
@@ -128,22 +147,72 @@ apps/generator/utils/
 
 ## Frontend Integration
 
-### Template Selection
+### Template Selection with Session Persistence
 
 ```javascript
 function handleTemplateChange() {
     const templateValue = document.getElementById('template-select').value;
     
-    // Update preview immediately (no form submission)
-    updatePreviewImage(templateValue);
+    // Load template-specific settings panel
+    loadSettingsPanel(templateValue).then(() => {
+        // Load settings from session and update form
+        return HUD.Session.loadSettingsFromSession();
+    }).then(sessionSettings => {
+        if (sessionSettings) {
+            HUD.Utils.updateFormWithStoredSettings(sessionSettings);
+        } else {
+            // Fallback to localStorage for 1gen
+            if (templateValue === '1') {
+                const stored1GenSettings = HUD.Storage.getStored1GenSettings();
+                if (stored1GenSettings) {
+                    HUD.Utils.updateFormWithStoredSettings(stored1GenSettings);
+                }
+            }
+        }
+        
+        // Update preview image
+        updatePreviewImage(templateValue);
+    });
 }
 
 function updatePreviewImage(templateValue) {
     const previewImg = document.getElementById('hud-preview');
-    const timestamp = Date.now();
     
-    // Use generic endpoint for all templates
-    previewImg.src = `/hud/get-template-preview/${templateValue}/?individual_id=${individualId}&t=${timestamp}`;
+    if (templateValue === '2') {
+        // 2gen needs POST with stored 1gen settings
+        const stored1GenSettings = HUD.Storage.getStored1GenSettings();
+        if (stored1GenSettings) {
+            const form = HUD.Main.getForm();
+            const formData = new FormData(form);
+            const userSettings = HUD.Utils.collectUserSettings(formData);
+            userSettings.primary_settings = stored1GenSettings;
+            HUD.Preview.generatePreview(userSettings);
+        }
+    } else {
+        // Other templates use simple GET request
+        const timestamp = Date.now();
+        const individualId = document.querySelector('input[name="individual_id"]').value;
+        previewImg.src = `/hud/get-template-preview/${templateValue}/?individual_id=${individualId}&t=${timestamp}`;
+    }
+}
+```
+
+### Settings Persistence Architecture
+
+```javascript
+// Dual-layer persistence for robustness
+HUD.Settings.saveAndApplySettings() {
+    // 1. Store in localStorage for immediate cross-template use
+    if (HUD.Main.getCurrentTemplate() === '1') {
+        HUD.Storage.store1GenSettings(userSettings);
+    }
+    
+    // 2. Update form and generate preview
+    HUD.Utils.updateFinalChartForm(userSettings);
+    HUD.Preview.generatePreview(userSettings);
+    
+    // 3. Save to session (non-critical)
+    HUD.Session.saveSettings(formData);
 }
 ```
 
@@ -189,6 +258,35 @@ def get_template_preview(request, template_id):
 ### Issue: Browser redirect on template change
 **Cause**: Form submission competing with preview update
 **Solution**: Remove form submission, update preview immediately
+
+### Issue: "body string cannot be empty" (2gen with missing parents)
+**Cause**: Trying to draw empty text strings when parents don't exist
+**Solution**: Wrap all parent drawing in conditional blocks with null checks:
+```python
+if father:
+    # Safe name access
+    name_parts = father.full_name.split()
+    first_name = name_parts[0] if len(name_parts) > 0 else ""
+    
+    # Only draw if we have content
+    if first_name:
+        draw.text(x, y, first_name)
+    
+    # Safe attribute access
+    birth_date = father.birth_date if father and father.birth_date else " "
+    draw.text(0, 0, birth_date)
+else:
+    print("Father not found - skipping drawing")
+```
+
+### Issue: 400 Bad Request for /hud/save-settings/
+**Cause**: Duplicate form fields (template field appears twice)
+**Solution**: Remove hidden template input, keep only select dropdown
+**Non-critical workaround**: Session save failures don't break functionality due to localStorage fallback
+
+### Issue: Settings not persisting across template switches
+**Cause**: Session save failing, no fallback mechanism
+**Solution**: Dual-layer persistence (localStorage + session) with graceful fallbacks
 
 ## Testing
 

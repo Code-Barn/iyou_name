@@ -11,7 +11,9 @@ from apps.generator.utils.image_1generator import generate_1gen_preview
 from apps.generator.utils.settings_helper import extract_generation_settings
 
 
-def generate_2gen_preview(primary_individual, family_data, template="preview", user_settings=None):
+def generate_2gen_preview(
+    primary_individual, family_data, template="preview", user_settings=None
+):
     """
     Generate a 2-generation family tree chart using Wand (Python ImageMagick binding)
 
@@ -35,7 +37,9 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
     parent_settings = extract_generation_settings(user_settings, "PARENT")
     print(f"DEBUG: Extracted PARENT settings: {parent_settings}")
 
-    print(f"DEBUG: Generating 2-generation family tree for: {primary_individual.full_name}")
+    print(
+        f"DEBUG: Generating 2-generation family tree for: {primary_individual.full_name}"
+    )
     print(f"DEBUG: Primary individual ID: {primary_individual.id}")
 
     try:
@@ -47,7 +51,9 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
         )
 
         print(f"DEBUG: Preview template path: {preview_template_path}")
-        print(f"DEBUG: Preview template exists: {os.path.exists(preview_template_path)}")
+        print(
+            f"DEBUG: Preview template exists: {os.path.exists(preview_template_path)}"
+        )
 
         # Generate the content image (this is what the user sees in preview)
         with Image(filename=preview_template_path, resolution=300) as content_img:
@@ -76,7 +82,9 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
 
             # Stroke settings
             DEFAULT_STROKE_WIDTH = float(user_settings.get("default_stroke_width", 0.5))
-            PARENT_STROKE_COLOR = Color(user_settings.get("parent_stroke_color", "black"))
+            PARENT_STROKE_COLOR = Color(
+                user_settings.get("parent_stroke_color", "black")
+            )
             INFO_STROKE_COLOR = Color(user_settings.get("info_stroke_color", "black"))
             print(f"DEBUG: DEFAULT_STROKE_WIDTH set to: {DEFAULT_STROKE_WIDTH}")
             print(f"DEBUG: PARENT_STROKE_COLOR set to: {PARENT_STROKE_COLOR}")
@@ -91,66 +99,144 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
             # Parent colors
             FATHER_FONT_COLOR = Color(user_settings.get("father_font_color", "black"))
             FATHER_BIRTH_COLOR = Color(user_settings.get("father_birth_color", "black"))
-            FATHER_BIRTH_PLACE_COLOR = Color(user_settings.get("father_birth_place_color", "black"))
+            FATHER_BIRTH_PLACE_COLOR = Color(
+                user_settings.get("father_birth_place_color", "black")
+            )
             FATHER_DEATH_COLOR = Color(user_settings.get("father_death_color", "black"))
-            FATHER_DEATH_PLACE_COLOR = Color(user_settings.get("father_death_place_color", "black"))
+            FATHER_DEATH_PLACE_COLOR = Color(
+                user_settings.get("father_death_place_color", "black")
+            )
 
             MOTHER_FONT_COLOR = Color(user_settings.get("mother_font_color", "black"))
             MOTHER_BIRTH_COLOR = Color(user_settings.get("mother_birth_color", "black"))
-            MOTHER_BIRTH_PLACE_COLOR = Color(user_settings.get("mother_birth_place_color", "black"))
+            MOTHER_BIRTH_PLACE_COLOR = Color(
+                user_settings.get("mother_birth_place_color", "black")
+            )
             MOTHER_DEATH_COLOR = Color(user_settings.get("mother_death_color", "black"))
-            MOTHER_DEATH_PLACE_COLOR = Color(user_settings.get("mother_death_place_color", "black"))
+            MOTHER_DEATH_PLACE_COLOR = Color(
+                user_settings.get("mother_death_place_color", "black")
+            )
 
             # Parent font sizes
-            PARENT_NAME_FONT_SIZE = int(user_settings.get("primary_place_info_font_size", 28))
-            PARENT_DATE_INFO_FONT_SIZE = int(user_settings.get("primary_place_info_font_size", 28))
-            PARENT_PLACE_INFO_FONT_SIZE = int(user_settings.get("primary_place_info_font_size", 28))
+            PARENT_NAME_FONT_SIZE = int(
+                user_settings.get("primary_place_info_font_size", 28)
+            )
+            PARENT_DATE_INFO_FONT_SIZE = int(
+                user_settings.get("primary_place_info_font_size", 28)
+            )
+            PARENT_PLACE_INFO_FONT_SIZE = int(
+                user_settings.get("primary_place_info_font_size", 28)
+            )
 
             # Father coordinates
-            FATHER_FIRST_TRANSLATE_X = int(user_settings.get("father_first_translate_x", 975))
-            FATHER_FIRST_TRANSLATE_Y = int(user_settings.get("father_first_translate_y", 1700))
+            FATHER_FIRST_TRANSLATE_X = int(
+                user_settings.get("father_first_translate_x", 975)
+            )
+            FATHER_FIRST_TRANSLATE_Y = int(
+                user_settings.get("father_first_translate_y", 1700)
+            )
             FATHER_FIRST_ROTATE = int(user_settings.get("father_first_rotate", 0))
-            FATHER_MIDDLE_TRANSLATE_X = int(user_settings.get("father_middle_translate_x", 0))
-            FATHER_MIDDLE_TRANSLATE_Y = int(user_settings.get("father_middle_translate_y", 0))
+            FATHER_MIDDLE_TRANSLATE_X = int(
+                user_settings.get("father_middle_translate_x", 0)
+            )
+            FATHER_MIDDLE_TRANSLATE_Y = int(
+                user_settings.get("father_middle_translate_y", 0)
+            )
             FATHER_MIDDLE_ROTATE = int(user_settings.get("father_middle_rotate", 0))
-            FATHER_LAST_TRANSLATE_X = int(user_settings.get("father_last_translate_x", 0))
-            FATHER_LAST_TRANSLATE_Y = int(user_settings.get("father_last_translate_y", 0))
+            FATHER_LAST_TRANSLATE_X = int(
+                user_settings.get("father_last_translate_x", 0)
+            )
+            FATHER_LAST_TRANSLATE_Y = int(
+                user_settings.get("father_last_translate_y", 0)
+            )
             FATHER_LAST_ROTATE = int(user_settings.get("father_last_rotate", 0))
-            FATHER_BIRTH_TRANSLATE_X = int(user_settings.get("father_birth_translate_x", 0))
-            FATHER_BIRTH_TRANSLATE_Y = int(user_settings.get("father_birth_translate_y", 0))
+            FATHER_BIRTH_TRANSLATE_X = int(
+                user_settings.get("father_birth_translate_x", 0)
+            )
+            FATHER_BIRTH_TRANSLATE_Y = int(
+                user_settings.get("father_birth_translate_y", 0)
+            )
             FATHER_BIRTH_ROTATE = int(user_settings.get("father_birth_rotate", 0))
-            FATHER_BIRTH_PLACE_TRANSLATE_X = int(user_settings.get("father_birth_place_translate_x", 0))
-            FATHER_BIRTH_PLACE_TRANSLATE_Y = int(user_settings.get("father_birth_place_translate_y", 0))
-            FATHER_BIRTH_PLACE_ROTATE = int(user_settings.get("father_birth_place_rotate", 0))
-            FATHER_DEATH_TRANSLATE_X = int(user_settings.get("father_death_translate_x", 0))
-            FATHER_DEATH_TRANSLATE_Y = int(user_settings.get("father_death_translate_y", 280))
+            FATHER_BIRTH_PLACE_TRANSLATE_X = int(
+                user_settings.get("father_birth_place_translate_x", 0)
+            )
+            FATHER_BIRTH_PLACE_TRANSLATE_Y = int(
+                user_settings.get("father_birth_place_translate_y", 0)
+            )
+            FATHER_BIRTH_PLACE_ROTATE = int(
+                user_settings.get("father_birth_place_rotate", 0)
+            )
+            FATHER_DEATH_TRANSLATE_X = int(
+                user_settings.get("father_death_translate_x", 0)
+            )
+            FATHER_DEATH_TRANSLATE_Y = int(
+                user_settings.get("father_death_translate_y", 280)
+            )
             FATHER_DEATH_ROTATE = int(user_settings.get("father_death_rotate", -90))
-            FATHER_DEATH_PLACE_TRANSLATE_X = int(user_settings.get("father_death_place_translate_x", 0))
-            FATHER_DEATH_PLACE_TRANSLATE_Y = int(user_settings.get("father_death_place_translate_y", 280))
-            FATHER_DEATH_PLACE_ROTATE = int(user_settings.get("father_death_place_rotate", -90))
+            FATHER_DEATH_PLACE_TRANSLATE_X = int(
+                user_settings.get("father_death_place_translate_x", 0)
+            )
+            FATHER_DEATH_PLACE_TRANSLATE_Y = int(
+                user_settings.get("father_death_place_translate_y", 280)
+            )
+            FATHER_DEATH_PLACE_ROTATE = int(
+                user_settings.get("father_death_place_rotate", -90)
+            )
 
             # Mother coordinates
-            MOTHER_FIRST_TRANSLATE_X = int(user_settings.get("mother_first_translate_x", 0))
-            MOTHER_FIRST_TRANSLATE_Y = int(user_settings.get("mother_first_translate_y", 0))
+            MOTHER_FIRST_TRANSLATE_X = int(
+                user_settings.get("mother_first_translate_x", 0)
+            )
+            MOTHER_FIRST_TRANSLATE_Y = int(
+                user_settings.get("mother_first_translate_y", 0)
+            )
             MOTHER_FIRST_ROTATE = int(user_settings.get("mother_first_rotate", 0))
-            MOTHER_MIDDLE_TRANSLATE_X = int(user_settings.get("mother_middle_translate_x", 0))
-            MOTHER_MIDDLE_TRANSLATE_Y = int(user_settings.get("mother_middle_translate_y", 0))
+            MOTHER_MIDDLE_TRANSLATE_X = int(
+                user_settings.get("mother_middle_translate_x", 0)
+            )
+            MOTHER_MIDDLE_TRANSLATE_Y = int(
+                user_settings.get("mother_middle_translate_y", 0)
+            )
             MOTHER_MIDDLE_ROTATE = int(user_settings.get("mother_middle_rotate", 0))
-            MOTHER_LAST_TRANSLATE_X = int(user_settings.get("mother_last_translate_x", 0))
-            MOTHER_LAST_TRANSLATE_Y = int(user_settings.get("mother_last_translate_y", 0))
+            MOTHER_LAST_TRANSLATE_X = int(
+                user_settings.get("mother_last_translate_x", 0)
+            )
+            MOTHER_LAST_TRANSLATE_Y = int(
+                user_settings.get("mother_last_translate_y", 0)
+            )
             MOTHER_LAST_ROTATE = int(user_settings.get("mother_last_rotate", 0))
-            MOTHER_BIRTH_TRANSLATE_X = int(user_settings.get("mother_birth_translate_x", 0))
-            MOTHER_BIRTH_TRANSLATE_Y = int(user_settings.get("mother_birth_translate_y", 0))
+            MOTHER_BIRTH_TRANSLATE_X = int(
+                user_settings.get("mother_birth_translate_x", 0)
+            )
+            MOTHER_BIRTH_TRANSLATE_Y = int(
+                user_settings.get("mother_birth_translate_y", 0)
+            )
             MOTHER_BIRTH_ROTATE = int(user_settings.get("mother_birth_rotate", 0))
-            MOTHER_BIRTH_PLACE_TRANSLATE_X = int(user_settings.get("mother_birth_place_translate_x", 0))
-            MOTHER_BIRTH_PLACE_TRANSLATE_Y = int(user_settings.get("mother_birth_place_translate_y", 0))
-            MOTHER_BIRTH_PLACE_ROTATE = int(user_settings.get("mother_birth_place_rotate", 0))
-            MOTHER_DEATH_TRANSLATE_X = int(user_settings.get("mother_death_translate_x", 0))
-            MOTHER_DEATH_TRANSLATE_Y = int(user_settings.get("mother_death_translate_y", 280))
+            MOTHER_BIRTH_PLACE_TRANSLATE_X = int(
+                user_settings.get("mother_birth_place_translate_x", 0)
+            )
+            MOTHER_BIRTH_PLACE_TRANSLATE_Y = int(
+                user_settings.get("mother_birth_place_translate_y", 0)
+            )
+            MOTHER_BIRTH_PLACE_ROTATE = int(
+                user_settings.get("mother_birth_place_rotate", 0)
+            )
+            MOTHER_DEATH_TRANSLATE_X = int(
+                user_settings.get("mother_death_translate_x", 0)
+            )
+            MOTHER_DEATH_TRANSLATE_Y = int(
+                user_settings.get("mother_death_translate_y", 280)
+            )
             MOTHER_DEATH_ROTATE = int(user_settings.get("mother_death_rotate", -90))
-            MOTHER_DEATH_PLACE_TRANSLATE_X = int(user_settings.get("mother_death_place_translate_x", 0))
-            MOTHER_DEATH_PLACE_TRANSLATE_Y = int(user_settings.get("mother_death_place_translate_y", 280))
-            MOTHER_DEATH_PLACE_ROTATE = int(user_settings.get("mother_death_place_rotate", -90))
+            MOTHER_DEATH_PLACE_TRANSLATE_X = int(
+                user_settings.get("mother_death_place_translate_x", 0)
+            )
+            MOTHER_DEATH_PLACE_TRANSLATE_Y = int(
+                user_settings.get("mother_death_place_translate_y", 280)
+            )
+            MOTHER_DEATH_PLACE_ROTATE = int(
+                user_settings.get("mother_death_place_rotate", -90)
+            )
 
             with Drawing() as draw:
                 draw.push()
@@ -161,7 +247,9 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
                 draw.stroke_antialias = STROKE_ANTIALIAS
 
                 # Initial translation
-                print(f"Translating coordinates by (x={INITIAL_TRANSLATE_X}, y={INITIAL_TRANSLATE_Y})")
+                print(
+                    f"Translating coordinates by (x={INITIAL_TRANSLATE_X}, y={INITIAL_TRANSLATE_Y})"
+                )
                 draw.translate(x=INITIAL_TRANSLATE_X, y=INITIAL_TRANSLATE_Y)
 
                 # =============================================
@@ -185,7 +273,9 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
                 # =============================================
 
                 print(f"Primary individual: {primary_individual.full_name}")
-                print(f"Birth date: {primary_individual.birth_date} (type: {type(primary_individual.birth_date)})")
+                print(
+                    f"Birth date: {primary_individual.birth_date} (type: {type(primary_individual.birth_date)})"
+                )
                 print(f"Birth place: {primary_individual.birth_place}")
                 print(f"Father ID: {primary_individual.father}")
                 print(f"Mother ID: {primary_individual.mother}")
@@ -221,174 +311,195 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
                     middle_name = name_parts[1] if len(name_parts) > 1 else ""
                     last_name = name_parts[-1] if len(name_parts) > 1 else ""
 
-                # =============================================
-                # Draw father's first name (default orientation)
-                # =============================================
+                    # =============================================
+                    # Draw father's first name (default orientation)
+                    # =============================================
 
-                draw.push()
+                    draw.push()
 
-                fx_first, fy_first, fr_first = (
-                    FATHER_FIRST_TRANSLATE_X,
-                    FATHER_FIRST_TRANSLATE_Y,
-                    FATHER_FIRST_ROTATE,
-                )
-                draw.rotate(fr_first)
+                    fx_first, fy_first, fr_first = (
+                        FATHER_FIRST_TRANSLATE_X,
+                        FATHER_FIRST_TRANSLATE_Y,
+                        FATHER_FIRST_ROTATE,
+                    )
+                    draw.rotate(fr_first)
 
-                draw.translate(fx_first, fy_first)
+                    draw.translate(fx_first, fy_first)
 
-                print(f"Setting fill_color to: {FATHER_FONT_COLOR}")
-                draw.fill_color = FATHER_FONT_COLOR
+                    print(f"Setting fill_color to: {FATHER_FONT_COLOR}")
+                    draw.fill_color = FATHER_FONT_COLOR
 
-                draw.text(fx_first, fy_first, first_name)
-                print(f"Drawn father's first name at ({fx_first}, {fy_first}) with rotation {fr_first}: {first_name}")
+                    if first_name:  # Only draw if we have a name
+                        draw.text(fx_first, fy_first, first_name)
+                        print(f"Drawn father's first name: {first_name}")
 
-                draw.pop()
+                    draw.pop()
 
-                # =============================================
-                # Draw father's middle name (translated upwards and at -45 degrees)
-                # =============================================
+                    # =============================================
+                    # Draw father's middle name (translated upwards and at -45 degrees)
+                    # =============================================
 
-                draw.push()
+                    draw.push()
 
-                fx_middle, fy_middle, fr_middle = (
-                    FATHER_MIDDLE_TRANSLATE_X,
-                    FATHER_MIDDLE_TRANSLATE_Y,
-                    FATHER_MIDDLE_ROTATE,
-                )
+                    fx_middle, fy_middle, fr_middle = (
+                        FATHER_MIDDLE_TRANSLATE_X,
+                        FATHER_MIDDLE_TRANSLATE_Y,
+                        FATHER_MIDDLE_ROTATE,
+                    )
 
-                draw.translate(fx_middle, fy_middle)
+                    draw.translate(fx_middle, fy_middle)
 
-                draw.rotate(fr_middle)
+                    draw.rotate(fr_middle)
 
-                draw.text(fx_middle, fy_middle, middle_name)
-                print(f"Drawn father's middle name at ({fx_middle}, {fy_middle}) with rotation {fr_middle}: {middle_name}")
+                    if middle_name:  # Only draw if we have a middle name
+                        draw.text(fx_middle, fy_middle, middle_name)
+                        print(f"Drawn father's middle name: {middle_name}")
 
-                draw.pop()
+                    draw.pop()
 
-                # =============================================
-                # Draw father's last name (translated further upwards and at -90 degrees)
-                # =============================================
+                    # =============================================
+                    # Draw father's last name (translated further upwards and at -90 degrees)
+                    # =============================================
 
-                draw.push()
+                    draw.push()
 
-                fx_last, fy_last, fr_last = (
-                    FATHER_LAST_TRANSLATE_X,
-                    FATHER_LAST_TRANSLATE_Y,
-                    FATHER_LAST_ROTATE,
-                )
+                    fx_last, fy_last, fr_last = (
+                        FATHER_LAST_TRANSLATE_X,
+                        FATHER_LAST_TRANSLATE_Y,
+                        FATHER_LAST_ROTATE,
+                    )
 
-                draw.translate(fx_last, fy_last)
+                    draw.translate(fx_last, fy_last)
 
-                draw.rotate(fr_last)
+                    draw.rotate(fr_last)
 
-                draw.text(fx_last, fy_last, last_name)
-                print(f"Drawn father's last name at ({fx_last}, {fy_last}) with rotation {fr_last}: {last_name}")
+                    if last_name:  # Only draw if we have a last name
+                        draw.text(fx_last, fy_last, last_name)
+                        print(f"Drawn father's last name: {last_name}")
 
-                draw.pop()
+                    draw.pop()
 
-                # =============================================
-                # Draw father's birth date
-                # =============================================
+                    # =============================================
+                    # Draw father's birth date
+                    # =============================================
 
-                draw.push()
+                    draw.push()
 
-                fx_birth, fy_birth, fr_birth = (
-                    FATHER_BIRTH_TRANSLATE_X,
-                    FATHER_BIRTH_TRANSLATE_Y,
-                    FATHER_BIRTH_ROTATE,
-                )
+                    fx_birth, fy_birth, fr_birth = (
+                        FATHER_BIRTH_TRANSLATE_X,
+                        FATHER_BIRTH_TRANSLATE_Y,
+                        FATHER_BIRTH_ROTATE,
+                    )
 
-                draw.translate(fx_birth, fy_birth)
+                    draw.translate(fx_birth, fy_birth)
 
-                draw.fill_color = FATHER_BIRTH_COLOR
-                draw.font_size = PARENT_DATE_INFO_FONT_SIZE
-                print(f"Setting fill_color to: {FATHER_BIRTH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}")
+                    draw.fill_color = FATHER_BIRTH_COLOR
+                    draw.font_size = PARENT_DATE_INFO_FONT_SIZE
+                    print(f"Setting fill_color to: {FATHER_BIRTH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}")
 
-                draw.rotate(fr_birth)
+                    draw.rotate(fr_birth)
 
-                draw.text(0, 0, father.birth_date or " ")
-                print(f"Drawn text at ({fx_birth}, {fy_birth}) with rotation {fr_birth}: {father.birth_date or ' '}")
+                    # Safe birth date access
+                    birth_date = father.birth_date if father and father.birth_date else " "
+                    draw.text(0, 0, birth_date)
+                    print(f"Drawn father's birth date: {birth_date}")
 
-                draw.pop()
+                    draw.pop()
 
-                # =============================================
-                # Draw father's birth place
-                # =============================================
+                    # =============================================
+                    # Draw father's birth place
+                    # =============================================
 
-                draw.push()
+                    draw.push()
 
-                fx_birth_place, fy_birth_place, fr_birth_place = (
-                    FATHER_BIRTH_PLACE_TRANSLATE_X,
-                    FATHER_BIRTH_PLACE_TRANSLATE_Y,
-                    FATHER_BIRTH_PLACE_ROTATE,
-                )
+                    fx_birth_place, fy_birth_place, fr_birth_place = (
+                        FATHER_BIRTH_PLACE_TRANSLATE_X,
+                        FATHER_BIRTH_PLACE_TRANSLATE_Y,
+                        FATHER_BIRTH_PLACE_ROTATE,
+                    )
 
-                draw.translate(fx_birth_place, fy_birth_place)
+                    draw.translate(fx_birth_place, fy_birth_place)
 
-                draw.fill_color = FATHER_BIRTH_PLACE_COLOR
-                draw.font_size = PARENT_PLACE_INFO_FONT_SIZE
-                print(f"Setting fill_color to: {FATHER_BIRTH_PLACE_COLOR} and font_size to: {PARENT_PLACE_INFO_FONT_SIZE}")
+                    draw.fill_color = FATHER_BIRTH_PLACE_COLOR
+                    draw.font_size = PARENT_PLACE_INFO_FONT_SIZE
+                    print(
+                        f"Setting fill_color to: {FATHER_BIRTH_PLACE_COLOR} and font_size to: {PARENT_PLACE_INFO_FONT_SIZE}"
+                    )
 
-                draw.rotate(fr_birth_place)
+                    draw.rotate(fr_birth_place)
 
-                draw.text(0, 0, father.birth_place or " ")
-                print(f"Drawn text at ({fx_birth_place}, {fy_birth_place}) with rotation {fr_birth_place}: {father.birth_place or ' '}")
+                    # Safe birth place access
+                    birth_place = father.birth_place if father and father.birth_place else " "
+                    draw.text(0, 0, birth_place)
+                    print(f"Drawn father's birth place: {birth_place}")
 
-                draw.pop()
+                    draw.pop()
 
-                # =============================================
-                # Draw father's death date (if available)
-                # =============================================
+                    # =============================================
+                    # Draw father's death date
+                    # =============================================
 
-                draw.push()
+                    draw.push()
 
-                fx_death, fy_death, fr_death = (
-                    FATHER_DEATH_TRANSLATE_X,
-                    FATHER_DEATH_TRANSLATE_Y,
-                    FATHER_DEATH_ROTATE,
-                )
+                    fx_death, fy_death, fr_death = (
+                        FATHER_DEATH_TRANSLATE_X,
+                        FATHER_DEATH_TRANSLATE_Y,
+                        FATHER_DEATH_ROTATE,
+                    )
 
-                draw.translate(fx_death, fy_death)
+                    draw.translate(fx_death, fy_death)
 
-                draw.fill_color = FATHER_DEATH_COLOR
-                draw.font_size = PARENT_DATE_INFO_FONT_SIZE
-                print(f"Setting fill_color to: {FATHER_DEATH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}")
+                    draw.fill_color = FATHER_DEATH_COLOR
+                    draw.font_size = PARENT_DATE_INFO_FONT_SIZE
+                    print(
+                        f"Setting fill_color to: {FATHER_DEATH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}"
+                    )
 
-                draw.rotate(fr_death)
+                    draw.rotate(fr_death)
 
-                draw.text(0, 0, father.death_date)
-                print(f"Drawn text at ({fx_death}, {fy_death}) with rotation {fr_death}: {father.death_date or ' '}")
+                    # Safe death date access
+                    death_date = father.death_date if father and father.death_date else " "
+                    draw.text(0, 0, death_date)
+                    print(f"Drawn father's death date: {death_date}")
 
-                draw.pop()
+                    draw.pop()
 
-                # =============================================
-                # Draw father's death place (if available)
-                # =============================================
+                    # =============================================
+                    # Draw father's death place
+                    # =============================================
 
-                draw.push()
+                    draw.push()
 
-                fx_death_place, fy_death_place, fr_death_place = (
-                    FATHER_DEATH_PLACE_TRANSLATE_X,
-                    FATHER_DEATH_PLACE_TRANSLATE_Y,
-                    FATHER_DEATH_PLACE_ROTATE,
-                )
+                    fx_death_place, fy_death_place, fr_death_place = (
+                        FATHER_DEATH_PLACE_TRANSLATE_X,
+                        FATHER_DEATH_PLACE_TRANSLATE_Y,
+                        FATHER_DEATH_PLACE_ROTATE,
+                    )
 
-                draw.translate(fx_death_place, fy_death_place)
+                    draw.translate(fx_death_place, fy_death_place)
 
-                draw.fill_color = FATHER_DEATH_COLOR
-                draw.font_size = PARENT_PLACE_INFO_FONT_SIZE
-                print(f"Setting fill_color to: {FATHER_DEATH_COLOR} and font_size to: {PARENT_PLACE_INFO_FONT_SIZE}")
+                    draw.fill_color = FATHER_DEATH_PLACE_COLOR
+                    draw.font_size = PARENT_PLACE_INFO_FONT_SIZE
+                    print(
+                        f"Setting fill_color to: {FATHER_DEATH_PLACE_COLOR} and font_size to: {PARENT_PLACE_INFO_FONT_SIZE}"
+                    )
 
-                draw.rotate(fr_death_place)
+                    draw.rotate(fr_death_place)
 
-                draw.text(0, 0, father.death_place or " ")
-                print(f"Drawn text at ({fx_death_place}, {fy_death_place}) with rotation {fr_death_place}: {father.death_place or ' '}")
+                    # Safe death place access
+                    death_place = father.death_place if father and father.death_place else " "
+                    draw.text(0, 0, death_place)
+                    print(f"Drawn father's death place: {death_place}")
 
-                draw.pop()
+                    draw.pop()
+
+                else:
+                    print("Father not found - skipping all father drawing")
 
                 # =============================================
                 # INDI 2 - Surname 1 (Mother) DRAWING
                 # =============================================
+
 
                 if mother:
                     print(f"Drawing mother: {mother.full_name}")
@@ -398,180 +509,215 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
                     middle_name = name_parts[1] if len(name_parts) > 1 else ""
                     last_name = name_parts[-1] if len(name_parts) > 1 else ""
 
-                # =============================================
-                # Draw mother's first name (flipped upside-down)
-                # =============================================
+                    # =============================================
+                    # Draw mother's first name (flipped upside-down)
+                    # =============================================
 
-                draw.push()
+                    draw.push()
 
-                mx_first, my_first, mr_first = (
-                    MOTHER_FIRST_TRANSLATE_X,
-                    MOTHER_FIRST_TRANSLATE_Y,
-                    MOTHER_FIRST_ROTATE,
-                )
+                    mx_first, my_first, mr_first = (
+                        MOTHER_FIRST_TRANSLATE_X,
+                        MOTHER_FIRST_TRANSLATE_Y,
+                        MOTHER_FIRST_ROTATE,
+                    )
 
-                draw.translate(mx_first, my_first)
+                    draw.translate(mx_first, my_first)
 
-                draw.rotate(mr_first)
+                    draw.rotate(mr_first)
 
-                print(f"Setting fill_color to: {MOTHER_FONT_COLOR}")
-                draw.fill_color = MOTHER_FONT_COLOR
+                    if first_name:  # Only draw if we have a name
+                        draw.text(mx_first, my_first, first_name)
+                        print(f"Drawn mother's first name: {first_name}")
 
-                draw.text(mx_first, my_first, first_name)
-                print(f"Drawn mother's first name at ({mx_first}, {my_first}) with rotation {mr_first}: {first_name}")
+                    draw.pop()
 
-                draw.pop()
+                    # =============================================
+                    # Draw mother's middle name (translated upwards and at -45 degrees)
+                    # =============================================
 
-                # =============================================
-                # Draw mother's middle name (at 45 degrees)
-                # =============================================
+                    draw.push()
 
-                draw.push()
+                    mx_middle, my_middle, mr_middle = (
+                        MOTHER_MIDDLE_TRANSLATE_X,
+                        MOTHER_MIDDLE_TRANSLATE_Y,
+                        MOTHER_MIDDLE_ROTATE,
+                    )
 
-                mx_middle, my_middle, mr_middle = (
-                    MOTHER_MIDDLE_TRANSLATE_X,
-                    MOTHER_MIDDLE_TRANSLATE_Y,
-                    MOTHER_MIDDLE_ROTATE,
-                )
+                    draw.translate(mx_middle, my_middle)
 
-                draw.translate(mx_middle, my_middle)
+                    draw.rotate(mr_middle)
 
-                draw.rotate(mr_middle)
+                    if middle_name:  # Only draw if we have a middle name
+                        draw.text(mx_middle, my_middle, middle_name)
+                        print(f"Drawn mother's middle name: {middle_name}")
 
-                draw.text(mx_middle, my_middle, middle_name)
-                print(f"Drawn mother's middle name at ({mx_middle}, {my_middle}) with rotation {mr_middle}: {middle_name}")
+                    draw.pop()
 
-                draw.pop()
+                    # =============================================
+                    # Draw mother's last name (translated further upwards and at -90 degrees)
+                    # =============================================
 
-                # =============================================
-                # Draw mother's last name (at 90 degrees)
-                # =============================================
+                    draw.push()
 
-                draw.push()
+                    mx_last, my_last, mr_last = (
+                        MOTHER_LAST_TRANSLATE_X,
+                        MOTHER_LAST_TRANSLATE_Y,
+                        MOTHER_LAST_ROTATE,
+                    )
 
-                mx_last, my_last, mr_last = (
-                    MOTHER_LAST_TRANSLATE_X,
-                    MOTHER_LAST_TRANSLATE_Y,
-                    MOTHER_LAST_ROTATE,
-                )
+                    draw.translate(mx_last, my_last)
 
-                draw.translate(mx_last, my_last)
+                    draw.rotate(mr_last)
 
-                draw.rotate(mr_last)
+                    if last_name:  # Only draw if we have a last name
+                        draw.text(mx_last, my_last, last_name)
+                        print(f"Drawn mother's last name: {last_name}")
 
-                draw.text(mx_last, my_last, last_name)
-                print(f"Drawn mother's last name at ({mx_last}, {my_last}) with rotation {mr_last}: {last_name}")
+                    draw.pop()
 
-                draw.pop()
+                    # =============================================
+                    # Draw mother's birth date
+                    # =============================================
 
-                # =============================================
-                # Draw mother's birth date
-                # =============================================
+                    draw.push()
 
-                draw.push()
+                    mx_birth, my_birth, mr_birth = (
+                        MOTHER_BIRTH_TRANSLATE_X,
+                        MOTHER_BIRTH_TRANSLATE_Y,
+                        MOTHER_BIRTH_ROTATE,
+                    )
 
-                mx_birth, my_birth, mr_birth = (
-                    MOTHER_BIRTH_TRANSLATE_X,
-                    MOTHER_BIRTH_TRANSLATE_Y,
-                    MOTHER_BIRTH_ROTATE,
-                )
+                    draw.translate(mx_birth, my_birth)
 
-                draw.translate(mx_birth, my_birth)
+                    draw.fill_color = MOTHER_BIRTH_COLOR
+                    draw.font_size = PARENT_DATE_INFO_FONT_SIZE
+                    print(f"Setting fill_color to: {MOTHER_BIRTH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}")
 
-                draw.fill_color = MOTHER_BIRTH_COLOR
-                draw.font_size = PARENT_DATE_INFO_FONT_SIZE
-                print(f"Setting fill_color to: {MOTHER_BIRTH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}")
+                    draw.rotate(mr_birth)
 
-                draw.rotate(mr_birth)
+                    # Safe birth date access
+                    birth_date = mother.birth_date if mother and mother.birth_date else " "
+                    draw.text(0, 0, birth_date)
+                    print(f"Drawn mother's birth date: {birth_date}")
 
-                draw.text(0, 0, mother.birth_date or " ")
-                print(f"Drawn text at ({mx_birth}, {my_birth}) with rotation {mr_birth}: {mother.birth_date or ' '}")
+                    draw.pop()
 
-                draw.pop()
+                    # =============================================
+                    # Draw mother's birth place
+                    # =============================================
 
-                # =============================================
-                # Draw mother's birth place
-                # =============================================
+                    draw.push()
 
-                draw.push()
+                    mx_birth_place, my_birth_place, mr_birth_place = (
+                        MOTHER_BIRTH_PLACE_TRANSLATE_X,
+                        MOTHER_BIRTH_PLACE_TRANSLATE_Y,
+                        MOTHER_BIRTH_PLACE_ROTATE,
+                    )
 
-                mx_birth_place, my_birth_place, mr_birth_place = (
-                    MOTHER_BIRTH_PLACE_TRANSLATE_X,
-                    MOTHER_BIRTH_PLACE_TRANSLATE_Y,
-                    MOTHER_BIRTH_PLACE_ROTATE,
-                )
+                    draw.translate(mx_birth_place, my_birth_place)
 
-                draw.translate(mx_birth_place, my_birth_place)
+                    draw.fill_color = MOTHER_BIRTH_PLACE_COLOR
+                    draw.font_size = PARENT_PLACE_INFO_FONT_SIZE
+                    print(
+                        f"Setting fill_color to: {MOTHER_BIRTH_PLACE_COLOR} and font_size to: {PARENT_PLACE_INFO_FONT_SIZE}"
+                    )
 
-                draw.fill_color = MOTHER_BIRTH_PLACE_COLOR
-                draw.font_size = PARENT_PLACE_INFO_FONT_SIZE
-                print(f"Setting fill_color to: {MOTHER_BIRTH_PLACE_COLOR} and font_size to: {PARENT_PLACE_INFO_FONT_SIZE}")
+                    draw.rotate(mr_birth_place)
 
-                draw.rotate(mr_birth_place)
+                    # Safe birth place access
+                    birth_place = mother.birth_place if mother and mother.birth_place else " "
+                    draw.text(0, 0, birth_place)
+                    print(f"Drawn mother's birth place: {birth_place}")
 
-                draw.text(0, 0, mother.birth_place or " ")
-                print(f"Drawn text at ({mx_birth_place}, {my_birth_place}) with rotation {mr_birth_place}: {mother.birth_place or ' '}")
+                    draw.pop()
 
-                draw.pop()
+                    # =============================================
+                    # Draw mother's death date
+                    # =============================================
 
-                # =============================================
-                # Draw mother's death date (if available)
-                # =============================================
+                    draw.push()
 
-                draw.push()
+                    mx_death, my_death, mr_death = (
+                        MOTHER_DEATH_TRANSLATE_X,
+                        MOTHER_DEATH_TRANSLATE_Y,
+                        MOTHER_DEATH_ROTATE,
+                    )
 
-                mx_death, my_death, mr_death = (
-                    MOTHER_DEATH_TRANSLATE_X,
-                    MOTHER_DEATH_TRANSLATE_Y,
-                    MOTHER_DEATH_ROTATE,
-                )
+                    draw.translate(mx_death, my_death)
 
-                draw.translate(mx_death, my_death)
+                    draw.fill_color = MOTHER_DEATH_COLOR
+                    draw.font_size = PARENT_DATE_INFO_FONT_SIZE
+                    print(
+                        f"Setting fill_color to: {MOTHER_DEATH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}"
+                    )
 
-                draw.fill_color = MOTHER_DEATH_COLOR
-                draw.font_size = PARENT_DATE_INFO_FONT_SIZE
-                print(f"Setting fill_color to: {MOTHER_DEATH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}")
+                    draw.rotate(mr_death)
 
-                draw.rotate(mr_death)
+                    # Safe death date access
+                    death_date = mother.death_date if mother and mother.death_date else " "
+                    draw.text(0, 0, death_date)
+                    print(f"Drawn mother's death date: {death_date}")
 
-                draw.text(0, 0, mother.death_date or " ")
-                print(f"Drawn text at ({mx_death}, {my_death}) with rotation {mr_death}: {mother.death_date or ' '}")
+                    draw.pop()
 
-                draw.pop()
+                    # =============================================
+                    # Draw mother's death place
+                    # =============================================
 
-                # =============================================
-                # Draw mother's death place (if available)
-                # =============================================
+                    draw.push()
 
-                draw.push()
+                    mx_death_place, my_death_place, mr_death_place = (
+                        MOTHER_DEATH_PLACE_TRANSLATE_X,
+                        MOTHER_DEATH_PLACE_TRANSLATE_Y,
+                        MOTHER_DEATH_PLACE_ROTATE,
+                    )
 
-                mx_death_place, my_death_place, mr_death_place = (
-                    MOTHER_DEATH_PLACE_TRANSLATE_X,
-                    MOTHER_DEATH_PLACE_TRANSLATE_Y,
-                    MOTHER_DEATH_PLACE_ROTATE,
-                )
+                    draw.translate(mx_death_place, my_death_place)
 
-                draw.translate(mx_death_place, my_death_place)
+                    draw.fill_color = MOTHER_DEATH_PLACE_COLOR
+                    draw.font_size = PARENT_PLACE_INFO_FONT_SIZE
+                    print(
+                        f"Setting fill_color to: {MOTHER_DEATH_PLACE_COLOR} and font_size to: {PARENT_PLACE_INFO_FONT_SIZE}"
+                    )
 
-                draw.fill_color = MOTHER_DEATH_COLOR
-                draw.font_size = PARENT_PLACE_INFO_FONT_SIZE
-                print(f"Setting fill_color to: {MOTHER_DEATH_COLOR} and font_size to: {PARENT_PLACE_INFO_FONT_SIZE}")
+                    draw.rotate(mr_death_place)
 
-                draw.rotate(mr_death_place)
+                    # Safe death place access
+                    death_place = mother.death_place if mother and mother.death_place else " "
+                    draw.text(0, 0, death_place)
+                    print(f"Drawn mother's death place: {death_place}")
 
-                draw.text(0, 0, mother.death_place or " ")
-                print(f"Drawn text at ({mx_death_place}, {my_death_place}) with rotation {mr_death_place}: {mother.death_place or ' '}")
+                    draw.pop()
 
-                draw.pop()
-
+                else:
+                    print("Mother not found - skipping all mother drawing")
 
 
                 # =============================================
                 # Generate the 1gen overlay with PRIMARY settings before applying 2gen drawing
                 # =============================================
 
-                primary_settings = extract_generation_settings(user_settings, "PRIMARY")
-                print(f"DEBUG: Generating 1gen overlay with PRIMARY settings: {primary_settings}")
+                # Check for stored primary settings first (from JavaScript)
+                primary_settings = user_settings.get("primary_settings", {})
+                print(f"DEBUG: user_settings keys: {list(user_settings.keys())}")
+                print(f"DEBUG: primary_settings from user_settings: {primary_settings}")
+
+                if not primary_settings:
+                    # Fallback to extracting PRIMARY from current settings
+                    primary_settings = extract_generation_settings(
+                        user_settings, "PRIMARY"
+                    )
+                    print(
+                        f"DEBUG: No stored primary settings, using fallback PRIMARY settings: {primary_settings}"
+                    )
+                else:
+                    print(
+                        f"DEBUG: Using stored primary settings for 1gen overlay: {primary_settings}"
+                    )
+
+                print(
+                    f"DEBUG: Generating 1gen overlay with settings: {primary_settings}"
+                )
                 gen1_img_buffer = generate_1gen_preview(
                     primary_individual, family_data, "preview", primary_settings
                 )
@@ -629,10 +775,14 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
                         "US_LETTER_2GEN_BW.pdf",
                     )
                     print(f"DEBUG: Base template path: {base_template_path}")
-                    print(f"DEBUG: Base template exists: {os.path.exists(base_template_path)}")
+                    print(
+                        f"DEBUG: Base template exists: {os.path.exists(base_template_path)}"
+                    )
 
                     with Image(filename=base_template_path, resolution=300) as base_img:
-                        print(f"Base template loaded: {base_img.width}x{base_img.height}")
+                        print(
+                            f"Base template loaded: {base_img.width}x{base_img.height}"
+                        )
 
                         # =============================================
                         # Composite the content image onto the base template
@@ -642,8 +792,12 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
                         composite_x = 300
                         composite_y = 570
 
-                        print(f"DEBUG: Compositing content image at position ({composite_x}, {composite_y})")
-                        base_img.composite(content_img, left=composite_x, top=composite_y)
+                        print(
+                            f"DEBUG: Compositing content image at position ({composite_x}, {composite_y})"
+                        )
+                        base_img.composite(
+                            content_img, left=composite_x, top=composite_y
+                        )
 
                         # =============================================
                         # Save the final result as PDF

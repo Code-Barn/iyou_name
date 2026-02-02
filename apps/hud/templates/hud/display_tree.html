@@ -66,13 +66,12 @@
                         {% csrf_token %}
 
                         <input type="hidden" name="individual_id" value="{{ individual.id }}">
-                        <input type="hidden" name="template" value="{{ hud_settings.template }}">
                         <input type="hidden" name="generations" value="{{ generations }}">
 
                         <!-- Template Selection -->
                         <div class="mb-4">
                             <label class="form-label">Chart Template</label>
-                            <select name="template" class="form-select" id="template-select" onchange="handleTemplateChange()">
+                            <select name="template" class="form-select" id="template-select" onchange="window.handleTemplateChange()">
                                 {% for key, template in TEMPLATE_MAPPING.items %}
                                 <option value="{{ key }}" {% if key == hud_settings.template|default:'1' %}selected{% endif %}>
                                     {{ template.name }}
@@ -99,588 +98,72 @@
                                 <i class="bi bi-arrow-counterclockwise"></i> Reset to Defaults
                             </button>
 
-                            <script>
-                                function resetToDefaults() {
-                                    console.log("Resetting all settings to defaults...");
-
-                                    // Define all default values based on the template defaults
-                                    const defaults = {
-                                        'primary_background_color': '#FFFFFF',
-                                        'primary_stroke_color': '#000000',
-                                        'primary_font_color': '#000000',
-                                        'primary_birth_color': '#000000',
-                                        'primary_birth_place_color': '#000000',
-                                        'primary_death_color': '#000000',
-                                        'primary_death_place_color': '#000000',
-                                        'font_family': 'Arial',
-                                        'primary_name_font_size': 84,
-                                        'primary_date_info_font_size': 60,
-                                        'primary_place_info_font_size': 28,
-                                        'default_stroke_width': 0.5,
-                                        'primary_translate_x': 0,
-                                        'primary_translate_y': 0,
-                                        'primary_name_rotate': -45,
-                                        'primary_birth_translate_x': 0,
-                                        'primary_birth_translate_y': 0,
-                                        'primary_birth_rotate': -90,
-                                        'primary_birth_place_translate_x': 0,
-                                        'primary_birth_place_translate_y': 0,
-                                        'primary_birth_place_rotate': 0,
-                                        'primary_death_translate_x': 0,
-                                        'primary_death_translate_y': 0,
-                                        'primary_death_rotate': 0,
-                                        'primary_death_place_translate_x': 0,
-                                        'primary_death_place_translate_y': 0,
-                                        'primary_death_place_rotate': -90,
-                                        'spacing': 50
-                                    };
-
-                                    // Reset all form inputs to defaults
-                                    const form = document.getElementById('hud-settings-form');
-                                    if (!form) {
-                                        console.error('Could not find HUD settings form');
-                                        return;
-                                    }
-
-                                    // Reset color inputs
-                                    const colorInputs = form.querySelectorAll('input[type="color"]');
-                                    colorInputs.forEach(input => {
-                                        const name = input.getAttribute('name');
-                                        if (defaults[name]) {
-                                            input.value = defaults[name];
-                                            console.log(`Reset ${name} to ${defaults[name]}`);
-                                        }
-                                    });
-
-                                    // Reset select inputs
-                                    const selectInputs = form.querySelectorAll('select');
-                                    selectInputs.forEach(select => {
-                                        const name = select.getAttribute('name');
-                                        if (defaults[name]) {
-                                            select.value = defaults[name];
-                                            console.log(`Reset ${name} to ${defaults[name]}`);
-                                        }
-                                    });
-
-                                    // Reset range inputs and their displays
-                                    const rangeInputs = form.querySelectorAll('input[type="range"]');
-                                    rangeInputs.forEach(input => {
-                                        const name = input.getAttribute('name');
-                                        if (defaults[name]) {
-                                            console.log(`DEBUG: Resetting slider ${name} from ${input.value} to ${defaults[name]}`);
-                                            input.value = defaults[name];
-                                            input.setAttribute('value', defaults[name]);
-
-                                            // Update the corresponding display span
-                                            const displayId = input.id.replace('-slider', '-value');
-                                            const displaySpan = document.getElementById(displayId);
-                                            if (displaySpan) {
-                                                displaySpan.textContent = defaults[name];
-                                                console.log(`DEBUG: Updated display span ${displayId} to ${defaults[name]}`);
-                                            } else {
-                                                console.log(`DEBUG: Display span ${displayId} not found`);
-                                            }
-
-                                            // Trigger input event to ensure visual update
-                                            const event = new Event('input', { bubbles: true });
-                                            input.dispatchEvent(event);
-                                            console.log(`DEBUG: Triggered input event for ${name}`);
-
-                                            console.log(`Reset ${name} to ${defaults[name]}`);
-                                        } else {
-                                            console.log(`DEBUG: No default value found for slider ${name}`);
-                                        }
-                                    });
-
-                                    // Update the final chart form with default values
-                                    const finalChartForm = document.querySelector('form[action*="generate_final_chart"]');
-                                    if (finalChartForm) {
-                                        for (const [key, value] of Object.entries(defaults)) {
-                                            const input = finalChartForm.querySelector(`input[name="${key}"]`);
-                                            if (input) {
-                                                input.value = value;
-                                            }
-                                        }
-                                    }
-
-                                    console.log("All settings reset to defaults. Now generating preview...");
-
-                                    // Generate preview with default settings
-                                    saveAndApplySettings();
-                                }
-                            </script>
-
-                            <script>
-                                function saveAndApplySettings() {
-                                    // FIRST: Ensure all form inputs have their current values
-                                    // This is a workaround for potential form value synchronization issues
-                                    updateAllFormInputs();
-
-                                    const form = document.getElementById('hud-settings-form');
-                                    const formData = new FormData(form);
-
-                                    // Debug: Log raw form data values
-                                    console.log("=== RAW FORM DATA ===");
-                                    console.log("font_family:", formData.get('font_family'));
-                                    console.log("primary_background_color:", formData.get('primary_background_color'));
-                                    console.log("primary_name_font_size:", formData.get('primary_name_font_size'));
-                                    console.log("primary_date_info_font_size:", formData.get('primary_date_info_font_size'));
-                                    console.log("primary_place_info_font_size:", formData.get('primary_place_info_font_size'));
-                                    console.log("default_stroke_width:", formData.get('default_stroke_width'));
-                                    console.log("primary_stroke_color:", formData.get('primary_stroke_color'));
-                                    console.log("primary_font_color:", formData.get('primary_font_color'));
-                                    console.log("primary_birth_color:", formData.get('primary_birth_color'));
-                                    console.log("primary_birth_place_color:", formData.get('primary_birth_place_color'));
-                                    console.log("primary_death_color:", formData.get('primary_death_color'));
-
-                                    // Debug: Also log the actual input element values
-                                    console.log("=== DIRECT INPUT VALUES ===");
-                                    const nameFontSizeInput = document.getElementById('primary-name-font-size-slider');
-                                    const infoFontSizeInput = document.getElementById('primary-date-info-font-size-slider');
-                                    const strokeWidthInput = document.getElementById('default-stroke-width-slider');
-                                    const fontFamilySelect = document.querySelector('select[name="font_family"]');
-
-                                    console.log("nameFontSizeInput.value:", nameFontSizeInput ? nameFontSizeInput.value : 'NOT FOUND');
-                                    console.log("infoFontSizeInput.value:", infoFontSizeInput ? infoFontSizeInput.value : 'NOT FOUND');
-                                    console.log("strokeWidthInput.value:", strokeWidthInput ? strokeWidthInput.value : 'NOT FOUND');
-                                    console.log("fontFamilySelect.value:", fontFamilySelect ? fontFamilySelect.value : 'NOT FOUND');
-
-                                    // Collect user settings for the preview
-                                    const userSettings = {
-                                        primary_background_color: formData.get('primary_background_color') || '#FFFFFF',
-                                        primary_stroke_color: formData.get('primary_stroke_color') || '#000000',
-                                        primary_font_color: formData.get('primary_font_color') || '#000000',
-                                        primary_birth_color: formData.get('primary_birth_color') || '#000000',
-                                        primary_birth_place_color: formData.get('primary_birth_place_color') || '#000000',
-                                        primary_death_color: formData.get('primary_death_color') || '#000000',
-                                        primary_death_place_color: formData.get('primary_death_place_color') || '#000000',
-                                        font_family: formData.get('font_family') || 'Arial',
-                                        primary_name_font_size: parseInt(formData.get('primary_name_font_size')) || 84,
-                                        primary_date_info_font_size: parseInt(formData.get('primary_date_info_font_size')) || 60,
-                                        primary_place_info_font_size: parseInt(formData.get('primary_place_info_font_size')) || 28,
-                                        default_stroke_width: parseFloat(formData.get('default_stroke_width')) || 0.5,
-                                        primary_translate_x: parseInt(formData.get('primary_translate_x')) || 0,
-                                        primary_translate_y: parseInt(formData.get('primary_translate_y')) || 0,
-                                        primary_name_rotate: parseInt(formData.get('primary_name_rotate')) || -45,
-                                        primary_birth_translate_x: parseInt(formData.get('primary_birth_translate_x')) || 0,
-                                        primary_birth_translate_y: parseInt(formData.get('primary_birth_translate_y')) || 0,
-                                        primary_birth_rotate: parseInt(formData.get('primary_birth_rotate')) || -90,
-                                        primary_birth_place_translate_x: parseInt(formData.get('primary_birth_place_translate_x')) || 0,
-                                        primary_birth_place_translate_y: parseInt(formData.get('primary_birth_place_translate_y')) || 0,
-                                        primary_birth_place_rotate: parseInt(formData.get('primary_birth_place_rotate')) || 0,
-                                        primary_death_translate_x: parseInt(formData.get('primary_death_translate_x')) || 0,
-                                        primary_death_translate_y: parseInt(formData.get('primary_death_translate_y')) || 0,
-                                        primary_death_rotate: parseInt(formData.get('primary_death_rotate')) || 0,
-                                        primary_death_place_translate_x: parseInt(formData.get('primary_death_place_translate_x')) || 0,
-                                        primary_death_place_translate_y: parseInt(formData.get('primary_death_place_translate_y')) || 0,
-                                        primary_death_place_rotate: parseInt(formData.get('primary_death_place_rotate')) || -90,
-                                    };
-
-                                    console.log("Sending user settings:", userSettings);
-                                    console.log("Individual ID:", "{{ individual.id }}");
-
-                                    // Enhanced debugging - log each setting individually
-                                    console.log("Detailed settings being sent:");
-                                    console.log("- Font family:", userSettings.font_family);
-                                    console.log("- Primary name font size:", userSettings.primary_name_font_size);
-                                    console.log("- Primary date info font size:", userSettings.primary_date_info_font_size);
-                                    console.log("- Primary place info font size:", userSettings.primary_place_info_font_size);
-                                    console.log("- Primary background color:", userSettings.primary_background_color);
-                                    console.log("- Default stroke width:", userSettings.default_stroke_width);
-                                    console.log("- Primary stroke color:", userSettings.primary_stroke_color);
-                                    console.log("- Primary font color:", userSettings.primary_font_color);
-                                    console.log("- Primary birth date color:", userSettings.primary_birth_color);
-                                    console.log("- Primary birth place color:", userSettings.primary_birth_place_color);
-                                    console.log("- Primary death date color:", userSettings.primary_death_color);
-                                    console.log("- Primary death place color:", userSettings.primary_death_place_color);
-
-                                    // Get the current template value
-                                    const currentTemplate = document.getElementById('template-select').value;
-
-                                    // Fetch the preview with the updated settings using the generic endpoint
-                                    fetch(`{% url 'hud:get_template_preview' template_id='TEMPLATE_ID' %}`.replace('TEMPLATE_ID', currentTemplate), {
-                                        method: 'POST',
-                                        headers: {
-                                            'X-CSRFToken': '{{ csrf_token }}',
-                                            'Content-Type': 'application/json',
-                                        },
-                                        body: JSON.stringify({
-                                            individual_id: "{{ individual.id }}",
-                                            user_settings: userSettings,
-                                        }),
-                                    })
-                                    .then(response => {
-                                        if (!response.ok) {
-                                            throw new Error('Failed to generate preview: ' + response.status);
-                                        }
-                                        return response.blob();
-                                    })
-                                    .then(blob => {
-                                        const previewImg = document.getElementById('hud-preview');
-
-                                        // Revoke any existing object URL to prevent memory leaks
-                                        if (previewImg.dataset.currentUrl) {
-                                            URL.revokeObjectURL(previewImg.dataset.currentUrl);
-                                        }
-
-                                        // Create object URL and set it directly
-                                        const previewUrl = URL.createObjectURL(blob);
-                                        previewImg.src = previewUrl;
-                                        previewImg.dataset.currentUrl = previewUrl;
-
-                                        console.log('Preview image loaded successfully');
-
-                                        // Add error handler in case the image fails to load
-                                        previewImg.onerror = function() {
-                                            console.error('Failed to load preview image');
-                                            URL.revokeObjectURL(previewUrl);
-                                        };
-
-                                        // Add load handler
-                                        previewImg.onload = function() {
-                                            console.log('Preview image displayed successfully');
-                                            URL.revokeObjectURL(previewUrl);
-                                        };
-
-                                        // Update the hidden form inputs in the final chart form
-                                        // so that when user clicks "Generate Final Chart", it uses the same settings
-                                        try {
-                                            console.log('=== FORM UPDATE DEBUG ===');
-                                            console.log('Attempting to update final chart form with current settings...');
-
-                                            // Try multiple selectors to find the form
-                                            let finalChartForm = document.querySelector('form[action*="generate_final_chart"]');
-                                            if (!finalChartForm) {
-                                                finalChartForm = document.querySelector('form[action*="generate"]');
-                                            }
-                                            if (!finalChartForm) {
-                                                finalChartForm = document.querySelector('form');
-                                            }
-
-                                            if (finalChartForm) {
-                                                console.log('Found form:', finalChartForm);
-                                                console.log('Form action:', finalChartForm.action);
-
-                                                // Update all the hidden inputs with the current userSettings
-                                                let updatedCount = 0;
-                                                for (const [key, value] of Object.entries(userSettings)) {
-                                                    const input = finalChartForm.querySelector(`input[name="${key}"]`);
-                                                    if (input) {
-                                                        console.log(`Updating ${key}: ${input.value} -> ${value}`);
-                                                        input.value = value;
-                                                        updatedCount++;
-                                                    } else {
-                                                        console.warn(`No input found for ${key}`);
-                                                    }
-                                                }
-                                                console.log(`Successfully updated ${updatedCount} settings in final chart form`);
-                                                console.log('=== FORM UPDATE COMPLETE ===');
-
-                                                // Add visual feedback
-                                                const previewImg = document.getElementById('hud-preview');
-                                                if (previewImg) {
-                                                    previewImg.style.border = '5px solid #00FF00';
-                                                    setTimeout(() => {
-                                                        previewImg.style.border = '';
-                                                    }, 1000);
-                                                }
-
-                                            } else {
-                                                console.error('CRITICAL: Could not find final chart form to update');
-                                                alert('ERROR: Could not find the final chart form. Settings will not be saved for PDF generation.');
-                                            }
-                                        } catch (error) {
-                                            console.error('ERROR in form update:', error);
-                                            alert('ERROR: Failed to update final chart form. Check console for details.');
-                                        }
-                                    })
-                                    .catch(error => {
-                                        console.error('Error generating preview:', error);
-                                    });
-                                }
-                            </script>
-
-
-                            <button
-                                type="button"
-                                id="back-to-select"
-                                class="btn btn-outline-secondary w-100"
-                                onclick="window.location.href='{% url 'selector:select_individual' gedcom_file_id %}'"
-                            >
+                            <button type="button" class="btn btn-outline-secondary w-100" id="back-to-select" onclick="window.location.href='{% url 'selector:select_individual' gedcom_file_id %}'">
                                 <i class="bi bi-arrow-left"></i> Back to Selection
                             </button>
                         </div>
+
+                        <!-- Load organized HUD JavaScript -->
+                        <script src="{% static 'hud/js/hud-organized.js' %}"></script>
+
+                        <!-- Fallback script for immediate availability -->
+                        <script>
+                            // Ensure saveAndApplySettings is available immediately
+                            if (typeof window.saveAndApplySettings === 'undefined') {
+                                console.log('saveAndApplySettings not yet loaded, adding fallback...');
+                                window.saveAndApplySettings = function() {
+                                    console.log('Fallback saveAndApplySettings called');
+                                    // Try to use the organized version if available
+                                    if (window.HUD && window.HUD.Settings) {
+                                        return window.HUD.Settings.saveAndApplySettings();
+                                    }
+                                    console.error('HUD module not available');
+                                };
+                            }
+                        </script>
                     </form>
-                </div>
 
-                <!-- Generate Final Chart Button (outside the form but grouped with other buttons) -->
-                <div class="card-footer bg-transparent">
-                    <form method="post" action="{% url 'generator:generate_final_chart' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="individual_id" value="{{ individual.id }}">
-                        <input type="hidden" name="template" value="{{ hud_settings.template }}">
+                    <!-- Generate Final Chart Button (outside the form but grouped with other buttons) -->
+                    <div class="card-footer bg-transparent">
+                        <form method="post" action="{% url 'generator:generate_final_chart' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="individual_id" value="{{ individual.id }}">
+                            <input type="hidden" name="template" value="{{ hud_settings.template }}">
 
-                        <!-- Include user settings as hidden inputs -->
-                        <input type="hidden" name="font_family" value="{{ hud_settings.font_family|default:'Arial' }}">
-                        <input type="hidden" name="primary_name_font_size" value="{{ hud_settings.primary_name_font_size|default:84 }}">
-                        <input type="hidden" name="primary_date_info_font_size" value="{{ hud_settings.primary_date_info_font_size|default:60 }}">
-                        <input type="hidden" name="primary_place_info_font_size" value="{{ hud_settings.primary_place_info_font_size|default:28 }}">
-                        <input type="hidden" name="default_stroke_width" value="{{ hud_settings.default_stroke_width|default:0.5 }}">
-                        <input type="hidden" name="primary_background_color" value="{{ hud_settings.primary_background_color|default:'#FFFFFF' }}">
-                        <input type="hidden" name="primary_stroke_color" value="{{ hud_settings.primary_stroke_color|default:'#000000' }}">
-                        <input type="hidden" name="primary_font_color" value="{{ hud_settings.primary_font_color|default:'#000000' }}">
-                        <input type="hidden" name="primary_birth_color" value="{{ hud_settings.primary_birth_color|default:'#000000' }}">
-                        <input type="hidden" name="primary_birth_place_color" value="{{ hud_settings.primary_birth_place_color|default:'#000000' }}">
-                        <input type="hidden" name="primary_death_color" value="{{ hud_settings.primary_death_color|default:'#000000' }}">
-                        <input type="hidden" name="primary_death_place_color" value="{{ hud_settings.primary_death_place_color|default:'#000000' }}">
-                        <input type="hidden" name="primary_translate_x" value="{{ hud_settings.primary_translate_x|default:0 }}">
-                        <input type="hidden" name="primary_translate_y" value="{{ hud_settings.primary_translate_y|default:0 }}">
-                        <input type="hidden" name="primary_name_rotate" value="{{ hud_settings.primary_name_rotate|default:-45 }}">
-                        <input type="hidden" name="primary_birth_translate_x" value="{{ hud_settings.primary_birth_translate_x|default:0 }}">
-                        <input type="hidden" name="primary_birth_translate_y" value="{{ hud_settings.primary_birth_translate_y|default:0 }}">
-                        <input type="hidden" name="primary_birth_rotate" value="{{ hud_settings.primary_birth_rotate|default:-90 }}">
-                        <input type="hidden" name="primary_birth_place_translate_x" value="{{ hud_settings.primary_birth_place_translate_x|default:0 }}">
-                        <input type="hidden" name="primary_birth_place_translate_y" value="{{ hud_settings.primary_birth_place_translate_y|default:0 }}">
-                        <input type="hidden" name="primary_birth_place_rotate" value="{{ hud_settings.primary_birth_place_rotate|default:0 }}">
-                        <input type="hidden" name="primary_death_translate_x" value="{{ hud_settings.primary_death_translate_x|default:0 }}">
-                        <input type="hidden" name="primary_death_translate_y" value="{{ hud_settings.primary_death_translate_y|default:0 }}">
-                        <input type="hidden" name="primary_death_rotate" value="{{ hud_settings.primary_death_rotate|default:0 }}">
-                        <input type="hidden" name="primary_death_place_translate_x" value="{{ hud_settings.primary_death_place_translate_x|default:0 }}">
-                        <input type="hidden" name="primary_death_place_translate_y" value="{{ hud_settings.primary_death_place_translate_y|default:0 }}">
-                        <input type="hidden" name="primary_death_place_rotate" value="{{ hud_settings.primary_death_place_rotate|default:-90 }}">
+                            <!-- Include user settings as hidden inputs -->
+                            <input type="hidden" name="font_family" value="{{ hud_settings.font_family|default:'Arial' }}">
+                            <input type="hidden" name="primary_name_font_size" value="{{ hud_settings.primary_name_font_size|default:84 }}">
+                            <input type="hidden" name="primary_date_info_font_size" value="{{ hud_settings.primary_date_info_font_size|default:60 }}">
+                            <input type="hidden" name="primary_place_info_font_size" value="{{ hud_settings.primary_place_info_font_size|default:28 }}">
+                            <input type="hidden" name="default_stroke_width" value="{{ hud_settings.default_stroke_width|default:0.5 }}">
+                            <input type="hidden" name="primary_background_color" value="{{ hud_settings.primary_background_color|default:'#FFFFFF' }}">
+                            <input type="hidden" name="primary_stroke_color" value="{{ hud_settings.primary_stroke_color|default:'#000000' }}">
+                            <input type="hidden" name="primary_font_color" value="{{ hud_settings.primary_font_color|default:'#000000' }}">
+                            <input type="hidden" name="primary_birth_color" value="{{ hud_settings.primary_birth_color|default:'#000000' }}">
+                            <input type="hidden" name="primary_birth_place_color" value="{{ hud_settings.primary_birth_place_color|default:'#000000' }}">
+                            <input type="hidden" name="primary_death_color" value="{{ hud_settings.primary_death_color|default:'#000000' }}">
+                            <input type="hidden" name="primary_death_place_color" value="{{ hud_settings.primary_death_place_color|default:'#000000' }}">
+                            <input type="hidden" name="primary_translate_x" value="{{ hud_settings.primary_translate_x|default:0 }}">
+                            <input type="hidden" name="primary_translate_y" value="{{ hud_settings.primary_translate_y|default:0 }}">
+                            <input type="hidden" name="primary_name_rotate" value="{{ hud_settings.primary_name_rotate|default:-45 }}">
+                            <input type="hidden" name="primary_birth_translate_x" value="{{ hud_settings.primary_birth_translate_x|default:0 }}">
+                            <input type="hidden" name="primary_birth_translate_y" value="{{ hud_settings.primary_birth_translate_y|default:0 }}">
+                            <input type="hidden" name="primary_birth_rotate" value="{{ hud_settings.primary_birth_rotate|default:-90 }}">
+                            <input type="hidden" name="primary_birth_place_translate_x" value="{{ hud_settings.primary_birth_place_translate_x|default:0 }}">
+                            <input type="hidden" name="primary_birth_place_translate_y" value="{{ hud_settings.primary_birth_place_translate_y|default:0 }}">
+                            <input type="hidden" name="primary_birth_place_rotate" value="{{ hud_settings.primary_birth_place_rotate|default:0 }}">
+                            <input type="hidden" name="primary_death_translate_x" value="{{ hud_settings.primary_death_translate_x|default:0 }}">
+                            <input type="hidden" name="primary_death_translate_y" value="{{ hud_settings.primary_death_translate_y|default:0 }}">
+                            <input type="hidden" name="primary_death_rotate" value="{{ hud_settings.primary_death_rotate|default:0 }}">
+                            <input type="hidden" name="primary_death_place_translate_x" value="{{ hud_settings.primary_death_place_translate_x|default:0 }}">
+                            <input type="hidden" name="primary_death_place_translate_y" value="{{ hud_settings.primary_death_place_translate_y|default:0 }}">
+                            <input type="hidden" name="primary_death_place_rotate" value="{{ hud_settings.primary_death_place_rotate|default:-90 }}">
 
-                        <button type="submit" class="btn btn-success w-100">
-                            <i class="bi bi-file-earmark-pdf"></i> Generate Final Chart
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Individual Information Panel -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">Individual Information</h5>
-                </div>
-                <div class="card-body">
-                    <dl class="row">
-                        <dt class="col-sm-4">Full Name:</dt>
-                        <dd class="col-sm-8">{{ individual.full_name }}</dd>
-
-                        <dt class="col-sm-4">Given Name:</dt>
-                        <dd class="col-sm-8">{{ individual.given_name }}</dd>
-
-                        <dt class="col-sm-4">Surname:</dt>
-                        <dd class="col-sm-8">{{ individual.surname }}</dd>
-
-                        {% if individual.birth_date %}
-                        <dt class="col-sm-4">Birth Date:</dt>
-                        <dd class="col-sm-8">{{ individual.birth_date }}</dd>
-                        {% endif %}
-                        {% if individual.birth_place %}
-                        <dt class="col-sm-4">Birth Place:</dt>
-                        <dd class="col-sm-8">{{ individual.birth_place }}</dd>
-                        {% endif %}
-                        {% if individual.death_date %}
-                        <dt class="col-sm-4">Death Date:</dt>
-                        <dd class="col-sm-8">{{ individual.death_date }}</dd>
-                        {% endif %}
-                        {% if individual.death_place %}
-                        <dt class="col-sm-4">Death Place:</dt>
-                        <dd class="col-sm-8">{{ individual.death_place }}</dd>
-                        {% endif %}
-                    </dl>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- JavaScript for Slider Updates -->
-    <script>
-        // Update slider values in real-time
-        function setupSlider(sliderId, valueId) {
-            const slider = document.getElementById(sliderId);
-            const valueDisplay = document.getElementById(valueId);
-
-            if (slider && valueDisplay) {
-                slider.addEventListener('input', function() {
-
-                    valueDisplay.textContent = this.value;
-                    console.log(`Slider ${sliderId} changed to: ${this.value}`);
-                    // Ensure the value attribute is updated
-                    this.setAttribute('value', this.value);
-                });
-            }
-        }
-
-// Handle template selection changes
-        function handleTemplateChange() {
-            const templateSelect = document.getElementById('template-select');
-            const templateValue = templateSelect.value;
-
-            console.log("Template changed to:", templateValue);
-
-            // Update the hidden template input
-            const hiddenTemplateInput = document.querySelector('input[name="template"]');
-            if (hiddenTemplateInput) {
-                hiddenTemplateInput.value = templateValue;
-            }
-
-            // Load template-specific settings panel
-            loadSettingsPanel(templateValue);
-
-            // Update the preview image immediately for better UX
-            updatePreviewImage(templateValue);
-
-            // Note: Template change will be saved when user clicks "Apply Settings"
-            // This prevents browser redirect and provides better UX
-        }
-
-        // Load template-specific settings panel via AJAX
-        function loadSettingsPanel(templateValue) {
-            const settingsPanel = document.getElementById('settings-panel');
-            if (!settingsPanel) {
-                console.error('Settings panel not found');
-                return;
-            }
-
-            // Show loading indicator
-            settingsPanel.innerHTML = `
-                <div class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-file-earmark-pdf"></i> Generate Final Chart
+                            </button>
+                        </form>
                     </div>
-                    <p class="mt-2">Loading settings for template ${templateValue}...</p>
-                </div>
-            `;
-
-            // Map template values to settings files
-            const settingsTemplateMap = {
-                '1': '1gen_settings.html',
-                '2': '2gen_settings.html',
-            };
-
-            const settingsFile = settingsTemplateMap[templateValue] || 'default_settings.html';
-            
-            // Fetch the appropriate settings template
-            fetch(`/hud/get-settings-panel/${settingsFile}/?template=${templateValue}`, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    return response.text();
-                }
-                throw new Error('Failed to load settings panel');
-            })
-            .then(html => {
-                settingsPanel.innerHTML = html;
-                
-                // Reinitialize sliders for the new settings panel
-                initializeSliders();
-                
-                console.log(`Loaded settings panel for template ${templateValue}`);
-            })
-            .catch(error => {
-                console.error('Error loading settings panel:', error);
-                settingsPanel.innerHTML = `
-                    <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle"></i>
-                        <strong>Error:</strong> Failed to load settings for template ${templateValue}
-                        <br><small>${error.message}</small>
-                    </div>
-                `;
-            });
-        }
-
-        // Update preview image based on template selection
-        function updatePreviewImage(templateValue) {
-            const previewImg = document.getElementById('hud-preview');
-            if (!previewImg) {
-                console.error('Preview image element not found');
-                return;
-            }
-
-            // Use the generic preview endpoint for all templates
-            const timestamp = Date.now();
-            previewImg.src = `{% url 'hud:get_template_preview' template_id='TEMPLATE_ID' %}?individual_id={{ individual.id }}&t=${timestamp}`.replace('TEMPLATE_ID', templateValue);
-            previewImg.style.opacity = '1';
-            previewImg.title = `Template ${templateValue} preview`;
-
-            console.log(`Updated preview for template ${templateValue}`);
-
-            // Add error handling
-            previewImg.onerror = function() {
-                console.error(`Failed to load preview for template ${templateValue}`);
-                previewImg.style.opacity = '0.5';
-                previewImg.title = `Template ${templateValue} preview failed - generator may not be implemented yet`;
-            };
-        }
-
-        // Ensure all form inputs have their current values
-        function updateAllFormInputs() {
-            console.log("Updating all form inputs to ensure current values...");
-
-            // Get all input elements in the form
-            const form = document.getElementById('hud-settings-form');
-            const inputs = form.querySelectorAll('input, select');
-
-            inputs.forEach(input => {
-                if (input.type === 'range' || input.type === 'text' || input.type === 'color' || input.tagName === 'SELECT') {
-                    // For range inputs, ensure the value attribute matches the current value
-                    if (input.type === 'range') {
-                        input.setAttribute('value', input.value);
-                    }
-                }
-            });
-
-            console.log("Form inputs updated.");
-        }
-
-        // Initialize all sliders
-        function initializeSliders() {
-            // Font size sliders
-            setupSlider('primary-name-font-size-slider', 'primary-name-font-size-value');
-            setupSlider('primary-date-info-font-size-slider', 'primary-date-info-font-size-value');
-            setupSlider('primary-place-info-font-size-slider', 'primary-place-info-font-size-value');
-
-            // Stroke width slider
-            setupSlider('default-stroke-width-slider', 'default-stroke-width-value');
-
-            // Primary individual coordinates sliders
-            setupSlider('primary-translate-x-slider', 'primary-translate-x-value');
-            setupSlider('primary-translate-y-slider', 'primary-translate-y-value');
-            setupSlider('primary-name-rotate-slider', 'primary-name-rotate-value');
-
-            // Birth date sliders
-            setupSlider('primary-birth-translate-x-slider', 'primary-birth-translate-x-value');
-            setupSlider('primary-birth-translate-y-slider', 'primary-birth-translate-y-value');
-            setupSlider('primary-birth-rotate-slider', 'primary-birth-rotate-value');
-
-            // Birth place sliders
-            setupSlider('primary-birth-place-translate-x-slider', 'primary-birth-place-translate-x-value');
-            setupSlider('primary-birth-place-translate-y-slider', 'primary-birth-place-translate-y-value');
-            setupSlider('primary-birth-place-rotate-slider', 'primary-birth-place-rotate-value');
-
-            // Death date sliders
-            setupSlider('primary-death-translate-x-slider', 'primary-death-translate-x-value');
-            setupSlider('primary-death-translate-y-slider', 'primary-death-translate-y-value');
-            setupSlider('primary-death-rotate-slider', 'primary-death-rotate-value');
-
-            // Death place sliders
-            setupSlider('primary-death-place-translate-x-slider', 'primary-death-place-translate-x-value');
-            setupSlider('primary-death-place-translate-y-slider', 'primary-death-place-translate-y-value');
-            setupSlider('primary-death-place-rotate-slider', 'primary-death-place-rotate-value');
-        }
-
-        // Initialize sliders when the page loads
-        document.addEventListener('DOMContentLoaded', initializeSliders);
-    </script>
 
 </div>
 
