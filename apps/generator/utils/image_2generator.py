@@ -65,10 +65,10 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
 
             # Stroke settings
             DEFAULT_STROKE_WIDTH = float(user_settings.get("default_stroke_width", 0.5))
-            PARENT_STROKE_COLOR = Color(user_settings.get("primary_stroke_color", "black"))
-
+            PARENT_STROKE_COLOR = Color(user_settings.get("parent_stroke_color", "black"))
+            INFO_STROKE_COLOR = Color(user_settings.get("info_stroke_color", "black"))
             print(f"DEBUG: DEFAULT_STROKE_WIDTH set to: {DEFAULT_STROKE_WIDTH}")
-            print(f"DEBUG: PRIMARY_STROKE_COLOR set to: {PRIMARY_STROKE_COLOR}")
+            print(f"DEBUG: PARENT_STROKE_COLOR set to: {PARENT_STROKE_COLOR}")
 
             # Drawing quality settings
             STROKE_ANTIALIAS = True
@@ -97,15 +97,15 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
 
 
             # Father coordinates
-            FATHER_FIRST_X = 0
-            FATHER_FIRST_Y = 225
-            FATHER_FIRST_ROTATE = 45
-            FATHER_MIDDLE_X = 0
-            FATHER_MIDDLE_Y = 260
-            FATHER_MIDDLE_ROTATE = -45
-            FATHER_LAST_X = 0
-            FATHER_LAST_Y = 225
-            FATHER_LAST_ROTATE = -45
+            FATHER_FIRST_TRANSLATE_X = int(user_settings.get("father_first_translate_x", 0))
+            FATHER_FIRST_TRANSLATE_Y = int(user_settings.get("father_first_translate_y", 0))
+            FATHER_FIRST_ROTATE = int(user_settings.get("father_first_rotate", 0))
+            FATHER_MIDDLE_TRANSLATE_X =  int(user_settings.get("father_middle_translate_x", 0))
+            FATHER_MIDDLE_TRANSLATE_Y = int(user_settings.get("father_middle_translate_y", 0))
+            FATHER_MIDDLE_ROTATE = int(user_settings.get("father_middle_rotate", 0))
+            FATHER_LAST_TRANSLATE_X = int(user_settings.get("father_last_translate_x", 0))
+            FATHER_LAST_TRANSLATE_Y = int(user_settings.get("father_last_translate_y", 0))
+            FATHER_LAST_ROTATE = int(user_settings.get("father_last_rotate", 0))
             FATHER_BIRTH_TRANSLATE_X = int(user_settings.get("father_birth_translate_x", 0))
             FATHER_BIRTH_TRANSLATE_Y = int(user_settings.get("father_birth_translate_y", 0))
             FATHER_BIRTH_ROTATE = int(user_settings.get("father_birth_rotate", 0))
@@ -120,15 +120,15 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
             FATHER_DEATH_PLACE_ROTATE = int(user_settings.get("father_death_place_rotate", -90))
 
             # Mother coordinates
-            MOTHER_FIRST_X = 0
-            MOTHER_FIRST_Y = 225
-            MOTHER_FIRST_ROTATE = -90
-            MOTHER_MIDDLE_X = 0
-            MOTHER_MIDDLE_Y = 260
-            MOTHER_MIDDLE_ROTATE = -45
-            MOTHER_LAST_X = 0
-            MOTHER_LAST_Y = 225
-            MOTHER_LAST_ROTATE = -45
+            MOTHER_FIRST_TRANSLATE_X = int(user_settings.get("mother_first_translate_x", 0))
+            MOTHER_FIRST_TRANSLATE_Y = int(user_settings.get("mother_first_translate_y", 0))
+            MOTHER_FIRST_ROTATE = int(user_settings.get("mother_first_rotate", 0))
+            MOTHER_MIDDLE_TRANSLATE_X = int(user_settings.get("mother_middle_translate_x", 0))
+            MOTHER_MIDDLE_TRANSLATE_Y = int(user_settings.get("mother_middle_translate_y", 0))
+            MOTHER_MIDDLE_ROTATE = int(user_settings.get("mother_middle_rotate", 0))
+            MOTHER_LAST_TRANSLATE_X = int(user_settings.get("mother_last_translate_x", 0))
+            MOTHER_LAST_TRANSLATE_Y = int(user_settings.get("mother_last_translate_y", 0))
+            MOTHER_LAST_ROTATE = int(user_settings.get("mother_last_rotate", 0))
             MOTHER_BIRTH_TRANSLATE_X = int(user_settings.get("mother_birth_translate_x", 0))
             MOTHER_BIRTH_TRANSLATE_Y = int(user_settings.get("mother_birth_translate_y", 0))
             MOTHER_BIRTH_ROTATE = int(user_settings.get("mother_birth_rotate", 0))
@@ -162,8 +162,8 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
 
                 draw.translate(x=PARENT_TRANSLATE_X, y=PARENT_TRANSLATE_Y)
 
-                draw.fill_color = PARENT_INFO_COLOR
-                print(f"Setting fill_color to: {PARENT_INFO_COLOR}")
+                # draw.fill_color = PARENT_INFO_COLOR
+                # print(f"Setting fill_color to: {PARENT_INFO_COLOR}")
 
                 draw.stroke_color = PARENT_STROKE_COLOR
                 print(f"Setting stroke_color to: {PARENT_STROKE_COLOR}")
@@ -220,8 +220,8 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
                 draw.push()
 
                 fx_first, fy_first, fr_first = (
-                    FATHER_FIRST_X,
-                    FATHER_FIRST_Y,
+                    FATHER_FIRST_TRANSLATE_X,
+                    FATHER_FIRST_TRANSLATE_Y,
                     FATHER_FIRST_ROTATE,
                 )
                 draw.rotate(fr_first)
@@ -241,8 +241,8 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
                 draw.push()
 
                 fx_middle, fy_middle, fr_middle = (
-                    FATHER_MIDDLE_X,
-                    FATHER_MIDDLE_Y,
+                    FATHER_MIDDLE_TRANSLATE_X,
+                    FATHER_MIDDLE_TRANSLATE_Y,
                     FATHER_MIDDLE_ROTATE,
                 )
 
@@ -260,8 +260,8 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
                 draw.push()
 
                 fx_last, fy_last, fr_last = (
-                    FATHER_LAST_X,
-                    FATHER_LAST_Y,
+                    FATHER_LAST_TRANSLATE_X,
+                    FATHER_LAST_TRANSLATE_Y,
                     FATHER_LAST_ROTATE,
                 )
 
@@ -317,10 +317,10 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
                 draw.font_size = PARENT_PLACE_INFO_FONT_SIZE
                 print(f"Setting fill_color to: {FATHER_BIRTH_PLACE_COLOR} and font_size to: {PARENT_PLACE_INFO_FONT_SIZE}")
 
-                draw.rotate(fr_place)
+                draw.rotate(fr_birth_place)
 
                 draw.text(0, 0, father.birth_place or " ")
-                print(f"Drawn text at ({fx_birth_place}, {fy_birth_place}) with rotation {fr_place}: {father.birth_place or ' '}")
+                print(f"Drawn text at ({fx_birth_place}, {fy_birth_place}) with rotation {fr_birth_place}: {father.birth_place or ' '}")
 
                 draw.pop()
 
@@ -345,7 +345,7 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
                 draw.rotate(fr_death)
 
                 draw.text(0, 0, father.death_date)
-                print(f"Drawn text at ({fx_death}, {fy_death}) with rotation {fr_death}: {death_date_text}")
+                print(f"Drawn text at ({fx_death}, {fy_death}) with rotation {fr_death}: {father.death_date or ' '}")
 
                 draw.pop()
 
@@ -393,8 +393,8 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
                 draw.push()
 
                 mx_first, my_first, mr_first = (
-                    MOTHER_FIRST_X,
-                    MOTHER_FIRST_Y,
+                    MOTHER_FIRST_TRANSLATE_X,
+                    MOTHER_FIRST_TRANSLATE_Y,
                     MOTHER_FIRST_ROTATE,
                 )
 
@@ -415,8 +415,8 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
                 draw.push()
 
                 mx_middle, my_middle, mr_middle = (
-                    MOTHER_MIDDLE_X,
-                    MOTHER_MIDDLE_Y,
+                    MOTHER_MIDDLE_TRANSLATE_X,
+                    MOTHER_MIDDLE_TRANSLATE_Y,
                     MOTHER_MIDDLE_ROTATE,
                 )
 
@@ -434,8 +434,8 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
                 draw.push()
 
                 mx_last, my_last, mr_last = (
-                    MOTHER_LAST_X,
-                    MOTHER_LAST_Y,
+                    MOTHER_LAST_TRANSLATE_X,
+                    MOTHER_LAST_TRANSLATE_Y,
                     MOTHER_LAST_ROTATE,
                 )
 
@@ -516,8 +516,8 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
 
                 draw.rotate(mr_death)
 
-                draw.text(0, 0, mother.death_date)
-                print(f"Drawn text at ({mx_death}, {my_death}) with rotation {mr_death}: {death_date_text}")
+                draw.text(0, 0, mother.death_date or ' ')
+                print(f"Drawn text at ({mx_death}, {my_death}) with rotation {mr_death}: {mother.death_date or ' '}")
 
                 draw.pop()
 
@@ -549,8 +549,12 @@ def generate_2gen_preview(primary_individual, family_data, template="preview", u
                 # Apply the drawing to the image
                 draw(content_img)
 
-                # 3. Load and composite the 1Gen overlay *after* drawing
-                with Image(filename='gen1_img_buffer') as gen1_overlay:
+                # Get the bytes from the buffer
+                gen1_img_buffer.seek(0)  # Reset buffer position
+                gen1_bytes = gen1_img_buffer.getvalue()
+
+                # Create image from blob
+                with Image(blob=gen1_bytes) as gen1_overlay:
                     gen1_overlay.resize(int(gen1_overlay.width * 0.48), int(gen1_overlay.height * 0.48))
                     content_img.composite(gen1_overlay, left=800, top=1070)
 

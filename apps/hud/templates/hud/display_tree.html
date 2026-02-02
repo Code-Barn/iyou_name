@@ -529,8 +529,11 @@
                                     console.log("- Primary death date color:", userSettings.primary_death_color);
                                     console.log("- Primary death place color:", userSettings.primary_death_place_color);
 
-                                    // Fetch the preview with the updated settings
-                                    fetch("{% url 'hud:get_1gen_preview' %}", {
+                                    // Get the current template value
+                                    const currentTemplate = document.getElementById('template-select').value;
+
+                                    // Fetch the preview with the updated settings using the generic endpoint
+                                    fetch(`{% url 'hud:get_template_preview' template_id='TEMPLATE_ID' %}`.replace('TEMPLATE_ID', currentTemplate), {
                                         method: 'POST',
                                         headers: {
                                             'X-CSRFToken': '{{ csrf_token }}',
@@ -632,11 +635,7 @@
                                 }
                             </script>
 
-                            <script>
-                                document.getElementById('hud-settings-form').addEventListener('submit', function() {
-                                    setTimeout(drawPreview, 100); // Call drawPreview after form submission
-                                });
-                            </script>
+
                             <button
                                 type="button"
                                 id="back-to-select"
@@ -752,7 +751,7 @@
             }
         }
 
-        // Handle template selection changes
+// Handle template selection changes
         function handleTemplateChange() {
             const templateSelect = document.getElementById('template-select');
             const templateValue = templateSelect.value;
@@ -764,6 +763,9 @@
             if (hiddenTemplateInput) {
                 hiddenTemplateInput.value = templateValue;
             }
+
+            // Update the preview image immediately for better UX
+            updatePreviewImage(templateValue);
 
             // Submit the form to save the template change
             const form = document.getElementById('hud-settings-form');
@@ -794,10 +796,31 @@
 
                 document.body.appendChild(tempForm);
                 tempForm.submit();
-
-                // Call drawPreview after a delay
-                setTimeout(drawPreview, 100);
             }
+        }
+
+        // Update preview image based on template selection
+        function updatePreviewImage(templateValue) {
+            const previewImg = document.getElementById('hud-preview');
+            if (!previewImg) {
+                console.error('Preview image element not found');
+                return;
+            }
+
+            // Use the generic preview endpoint for all templates
+            const timestamp = Date.now();
+            previewImg.src = `{% url 'hud:get_template_preview' template_id='TEMPLATE_ID' %}?individual_id={{ individual.id }}&t=${timestamp}`.replace('TEMPLATE_ID', templateValue);
+            previewImg.style.opacity = '1';
+            previewImg.title = `Template ${templateValue} preview`;
+
+            console.log(`Updated preview for template ${templateValue}`);
+
+            // Add error handling
+            previewImg.onerror = function() {
+                console.error(`Failed to load preview for template ${templateValue}`);
+                previewImg.style.opacity = '0.5';
+                previewImg.title = `Template ${templateValue} preview failed - generator may not be implemented yet`;
+            };
         }
 
         // Ensure all form inputs have their current values

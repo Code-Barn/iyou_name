@@ -7,7 +7,7 @@ from wand.drawing import Drawing
 from wand.image import Image
 
 
-def generate_family_tree(primary_individual, family_data, template="4gen"):
+def generate_4gen_preview(primary_individual, family_data, template="4gen"):
     """
     Generate a family tree chart using Wand (Python ImageMagick binding)
 

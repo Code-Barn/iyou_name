@@ -1,3 +1,4 @@
+import importlib
 import json
 import logging
 import time
@@ -11,6 +12,17 @@ from django.views.decorators.http import require_http_methods, require_POST
 from apps.generator.models import GedcomFile
 from apps.generator.template_mapping import get_template_mapping
 from apps.generator.utils.image_1generator import generate_1gen_preview
+from apps.generator.utils import (
+    image_2generator,
+    image_3generator,
+    image_4generator,
+    image_5generator,
+    image_6generator,
+    image_7generator,
+    image_8generator,
+    image_9generator,
+    image_10generator,
+)
 from apps.parser.models import PersonData
 
 logger = logging.getLogger(__name__)
@@ -133,12 +145,18 @@ def save_hud_settings(request):
         primary_stroke_color = request.POST.get("primary_stroke_color") or "#000000"
 
         # Primary individual colors
-        primary_background_color = request.POST.get("primary_background_color") or "#ffffff"
+        primary_background_color = (
+            request.POST.get("primary_background_color") or "#ffffff"
+        )
         primary_font_color = request.POST.get("primary_font_color") or "#000000"
         primary_birth_color = request.POST.get("primary_birth_color") or "#000000"
-        primary_birth_place_color = request.POST.get("primary_birth_place_color") or "#000000"
+        primary_birth_place_color = (
+            request.POST.get("primary_birth_place_color") or "#000000"
+        )
         primary_death_color = request.POST.get("primary_death_color") or "#000000"
-        primary_death_place_color = request.POST.get("primary_death_place_color") or "#000000"
+        primary_death_place_color = (
+            request.POST.get("primary_death_place_color") or "#000000"
+        )
 
         # Translation settings (subject_translate only)
         subject_translate_x = request.POST.get("subject_translate_x")
@@ -179,20 +197,39 @@ def save_hud_settings(request):
             "subject_translate_x": int(request.POST.get("subject_translate_x", 0)),
             "subject_translate_y": int(request.POST.get("subject_translate_y", 0)),
             "primary_name_rotate": int(request.POST.get("primary_name_rotate", -45)),
-            "primary_birth_translate_x": int(request.POST.get("primary_birth_translate_x", 0)),
-            "primary_birth_translate_y": int(request.POST.get("primary_birth_translate_y", 0)),
+            "primary_birth_translate_x": int(
+                request.POST.get("primary_birth_translate_x", 0)
+            ),
+            "primary_birth_translate_y": int(
+                request.POST.get("primary_birth_translate_y", 0)
+            ),
             "primary_birth_rotate": int(request.POST.get("primary_birth_rotate", -90)),
-            "primary_birth_place_translate_x": int(request.POST.get("primary_birth_place_translate_x", 0)),
-            "primary_birth_place_translate_y": int(request.POST.get("primary_birth_place_translate_y", 0)),
-            "primary_birth_place_rotate": int(request.POST.get("primary_birth_place_rotate", 0)),
-            "primary_death_translate_x": int(request.POST.get("primary_death_translate_x", 0)),
-            "primary_death_translate_y": int(request.POST.get("primary_death_translate_y", 0)),
+            "primary_birth_place_translate_x": int(
+                request.POST.get("primary_birth_place_translate_x", 0)
+            ),
+            "primary_birth_place_translate_y": int(
+                request.POST.get("primary_birth_place_translate_y", 0)
+            ),
+            "primary_birth_place_rotate": int(
+                request.POST.get("primary_birth_place_rotate", 0)
+            ),
+            "primary_death_translate_x": int(
+                request.POST.get("primary_death_translate_x", 0)
+            ),
+            "primary_death_translate_y": int(
+                request.POST.get("primary_death_translate_y", 0)
+            ),
             "primary_death_rotate": int(request.POST.get("primary_death_rotate", 0)),
-            "primary_death_place_translate_x": int(request.POST.get("primary_death_place_translate_x", 0)),
-            "primary_death_place_translate_y": int(request.POST.get("primary_death_place_translate_y", 0)),
-            "primary_death_place_rotate": int(request.POST.get("primary_death_place_rotate", -90)),
-
-            "Settings saved to session": request.session.get('hud_settings')
+            "primary_death_place_translate_x": int(
+                request.POST.get("primary_death_place_translate_x", 0)
+            ),
+            "primary_death_place_translate_y": int(
+                request.POST.get("primary_death_place_translate_y", 0)
+            ),
+            "primary_death_place_rotate": int(
+                request.POST.get("primary_death_place_rotate", -90)
+            ),
+            "Settings saved to session": request.session.get("hud_settings"),
         }
         return JsonResponse({"status": "success"})
 
@@ -302,7 +339,153 @@ def get_hud_settings(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
-# THIS IS THE ONE BEING USED/SEEN IN CONSOLE
+
+# Generic preview endpoint that can handle all templates
+@csrf_exempt
+def get_template_preview(request, template_id):
+    """
+    Generic API endpoint for generating template previews.
+    Supports both GET and POST requests.
+    """
+    try:
+        if request.method == "GET":
+            individual_id = request.GET.get("individual_id")
+            # Use session settings for GET requests
+            hud_settings = request.session.get("hud_settings", {})
+            user_settings = {
+                "font_family": hud_settings.get("font_family", "Arial"),
+                "primary_name_font_size": hud_settings.get(
+                    "primary_name_font_size", 84
+                ),
+                "primary_date_info_font_size": hud_settings.get(
+                    "primary_date_info_font_size", 60
+                ),
+                "primary_place_info_font_size": hud_settings.get(
+                    "primary_place_info_font_size", 28
+                ),
+                "default_stroke_width": hud_settings.get("default_stroke_width", 0.5),
+                "primary_stroke_color": hud_settings.get(
+                    "primary_stroke_color", "#000000"
+                ),
+                "primary_background_color": hud_settings.get(
+                    "primary_background_color", "#ffffff"
+                ),
+                "primary_font_color": hud_settings.get("primary_font_color", "#000000"),
+                "primary_birth_color": hud_settings.get(
+                    "primary_birth_color", "#000000"
+                ),
+                "primary_birth_place_color": hud_settings.get(
+                    "primary_birth_place_color", "#000000"
+                ),
+                "primary_death_color": hud_settings.get(
+                    "primary_death_color", "#000000"
+                ),
+                "primary_death_place_color": hud_settings.get(
+                    "primary_death_place_color", "#000000"
+                ),
+                "primary_name_rotate": hud_settings.get("primary_name_rotate", -45),
+                "primary_birth_translate_x": hud_settings.get(
+                    "primary_birth_translate_x", 0
+                ),
+                "primary_birth_translate_y": hud_settings.get(
+                    "primary_birth_translate_y", 0
+                ),
+                "primary_birth_rotate": hud_settings.get("primary_birth_rotate", -90),
+                "primary_birth_place_translate_x": hud_settings.get(
+                    "primary_birth_place_translate_x", 0
+                ),
+                "primary_birth_place_translate_y": hud_settings.get(
+                    "primary_birth_place_translate_y", 0
+                ),
+                "primary_birth_place_rotate": hud_settings.get(
+                    "primary_birth_place_rotate", 0
+                ),
+                "primary_death_translate_x": hud_settings.get(
+                    "primary_death_translate_x", 0
+                ),
+                "primary_death_translate_y": hud_settings.get(
+                    "primary_death_translate_y", 0
+                ),
+                "primary_death_rotate": hud_settings.get("primary_death_rotate", 0),
+                "primary_death_place_translate_x": hud_settings.get(
+                    "primary_death_place_translate_x", 0
+                ),
+                "primary_death_place_translate_y": hud_settings.get(
+                    "primary_death_place_translate_y", 0
+                ),
+                "primary_death_place_rotate": hud_settings.get(
+                    "primary_death_place_rotate", -90
+                ),
+                "subject_translate_x": hud_settings.get("subject_translate_x", 0),
+                "subject_translate_y": hud_settings.get("subject_translate_y", 0),
+            }
+        elif request.method == "POST":
+            data = json.loads(request.body)
+            individual_id = data.get("individual_id")
+            user_settings = data.get("user_settings", {})
+            logger.debug(
+                f"Template {template_id} preview - User settings: {user_settings}"
+            )
+        else:
+            return HttpResponse("Method not allowed", status=405)
+
+        # Get the primary individual from the session or GET parameters
+        if not individual_id:
+            individual_id = request.session.get("selected_individual_id")
+        if not individual_id:
+            return HttpResponse("No individual selected", status=400)
+
+        gedcom_file_id = request.session.get("current_gedcom_file_id")
+        if not gedcom_file_id:
+            return HttpResponse("No GEDCOM file selected", status=400)
+
+        from apps.generator.models import GedcomFile
+
+        gedcom_file = GedcomFile.objects.get(id=gedcom_file_id)
+        if not gedcom_file.parsed_data:
+            return HttpResponse("File not processed yet", status=400)
+
+        individuals = gedcom_file.parsed_data.get("individuals", {})
+        if individual_id not in individuals:
+            return HttpResponse("Individual not found", status=404)
+
+        individual_data = individuals[individual_id]
+        primary_individual = PersonData(**individual_data)
+
+        # Convert all individuals to PersonData objects for multi-generational charts
+        person_data_objects = {}
+        for person_id, person_data in individuals.items():
+            person_data_objects[person_id] = PersonData(**person_data)
+
+        # Update family_data with PersonData objects
+        family_data_with_person_objects = gedcom_file.parsed_data.copy()
+        family_data_with_person_objects["individuals"] = person_data_objects
+
+        # Get the template mapping to find the right generator
+        template_mapping = get_template_mapping()
+        template_config = template_mapping.get(template_id)
+
+        if not template_config:
+            return HttpResponse(f"Template {template_id} not found", status=404)
+
+        # Dynamically import the generator module
+        module = importlib.import_module(template_config["module"])
+        generator_function = getattr(module, template_config["function"])
+
+        # Generate the preview
+        preview_buffer = generator_function(
+            primary_individual, family_data_with_person_objects, "preview", user_settings
+        )
+
+        # Return the preview as an image
+        return HttpResponse(preview_buffer, content_type="image/png")
+
+    except Exception as e:
+        logger.error(f"Error generating template {template_id} preview: {str(e)}")
+        return HttpResponse(f"Error generating preview: {str(e)}", status=500)
+
+
+# THIS IS THE ONE BEING USED/SEEN IN CONSOLE (kept for backward compatibility)
 @csrf_exempt
 def get_1gen_preview(request):
     """
@@ -316,30 +499,68 @@ def get_1gen_preview(request):
             hud_settings = request.session.get("hud_settings", {})
             user_settings = {
                 "font_family": hud_settings.get("font_family", "Arial"),
-                "primary_name_font_size": hud_settings.get("primary_name_font_size", 84),
-                "primary_date_info_font_size": hud_settings.get("primary_date_info_font_size", 60),
-                "primary_place_info_font_size": hud_settings.get("primary_place_info_font_size", 28),
+                "primary_name_font_size": hud_settings.get(
+                    "primary_name_font_size", 84
+                ),
+                "primary_date_info_font_size": hud_settings.get(
+                    "primary_date_info_font_size", 60
+                ),
+                "primary_place_info_font_size": hud_settings.get(
+                    "primary_place_info_font_size", 28
+                ),
                 "default_stroke_width": hud_settings.get("default_stroke_width", 0.5),
-                "primary_stroke_color": hud_settings.get("primary_stroke_color", "#000000"),
-                "primary_background_color": hud_settings.get("primary_background_color", "#ffffff"),
+                "primary_stroke_color": hud_settings.get(
+                    "primary_stroke_color", "#000000"
+                ),
+                "primary_background_color": hud_settings.get(
+                    "primary_background_color", "#ffffff"
+                ),
                 "primary_font_color": hud_settings.get("primary_font_color", "#000000"),
-                "primary_birth_color": hud_settings.get("primary_birth_color", "#000000"),
-                "primary_birth_place_color": hud_settings.get("primary_birth_place_color", "#000000"),
-                "primary_death_color": hud_settings.get("primary_death_color", "#000000"),
-                "primary_death_place_color": hud_settings.get("primary_death_place_color", "#000000"),
+                "primary_birth_color": hud_settings.get(
+                    "primary_birth_color", "#000000"
+                ),
+                "primary_birth_place_color": hud_settings.get(
+                    "primary_birth_place_color", "#000000"
+                ),
+                "primary_death_color": hud_settings.get(
+                    "primary_death_color", "#000000"
+                ),
+                "primary_death_place_color": hud_settings.get(
+                    "primary_death_place_color", "#000000"
+                ),
                 "primary_name_rotate": hud_settings.get("primary_name_rotate", -45),
-                "primary_birth_translate_x": hud_settings.get("primary_birth_translate_x", 0),
-                "primary_birth_translate_y": hud_settings.get("primary_birth_translate_y", 0),
+                "primary_birth_translate_x": hud_settings.get(
+                    "primary_birth_translate_x", 0
+                ),
+                "primary_birth_translate_y": hud_settings.get(
+                    "primary_birth_translate_y", 0
+                ),
                 "primary_birth_rotate": hud_settings.get("primary_birth_rotate", -90),
-                "primary_birth_place_translate_x": hud_settings.get("primary_birth_place_translate_x", 0),
-                "primary_birth_place_translate_y": hud_settings.get("primary_birth_place_translate_y", 0),
-                "primary_birth_place_rotate": hud_settings.get("primary_birth_place_rotate", 0),
-                "primary_death_translate_x": hud_settings.get("primary_death_translate_x", 0),
-                "primary_death_translate_y": hud_settings.get("primary_death_translate_y", 0),
+                "primary_birth_place_translate_x": hud_settings.get(
+                    "primary_birth_place_translate_x", 0
+                ),
+                "primary_birth_place_translate_y": hud_settings.get(
+                    "primary_birth_place_translate_y", 0
+                ),
+                "primary_birth_place_rotate": hud_settings.get(
+                    "primary_birth_place_rotate", 0
+                ),
+                "primary_death_translate_x": hud_settings.get(
+                    "primary_death_translate_x", 0
+                ),
+                "primary_death_translate_y": hud_settings.get(
+                    "primary_death_translate_y", 0
+                ),
                 "primary_death_rotate": hud_settings.get("primary_death_rotate", 0),
-                "primary_death_place_translate_x": hud_settings.get("primary_death_place_translate_x", 0),
-                "primary_death_place_translate_y": hud_settings.get("primary_death_place_translate_y", 0),
-                "primary_death_place_rotate": hud_settings.get("primary_death_place_rotate", -90),
+                "primary_death_place_translate_x": hud_settings.get(
+                    "primary_death_place_translate_x", 0
+                ),
+                "primary_death_place_translate_y": hud_settings.get(
+                    "primary_death_place_translate_y", 0
+                ),
+                "primary_death_place_rotate": hud_settings.get(
+                    "primary_death_place_rotate", -90
+                ),
                 "subject_translate_x": hud_settings.get("subject_translate_x", 0),
                 "subject_translate_y": hud_settings.get("subject_translate_y", 0),
             }
@@ -397,7 +618,9 @@ def get_1gen_preview(request):
         primary_individual = PersonData(**individual_data)
 
         # Generate the preview
-        preview_buffer = generate_1gen_preview(primary_individual, gedcom_file.parsed_data, "preview", user_settings)
+        preview_buffer = generate_1gen_preview(
+            primary_individual, gedcom_file.parsed_data, "preview", user_settings
+        )
 
         # Return the preview as an image
         return HttpResponse(preview_buffer, content_type="image/png")
