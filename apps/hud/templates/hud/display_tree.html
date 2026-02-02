@@ -767,36 +767,8 @@
             // Update the preview image immediately for better UX
             updatePreviewImage(templateValue);
 
-            // Submit the form to save the template change
-            const form = document.getElementById('hud-settings-form');
-            if (form) {
-                // Create a minimal form submission for just the template change
-                const tempForm = document.createElement('form');
-                tempForm.method = 'post';
-                tempForm.action = "{% url 'hud:save_settings' %}";
-
-                // Add CSRF token
-                const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]');
-                if (csrfToken) {
-                    tempForm.appendChild(csrfToken.cloneNode(true));
-                }
-
-                // Add individual_id
-                const individualIdInput = form.querySelector('[name=individual_id]');
-                if (individualIdInput) {
-                    tempForm.appendChild(individualIdInput.cloneNode(true));
-                }
-
-                // Add template
-                const templateInput = document.createElement('input');
-                templateInput.type = 'hidden';
-                templateInput.name = 'template';
-                templateInput.value = templateValue;
-                tempForm.appendChild(templateInput);
-
-                document.body.appendChild(tempForm);
-                tempForm.submit();
-            }
+            // Note: Template change will be saved when user clicks "Apply Settings"
+            // This prevents browser redirect and provides better UX
         }
 
         // Update preview image based on template selection
