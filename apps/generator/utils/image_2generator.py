@@ -8,6 +8,7 @@ from wand.drawing import Drawing
 from wand.image import Image
 
 from apps.generator.utils.image_1generator import generate_1gen_preview
+from apps.generator.utils.name_utils import parse_name_parts
 from apps.generator.utils.settings_helper import extract_generation_settings
 
 
@@ -305,11 +306,10 @@ def generate_2gen_preview(
 
                 if father:
                     print(f"Drawing father: {father.full_name}")
-                    # Split father's name into parts
-                    name_parts = father.full_name.split()
-                    first_name = name_parts[0] if len(name_parts) > 0 else ""
-                    middle_name = name_parts[1] if len(name_parts) > 1 else ""
-                    last_name = name_parts[-1] if len(name_parts) > 1 else ""
+                    # Parse father's name using improved logic
+                    first_name, middle_name, last_name = parse_name_parts(
+                        father.full_name
+                    )
 
                     # =============================================
                     # Draw father's first name (default orientation)
@@ -331,7 +331,9 @@ def generate_2gen_preview(
 
                     if first_name:  # Only draw if we have a name
                         draw.text(fx_first, fy_first, first_name)
-                        print(f"Drawn father's first name: {first_name}")
+                        print(f"Drawn father's first name: '{first_name}'")
+                    else:
+                        print("Skipped father's first name (empty)")
 
                     draw.pop()
 
@@ -353,7 +355,9 @@ def generate_2gen_preview(
 
                     if middle_name:  # Only draw if we have a middle name
                         draw.text(fx_middle, fy_middle, middle_name)
-                        print(f"Drawn father's middle name: {middle_name}")
+                        print(f"Drawn father's middle name: '{middle_name}'")
+                    else:
+                        print("Skipped father's middle name (empty)")
 
                     draw.pop()
 
@@ -375,7 +379,9 @@ def generate_2gen_preview(
 
                     if last_name:  # Only draw if we have a last name
                         draw.text(fx_last, fy_last, last_name)
-                        print(f"Drawn father's last name: {last_name}")
+                        print(f"Drawn father's last name: '{last_name}'")
+                    else:
+                        print("Skipped father's last name (empty)")
 
                     draw.pop()
 
@@ -395,12 +401,16 @@ def generate_2gen_preview(
 
                     draw.fill_color = FATHER_BIRTH_COLOR
                     draw.font_size = PARENT_DATE_INFO_FONT_SIZE
-                    print(f"Setting fill_color to: {FATHER_BIRTH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}")
+                    print(
+                        f"Setting fill_color to: {FATHER_BIRTH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}"
+                    )
 
                     draw.rotate(fr_birth)
 
                     # Safe birth date access
-                    birth_date = father.birth_date if father and father.birth_date else " "
+                    birth_date = (
+                        father.birth_date if father and father.birth_date else " "
+                    )
                     draw.text(0, 0, birth_date)
                     print(f"Drawn father's birth date: {birth_date}")
 
@@ -429,7 +439,9 @@ def generate_2gen_preview(
                     draw.rotate(fr_birth_place)
 
                     # Safe birth place access
-                    birth_place = father.birth_place if father and father.birth_place else " "
+                    birth_place = (
+                        father.birth_place if father and father.birth_place else " "
+                    )
                     draw.text(0, 0, birth_place)
                     print(f"Drawn father's birth place: {birth_place}")
 
@@ -458,7 +470,9 @@ def generate_2gen_preview(
                     draw.rotate(fr_death)
 
                     # Safe death date access
-                    death_date = father.death_date if father and father.death_date else " "
+                    death_date = (
+                        father.death_date if father and father.death_date else " "
+                    )
                     draw.text(0, 0, death_date)
                     print(f"Drawn father's death date: {death_date}")
 
@@ -487,7 +501,9 @@ def generate_2gen_preview(
                     draw.rotate(fr_death_place)
 
                     # Safe death place access
-                    death_place = father.death_place if father and father.death_place else " "
+                    death_place = (
+                        father.death_place if father and father.death_place else " "
+                    )
                     draw.text(0, 0, death_place)
                     print(f"Drawn father's death place: {death_place}")
 
@@ -500,14 +516,12 @@ def generate_2gen_preview(
                 # INDI 2 - Surname 1 (Mother) DRAWING
                 # =============================================
 
-
                 if mother:
                     print(f"Drawing mother: {mother.full_name}")
-                    # Split mother's name into parts
-                    name_parts = mother.full_name.split()
-                    first_name = name_parts[0] if len(name_parts) > 0 else ""
-                    middle_name = name_parts[1] if len(name_parts) > 1 else ""
-                    last_name = name_parts[-1] if len(name_parts) > 1 else ""
+                    # Parse mother's name using improved logic
+                    first_name, middle_name, last_name = parse_name_parts(
+                        mother.full_name
+                    )
 
                     # =============================================
                     # Draw mother's first name (flipped upside-down)
@@ -527,7 +541,9 @@ def generate_2gen_preview(
 
                     if first_name:  # Only draw if we have a name
                         draw.text(mx_first, my_first, first_name)
-                        print(f"Drawn mother's first name: {first_name}")
+                        print(f"Drawn mother's first name: '{first_name}'")
+                    else:
+                        print("Skipped mother's first name (empty)")
 
                     draw.pop()
 
@@ -549,7 +565,9 @@ def generate_2gen_preview(
 
                     if middle_name:  # Only draw if we have a middle name
                         draw.text(mx_middle, my_middle, middle_name)
-                        print(f"Drawn mother's middle name: {middle_name}")
+                        print(f"Drawn mother's middle name: '{middle_name}'")
+                    else:
+                        print("Skipped mother's middle name (empty)")
 
                     draw.pop()
 
@@ -571,7 +589,9 @@ def generate_2gen_preview(
 
                     if last_name:  # Only draw if we have a last name
                         draw.text(mx_last, my_last, last_name)
-                        print(f"Drawn mother's last name: {last_name}")
+                        print(f"Drawn mother's last name: '{last_name}'")
+                    else:
+                        print("Skipped mother's last name (empty)")
 
                     draw.pop()
 
@@ -591,12 +611,16 @@ def generate_2gen_preview(
 
                     draw.fill_color = MOTHER_BIRTH_COLOR
                     draw.font_size = PARENT_DATE_INFO_FONT_SIZE
-                    print(f"Setting fill_color to: {MOTHER_BIRTH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}")
+                    print(
+                        f"Setting fill_color to: {MOTHER_BIRTH_COLOR} and font_size to: {PARENT_DATE_INFO_FONT_SIZE}"
+                    )
 
                     draw.rotate(mr_birth)
 
                     # Safe birth date access
-                    birth_date = mother.birth_date if mother and mother.birth_date else " "
+                    birth_date = (
+                        mother.birth_date if mother and mother.birth_date else " "
+                    )
                     draw.text(0, 0, birth_date)
                     print(f"Drawn mother's birth date: {birth_date}")
 
@@ -625,7 +649,9 @@ def generate_2gen_preview(
                     draw.rotate(mr_birth_place)
 
                     # Safe birth place access
-                    birth_place = mother.birth_place if mother and mother.birth_place else " "
+                    birth_place = (
+                        mother.birth_place if mother and mother.birth_place else " "
+                    )
                     draw.text(0, 0, birth_place)
                     print(f"Drawn mother's birth place: {birth_place}")
 
@@ -654,7 +680,9 @@ def generate_2gen_preview(
                     draw.rotate(mr_death)
 
                     # Safe death date access
-                    death_date = mother.death_date if mother and mother.death_date else " "
+                    death_date = (
+                        mother.death_date if mother and mother.death_date else " "
+                    )
                     draw.text(0, 0, death_date)
                     print(f"Drawn mother's death date: {death_date}")
 
@@ -683,7 +711,9 @@ def generate_2gen_preview(
                     draw.rotate(mr_death_place)
 
                     # Safe death place access
-                    death_place = mother.death_place if mother and mother.death_place else " "
+                    death_place = (
+                        mother.death_place if mother and mother.death_place else " "
+                    )
                     draw.text(0, 0, death_place)
                     print(f"Drawn mother's death place: {death_place}")
 
@@ -691,7 +721,6 @@ def generate_2gen_preview(
 
                 else:
                     print("Mother not found - skipping all mother drawing")
-
 
                 # =============================================
                 # Generate the 1gen overlay with PRIMARY settings before applying 2gen drawing

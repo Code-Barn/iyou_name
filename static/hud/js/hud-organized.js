@@ -61,6 +61,9 @@ HUD.Main = (function() {
         // Initialize sliders
         HUD.Sliders.initializeAll();
         
+        // Initialize rotation display
+        HUD.Rotation.resetOnNewPreview();
+        
         console.log('HUD JavaScript module initialized successfully');
     }
     
@@ -281,6 +284,8 @@ HUD.Preview = (function() {
             previewImg.onload = function() {
                 console.log('Preview image displayed successfully');
                 URL.revokeObjectURL(previewUrl);
+                // Reset rotation when new preview loads
+                HUD.Rotation.resetOnNewPreview();
             };
             
             // Add visual feedback
@@ -571,6 +576,9 @@ HUD.Templates = (function() {
                 previewImg.style.opacity = '0.5';
                 previewImg.title = `Template ${templateValue} preview failed`;
             };
+            
+            // Reset rotation when template changes
+            HUD.Rotation.resetOnNewPreview();
         }
     }
     
@@ -653,6 +661,73 @@ HUD.Sliders = (function() {
     return {
         setupSlider: setupSlider,
         initializeAll: initializeAll
+    };
+})();
+
+// Rotation management module
+HUD.Rotation = (function() {
+    'use strict';
+    
+    let currentRotation = 0;
+    const ROTATION_STEP = 90; // degrees per rotation
+    
+    function rotateClockwise() {
+        currentRotation += ROTATION_STEP;
+        updateRotation();
+    }
+    
+    function rotateCounterClockwise() {
+        currentRotation -= ROTATION_STEP;
+        updateRotation();
+    }
+    
+    function resetRotation() {
+        currentRotation = 0;
+        updateRotation();
+    }
+    
+    function updateRotation() {
+        const previewImg = HUD.Main.getPreviewImg();
+        if (!previewImg) {
+            console.error('Preview image not found for rotation');
+            return;
+        }
+        
+        // Normalize rotation to 0-360 range
+        let normalizedRotation = currentRotation % 360;
+        if (normalizedRotation < 0) {
+            normalizedRotation += 360;
+        }
+        
+        // Apply CSS transform
+        previewImg.style.transform = `rotate(${currentRotation}deg)`;
+        
+        // Update display
+        const rotationDisplay = document.getElementById('rotation-display');
+        if (rotationDisplay) {
+            rotationDisplay.textContent = `${normalizedRotation}°`;
+        }
+        
+        console.log(`Rotated preview to ${currentRotation}° (normalized: ${normalizedRotation}°)`);
+    }
+    
+    function getCurrentRotation() {
+        return currentRotation;
+    }
+    
+    // Reset rotation when new preview is loaded
+    function resetOnNewPreview() {
+        currentRotation = 0;
+        updateRotation();
+    }
+    
+    // Public API
+    return {
+        rotateClockwise: rotateClockwise,
+        rotateCounterClockwise: rotateCounterClockwise,
+        resetRotation: resetRotation,
+        getCurrentRotation: getCurrentRotation,
+        resetOnNewPreview: resetOnNewPreview
     };
 })();
 

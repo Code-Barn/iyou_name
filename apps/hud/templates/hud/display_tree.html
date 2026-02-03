@@ -44,7 +44,23 @@
                                 align-items: center;
                                 justify-content: center;
                             ">
-                                <img id="hud-preview" src="{% url 'hud:get_1gen_preview' %}?individual_id={{ individual.id }}&t={{ hud_settings_timestamp }}" style="max-width: 100%; max-height: 100%;" />
+                                <img id="hud-preview" src="{% url 'hud:get_1gen_preview' %}?individual_id={{ individual.id }}&t={{ hud_settings_timestamp }}" style="max-width: 100%; max-height: 100%; transition: transform 0.3s ease;" />
+                        </div>
+                        
+                        <!-- Rotation Controls -->
+                        <div class="d-flex justify-content-center align-items-center mt-3">
+                            <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="HUD.Rotation.rotateCounterClockwise()" title="Rotate Counter-Clockwise (90°)">
+                                <i class="bi bi-arrow-counterclockwise"></i> Rotate Left
+                            </button>
+                            <span class="mx-3 text-muted small">
+                                <span id="rotation-display">0°</span>
+                            </span>
+                            <button type="button" class="btn btn-outline-primary btn-sm ms-2" onclick="HUD.Rotation.rotateClockwise()" title="Rotate Clockwise (90°)">
+                                <i class="bi bi-arrow-clockwise"></i> Rotate Right
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm ms-3" onclick="HUD.Rotation.resetRotation()" title="Reset Rotation">
+                                <i class="bi bi-arrow-return-left"></i> Reset
+                            </button>
                         </div>
                             <div class="hud-loading" style="display: none"></div>
                         </div>

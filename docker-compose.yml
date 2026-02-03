@@ -17,6 +17,7 @@ services:
     ports:
       - "8000:8000"
     environment:
+      - DB_HOST=db
       - DEBUG=1
       - DATABASE_URL=postgres://namechart_user:your_password@db:5432/namechart
     depends_on:
