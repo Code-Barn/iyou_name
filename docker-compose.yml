@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:16-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=namechart
+      - POSTGRES_USER=namechart_user
+      - POSTGRES_PASSWORD=your_password
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+      - DATABASE_URL=postgres://namechart_user:your_password@db:5432/namechart
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
