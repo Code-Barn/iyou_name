@@ -2,6 +2,7 @@ import importlib
 import json
 import logging
 import time
+import importlib
 from io import BytesIO
 
 from django.http import HttpResponse, JsonResponse
@@ -12,17 +13,8 @@ from django.views.decorators.http import require_http_methods, require_POST
 from apps.generator.models import GedcomFile
 from apps.generator.template_mapping import get_template_mapping
 from apps.generator.utils.image_1generator import generate_1gen_preview
-from apps.generator.utils import (
-    image_2generator,
-    image_3generator,
-    image_4generator,
-    image_5generator,
-    image_6generator,
-    image_7generator,
-    image_8generator,
-    image_9generator,
-    image_10generator,
-)
+from apps.parser.models import PersonData
+
 from apps.parser.models import PersonData
 
 logger = logging.getLogger(__name__)
@@ -519,243 +511,12 @@ def get_hud_family_data(request):
     API endpoint for getting family data for HUD display
     """
     gedcom_file_id = request.session.get("current_gedcom_file_id")
-    if not gedcom_file_id:
-        return JsonResponse({"error": "No GEDCOM file selected"}, status=400)
 
     try:
-        gedcom_file = GedcomFile.objects.get(id=gedcom_file_id)
+        # Fallback: try to get file_id from GET parameters
+        if not gedcom_file_id:
+            gedcom_file_id = request.GET.get("file_id")
 
-        if not gedcom_file.parsed_data:
-            return JsonResponse({"error": "File not processed yet"}, status=400)
-
-        # Get the root individual or use the home person
-        root_individual_id = request.GET.get("root_id", gedcom_file.home_person_id)
-        if not root_individual_id:
-            return JsonResponse({"error": "No root individual specified"}, status=400)
-
-        # Extract family data for the HUD
-        individuals = gedcom_file.parsed_data.get("individuals", {})
-        families = gedcom_file.parsed_data.get("families", {})
-
-        if root_individual_id not in individuals:
-            return JsonResponse({"error": "Root individual not found"}, status=404)
-
-        # Build the family tree data structure for the HUD
-        family_data = {
-            "root": individuals[root_individual_id],
-            "individuals": individuals,
-            "families": families,
-        }
-
-        return JsonResponse(family_data)
-
-    except GedcomFile.DoesNotExist:
-        return JsonResponse({"error": "GEDCOM file not found"}, status=404)
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-
-
-def get_hud_preview(request):
-    """
-    API endpoint for getting preview data for HUD
-    """
-    gedcom_file_id = request.session.get("current_gedcom_file_id")
-    if not gedcom_file_id:
-        return JsonResponse({"error": "No GEDCOM file selected"}, status=400)
-
-    try:
-        gedcom_file = GedcomFile.objects.get(id=gedcom_file_id)
-
-        if not gedcom_file.parsed_data:
-            return JsonResponse({"error": "File not processed yet"}, status=400)
-
-        # Get preview data (simplified version of family data)
-        individuals = gedcom_file.parsed_data.get("individuals", {})
-        root_individuals = gedcom_file.parsed_data.get("root_individuals", [])
-
-        preview_data = {
-            "individual_count": len(individuals),
-            "family_count": len(gedcom_file.parsed_data.get("families", {})),
-            "root_individuals": [
-                individuals.get(id, {}) for id in root_individuals[:5]
-            ],  # Top 5 root individuals
-            "generation_count": 3,  # This would be calculated based on the data
-        }
-
-        return JsonResponse(preview_data)
-
-    except GedcomFile.DoesNotExist:
-        return JsonResponse({"error": "GEDCOM file not found"}, status=404)
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-
-
-def get_hud_settings(request):
-    """
-    API endpoint for getting current HUD settings
-    """
-    try:
-        settings = request.session.get(
-            "hud_settings",
-            {
-                "show_photos": True,
-                "show_dates": True,
-                "show_locations": True,
-                "compact_mode": False,
-                "theme": "light",
-                "font_size": "medium",
-                "color_scheme": "default",
-                "template": "1",  # Default template
-            },
-        )
-        return JsonResponse(settings)
-
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-
-
-# Generic preview endpoint that can handle all templates
-@csrf_exempt
-def get_template_preview(request, template_id):
-    """
-    Generic API endpoint for generating template previews.
-    Supports both GET and POST requests.
-    """
-    try:
-        if request.method == "GET":
-            individual_id = request.GET.get("individual_id")
-            # Use session settings for GET requests
-            hud_settings = request.session.get("hud_settings", {})
-            user_settings = {
-                "font_family": hud_settings.get("font_family", "Arial"),
-                "primary_name_font_size": hud_settings.get(
-                    "primary_name_font_size", 84
-                ),
-                "primary_date_info_font_size": hud_settings.get(
-                    "primary_date_info_font_size", 60
-                ),
-                "primary_place_info_font_size": hud_settings.get(
-                    "primary_place_info_font_size", 28
-                ),
-                "default_stroke_width": hud_settings.get("default_stroke_width", 0.5),
-                "primary_stroke_color": hud_settings.get(
-                    "primary_stroke_color", "#000000"
-                ),
-                "primary_background_color": hud_settings.get(
-                    "primary_background_color", "#ffffff"
-                ),
-                "primary_font_color": hud_settings.get("primary_font_color", "#000000"),
-                "primary_birth_color": hud_settings.get(
-                    "primary_birth_color", "#000000"
-                ),
-                "primary_birth_place_color": hud_settings.get(
-                    "primary_birth_place_color", "#000000"
-                ),
-                "primary_death_color": hud_settings.get(
-                    "primary_death_color", "#000000"
-                ),
-                "primary_death_place_color": hud_settings.get(
-                    "primary_death_place_color", "#000000"
-                ),
-                "primary_name_rotate": hud_settings.get("primary_name_rotate", -45),
-                "primary_birth_translate_x": hud_settings.get(
-                    "primary_birth_translate_x", 0
-                ),
-                "primary_birth_translate_y": hud_settings.get(
-                    "primary_birth_translate_y", 0
-                ),
-                "primary_birth_rotate": hud_settings.get("primary_birth_rotate", -90),
-                "primary_birth_place_translate_x": hud_settings.get(
-                    "primary_birth_place_translate_x", 0
-                ),
-                "primary_birth_place_translate_y": hud_settings.get(
-                    "primary_birth_place_translate_y", 0
-                ),
-                "primary_birth_place_rotate": hud_settings.get(
-                    "primary_birth_place_rotate", 0
-                ),
-                "primary_death_translate_x": hud_settings.get(
-                    "primary_death_translate_x", 0
-                ),
-                "primary_death_translate_y": hud_settings.get(
-                    "primary_death_translate_y", 0
-                ),
-                "primary_death_rotate": hud_settings.get("primary_death_rotate", 0),
-                "primary_death_place_translate_x": hud_settings.get(
-                    "primary_death_place_translate_x", 0
-                ),
-                "primary_death_place_translate_y": hud_settings.get(
-                    "primary_death_place_translate_y", 0
-                ),
-                "primary_death_place_rotate": hud_settings.get(
-                    "primary_death_place_rotate", -90
-                ),
-                "subject_translate_x": hud_settings.get("subject_translate_x", 0),
-                "subject_translate_y": hud_settings.get("subject_translate_y", 0),
-            }
-
-            # Add 2gen specific settings from session if using 2gen template
-            if template_id == "2":
-                # Essential 2gen settings from session
-                user_settings.update(
-                    {
-                        "father_font_color": hud_settings.get(
-                            "father_font_color", "#000000"
-                        ),
-                        "mother_font_color": hud_settings.get(
-                            "mother_font_color", "#000000"
-                        ),
-                        "parent_translate_x": hud_settings.get("parent_translate_x", 0),
-                        "parent_translate_y": hud_settings.get("parent_translate_y", 0),
-                        "parent_rotate": hud_settings.get("parent_rotate", 0),
-                        "composite_1gen_scale": hud_settings.get(
-                            "composite_1gen_scale", 48
-                        ),
-                        "composite_overlay_x": hud_settings.get(
-                            "composite_overlay_x", 508
-                        ),
-                        "composite_overlay_y": hud_settings.get(
-                            "composite_overlay_y", 508
-                        ),
-                        "default_stroke_width": hud_settings.get(
-                            "default_stroke_width", 2
-                        ),
-                        "parent_stroke_color": hud_settings.get(
-                            "parent_stroke_color", "#000000"
-                        ),
-                        "info_stroke_color": hud_settings.get(
-                            "info_stroke_color", "#666666"
-                        ),
-                    }
-                )
-
-        elif request.method == "POST":
-            data = json.loads(request.body)
-            individual_id = data.get("individual_id")
-            user_settings = data.get("user_settings", {})
-            primary_settings = data.get("primary_settings", {})
-
-            # For 2gen template, merge stored primary settings if provided
-            if template_id == "2" and primary_settings:
-                # Store primary settings in user_settings for the 2generator
-                user_settings["primary_settings"] = primary_settings
-                logger.debug(
-                    f"Template {template_id} preview - Including stored primary settings for overlay"
-                )
-
-            logger.debug(
-                f"Template {template_id} preview - User settings: {user_settings}"
-            )
-        else:
-            return HttpResponse("Method not allowed", status=405)
-
-        # Get the primary individual from the session or GET parameters
-        if not individual_id:
-            individual_id = request.session.get("selected_individual_id")
-        if not individual_id:
-            return HttpResponse("No individual selected", status=400)
-
-        gedcom_file_id = request.session.get("current_gedcom_file_id")
         if not gedcom_file_id:
             return HttpResponse("No GEDCOM file selected", status=400)
 
@@ -949,8 +710,64 @@ def get_1gen_preview(request):
         return HttpResponse(preview_buffer, content_type="image/png")
 
     except Exception as e:
-        logger.error(f"Error generating preview: {str(e)}")
+        logger.error(f"Error generating template {template_id} preview: {str(e)}")
         return HttpResponse(f"Error generating preview: {str(e)}", status=500)
+
+
+@csrf_exempt
+def get_file_individuals(request):
+    """
+    API endpoint to get list of valid individuals from a GEDCOM file.
+    Used for fallback when current individual_id is invalid.
+    """
+    try:
+        file_id = request.GET.get("file_id")
+        if not file_id:
+            return JsonResponse(
+                {"success": False, "error": "Missing file_id parameter"}, status=400
+            )
+
+        from apps.generator.models import GedcomFile
+
+        gedcom_file = GedcomFile.objects.get(id=file_id)
+        if not gedcom_file.parsed_data:
+            return JsonResponse(
+                {"success": False, "error": "File not processed yet"}, status=400
+            )
+
+        individuals = gedcom_file.parsed_data.get("individuals", {})
+
+        # Create list of individuals with id and name
+        individual_list = []
+        for ind_id, ind_data in individuals.items():
+            individual_list.append(
+                {
+                    "id": ind_id,
+                    "name": ind_data.get("full_name", "Unknown"),
+                    "birth_date": ind_data.get("birth_date", ""),
+                    "death_date": ind_data.get("death_date", ""),
+                }
+            )
+
+        # Sort by name for consistency
+        individual_list.sort(key=lambda x: x["name"])
+
+        return JsonResponse(
+            {
+                "success": True,
+                "file_id": file_id,
+                "total_count": len(individual_list),
+                "individuals": individual_list[:10],  # Return first 10 for fallback
+            }
+        )
+
+    except GedcomFile.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "error": "GEDCOM file not found"}, status=404
+        )
+    except Exception as e:
+        logger.error(f"Error getting file individuals: {str(e)}")
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
 def get_settings_panel(request, template_name):
@@ -1002,3 +819,88 @@ def get_settings_panel(request, template_name):
             f'<div class="alert alert-danger">Error loading settings: {str(e)}<br><small>Template: {template_name}</small></div>',
             content_type="text/html",
         )
+
+
+@csrf_exempt
+def get_template_preview(request, template_id):
+    """
+    Generic template preview endpoint that handles all template types.
+
+    Args:
+        request: HTTP request object
+        template_id: Template identifier ('1', '2', '3', etc.)
+
+    Returns:
+        HttpResponse with generated image or error message
+    """
+    try:
+        if request.method == "GET":
+            individual_id = request.GET.get("individual_id")
+            user_settings = {}
+        elif request.method == "POST":
+            data = json.loads(request.body)
+            individual_id = data.get("individual_id")
+            user_settings = data.get("user_settings", {})
+        else:
+            return HttpResponse("Method not allowed", status=405)
+
+        # Get the primary individual from the session or GET parameters
+        if not individual_id:
+            individual_id = request.session.get("selected_individual_id")
+        if not individual_id:
+            return HttpResponse("No individual selected", status=400)
+
+        gedcom_file_id = request.session.get("current_gedcom_file_id")
+
+        # Fallback: try to get file_id from GET parameters
+        if not gedcom_file_id:
+            gedcom_file_id = request.GET.get("file_id")
+
+        if not gedcom_file_id:
+            return HttpResponse("No GEDCOM file selected", status=400)
+
+        gedcom_file = GedcomFile.objects.get(id=gedcom_file_id)
+        if not gedcom_file.parsed_data:
+            return HttpResponse("File not processed yet", status=400)
+
+        individuals = gedcom_file.parsed_data.get("individuals", {})
+        if individual_id not in individuals:
+            return HttpResponse("Individual not found", status=404)
+
+        individual_data = individuals[individual_id]
+        primary_individual = PersonData(**individual_data)
+
+        # Convert all individuals to PersonData objects for multi-generational charts
+        person_data_objects = {}
+        for person_id, person_data in individuals.items():
+            person_data_objects[person_id] = PersonData(**person_data)
+
+        # Update family_data with PersonData objects
+        family_data_with_person_objects = gedcom_file.parsed_data.copy()
+        family_data_with_person_objects["individuals"] = person_data_objects
+
+        # Get the template mapping to find the right generator
+        template_mapping = get_template_mapping()
+        template_config = template_mapping.get(template_id)
+
+        if not template_config:
+            return HttpResponse(f"Template {template_id} not found", status=404)
+
+        # Dynamically import the generator module
+        module = importlib.import_module(template_config["module"])
+        generator_function = getattr(module, template_config["function"])
+
+        # Generate the preview
+        preview_buffer = generator_function(
+            primary_individual,
+            family_data_with_person_objects,
+            "preview",
+            user_settings,
+        )
+
+        # Return the preview as an image
+        return HttpResponse(preview_buffer, content_type="image/png")
+
+    except Exception as e:
+        logger.error(f"Error generating template {template_id} preview: {str(e)}")
+        return HttpResponse(f"Error generating preview: {str(e)}", status=500)

@@ -102,7 +102,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-"""
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -122,7 +122,7 @@ DATABASES = {
         default=os.environ.get('DATABASE_URL', 'postgres://namechart_user:your_password@db:5432/namechart')
     )
 }
-
+"""
 
 TEST = {
     "NAME": "namechart",
