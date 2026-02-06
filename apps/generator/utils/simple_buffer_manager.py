@@ -1,0 +1,280 @@
+"""
+Simplified Chart Buffer Management System.
+
+This is a clean, simple implementation that focuses on reliability over complexity.
+"""
+
+import logging
+import json
+from io import BytesIO
+from typing import Dict, Optional
+from datetime import datetime
+
+logger = logging.getLogger(__name__)
+
+from apps.parser.models import PersonData as PersonDataClass
+
+
+class SimpleBufferManager:
+    """
+    Simple, reliable buffer manager for chart generation.
+
+    Key Features:
+    - Basic caching with proper buffer management
+    - Settings tracking for cache invalidation
+    - Simple generation dependencies
+    - No over-engineering
+    """
+
+    def __init__(self):
+        # Core buffer storage
+        self.buffers: Dict[str, BytesIO] = {}
+
+        # Settings tracking
+        self.current_settings_hash: Optional[str] = None
+        self.current_individual_id: Optional[str] = None
+
+        # Performance tracking
+        self.cache_hits = 0
+        self.cache_misses = 0
+
+        logger.info("SimpleBufferManager initialized")
+
+    def _calculate_settings_hash(self, settings: Dict) -> str:
+        """Calculate hash of settings for change detection."""
+        # Sort keys to ensure consistent hashing
+        settings_str = json.dumps(settings, sort_keys=True)
+        return str(hash(settings_str))
+
+    def _is_buffer_valid(
+        self, generation: int, individual_id: str, settings: Dict
+    ) -> bool:
+        """Check if cached buffer is still valid."""
+        buffer_key = str(generation)
+
+        # Check if buffer exists
+        if buffer_key not in self.buffers:
+            return False
+
+        # Check if individual changed
+        if self.current_individual_id != individual_id:
+            return False
+
+        # Check if settings changed
+        current_hash = self._calculate_settings_hash(settings)
+        if self.current_settings_hash != current_hash:
+            return False
+
+        return True
+
+    def get_buffer(
+        self, generation: int, individual_id: str, settings: Dict
+    ) -> Optional[BytesIO]:
+        """
+        Get cached buffer if valid, otherwise return None.
+        """
+        if self._is_buffer_valid(generation, individual_id, settings):
+            buffer_key = str(generation)
+            buffer = self.buffers[buffer_key]
+
+            # Create a fresh copy to avoid closed file issues
+            buffer.seek(0)
+            fresh_buffer = BytesIO(buffer.read())
+
+            self.cache_hits += 1
+            logger.debug(f"Cache hit for generation {generation}")
+            return fresh_buffer
+        else:
+            self.cache_misses += 1
+            logger.debug(f"Cache miss for generation {generation}")
+            return None
+
+    def store_buffer(
+        self, generation: int, individual_id: str, settings: Dict, buffer: BytesIO
+    ):
+        """
+        Store buffer in cache.
+        """
+        buffer_key = str(generation)
+
+        # Store current context
+        self.current_individual_id = individual_id
+        self.current_settings_hash = self._calculate_settings_hash(settings)
+
+        # Store buffer (create a copy to avoid external closure issues)
+        buffer.seek(0)
+        buffer_copy = BytesIO(buffer.read())
+        self.buffers[buffer_key] = buffer_copy
+
+        logger.debug(f"Stored buffer for generation {generation}")
+
+    def invalidate_all(self):
+        """Invalidate all cached buffers."""
+        for buffer_key in self.buffers:
+            if self.buffers[buffer_key]:
+                try:
+                    self.buffers[buffer_key].close()
+                except:
+                    pass  # Ignore errors during cleanup
+
+        self.buffers.clear()
+        self.current_settings_hash = None
+        logger.info("All buffers invalidated")
+
+    def get_stats(self) -> Dict:
+        """Get performance statistics."""
+        return {
+            "cache_hits": self.cache_hits,
+            "cache_misses": self.cache_misses,
+            "total_requests": self.cache_hits + self.cache_misses,
+            "cache_hit_rate": self.cache_hits
+            / max(1, self.cache_hits + self.cache_misses),
+            "cached_buffers": len(self.buffers),
+            "current_individual": self.current_individual_id,
+        }
+
+
+# Global instance
+simple_buffer_manager = SimpleBufferManager()
+
+
+def get_chart_buffer(
+    primary_individual,
+    family_data: Dict,
+    user_settings: Dict,
+    generation: int = 1,
+) -> BytesIO:
+    """
+    Get chart buffer using simple system.
+
+    Args:
+        primary_individual: PersonData object for the primary individual
+        family_data: Dictionary containing all family data
+        user_settings: User settings to apply
+        generation: Generation number to get (1-7)
+
+    Returns:
+        BytesIO buffer containing the generated chart
+    """
+    # Try to get cached buffer
+    cached_buffer = simple_buffer_manager.get_buffer(
+        generation, primary_individual.id, user_settings
+    )
+
+    if cached_buffer:
+        logger.info(f"Using cached buffer for generation {generation}")
+        return cached_buffer
+
+    # Generate new buffer
+    logger.info(f"Generating fresh buffer for generation {generation}")
+
+    # Dynamic import and generation
+    try:
+        if generation == 1:
+            from apps.generator.utils.image_1generator import generate_1gen_preview
+
+            generator_func = generate_1gen_preview
+        elif generation == 2:
+            from apps.generator.utils.image_2generator import generate_2gen_preview
+
+            generator_func = generate_2gen_preview
+        elif generation == 3:
+            from apps.generator.utils.image_3generator import generate_3gen_preview
+
+            generator_func = generate_3gen_preview
+        elif generation == 4:
+            from apps.generator.utils.image_4generator import generate_4gen_preview
+
+            generator_func = generate_4gen_preview
+        elif generation == 5:
+            from apps.generator.utils.image_5generator import generate_5gen_preview
+
+            generator_func = generate_5gen_preview
+        elif generation == 6:
+            from apps.generator.utils.image_6generator import generate_6gen_preview
+
+            generator_func = generate_6gen_preview
+        elif generation == 7:
+            from apps.generator.utils.image_7generator import generate_7gen_preview
+
+            generator_func = generate_7gen_preview
+elif generation == 8:
+            from apps.generator.utils.image_high_gen_generator import generate_high_gen_preview
+            generator_func = lambda primary_individual, family_data, template, user_settings: generate_high_gen_preview(8, primary_individual, family_data, template, user_settings)
+        elif generation == 9:
+            from apps.generator.utils.image_high_gen_generator import generate_high_gen_preview
+            generator_func = lambda primary_individual, family_data, template, user_settings: generate_high_gen_preview(9, primary_individual, family_data, template, user_settings)
+        elif generation == 10:
+            from apps.generator.utils.image_high_gen_generator import generate_high_gen_preview
+            generator_func = lambda primary_individual, family_data, template, user_settings: generate_high_gen_preview(10, primary_individual, family_data, template, user_settings)
+        else:
+            raise ValueError(f"Unsupported generation: {generation}")
+
+        # Convert all individuals to PersonData objects for multi-generational charts
+        person_data_objects = {}
+        for person_id, person_data in family_data.get("individuals", {}).items():
+            person_data_objects[person_id] = PersonDataClass(**person_data)
+
+        # Update family_data with PersonData objects
+        family_data_with_person_objects = family_data.copy()
+        family_data_with_person_objects["individuals"] = person_data_objects
+
+        # Generate chart directly
+        # High-gen generators expect (generation, primary_individual, family_data, template, user_settings)
+        # but our current generators expect (primary_individual, family_data, template, user_settings)
+        # Need to adapt based on generator type
+        if generation <= 3:
+            # Standard generators (1-3) expect 4 parameters
+            buffer = generator_func(
+                primary_individual,
+                family_data_with_person_objects,
+                "preview",
+                user_settings,
+            )
+        else:
+            # High-gen generators (4-10) expect 5 parameters with generation first
+            buffer = generator_func(
+                generation,
+                primary_individual,
+                family_data_with_person_objects,
+                "preview",
+                user_settings,
+            )
+
+        # Store in cache
+        simple_buffer_manager.store_buffer(
+            generation, primary_individual.id, user_settings, buffer
+        )
+
+        # Return fresh copy
+        buffer.seek(0)
+        return BytesIO(buffer.read())
+
+    except Exception as e:
+        logger.error(f"Error generating chart for generation {generation}: {e}")
+        raise
+
+
+def apply_settings_change(
+    primary_individual, family_data: Dict, user_settings: Dict, changed_generation: int
+):
+    """
+    Apply settings changes by invalidating cache.
+
+    Args:
+        primary_individual: PersonData object
+        family_data: Family data dictionary
+        user_settings: New user settings
+        changed_generation: Generation where settings were changed
+    """
+    logger.info(f"Applying settings change from generation {changed_generation}")
+
+    # Simple approach: invalidate all buffers when settings change
+    simple_buffer_manager.invalidate_all()
+
+    logger.info("All buffers invalidated due to settings change")
+
+
+def get_buffer_stats() -> Dict:
+    """Get buffer performance statistics."""
+    return simple_buffer_manager.get_stats()
