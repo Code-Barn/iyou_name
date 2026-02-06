@@ -1,6 +1,10 @@
 {% extends 'core/base.html' %}
 {% load custom_filters static %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/zoom.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
     <div class="row">
@@ -32,37 +36,95 @@
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Live Preview</h5>
                 </div>
-                <div class="card-body" style="display: flex; justify-content: center;">
-                    <div class="hud-preview-area" style="width: 800px; height: 800px;">
-                        <div id="hud-preview-container" style="
-                                width: 800px;
-                                height: 800px;
-                                border: 1px solid #dee2e6;
-                                border-radius: 4px;
-                                margin: 0 auto;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                            ">
-                                <img id="hud-preview" src="{% url 'hud:get_1gen_preview' %}?individual_id={{ individual.id }}&t={{ hud_settings_timestamp }}" style="max-width: 100%; max-height: 100%; transition: transform 0.3s ease;" />
+<div class="card-body d-flex justify-content-center">
+                    <div class="hud-preview-area">
+                        <div id="hud-preview-container" class="preview-container">
+                            <img id="hud-preview" class="preview-image" src="{% url 'hud:get_1gen_preview' %}?individual_id={{ individual.id }}&t={{ hud_settings_timestamp }}" />
                         </div>
                         
-                        <!-- Rotation Controls -->
+                        <!-- Rotation and Zoom Controls -->
                         <div class="d-flex justify-content-center align-items-center mt-3">
-                            <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="HUD.Rotation.rotateCounterClockwise()" title="Rotate Counter-Clockwise (90°)">
-                                <i class="bi bi-arrow-counterclockwise"></i> Rotate Left
-                            </button>
-                            <span class="mx-3 text-muted small">
-                                <span id="rotation-display">0°</span>
-                            </span>
-                            <button type="button" class="btn btn-outline-primary btn-sm ms-2" onclick="HUD.Rotation.rotateClockwise()" title="Rotate Clockwise (90°)">
-                                <i class="bi bi-arrow-clockwise"></i> Rotate Right
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary btn-sm ms-3" onclick="HUD.Rotation.resetRotation()" title="Reset Rotation">
-                                <i class="bi bi-arrow-return-left"></i> Reset
-                            </button>
+                            <!-- Rotation Controls -->
+                            <div class="d-flex align-items-center me-4">
+                                <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="HUD.Rotation.rotateCounterClockwise()" title="Rotate Counter-Clockwise (90°)">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Rotate Left
+                                </button>
+                                <span class="mx-2 text-muted small">
+                                    <span id="rotation-display">0°</span>
+                                </span>
+                                <button type="button" class="btn btn-outline-primary btn-sm ms-2" onclick="HUD.Rotation.rotateClockwise()" title="Rotate Clockwise (90°)">
+                                    <i class="bi bi-arrow-clockwise"></i> Rotate Right
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="HUD.Rotation.resetRotation()" title="Reset Rotation">
+                                    <i class="bi bi-arrow-return-left"></i> Reset
+                                </button>
+                            </div>
+                            
+                            <!-- Zoom Controls -->
+                            <div class="d-flex align-items-center">
+                                <button type="button" class="btn btn-outline-info btn-sm me-2" onclick="window.ZoomManager.toggleZoomMode()" title="Toggle Zoom Mode (Scale/Magnifier)" id="zoom-mode-toggle">
+                                    <i class="bi bi-toggle-on" id="zoom-mode-icon"></i> <span id="zoom-mode-text">Scale</span>
+                                </button>
+                                <span id="scale-controls">
+                                    <button type="button" class="btn btn-outline-success btn-sm me-2" onclick="window.ZoomManager.zoomOut()" title="Zoom Out (Make Smaller)" id="zoom-out-btn">
+                                        <i class="bi bi-zoom-out"></i> Zoom Out
+                                    </button>
+                                    <span class="mx-2 text-muted small">
+                                        <span id="zoom-display">100%</span>
+                                    </span>
+                                    <button type="button" class="btn btn-outline-success btn-sm ms-2" onclick="window.ZoomManager.zoomIn()" title="Zoom In (Make Larger)" id="zoom-in-btn">
+                                        <i class="bi bi-zoom-in"></i> Zoom In
+                                    </button>
+                                </span>
+                                <span id="magnifier-controls" style="display: none;">
+                                    <span class="mx-2 text-muted small">
+                                        <span id="magnifier-display">2.0x</span>
+                                    </span>
+                                </span>
+                                <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="window.ZoomManager.resetZoom()" title="Reset Zoom">
+                                    <i class="bi bi-arrows-angle-expand"></i> Reset
+                                </button>
+                            </div>
                         </div>
                             <div class="hud-loading" style="display: none"></div>
+                        
+                        <!-- Debug Panel (remove in production) -->
+                        <div class="mt-3">
+                            <div class="card card-body bg-light">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="card-title mb-0">📱 Debug Info</h6>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleDebugPanel()" title="Toggle Debug Panel">
+                                        <i class="bi bi-eye" id="debug-toggle-icon"></i>
+                                    </button>
+                                </div>
+                                <div id="debug-content">
+                                    <div class="row">
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <strong>Viewport:</strong> <span id="debug-viewport">-</span><br>
+                                            <strong>Preview:</strong> <span id="debug-preview-size">-</span><br>
+                                            <strong>Zoom:</strong> <span id="debug-zoom-level">100%</span><br>
+                                            <strong>Mode:</strong> <span id="debug-zoom-mode">Scale</span><br>
+                                            <strong>Media:</strong> <span id="debug-media">-</span>
+                                        </small>
+                                    </div>
+                                        <div class="col-md-6">
+                                            <div class="d-grid gap-2">
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="ResponsivePreview.logCurrentSize()">
+                                                    📊 Log Size
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-warning" onclick="ResponsivePreview.refreshPreview()">
+                                                    🔄 Refresh
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-success" onclick="fitToScreen()">
+                                                    📱 Fit Screen
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -101,7 +163,7 @@
 
                         <!-- Dynamic Settings Panel - Template Specific -->
                         <div id="settings-panel">
-                            {% include 'hud/settings/'|add:current_settings_template %}
+                            {% include current_settings_template %}
                         </div>
 
                         <!-- Action Buttons -->
@@ -121,6 +183,243 @@
 
                         <!-- Load organized HUD JavaScript -->
                         <script src="{% static 'hud/js/hud-organized.js' %}"></script>
+                        
+                        <!-- Load Shared Zoom JavaScript -->
+                        <script src="{% static 'js/zoom.js' %}"></script>
+
+                        <!-- Responsive Preview JavaScript -->
+                        <script>
+                        // Responsive Preview Management
+                        window.ResponsivePreview = {
+                            init: function() {
+                                console.log('Initializing responsive preview system...');
+                                this.updatePreviewSize();
+                                this.addResizeListener();
+                                this.logCurrentSize();
+                            },
+                            
+                            updatePreviewSize: function() {
+                                const container = document.getElementById('hud-preview-container');
+                                const preview = document.getElementById('hud-preview');
+                                
+                                if (container && preview) {
+                                    const viewportWidth = window.innerWidth;
+                                    const viewportHeight = window.innerHeight;
+                                    
+                                    // Log current viewport and preview size
+                                    console.log('Viewport:', viewportWidth + 'x' + viewportHeight);
+                                    console.log('Preview container size:', container.offsetWidth + 'x' + container.offsetHeight);
+                                    
+                                    // Add responsive class for debugging
+                                    container.setAttribute('data-viewport-width', viewportWidth);
+                                    container.setAttribute('data-viewport-height', viewportHeight);
+                                }
+                            },
+                            
+                            addResizeListener: function() {
+                                let resizeTimeout;
+                                window.addEventListener('resize', function() {
+                                    clearTimeout(resizeTimeout);
+                                    resizeTimeout = setTimeout(function() {
+                                        console.log('Window resized - updating preview size...');
+                                        ResponsivePreview.updatePreviewSize();
+                                        ResponsivePreview.updateDebugPanel();
+                                        
+                                        // Auto-adjust zoom for mobile if needed
+                                        if (window.innerWidth <= 768) {
+                                            ResponsivePreview.autoAdjustMobileZoom();
+                                        }
+                                    }, 250); // Debounce resize events
+                                });
+                            },
+                            
+                            autoAdjustMobileZoom: function() {
+                                // Auto-adjust zoom for mobile screens (only affects scale mode)
+                                if (window.ZoomManager && window.ZoomManager.zoomMode === 'scale') {
+                                    if (window.innerWidth <= 576) {
+                                        // Very small screens - zoom out to fit
+                                        const currentZoom = window.ZoomManager.getCurrentZoom();
+                                        if (currentZoom > 75) {
+                                            console.log('Auto-adjusting zoom for mobile screen');
+                                            window.ZoomManager.setZoom(75);
+                                        }
+                                    } else if (window.innerWidth <= 768) {
+                                        // Small screens - slight zoom out if needed
+                                        const currentZoom = window.ZoomManager.getCurrentZoom();
+                                        if (currentZoom > 90) {
+                                            console.log('Auto-adjusting zoom for tablet screen');
+                                            window.ZoomManager.setZoom(90);
+                                        }
+                                    }
+                                }
+                            },
+                            
+                            logCurrentSize: function() {
+                                const container = document.getElementById('hud-preview-container');
+                                if (container) {
+                                    const width = container.offsetWidth;
+                                    const height = container.offsetHeight;
+                                    console.log('Current preview size:', width + 'x' + height + 'px');
+                                    
+                                    // Update debug panel
+                                    this.updateDebugPanel();
+                                    
+                                    // Determine which media query is active
+                                    if (window.innerWidth <= 576) {
+                                        console.log('Active: Small screens (phones) - max 300x300');
+                                    } else if (window.innerWidth <= 768) {
+                                        console.log('Active: Medium screens (tablets) - max 500x500');
+                                    } else if (window.innerWidth <= 1200) {
+                                        console.log('Active: Large screens (desktop) - max 800x800');
+                                    } else if (window.innerWidth <= 1400) {
+                                        console.log('Active: Extra large screens - max 1000x1000');
+                                    } else {
+                                        console.log('Active: Ultra-wide screens - max 1200x1200');
+                                    }
+                                }
+                            },
+                            
+                            updateDebugPanel: function() {
+                                const viewportEl = document.getElementById('debug-viewport');
+                                const previewSizeEl = document.getElementById('debug-preview-size');
+                                const zoomLevelEl = document.getElementById('debug-zoom-level');
+                                const zoomModeEl = document.getElementById('debug-zoom-mode');
+                                const mediaEl = document.getElementById('debug-media');
+                                
+                                if (viewportEl) {
+                                    viewportEl.textContent = window.innerWidth + 'x' + window.innerHeight;
+                                }
+                                
+                                const container = document.getElementById('hud-preview-container');
+                                if (container && previewSizeEl) {
+                                    previewSizeEl.textContent = container.offsetWidth + 'x' + container.offsetHeight;
+                                }
+                                
+                                if (zoomLevelEl) {
+                                    const zoomLevel = window.ZoomManager ? 
+                                        window.ZoomManager.getCurrentZoom() : 100;
+                                    zoomLevelEl.textContent = zoomLevel + '%';
+                                }
+                                
+                                if (zoomModeEl) {
+                                    const zoomMode = window.ZoomManager ? 
+                                        window.ZoomManager.zoomMode : 'scale';
+                                    zoomModeEl.textContent = zoomMode.charAt(0).toUpperCase() + zoomMode.slice(1);
+                                }
+                                
+                                if (mediaEl) {
+                                    let mediaType = 'Unknown';
+                                    if (window.innerWidth <= 576) {
+                                        mediaType = 'Small (≤576px)';
+                                    } else if (window.innerWidth <= 768) {
+                                        mediaType = 'Medium (577-768px)';
+                                    } else if (window.innerWidth <= 1200) {
+                                        mediaType = 'Large (769-1200px)';
+                                    } else if (window.innerWidth <= 1400) {
+                                        mediaType = 'Extra Large (1201-1400px)';
+                                    } else {
+                                        mediaType = 'Ultra-Wide (≥1401px)';
+                                    }
+                                    mediaEl.textContent = mediaType;
+                                }
+                            },
+                            
+                            // Force preview refresh (useful for debugging)
+                            refreshPreview: function() {
+                                const preview = document.getElementById('hud-preview');
+                                if (preview) {
+                                    const currentSrc = preview.src;
+                                    preview.src = currentSrc + '&refresh=' + Date.now();
+                                    console.log('Preview refreshed');
+                                }
+                            },
+                            
+                            // Toggle debug panel visibility
+                            toggleDebugPanel: function() {
+                                const debugContent = document.getElementById('debug-content');
+                                const debugIcon = document.getElementById('debug-toggle-icon');
+                                
+                                if (debugContent) {
+                                    const isHidden = debugContent.style.display === 'none';
+                                    debugContent.style.display = isHidden ? 'block' : 'none';
+                                    
+                                    // Update icon
+                                    if (debugIcon) {
+                                        debugIcon.className = isHidden ? 'bi bi-eye' : 'bi bi-eye-slash';
+                                    }
+                                    
+                                    console.log('Debug panel', isHidden ? 'shown' : 'hidden');
+                                }
+                            },
+                            
+                            // Fit preview to screen (mobile helper)
+                            fitToScreen: function() {
+                                const container = document.getElementById('hud-preview-container');
+                                const preview = document.getElementById('hud-preview');
+                                
+                                if (container && preview) {
+                                    // Reset zoom first
+                                    if (window.ZoomManager) {
+                                        window.ZoomManager.resetZoom();
+                                    }
+                                    
+                                    // Calculate optimal size for mobile
+                                    const viewportWidth = window.innerWidth;
+                                    const viewportHeight = window.innerHeight;
+                                    const maxDimension = Math.min(viewportWidth * 0.9, viewportHeight * 0.7);
+                                    
+                                    // Apply mobile-friendly size
+                                    container.style.width = maxDimension + 'px';
+                                    container.style.height = maxDimension + 'px';
+                                    container.style.maxWidth = maxDimension + 'px';
+                                    container.style.maxHeight = maxDimension + 'px';
+                                    
+                                    console.log('Fit to screen:', maxDimension + 'x' + maxDimension + 'px');
+                                    
+                                    // Update debug panel
+                                    setTimeout(function() {
+                                        this.updateDebugPanel();
+                                    }.bind(this), 100);
+                                }
+                            }
+                        };
+                        
+                        // Make toggleDebugPanel globally available
+                        window.toggleDebugPanel = function() {
+                            ResponsivePreview.toggleDebugPanel();
+                        };
+                        
+                        // Make fitToScreen globally available
+                        window.fitToScreen = function() {
+                            ResponsivePreview.fitToScreen();
+                        };
+                        
+                        // Initialize responsive preview when DOM is ready
+                        document.addEventListener('DOMContentLoaded', function() {
+                            ResponsivePreview.init();
+                            
+                            // Initialize ZoomManager
+                            if (window.ZoomManager) {
+                                window.ZoomManager.init('hud-preview-container', 'hud-preview', {
+                                    autoMobileZoom: true
+                                });
+                            }
+                        });
+                        
+                        // Also initialize after window load (in case DOM ready was missed)
+                        window.addEventListener('load', function() {
+                            setTimeout(function() {
+                                ResponsivePreview.init();
+                                
+                                // Initialize ZoomManager if not already done
+                                if (window.ZoomManager && !window.ZoomManager.previewContainerId) {
+                                    window.ZoomManager.init('hud-preview-container', 'hud-preview', {
+                                        autoMobileZoom: true
+                                    });
+                                }
+                            }, 100);
+                        });
+                        </script>
 
                         <!-- Fallback script for immediate availability -->
                         <script>
@@ -135,6 +434,17 @@
                                     }
                                     console.error('HUD module not available');
                                 };
+                            }
+                            
+                            // Initialize HUD namespace if not exists
+                            if (typeof window.HUD === 'undefined') {
+                                window.HUD = {};
+                            }
+                            
+                            // Link ZoomManager to HUD for backward compatibility
+                            if (window.ZoomManager && !window.HUD.Zoom) {
+                                window.HUD.Zoom = window.ZoomManager;
+                                console.log('HUD.Zoom linked to ZoomManager');
                             }
                         </script>
                     </form>

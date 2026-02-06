@@ -825,6 +825,7 @@ def get_settings_panel(request, template_name):
 def get_template_preview(request, template_id):
     """
     Generic template preview endpoint that handles all template types.
+    Now uses the buffer system for efficient generation.
 
     Args:
         request: HTTP request object

@@ -1,12 +1,16 @@
 from django.urls import path
 
-from .views import (
+from .views_simple_buffered import (
     display_tree_hud,
+    get_template_preview_simple,
+    save_hud_settings,
+    apply_settings_change,
+    get_buffer_stats,
+)
+from .views import (
     get_1gen_preview,
     get_hud_family_data,
-    get_template_preview,
     get_settings_panel,
-    save_hud_settings,
     update_settings_timestamp,
     get_file_individuals,
 )
@@ -21,13 +25,28 @@ urlpatterns = [
     path("get-1gen-preview/", get_1gen_preview, name="get_1gen_preview"),
     path(
         "get-template-preview/<str:template_id>/",
-        get_template_preview,
+        get_template_preview_simple,
         name="get_template_preview",
+    ),
+    path(
+        "apply-settings-change/",
+        apply_settings_change,
+        name="apply_settings_change",
+    ),
+    path(
+        "get-buffer-stats/",
+        get_buffer_stats,
+        name="get_buffer_stats",
     ),
     path(
         "get-settings-panel/<str:template_name>/",
         get_settings_panel,
         name="get_settings_panel",
+    ),
+    path(
+        "apply-settings-change/",
+        apply_settings_change,
+        name="apply_settings_change",
     ),
     path(
         "update-settings-timestamp/",
