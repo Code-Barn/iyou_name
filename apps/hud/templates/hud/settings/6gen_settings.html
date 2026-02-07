@@ -1,0 +1,189 @@
+<!-- 6 Generation Chart Settings -->
+<!-- Color Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Color Settings</h6>
+    
+    <!-- 3X Great-Grandparent Generation Colors -->
+    <div class="mb-3">
+        <h6 class="text-success mb-2">3X Great-Grandparent Generation Colors</h6>
+        <div class="d-flex flex-wrap gap-3">
+            <div class="flex-grow-1">
+                <label class="form-label">3X Great-Grandparent Name Color</label>
+                <input type="color" name="threex_greatgrandparent_font_color" class="form-control form-control-color" value="{{ hud_settings.threex_greatgrandparent_font_color|default:'#000000' }}">
+            </div>
+            <div class="flex-grow-1">
+                <label class="form-label">3X Great-Grandparent Birthdate Color</label>
+                <input type="color" name="threex_greatgrandparent_birth_color" class="form-control form-control-color" value="{{ hud_settings.threex_greatgrandparent_birth_color|default:'#000000' }}">
+            </div>
+            <div class="flex-grow-1">
+                <label class="form-label">3X Great-Grandparent Deathdate Color</label>
+                <input type="color" name="threex_greatgrandparent_death_color" class="form-control form-control-color" value="{{ hud_settings.threex_greatgrandparent_death_color|default:'#000000' }}">
+            </div>
+            <div class="flex-grow-1">
+                <label class="form-label">3X Great-Grandparent Birthplace Color</label>
+                <input type="color" name="threex_greatgrandparent_birth_place_color" class="form-control form-control-color" value="{{ hud_settings.threex_greatgrandparent_birth_place_color|default:'#000000' }}">
+            </div>
+            <div class="flex-grow-1">
+                <label class="form-label">3X Great-Grandparent Deathplace Color</label>
+                <input type="color" name="threex_greatgrandparent_death_place_color" class="form-control form-control-color" value="{{ hud_settings.threex_greatgrandparent_death_place_color|default:'#000000' }}">
+            </div>
+            <div class="flex-grow-1">
+                <label class="form-label">3X Great-Grandparent Stroke Color</label>
+                <input type="color" name="threex_greatgrandparent_stroke_color" class="form-control form-control-color" value="{{ hud_settings.threex_greatgrandparent_stroke_color|default:'#000000' }}">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Font Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Font Settings</h6>
+    <div class="row g-3">
+        <div class="col-md-12">
+            <label class="form-label">Font Family</label>
+            <select name="font_family" class="form-select">
+                <option value="Arial" {% if hud_settings.font_family|default:'Arial' == 'Arial' %}selected{% endif %}>Arial</option>
+                <option value="Times New Roman" {% if hud_settings.font_family|default:'Arial' == 'Times New Roman' %}selected{% endif %}>Times New Roman</option>
+                <option value="Helvetica" {% if hud_settings.font_family|default:'Arial' == 'Helvetica' %}selected{% endif %}>Helvetica</option>
+                <option value="Georgia" {% if hud_settings.font_family|default:'Arial' == 'Georgia' %}selected{% endif %}>Georgia</option>
+                <option value="Courier New" {% if hud_settings.font_family|default:'Arial' == 'Courier New' %}selected{% endif %}>Courier New</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Font Size Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Font Size Settings</h6>
+    
+    <!-- 3X Great-Grandparent Generation Font Sizes -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-success">3X Great-Grandparent Generation Font Sizes</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">3X Great-Grandparent Name Font Size (px)</label>
+            <input type="range" name="threex_greatgrandparent_name_font_size" class="form-range" min="10" max="36" value="{{ hud_settings.threex_greatgrandparent_name_font_size|default:18 }}" id="threex-greatgrandparent-name-font-size-slider">
+            <div class="text-center">
+                <span id="threex-greatgrandparent-name-font-size-value">{{ hud_settings.threex_greatgrandparent_name_font_size|default:18 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">3X Great-Grandparent Date Font Size (px)</label>
+            <input type="range" name="threex_greatgrandparent_date_info_font_size" class="form-range" min="8" max="24" value="{{ hud_settings.threex_greatgrandparent_date_info_font_size|default:14 }}" id="threex-greatgrandparent-date-info-font-size-slider">
+            <div class="text-center">
+                <span id="threex-greatgrandparent-date-info-font-size-value">{{ hud_settings.threex_greatgrandparent_date_info_font_size|default:14 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">3X Great-Grandparent Place Font Size (px)</label>
+            <input type="range" name="threex_greatgrandparent_place_info_font_size" class="form-range" min="6" max="20" value="{{ hud_settings.threex_greatgrandparent_place_info_font_size|default:10 }}" id="threex-greatgrandparent-place-info-font-size-slider">
+            <div class="text-center">
+                <span id="threex-greatgrandparent-place-info-font-size-value">{{ hud_settings.threex_greatgrandparent_place_info_font_size|default:10 }}</span>px
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Position Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Position Settings</h6>
+    
+    <!-- 3X Great-Grandparent Edge Positioning -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-success">3X Great-Grandparent Edge Positioning</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Edge Distance from Center (px)</label>
+            <input type="range" name="threex_greatgrandparent_edge_distance" class="form-range" min="10" max="140" value="{{ hud_settings.threex_greatgrandparent_edge_distance|default:30 }}" id="threex-greatgrandparent-edge-distance-slider">
+            <div class="text-center">
+                <span id="threex-greatgrandparent-edge-distance-value">{{ hud_settings.threex_greatgrandparent_edge_distance|default:30 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Date Distance from Name (px)</label>
+            <input type="range" name="threex_greatgrandparent_date_distance" class="form-range" min="4" max="20" value="{{ hud_settings.threex_greatgrandparent_date_distance|default:8 }}" id="threex-greatgrandparent-date-distance-slider">
+            <div class="text-center">
+                <span id="threex-greatgrandparent-date-distance-value">{{ hud_settings.threex_greatgrandparent_date_distance|default:8 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Place Distance from Date (px)</label>
+            <input type="range" name="threex_greatgrandparent_place_distance" class="form-range" min="3" max="15" value="{{ hud_settings.threex_greatgrandparent_place_distance|default:5 }}" id="threex-greatgrandparent-place-distance-slider">
+            <div class="text-center">
+                <span id="threex-greatgrandparent-place-distance-value">{{ hud_settings.threex_greatgrandparent_place_distance|default:5 }}</span>px
+            </div>
+        </div>
+    </div>
+
+    <!-- 3X Great-Grandparent Individual Position Adjustments -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-info">Individual Position Adjustments</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Name Horizontal Offset (px)</label>
+            <input type="range" name="threex_greatgrandparent_translate_x" class="form-range" min="-30" max="30" value="{{ hud_settings.threex_greatgrandparent_translate_x|default:0 }}" id="threex-greatgrandparent-translate-x-slider">
+            <div class="text-center">
+                <span id="threex-greatgrandparent-translate-x-value">{{ hud_settings.threex_greatgrandparent_translate_x|default:0 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Birthdate Vertical Offset (px)</label>
+            <input type="range" name="threex_greatgrandparent_birth_translate_y" class="form-range" min="-20" max="20" value="{{ hud_settings.threex_greatgrandparent_birth_translate_y|default:0 }}" id="threex-greatgrandparent-birth-translate-y-slider">
+            <div class="text-center">
+                <span id="threex-greatgrandparent-birth-translate-y-value">{{ hud_settings.threex_greatgrandparent_birth_translate_y|default:0 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Name Rotation (degrees)</label>
+            <input type="range" name="threex_greatgrandparent_name_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.threex_greatgrandparent_name_rotate|default:0 }}" id="threex-greatgrandparent-name-rotate-slider">
+            <div class="text-center">
+                <span id="threex-greatgrandparent-name-rotate-value">{{ hud_settings.threex_greatgrandparent_name_rotate|default:0 }}</span>°
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Composite Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">5Gen Overlay Settings</h6>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">5Gen Overlay Scale</label>
+            <input type="range" name="composite_5gen_scale" class="form-range" min="12" max="40" step="2" value="{{ hud_settings.composite_5gen_scale|default:20 }}" id="composite-5gen-scale-slider">
+            <div class="text-center">
+                <span id="composite-5gen-scale-value">{{ hud_settings.composite_5gen_scale|default:20 }}</span>%
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Overlay Position X</label>
+            <input type="range" name="composite_overlay_x" class="form-range" min="300" max="1000" value="{{ hud_settings.composite_overlay_x|default:650 }}" id="composite-overlay-x-slider">
+            <div class="text-center">
+                <span id="composite-overlay-x-value">{{ hud_settings.composite_overlay_x|default:650 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Overlay Position Y</label>
+            <input type="range" name="composite_overlay_y" class="form-range" min="300" max="1000" value="{{ hud_settings.composite_overlay_y|default:650 }}" id="composite-overlay-y-slider">
+            <div class="text-center">
+                <span id="composite-overlay-y-value">{{ hud_settings.composite_overlay_y|default:650 }}</span>px
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stroke Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Stroke Settings</h6>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Default Stroke Width</label>
+            <input type="range" name="default_stroke_width" class="form-range" min="0.5" max="5" step="0.5" value="{{ hud_settings.default_stroke_width|default:0.5 }}" id="default-stroke-width-slider">
+            <div class="text-center">
+                <span id="default-stroke-width-value">{{ hud_settings.default_stroke_width|default:0.5 }}</span>px
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,398 +1,371 @@
 """
-3-generation chart generator using square division with diagonal lines.
+Working 3-generation chart generator using template overlay approach.
 
-This generator creates a square divided by diagonal lines from corner to corner,
-with grandparents positioned along the edges (not in corners) and a 2gen overlay
-in the center.
+This generator creates a 3-generation chart by:
+1. Drawing grandparents on the 3gen template
+2. Overlaying a 2gen chart (primary + parents) in the center
+3. Using proper session settings inheritance
 """
 
 import logging
 import math
+import os
 from io import BytesIO
 
-from django.conf import settings as django_settings
+from django.conf import settings
 from wand.color import Color
 from wand.drawing import Drawing
 from wand.image import Image
 
 from apps.generator.utils.name_utils import parse_name_parts
 from apps.generator.utils.settings_helper import extract_generation_settings
+from apps.generator.utils.chart_buffer_manager import buffer_manager
 
 logger = logging.getLogger(__name__)
-
-
-def calculate_edge_position(edge_percent, square_size):
-    """
-    Calculate position along a square edge based on percentage.
-
-    Args:
-        edge_percent: Percentage (10-90) along the edge from starting corner
-        square_size: Size of the square
-
-    Returns:
-        tuple: (x, y) coordinates
-    """
-    # Edge position as fraction of square size
-    position = (edge_percent / 100.0) * square_size
-
-    return position
-
-
-def get_grandparent_edge_coordinates(
-    edge_position, edge_type, square_size, distance_from_edge=20
-):
-    """
-    Get coordinates for grandparent positioning along square edges.
-
-    Args:
-        edge_position: Position percentage along the edge (10-90)
-        edge_type: Type of edge ('top', 'right', 'bottom', 'left')
-        square_size: Size of the square
-        distance_from_edge: Distance from edge towards center
-
-    Returns:
-        tuple: (x, y) coordinates
-    """
-    half_size = square_size / 2
-    position = calculate_edge_position(edge_position, square_size)
-
-    if edge_type == "top":
-        # Top edge: left to right
-        x = position
-        y = distance_from_edge
-
-    elif edge_type == "right":
-        # Right edge: top to bottom
-        x = square_size - distance_from_edge
-        y = position
-
-    elif edge_type == "bottom":
-        # Bottom edge: right to left (reversed)
-        x = square_size - position
-        y = square_size - distance_from_edge
-
-    elif edge_type == "left":
-        # Left edge: bottom to top (reversed)
-        x = distance_from_edge
-        y = square_size - position
-
-    else:
-        raise ValueError(f"Invalid edge_type: {edge_type}")
-
-    return (int(x), int(y))
 
 
 def generate_3gen_preview(
     primary_individual, family_data, template="preview", user_settings=None
 ):
     """
-    Generate a 3-generation family tree chart with square division.
+    Generate a 3-generation family tree chart using proven overlay approach.
 
-    Layout:
-    - Square divided by diagonal lines from corner to corner
-    - Grandparents positioned along the edges of the square
-    - 2gen chart (primary + parents) overlaid in center
+    This version:
+    1. Draws grandparents using edge positioning on 3gen template
+    2. Generates 2gen overlay with PRIMARY and PARENT settings
+    3. Composites them together like the working 2gen approach
 
     Args:
-        primary_individual: PersonData object for primary individual
+        primary_individual: PersonData object for the primary individual
         family_data: Dictionary containing all family data
-        template: Template type ('preview' or 'final')
-        user_settings: Dictionary of user settings
+        template: Template type ('3gen' for 3-generation chart)
+        user_settings: Dictionary of user settings to override hardcoded defaults
 
     Returns:
-        BytesIO buffer containing generated image
+        BytesIO buffer containing the generated image (PNG for preview, PDF for final)
     """
+    # Get user settings or use empty dict if not provided
     user_settings = user_settings or {}
 
-    # Extract 3gen-specific settings
-    settings = extract_generation_settings(user_settings, "3gen")
+    print(f"DEBUG: generate_3gen_preview received user_settings: {user_settings}")
+    print(f"DEBUG: Generating template type: {template}")
 
-    # Image dimensions (square)
-    square_size = 800
-    image_size = (square_size, square_size)
-
-    # Create blank white image
-    image = Image(width=image_size[0], height=image_size[1], background=Color("white"))
-    drawing = Drawing()
+    # Extract GRANDPARENT settings for 3gen-specific drawing
+    grandparent_settings = extract_generation_settings(user_settings, "GRANDPARENT")
+    print(f"DEBUG: Extracted GRANDPARENT settings: {grandparent_settings}")
 
     print(
-        f"DEBUG 3gen: Generating for {primary_individual.full_name if primary_individual else 'None'}"
+        f"DEBUG: Generating 3-generation family tree for: {primary_individual.full_name}"
     )
-    print(f"DEBUG 3gen: Square size: {square_size}x{square_size}")
-    print(
-        f"DEBUG 3gen: Square divided into 4 triangular sections (conceptual, no lines drawn)"
-    )
+    print(f"DEBUG: Primary individual ID: {primary_individual.id}")
 
-    # Get family relationships
-    father = family_data.get(primary_individual.father_id)
-    mother = family_data.get(primary_individual.mother_id)
-
-    paternal_grandfather = family_data.get(father.father_id) if father else None
-    paternal_grandmother = family_data.get(father.mother_id) if father else None
-    maternal_grandfather = family_data.get(mother.father_id) if mother else None
-    maternal_grandmother = family_data.get(mother.mother_id) if mother else None
-
-    print(
-        f"DEBUG 3gen: Found {len([g for g in [paternal_grandfather, paternal_grandmother, maternal_grandfather, maternal_grandmother] if g])} grandparents"
-    )
-
-    # Grandparent positioning settings
-    font_family = get_setting(user_settings, "font_family", "Arial")
-    grandparent_name_size = int(
-        get_setting(user_settings, "grandparent_name_font_size", 40)
-    )
-    grandparent_date_size = int(
-        get_setting(user_settings, "grandparent_date_info_font_size", 28)
-    )
-    grandparent_place_size = int(
-        get_setting(user_settings, "grandparent_place_info_font_size", 20)
-    )
-    edge_distance = int(get_setting(user_settings, "grandparent_edge_distance", 20))
-    date_distance = int(get_setting(user_settings, "grandparent_date_distance", 15))
-    place_distance = int(get_setting(user_settings, "grandparent_place_distance", 10))
-
-    # Position grandparents along edges
-    if paternal_grandfather:
-        # Top edge (left portion)
-        edge_pos = int(
-            get_setting(user_settings, "paternal_grandfather_edge_position", 25)
-        )
-        x, y = get_grandparent_edge_coordinates(
-            edge_pos, "top", square_size, edge_distance
-        )
-        color = Color(
-            get_setting(user_settings, "paternal_grandfather_font_color", "#000000")
+    try:
+        # Load the 3gen template
+        preview_template_path = os.path.join(
+            settings.BASE_DIR,
+            "apps/hud/static/hud/images/preview_image_templates",
+            "3GEN_PREVIEW.png",
         )
 
-        drawing.font = font_family
-        drawing.font_size = grandparent_name_size
-        drawing.fill_color = color
-        drawing.text(int(x), int(y), paternal_grandfather.full_name)
+        print(f"DEBUG: Preview template path: {preview_template_path}")
+        print(
+            f"DEBUG: Preview template exists: {os.path.exists(preview_template_path)}"
+        )
 
-        # Add birth date below name
-        if paternal_grandfather.birth_date:
-            drawing.font_size = grandparent_date_size
-            drawing.text(
-                int(x), int(y + date_distance), paternal_grandfather.birth_date
+        with Image(filename=preview_template_path, resolution=300) as content_img:
+            print(f"Content image loaded: {content_img.width}x{content_img.height}")
+
+            # =============================================
+            # GRANDPARENT GENERATION DRAWING
+            # =============================================
+
+            with Drawing() as draw:
+                draw.push()
+
+                # Set initial drawing properties
+                print(f"DEBUG: User settings for preview: {user_settings}")
+
+                # Apply grandparent-specific settings with fallback to user_settings
+                font_family = grandparent_settings.get(
+                    "font_family", user_settings.get("font_family", "Arial")
+                )
+                draw.font = font_family
+                draw.stroke_antialias = True
+                draw.stroke_width = grandparent_settings.get(
+                    "default_stroke_width",
+                    user_settings.get("default_stroke_width", 0.5),
+                )
+
+                # Set grandparent stroke color
+                grandparent_stroke_color = grandparent_settings.get(
+                    "primary_stroke_color",
+                    user_settings.get("primary_stroke_color", "#000000"),
+                )
+                draw.stroke_color = Color(grandparent_stroke_color)
+
+                # Get family relationships using correct attribute names
+                father = None
+                mother = None
+
+                if hasattr(primary_individual, "father") and primary_individual.father:
+                    father = family_data["individuals"].get(primary_individual.father)
+
+                if hasattr(primary_individual, "mother") and primary_individual.mother:
+                    mother = family_data["individuals"].get(primary_individual.mother)
+
+                # Get grandparents
+                paternal_grandfather = None
+                paternal_grandmother = None
+                maternal_grandfather = None
+                maternal_grandmother = None
+
+                if father and hasattr(father, "father") and father.father:
+                    paternal_grandfather = family_data["individuals"].get(father.father)
+
+                if father and hasattr(father, "mother") and father.mother:
+                    paternal_grandmother = family_data["individuals"].get(father.mother)
+
+                if mother and hasattr(mother, "father") and mother.father:
+                    maternal_grandfather = family_data["individuals"].get(mother.father)
+
+                if mother and hasattr(mother, "mother") and mother.mother:
+                    maternal_grandmother = family_data["individuals"].get(mother.mother)
+
+                print(
+                    f"DEBUG: Found grandparents - PGF: {paternal_grandfather is not None}, PGM: {paternal_grandmother is not None}, MGF: {maternal_grandfather is not None}, MGM: {maternal_grandmother is not None}"
+                )
+
+                # Grandparent positioning settings
+                font_size = grandparent_settings.get(
+                    "primary_name_font_size",
+                    user_settings.get("primary_name_font_size", 40),
+                )
+                draw.font_size = font_size
+                edge_distance = grandparent_settings.get(
+                    "primary_translate_x", user_settings.get("primary_translate_x", 30)
+                )
+                date_distance = grandparent_settings.get(
+                    "primary_birth_translate_y",
+                    user_settings.get("primary_birth_translate_y", 15),
+                )
+
+                # Draw grandparents along edges with proper rotation and centering
+                # Canvas center for positioning
+                center_x = content_img.width // 2
+                center_y = content_img.height // 2
+                radius = center_x - edge_distance  # Distance from center to edge
+
+                grandparents = [
+                    (
+                        paternal_grandfather,
+                        "paternal_grandfather",
+                        0,
+                    ),  # Bottom edge - 0 degrees
+                    (
+                        paternal_grandmother,
+                        "paternal_grandmother",
+                        -90,
+                    ),  # Right edge - -90 degrees
+                    (
+                        maternal_grandfather,
+                        "maternal_grandfather",
+                        -180,
+                    ),  # Top edge - -180 degrees
+                    (
+                        maternal_grandmother,
+                        "maternal_grandmother",
+                        -270,
+                    ),  # Left edge - -270 degrees
+                ]
+
+                for grandparent, gp_type, rotation in grandparents:
+                    if grandparent:
+                        print(
+                            f"Drawing {gp_type}: {grandparent.full_name} at {rotation}° rotation"
+                        )
+
+                        # Set grandparent font color
+                        grandparent_font_color = grandparent_settings.get(
+                            "primary_font_color",
+                            user_settings.get("primary_font_color", "#000000"),
+                        )
+                        draw.fill_color = Color(grandparent_font_color)
+
+                        # Calculate position on the edge based on rotation
+                        angle_rad = math.radians(rotation)
+                        edge_x = center_x + radius * math.cos(angle_rad)
+                        edge_y = center_y + radius * math.sin(angle_rad)
+
+                        # Parse name using improved logic
+                        first_name, middle_name, last_name = parse_name_parts(
+                            grandparent.full_name
+                        )
+
+                        # Draw grandparent name parts centered on edge with rotation
+                        if first_name:
+                            draw.push()
+                            # Translate to edge position
+                            draw.translate(int(edge_x), int(edge_y))
+                            # Apply rotation (text will be perpendicular to edge)
+                            draw.rotate(rotation)
+                            # Center the text on the edge
+                            draw.text(0, 0, first_name)
+                            print(
+                                f"Drew {gp_type} first name: '{first_name}' at ({int(edge_x)}, {int(edge_y)}) with {rotation}° rotation"
+                            )
+                            draw.pop()
+
+                        if last_name:
+                            draw.push()
+                            # Translate to edge position with offset for last name
+                            draw.translate(int(edge_x), int(edge_y) - 30)
+                            # Apply rotation
+                            draw.rotate(rotation)
+                            # Center the text
+                            draw.text(0, 0, last_name)
+                            print(
+                                f"Drew {gp_type} last name: '{last_name}' at ({int(edge_x)}, {int(edge_y) - 30}) with {rotation}° rotation"
+                            )
+                            draw.pop()
+
+                        # Draw birth date if available
+                        if grandparent.birth_date:
+                            draw.push()
+                            # Translate to edge position with offset for date
+                            draw.translate(int(edge_x), int(edge_y) + date_distance)
+                            # Apply rotation
+                            draw.rotate(rotation)
+                            # Smaller font for dates
+                            draw.font_size = int(font_size * 0.7)
+                            # Center the text
+                            draw.text(0, 0, grandparent.birth_date)
+                            print(
+                                f"Drew {gp_type} birth date: '{grandparent.birth_date}' at ({int(edge_x)}, {int(edge_y)} + {date_distance}) with {rotation}° rotation"
+                            )
+                            draw.pop()
+
+                # Apply the drawing to the image before destroying the context
+                draw(content_img)
+                draw.pop()
+
+            # =============================================
+            # Generate the 2gen overlay with PRIMARY and PARENT settings
+            # =============================================
+
+            # Check for stored primary settings first (from JavaScript)
+            primary_settings = user_settings.get("primary_settings", {})
+            print(f"DEBUG: user_settings keys: {list(user_settings.keys())}")
+            print(f"DEBUG: primary_settings from user_settings: {primary_settings}")
+
+            if not primary_settings:
+                # Fallback to extracting PRIMARY from current settings
+                primary_settings = extract_generation_settings(user_settings, "PRIMARY")
+                print(
+                    f"DEBUG: No stored primary settings, using fallback PRIMARY settings: {primary_settings}"
+                )
+            else:
+                print(
+                    f"DEBUG: Using stored primary settings for 2gen overlay: {primary_settings}"
+                )
+
+            print(
+                f"DEBUG: Getting cached 2gen overlay with settings: {primary_settings}"
             )
+            gen2_img_buffer = buffer_manager.get_buffer(2)
 
-        # Add birth place below date
-        if paternal_grandfather.birth_place:
-            drawing.font_size = grandparent_place_size
-            drawing.text(
-                int(x),
-                int(y + date_distance + place_distance),
-                paternal_grandfather.birth_place,
-            )
+            if gen2_img_buffer is None:
+                print("WARNING: No cached 2gen buffer found, generating fresh overlay")
+                # Fallback: generate fresh 2gen overlay if no cached buffer
+                from apps.generator.utils.image_2generator import generate_2gen_preview
 
-    if maternal_grandfather:
-        # Right edge (top portion)
-        edge_pos = int(
-            get_setting(user_settings, "maternal_grandfather_edge_position", 25)
-        )
-        x, y = get_grandparent_edge_coordinates(
-            edge_pos, "right", square_size, edge_distance
-        )
-        color = Color(
-            get_setting(user_settings, "maternal_grandfather_font_color", "#000000")
-        )
+                gen2_img_buffer = generate_2gen_preview(
+                    primary_individual, family_data, "preview", user_settings
+                )
 
-        drawing.font = font_family
-        drawing.font_size = grandparent_name_size
-        drawing.fill_color = color
-        drawing.text(int(x), int(y), maternal_grandfather.full_name)
+            if gen2_img_buffer is None:
+                print("ERROR: 2gen overlay buffer is None")
+                raise Exception("Failed to generate 2gen overlay")
 
-        # Add birth date
-        if maternal_grandfather.birth_date:
-            drawing.font_size = grandparent_date_size
-            drawing.text(
-                int(x), int(y + date_distance), maternal_grandfather.birth_date
-            )
+            print(f"DEBUG: Generated 2gen overlay buffer: {type(gen2_img_buffer)}")
 
-        # Add birth place
-        if maternal_grandfather.birth_place:
-            drawing.font_size = grandparent_place_size
-            drawing.text(
-                int(x),
-                int(y + date_distance + place_distance),
-                maternal_grandfather.birth_place,
-            )
+            # =============================================
+            # Composite the 2gen overlay onto the 3gen image
+            # =============================================
 
-    if paternal_grandmother:
-        # Bottom edge (right portion)
-        edge_pos = int(
-            get_setting(user_settings, "paternal_grandmother_edge_position", 75)
-        )
-        x, y = get_grandparent_edge_coordinates(
-            edge_pos, "bottom", square_size, edge_distance
-        )
-        color = Color(
-            get_setting(user_settings, "paternal_grandmother_font_color", "#000000")
-        )
+            gen2_img_buffer.seek(0)  # Reset buffer position
+            gen2_bytes = gen2_img_buffer.getvalue()
 
-        drawing.font = font_family
-        drawing.font_size = grandparent_name_size
-        drawing.fill_color = color
-        drawing.text(int(x), int(y), paternal_grandmother.full_name)
+            if not gen2_bytes:
+                print("ERROR: gen2_bytes is empty")
+                raise Exception("2gen overlay buffer is empty")
 
-        # Add birth date
-        if paternal_grandmother.birth_date:
-            drawing.font_size = grandparent_date_size
-            drawing.text(
-                int(x), int(y + date_distance), paternal_grandmother.birth_date
-            )
+            # Create image from blob and composite
+            overlay_scale = 0.5485  # 53.85% scale like the working backup
+            with Image(blob=gen2_bytes) as gen2_overlay:
+                overlay_size = int(content_img.width * overlay_scale)
+                gen2_overlay.resize(overlay_size, overlay_size)
 
-        # Add birth place
-        if paternal_grandmother.birth_place:
-            drawing.font_size = grandparent_place_size
-            drawing.text(
-                int(x),
-                int(y + date_distance + place_distance),
-                paternal_grandmother.birth_place,
-            )
+                # Center the overlay
+                overlay_x = (content_img.width - overlay_size) // 2
+                overlay_y = (content_img.height - overlay_size) // 2
 
-    if maternal_grandmother:
-        # Left edge (bottom portion)
-        edge_pos = int(
-            get_setting(user_settings, "maternal_grandmother_edge_position", 75)
-        )
-        x, y = get_grandparent_edge_coordinates(
-            edge_pos, "left", square_size, edge_distance
-        )
-        color = Color(
-            get_setting(user_settings, "maternal_grandmother_font_color", "#000000")
-        )
+                content_img.composite(gen2_overlay, left=overlay_x, top=overlay_y)
+                print(
+                    f"DEBUG: Composited 2gen overlay onto 3gen image at ({overlay_x}, {overlay_y}) with size {overlay_size}"
+                )
 
-        drawing.font = font_family
-        drawing.font_size = grandparent_name_size
-        drawing.fill_color = color
-        drawing.text(int(x), int(y), maternal_grandmother.full_name)
+            # =============================================
+            # Return the appropriate format
+            # =============================================
 
-        # Add birth date
-        if maternal_grandmother.birth_date:
-            drawing.font_size = grandparent_date_size
-            drawing.text(
-                int(x), int(y + date_distance), maternal_grandmother.birth_date
-            )
+            if template == "preview":
+                print("DEBUG: Returning preview image")
+                gen3_image_buffer = BytesIO()
+                content_img.save(file=gen3_image_buffer)
+                gen3_image_buffer.seek(0)
+                return gen3_image_buffer
+            else:  # final
+                print("DEBUG: Compositing content onto PDF base template")
 
-        # Add birth place
-        if maternal_grandmother.birth_place:
-            drawing.font_size = grandparent_place_size
-            drawing.text(
-                int(x),
-                int(y + date_distance + place_distance),
-                maternal_grandmother.birth_place,
-            )
+                # Load the PDF base template
+                base_template_path = os.path.join(
+                    settings.BASE_DIR,
+                    "apps/charts/static/charts/images/base_image_templates",
+                    "US_LETTER_3GEN_BW.pdf",
+                )
+                print(f"DEBUG: Base template path: {base_template_path}")
+                print(
+                    f"DEBUG: Base template exists: {os.path.exists(base_template_path)}"
+                )
 
-    # Draw the square border
-    drawing.stroke_color = Color("black")
-    drawing.stroke_width = 1
-    drawing.rectangle(left=0, top=0, width=square_size, height=square_size)
+                with Image(filename=base_template_path, resolution=300) as base_img:
+                    print(f"Base template loaded: {base_img.width}x{base_img.height}")
 
-    # Apply drawing to image
-    drawing(image)
+                    # Composite the content image onto the base template
+                    composite_x = 300
+                    composite_y = 570
 
-    # Create 2gen overlay for center
-    overlay_scale = int(get_setting(user_settings, "composite_2gen_scale", 35))
-    overlay_x = int(get_setting(user_settings, "composite_overlay_x", 400))
-    overlay_y = int(get_setting(user_settings, "composite_overlay_y", 400))
+                    print(
+                        f"DEBUG: Compositing content image at position ({composite_x}, {composite_y})"
+                    )
+                    base_img.composite(content_img, left=composite_x, top=composite_y)
 
-    print(
-        f"DEBUG 3gen: Creating 2gen overlay at scale {overlay_scale}% position ({overlay_x}, {overlay_y})"
+                    # Save the final result as PDF
+                    pdf_buffer = BytesIO()
+                    base_img.save(file=pdf_buffer)
+                    pdf_buffer.seek(0)
+
+                    return pdf_buffer
+
+    except Exception as e:
+        logger.error(f"Error generating 3gen preview: {e}")
+        raise
+
+
+def get_name_display_info(full_name):
+    """Get name display information (compatibility function)."""
+    from apps.generator.utils.name_utils import (
+        get_name_display_info as utils_get_display_info,
     )
 
-    # Generate 2gen chart for overlay
-    from apps.generator.utils.image_2generator import generate_2gen_preview
-
-    overlay_buffer = generate_2gen_preview(
-        primary_individual, family_data, "preview", user_settings
-    )
-
-    # Create overlay image from buffer and resize
-    overlay_image = Image(blob=overlay_buffer.getvalue())
-    overlay_size = int(square_size * overlay_scale / 100)
-    overlay_image.resize(overlay_size, overlay_size)
-
-    # Composite overlay onto main image
-    overlay_x_pos = overlay_x - (overlay_size // 2)
-    overlay_y_pos = overlay_y - (overlay_size // 2)
-
-    image.composite(overlay_image, left=overlay_x_pos, top=overlay_y_pos)
-
-    print(
-        f"DEBUG 3gen: Composite positioned at ({overlay_x_pos}, {overlay_y_pos}) with size {overlay_size}"
-    )
-
-    # Convert to PNG buffer
-    buffer = BytesIO()
-    image.format = "png"
-    image.save(buffer)
-    buffer.seek(0)
-
-    print(f"DEBUG 3gen: Generated image size: {len(buffer.getvalue())} bytes")
-
-    return buffer
-
-
-def extract_generation_settings(user_settings, generation_prefix):
-    """
-    Extract generation-specific settings from user settings.
-
-    Args:
-        user_settings: Dictionary of all user settings
-        generation_prefix: Type of generation ('1gen', '2gen', '3gen', etc.)
-
-    Returns:
-        Dictionary of filtered settings
-    """
-    if not user_settings:
-        return {}
-
-    # Filter settings relevant to this generation type
-    generation_settings = {}
-
-    # Common settings
-    common_keys = ["font_family", "default_stroke_width"]
-    for key in common_keys:
-        if key in user_settings:
-            generation_settings[key] = user_settings[key]
-
-    # 3gen-specific settings
-    if generation_prefix == "3gen":
-        gen3_keys = [
-            "paternal_grandfather_font_color",
-            "paternal_grandmother_font_color",
-            "maternal_grandfather_font_color",
-            "maternal_grandmother_font_color",
-            "grandparent_birth_color",
-            "grandparent_death_color",
-            "grandparent_birth_place_color",
-            "grandparent_death_place_color",
-            "grandparent_name_font_size",
-            "grandparent_date_info_font_size",
-            "grandparent_place_info_font_size",
-            "paternal_grandfather_edge_position",
-            "paternal_grandmother_edge_position",
-            "maternal_grandfather_edge_position",
-            "maternal_grandmother_edge_position",
-            "grandparent_edge_distance",
-            "grandparent_date_distance",
-            "grandparent_place_distance",
-            "composite_2gen_scale",
-            "composite_overlay_x",
-            "composite_overlay_y",
-            "diagonal_line_color",
-            "diagonal_line_width",
-        ]
-
-        for key in gen3_keys:
-            if key in user_settings:
-                generation_settings[key] = user_settings[key]
-
-    return generation_settings
-
-
-# Helper function for settings access
-def get_setting(user_settings, key, default):
-    """Helper to get user setting with default."""
-    return user_settings.get(key, default)
+    return utils_get_display_info(full_name)

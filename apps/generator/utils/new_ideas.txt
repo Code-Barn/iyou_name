@@ -1,0 +1,33 @@
+red, yellow, green, and blue
+
+zoom in hud
+
+css for small screens -  can you introduce some css to @apps/hud/templates/hud/display_tree.html @apps/hud/ that will allow the "live preview" image to be automatically resized/adjusted for small screens?
+
+I see some looping logic. perhaps that is causing you problems too. Every time we generate a chart a string of debug output like this happens indicating that the composite overlays are repeatedly being generated and overlaid. What i percieve is probably best and most efficient is to populate an image buffer each time the user clicks apply settings. the user starts automatically at the 1gen hud view and they apply settings after changes which should immediately generate a new image and store that image to the 1gen buffer. it should then use that image to automatically populate the 2-7 gen buffers with a default/hardcoded buffer version of those generators that uses that modified 1gen chart as it's center. the generator scripts are chained so when the 2gen chart runs it overlays the buffer image of the 1 gen chart and if settings have been changed and applied the buffer version of charts 2-7 updates automatically to reflect those changes. gen 1's chart was already stored so we don't have to worry about any of those settings being implemented unless the user goes back to 1 gen, changes them and clicks apply changes. this logic continues throughout the generations the 3 gen chart overlays the buffer image created by the 2gen chart (which is itself a composite of it's own drawing logic & the 1 gen chart) in this way we can avoid repeating the process over and over each time we move up the list of chart templates. the buffer image is already ready before the page has even been loaded. if the user decides not to change any hardcoded defaults to their own options then the image generation process does not even need to be repeated. they can automatically view their 2-7 generation default-option charts without them needing to re-generate because they are pre-generated and pulled from the buffer that was created upon first load of the hud, and refreshed each time a user changes something and clicks apply settings
+DEBUG: Returning preview image
+DEBUG: Generated 1gen overlay buffer: <class '_io.BytesIO'>
+DEBUG: Returning preview image
+DEBUG: Composited 1gen overlay onto 2gen image
+DEBUG: Returning preview image
+DEBUG: Generated 1gen overlay buffer: <class '_io.BytesIO'>
+DEBUG: Generated 2gen overlay buffer: <class '_io.BytesIO'>
+DEBUG: Composited 1gen overlay onto 2gen image
+DEBUG: Returning preview image
+DEBUG: Composited 2gen overlay onto 3gen image at (468, 468) with size 1014
+DEBUG: Returning preview image
+DEBUG: Generated 2gen overlay buffer: <class '_io.BytesIO'>
+DEBUG: Generated 3gen overlay buffer: <class '_io.BytesIO'>
+DEBUG: Composited 2gen overlay onto 3gen image at (468, 468) with size 1014
+DEBUG: Returning preview image
+DEBUG: Composited 3gen overlay onto 4gen image at (331, 331) with size 1287
+DEBUG: Returning preview image
+DEBUG: Generated 3gen overlay buffer: <class '_io.BytesIO'>
+DEBUG: Composited 3gen overlay onto 4gen image at (331, 331) with size 1287
+DEBUG: Returning preview image
+DEBUG: Generated 4gen overlay buffer: <class '_io.BytesIO'>
+DEBUG: Composited 4gen overlay onto 5gen image at (244, 244) with size 1462
+DEBUG: Returning preview image
+
+
+solution: BUFFER MANAGER!

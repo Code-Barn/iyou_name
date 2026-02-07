@@ -86,6 +86,11 @@ def display_tree_hud(request):
         settings_template_map = {
             "1": "1gen_settings.html",
             "2": "2gen_settings.html",
+            "3": "3gen_settings.html",
+            "4": "4gen_settings.html",
+            "5": "5gen_settings.html",
+            "6": "6gen_settings.html",
+            "7": "7gen_settings.html",
         }
         current_settings_template = settings_template_map.get(
             current_template, "default_settings.html"

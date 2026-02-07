@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Settings Inheritance Test</title>
+    <script>
+        // Mock the localStorage functions and HUD structure
+        window.HUD = window.HUD || {};
+        window.HUD.Storage = {
+            getStored1GenSettings: function() {
+                return JSON.parse(localStorage.getItem('hud_1gen_settings') || '{}');
+            }
+        };
+        
+        window.HUD.Utils = {
+            collectUserSettings: function(formData) {
+                // Mock collecting settings from form
+                const settings = {};
+                for (let [key, value] of formData.entries()) {
+                    if (typeof value === 'string') {
+                        settings[key] = value;
+                    }
+                }
+                console.log('Collected user settings:', settings);
+                return settings;
+            }
+        };
+        
+        window.HUD.Preview = {
+            generatePreview: function(userSettings) {
+                console.log('Generating preview with settings:', userSettings);
+                // Mock preview generation
+                return true;
+            }
+        };
+        
+        // Test template switching logic
+        function testTemplateInheritance() {
+            console.log('=== TESTING TEMPLATE INHERITANCE ===');
+            
+            // Simulate 1gen settings
+            const mock1GenSettings = {
+                primary_background_color: '#FF00FF',
+                primary_font_color: '#000000',
+                font_family: 'Arial'
+            };
+            localStorage.setItem('hud_1gen_settings', JSON.stringify(mock1GenSettings));
+            
+            // Test template 4 (should inherit 1gen settings)
+            console.log('Testing template 4...');
+            const templateValue = '4';
+            const individualId = 'TEST123';
+            
+            // Collect current form settings (mock empty form for template 4)
+            const mockFormData = new FormData();
+            const userSettings = window.HUD.Utils.collectUserSettings(mockFormData);
+            
+            // Add stored 1gen settings for overlay inheritance
+            const stored1GenSettings = window.HUD.Storage.getStored1GenSettings();
+            if (stored1GenSettings) {
+                userSettings.primary_settings = stored1GenSettings;
+                console.log(`Including stored 1gen settings for ${templateValue} overlay:`, stored1GenSettings);
+            } else {
+                console.log(`No stored 1gen settings found for ${templateValue} preview`);
+            }
+            
+            console.log('Final userSettings for template 4:', userSettings);
+            
+            // Test template 7 (should also inherit 1gen settings)
+            console.log('Testing template 7...');
+            const templateValue7 = '7';
+            const userSettings7 = window.HUD.Utils.collectUserSettings(mockFormData);
+            
+            const stored1GenSettings7 = window.HUD.Storage.getStored1GenSettings();
+            if (stored1GenSettings7) {
+                userSettings7.primary_settings = stored1GenSettings7;
+                console.log(`Including stored 1gen settings for ${templateValue7} overlay:`, stored1GenSettings7);
+            } else {
+                console.log(`No stored 1gen settings found for ${templateValue7} preview`);
+            }
+            
+            console.log('Final userSettings for template 7:', userSettings7);
+        }
+        
+        // Run test when page loads
+        window.onload = testTemplateInheritance;
+    </script>
+</head>
+<body>
+    <h1>Settings Inheritance Test</h1>
+    <p>Check the browser console for test results.</p>
+</body>
+</html>

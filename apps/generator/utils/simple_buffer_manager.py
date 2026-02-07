@@ -198,15 +198,45 @@ def get_chart_buffer(
             from apps.generator.utils.image_7generator import generate_7gen_preview
 
             generator_func = generate_7gen_preview
-elif generation == 8:
-            from apps.generator.utils.image_high_gen_generator import generate_high_gen_preview
-            generator_func = lambda primary_individual, family_data, template, user_settings: generate_high_gen_preview(8, primary_individual, family_data, template, user_settings)
+        elif generation == 8:
+            from apps.generator.utils.image_high_gen_generator import (
+                generate_high_gen_preview,
+            )
+
+            generator_func = (
+                lambda primary_individual,
+                family_data,
+                template,
+                user_settings: generate_high_gen_preview(
+                    8, primary_individual, family_data, template, user_settings
+                )
+            )
         elif generation == 9:
-            from apps.generator.utils.image_high_gen_generator import generate_high_gen_preview
-            generator_func = lambda primary_individual, family_data, template, user_settings: generate_high_gen_preview(9, primary_individual, family_data, template, user_settings)
+            from apps.generator.utils.image_high_gen_generator import (
+                generate_high_gen_preview,
+            )
+
+            generator_func = (
+                lambda primary_individual,
+                family_data,
+                template,
+                user_settings: generate_high_gen_preview(
+                    9, primary_individual, family_data, template, user_settings
+                )
+            )
         elif generation == 10:
-            from apps.generator.utils.image_high_gen_generator import generate_high_gen_preview
-            generator_func = lambda primary_individual, family_data, template, user_settings: generate_high_gen_preview(10, primary_individual, family_data, template, user_settings)
+            from apps.generator.utils.image_high_gen_generator import (
+                generate_high_gen_preview,
+            )
+
+            generator_func = (
+                lambda primary_individual,
+                family_data,
+                template,
+                user_settings: generate_high_gen_preview(
+                    10, primary_individual, family_data, template, user_settings
+                )
+            )
         else:
             raise ValueError(f"Unsupported generation: {generation}")
 
@@ -220,26 +250,19 @@ elif generation == 8:
         family_data_with_person_objects["individuals"] = person_data_objects
 
         # Generate chart directly
-        # High-gen generators expect (generation, primary_individual, family_data, template, user_settings)
-        # but our current generators expect (primary_individual, family_data, template, user_settings)
-        # Need to adapt based on generator type
-        if generation <= 3:
-            # Standard generators (1-3) expect 4 parameters
-            buffer = generator_func(
-                primary_individual,
-                family_data_with_person_objects,
-                "preview",
-                user_settings,
+        # All generators expect (primary_individual, family_data, template, user_settings)
+        buffer = generator_func(
+            primary_individual,
+            family_data_with_person_objects,
+            "preview",
+            user_settings,
+        )
+
+        if buffer is None:
+            logger.error(
+                f"Generator function returned None for generation {generation}"
             )
-        else:
-            # High-gen generators (4-10) expect 5 parameters with generation first
-            buffer = generator_func(
-                generation,
-                primary_individual,
-                family_data_with_person_objects,
-                "preview",
-                user_settings,
-            )
+            raise Exception(f"Failed to generate chart for generation {generation}")
 
         # Store in cache
         simple_buffer_manager.store_buffer(

@@ -11,6 +11,8 @@ from apps.generator.utils.image_1generator import generate_1gen_preview
 from apps.generator.utils.name_utils import parse_name_parts
 from apps.generator.utils.settings_helper import extract_generation_settings
 
+logger = logging.getLogger(__name__)
+
 
 def generate_2gen_preview(
     primary_individual, family_data, template="preview", user_settings=None
@@ -769,12 +771,25 @@ def generate_2gen_preview(
                 # Create image from blob
                 # =============================================
 
+                if not gen1_bytes:
+                    print("ERROR: gen1_bytes is empty")
+                    raise Exception("1gen buffer is empty")
+
+                # Create image from blob and composite
+                overlay_scale = 0.468  # 46.5% scale like the working backup
                 with Image(blob=gen1_bytes) as gen1_overlay:
-                    gen1_overlay.resize(
-                        int(gen1_overlay.width * 0.48), int(gen1_overlay.height * 0.48)
+                    overlay_size = int(content_img.width * overlay_scale)
+                    gen1_overlay.resize(overlay_size, overlay_size)
+
+                    # Center the overlay
+                    overlay_x = (content_img.width - overlay_size) // 2
+                    overlay_y = (content_img.height - overlay_size) // 2
+
+                    content_img.composite(gen1_overlay, left=overlay_x, top=overlay_y)
+                    print(
+                        f"DEBUG: Composited 1gen overlay onto 2gen image at ({overlay_x}, {overlay_y}) with size {overlay_size}"
                     )
-                    content_img.composite(gen1_overlay, left=508, top=508)
-                    print(f"DEBUG: Composited 1gen overlay onto 2gen image")
+
 
                 # =============================================
                 # For preview mode, return the content image directly
@@ -839,8 +854,9 @@ def generate_2gen_preview(
                         return pdf_buffer
 
     except Exception as e:
-        print(f"ERROR: Failed to generate chart: {str(e)}")
         import traceback
 
-        traceback.print_exc()
+        error_details = f"Error generating 2gen preview: {e}\n{traceback.format_exc()}"
+        logger.error(error_details)
+        print(f"ERROR: {error_details}")
         raise

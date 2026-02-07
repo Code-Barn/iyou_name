@@ -93,7 +93,10 @@ def display_tree_hud(request):
             "1": "1gen_settings.html",
             "2": "2gen_settings.html",
             "3": "3gen_settings.html",
-            "4": "default_settings.html",
+            "4": "4gen_settings.html",
+            "5": "5gen_settings.html",
+            "6": "6gen_settings.html",
+            "7": "7gen_settings.html",
         }
         current_settings_template = f"hud/settings/{settings_template_map.get(current_template, 'default_settings.html')}"
 
@@ -227,27 +230,27 @@ def get_template_preview_simple(request, template_id):
                     generator_func = generate_1gen_preview
                 elif generation == 2:
                     from apps.generator.utils.image_2generator import (
-                        generate_2gen_chart,
+                        generate_2gen_preview,
                     )
                 elif generation == 3:
                     from apps.generator.utils.image_3generator import (
-                        generate_3gen_chart,
+                        generate_3gen_preview,
                     )
                 elif generation == 4:
                     from apps.generator.utils.image_4generator import (
-                        generate_4gen_chart,
+                        generate_4gen_preview,
                     )
                 elif generation == 5:
                     from apps.generator.utils.image_5generator import (
-                        generate_5gen_chart,
+                        generate_5gen_preview,
                     )
                 elif generation == 6:
                     from apps.generator.utils.image_6generator import (
-                        generate_6gen_chart,
+                        generate_6gen_preview,
                     )
                 elif generation == 7:
                     from apps.generator.utils.image_7generator import (
-                        generate_7gen_chart,
+                        generate_7gen_preview,
                     )
                 else:
                     return HttpResponse(

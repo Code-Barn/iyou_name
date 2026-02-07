@@ -182,7 +182,7 @@
                         </div>
 
                         <!-- Load organized HUD JavaScript -->
-                        <script src="{% static 'hud/js/hud-organized.js' %}"></script>
+                        <script src="{% static 'hud/js/hud-organized.js' %}?v={% now 'Y-m-d-H-i-s' %}"></script>
                         
                         <!-- Load Shared Zoom JavaScript -->
                         <script src="{% static 'js/zoom.js' %}"></script>

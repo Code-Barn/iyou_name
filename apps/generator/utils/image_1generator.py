@@ -27,10 +27,11 @@ def generate_1gen_preview(
     Returns:
         BytesIO buffer containing the generated image (PNG for preview, PDF for final)
     """
-    # Get user settings or use empty dict if not provided
+    # UNIFIED SETTINGS: Use settings directly from unified system
+    # No more extraction needed - settings already properly categorized
     user_settings = user_settings or {}
 
-    print(f"DEBUG: generate_1gen_preview received user_settings: {user_settings}")
+    print(f"DEBUG: UNIFIED 1gen received settings: {user_settings}")
     print(f"DEBUG: Generating template type: {template}")
 
     print(
