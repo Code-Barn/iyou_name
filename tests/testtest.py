@@ -6,7 +6,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
-from apps.generator.utils.image_1generator import generate_1gen_preview
+from apps.generator.utils. import generate_1gen_preview
 from apps.parser.models import PersonData
 
 # Create a mock individual with all required fields

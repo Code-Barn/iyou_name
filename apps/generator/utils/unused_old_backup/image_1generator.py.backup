@@ -10,6 +10,7 @@ from wand.image import Image
 from apps.generator.utils.name_utils import get_name_display_info
 from apps.generator.utils.settings_validator import (
     get_validated_settings,
+    validate_setting,
     GenerationError,
 )
 from apps.generator.utils.buffer_manager import (
@@ -26,12 +27,12 @@ class Generation1Constants:
     """Constants for 1-generation chart generation."""
 
     # Canvas dimensions
-    CANVAS_WIDTH = 1866
-    CANVAS_HEIGHT = 1866
-    BACKGROUND_LEFT = 42
-    BACKGROUND_TOP = 42
-    BACKGROUND_WIDTH = 1866
-    BACKGROUND_HEIGHT = 1866
+    CANVAS_WIDTH = 1923
+    CANVAS_HEIGHT = 1923
+    BACKGROUND_LEFT = 13
+    BACKGROUND_TOP = 13
+    BACKGROUND_WIDTH = 1923
+    BACKGROUND_HEIGHT = 1923
 
     # Initial translation
     INITIAL_TRANSLATE_X = 0
@@ -97,7 +98,7 @@ def generate_1gen_preview(
     primary_individual, family_data, template="preview", user_settings=None
 ):
     """
-    Generate a 1-generation chart using enhanced standardized patterns.
+    Generate a 1-generation chart using Wand (Python ImageMagick binding)
 
     Args:
         primary_individual: PersonData object for the primary individual
@@ -146,17 +147,19 @@ def generate_1gen_preview(
                 f"Content image loaded: {content_img.width}x{content_img.height}"
             )
 
-            # Use validated settings
+            # Apply validated settings
+            settings = validated_settings
+
             with Drawing() as draw:
                 draw.push()
 
                 # Set initial drawing properties
-                draw.font = validated_settings["font_family"]
-                draw.font_size = validated_settings["primary_name_font_size"]
+                draw.font = settings["font_family"]
+                draw.font_size = settings["primary_name_font_size"]
                 draw.stroke_antialias = True
 
                 # Draw background
-                draw.fill_color = validated_settings["primary_background_color"]
+                draw.fill_color = settings["primary_background_color"]
                 draw.rectangle(
                     left=Generation1Constants.BACKGROUND_LEFT,
                     top=Generation1Constants.BACKGROUND_TOP,
@@ -172,7 +175,7 @@ def generate_1gen_preview(
 
                 # Draw primary individual
                 _draw_primary_individual(
-                    draw, content_img, primary_individual, validated_settings
+                    draw, content_img, primary_individual, settings
                 )
 
                 # Apply drawing to image
@@ -182,7 +185,7 @@ def generate_1gen_preview(
                 if template == "preview":
                     return create_preview_buffer(content_img)
                 elif template == "final":
-                    return _create_final_pdf(content_img, validated_settings)
+                    return _create_final_pdf(content_img, settings)
                 else:
                     raise GenerationError(f"Unknown template type: {template}")
 
@@ -328,7 +331,7 @@ def _draw_death_info(draw, content_img, primary_individual, settings):
     draw.pop()
 
 
-def _create_final_pdf(content_img, validated_settings):
+def _create_final_pdf(content_img, settings):
     """Create final PDF by compositing content onto base template."""
 
     # Load PDF base template

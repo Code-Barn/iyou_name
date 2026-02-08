@@ -131,14 +131,14 @@ def test_generator_imports():
     print("\n📦 Testing Generator Imports...")
 
     try:
-        from apps.generator.utils import image_1generator
+        from apps.generator.utils import
         from apps.generator.utils import image_2generator
 
         print("✅ image_1generator imported")
         print("✅ image_2generator imported")
 
         # Test that required functions exist
-        assert hasattr(image_1generator, "generate_1gen_preview")
+        assert hasattr(, "generate_1gen_preview")
         assert hasattr(image_2generator, "generate_2gen_preview")
 
         print("✅ Required generator functions found")

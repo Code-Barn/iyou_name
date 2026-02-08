@@ -15,7 +15,7 @@ from wand.color import Color
 from wand.drawing import Drawing
 from wand.image import Image
 
-from apps.generator.utils.image_1generator import generate_1gen_preview
+from apps.generator.utils. import generate_1gen_preview
 from apps.generator.utils.name_utils import parse_name_parts
 from apps.generator.utils.settings_helper import extract_generation_settings
 from apps.generator.utils.sunbeam_position_calculator import SunbeamPositionCalculator

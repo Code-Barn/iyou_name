@@ -18,7 +18,7 @@ import django
 
 django.setup()
 
-from apps.generator.utils.image_1generator import generate_1gen_preview
+from apps.generator.utils. import generate_1gen_preview
 from apps.parser.models import PersonData
 
 

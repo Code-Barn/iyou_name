@@ -26,12 +26,12 @@ class Generation1Constants:
     """Constants for 1-generation chart generation."""
 
     # Canvas dimensions
-    CANVAS_WIDTH = 1866
-    CANVAS_HEIGHT = 1866
-    BACKGROUND_LEFT = 42
-    BACKGROUND_TOP = 42
-    BACKGROUND_WIDTH = 1866
-    BACKGROUND_HEIGHT = 1866
+    CANVAS_WIDTH = 1923
+    CANVAS_HEIGHT = 1923
+    BACKGROUND_LEFT = 13
+    BACKGROUND_TOP = 13
+    BACKGROUND_WIDTH = 1923
+    BACKGROUND_HEIGHT = 1923
 
     # Initial translation
     INITIAL_TRANSLATE_X = 0
@@ -93,7 +93,7 @@ GENERATION_1_SETTINGS_SCHEMA = {
 }
 
 
-def generate_1gen_preview(
+def generate_1gen_preview_enhanced(
     primary_individual, family_data, template="preview", user_settings=None
 ):
     """
@@ -328,7 +328,7 @@ def _draw_death_info(draw, content_img, primary_individual, settings):
     draw.pop()
 
 
-def _create_final_pdf(content_img, validated_settings):
+def _create_final_pdf(content_img, settings):
     """Create final PDF by compositing content onto base template."""
 
     # Load PDF base template

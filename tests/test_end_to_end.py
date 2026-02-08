@@ -6,7 +6,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
-from apps.generator.utils.image_1generator import generate_1gen_preview
+from apps.generator.utils. import generate_1gen_preview
 from apps.parser.models import PersonData
 
 # Create a realistic test case
@@ -90,16 +90,16 @@ try:
     print('✓ SUCCESS: Final chart generation works')
     print(f'✓ Final result type: {type(final_result)}')
     print(f'✓ Final result size: {len(final_result.getvalue())} bytes')
-    
+
     # Save the results to files for visual inspection
     with open('test_preview.png', 'wb') as f:
         f.write(preview_result.getvalue())
     print('✓ Saved preview to: test_preview.png')
-    
+
     with open('test_final.pdf', 'wb') as f:
         f.write(final_result.getvalue())
     print('✓ Saved final chart to: test_final.pdf')
-    
+
 except Exception as e:
     print(f'✗ ERROR in final mode: {e}')
     import traceback

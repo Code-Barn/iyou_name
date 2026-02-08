@@ -14,6 +14,10 @@ from .views import (
     update_settings_timestamp,
     get_file_individuals,
 )
+from .test_views import (
+    test_enhanced_1gen_preview,
+    test_enhanced_1gen_comparison,
+)
 
 app_name = "hud"
 
@@ -57,5 +61,16 @@ urlpatterns = [
         "get-file-individuals/",
         get_file_individuals,
         name="get_file_individuals",
+    ),
+    # Test endpoints for enhanced generator
+    path(
+        "test-enhanced-1gen-preview/",
+        test_enhanced_1gen_preview,
+        name="test_enhanced_1gen_preview",
+    ),
+    path(
+        "test-enhanced-1gen-comparison/",
+        test_enhanced_1gen_comparison,
+        name="test_enhanced_1gen_comparison",
     ),
 ]

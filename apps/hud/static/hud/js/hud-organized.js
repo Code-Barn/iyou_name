@@ -591,8 +591,32 @@ HUD.Templates = (function() {
             
             // Generate 3gen preview with POST
             HUD.Preview.generatePreview(userSettings);
+        } else if (templateValue === '4') {
+            console.log('Template 4 selected - generating preview with 4gen settings');
+            
+            // Collect current form settings (for 4gen-specific fields)
+            const form = HUD.Main.getForm();
+            const formData = new FormData(form);
+            const userSettings = HUD.Utils.collectUserSettings(formData);
+            
+            // Add stored 1gen settings for 3gen overlay inheritance
+            const stored1GenSettings = HUD.Storage.getStored1GenSettings();
+            if (stored1GenSettings) {
+                userSettings.primary_settings = stored1GenSettings;
+                console.log('Including stored 1gen settings for 4gen overlay:', stored1GenSettings);
+            } else {
+                console.log('No stored 1gen settings found for 4gen preview');
+            }
+            
+            console.log('Complete 4gen request data being sent:', {
+                individual_id: document.querySelector('input[name="individual_id"]').value,
+                user_settings: userSettings
+            });
+            
+            // Generate 4gen preview with POST
+            HUD.Preview.generatePreview(userSettings);
         } else {
-            // For templates 3+, include stored 1gen settings for inheritance
+            // For templates 5+, include stored 1gen settings for inheritance
             const timestamp = Date.now();
             const individualId = document.querySelector('input[name="individual_id"]').value;
             const fileIdInput = document.querySelector('input[name="file_id"]');

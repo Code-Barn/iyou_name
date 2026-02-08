@@ -21,7 +21,7 @@ from apps.generator.utils.settings_helper import (
     extract_generation_settings,
     get_default_settings,
 )
-from apps.generator.utils.image_1generator import generate_1gen_preview
+from apps.generator.utils. import generate_1gen_preview
 from apps.parser.models import PersonData
 
 

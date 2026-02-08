@@ -6,7 +6,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
-from apps.generator.utils.image_1generator import generate_1gen_preview
+from apps.generator.utils. import generate_1gen_preview
 from apps.parser.models import PersonData
 
 # Create test individual
@@ -65,19 +65,19 @@ print()
 print("1. Testing PREVIEW generation with obvious settings...")
 try:
     preview_result = generate_1gen_preview(
-        mock_individual, 
-        mock_family_data, 
-        "preview", 
+        mock_individual,
+        mock_family_data,
+        "preview",
         obvious_settings
     )
     print("✓ Preview generation successful")
-    
+
     # Save for visual inspection
     with open('debug_preview.png', 'wb') as f:
         f.write(preview_result.getvalue())
     print("✓ Saved debug_preview.png - check if settings are applied")
     print()
-    
+
 except Exception as e:
     print(f"✗ Preview generation failed: {e}")
     import traceback
@@ -88,19 +88,19 @@ except Exception as e:
 print("2. Testing FINAL CHART generation with same obvious settings...")
 try:
     final_result = generate_1gen_preview(
-        mock_individual, 
-        mock_family_data, 
-        "final", 
+        mock_individual,
+        mock_family_data,
+        "final",
         obvious_settings
     )
     print("✓ Final chart generation successful")
-    
+
     # Save for visual inspection
     with open('debug_final.pdf', 'wb') as f:
         f.write(final_result.getvalue())
     print("✓ Saved debug_final.pdf - check if settings are applied")
     print()
-    
+
 except Exception as e:
     print(f"✗ Final chart generation failed: {e}")
     import traceback

@@ -20,7 +20,7 @@ sys.modules["django.conf"].settings = MockSettings()
 
 # Import required modules
 
-from apps.generator.utils.image_1generator import generate_family_tree
+from apps.generator.utils. import generate_family_tree
 
 
 # Mock individual data
