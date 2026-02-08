@@ -49,7 +49,7 @@ class Generation4Constants:
     ]
 
     # Overlay composition
-    OVERLAY_SCALE = 0.67  # 66.66% scale for 4gen
+    OVERLAY_SCALE = 0.7144  # 66.66% scale for 4gen
 
     # PDF compositing
     COMPOSITE_X = 300
@@ -89,7 +89,7 @@ GENERATION_4_SETTINGS_SCHEMA = {
     "info_stroke_color": (Color, "gray"),
     "info_stroke_width": (float, 0.25),
     # Overlay settings
-    "overlay_scale": (float, 0.67),
+    "overlay_scale": (float, 0.7144),
     "overlay_position_x": (int, 0),  # Centered
     "overlay_position_y": (int, 0),  # Centered
 }

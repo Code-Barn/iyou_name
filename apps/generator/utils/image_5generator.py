@@ -272,7 +272,7 @@ def generate_5gen_preview(
                 raise Exception("4gen overlay buffer is empty")
 
             # Create image from blob and composite
-            overlay_scale = 0.7497  # 74.97% scale for 5gen
+            overlay_scale = 0.7797  # 74.97% scale for 5gen
             with Image(blob=gen4_bytes) as gen4_overlay:
                 overlay_size = int(content_img.width * overlay_scale)
                 gen4_overlay.resize(overlay_size, overlay_size)

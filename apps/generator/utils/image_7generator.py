@@ -260,7 +260,7 @@ def generate_7gen_preview(
                 raise Exception("6gen overlay buffer is empty")
 
             # Create image from blob and composite
-            overlay_scale = 0.8333  # 83.33% scale for 7gen
+            overlay_scale = 0.8462  # 83.33% scale for 7gen
             with Image(blob=gen6_bytes) as gen6_overlay:
                 overlay_size = int(content_img.width * overlay_scale)
                 gen6_overlay.resize(overlay_size, overlay_size)
