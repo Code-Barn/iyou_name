@@ -13,7 +13,7 @@ from apps.generator.utils.settings_validator import (
     get_validated_settings,
     GenerationError,
 )
-from apps.generator.utils.buffer_manager import (
+from apps.generator.utils.simple_buffer_manager import (
     create_preview_buffer,
     create_pdf_buffer,
     BufferError,
@@ -434,11 +434,9 @@ def _extract_primary_settings(user_settings):
     primary_settings = user_settings.get("primary_settings", {})
 
     if not primary_settings:
-        # Fallback to extracting PRIMARY from current settings
-        from apps.generator.utils.settings_helper import extract_generation_settings
-
-        primary_settings = extract_generation_settings(user_settings, "PRIMARY")
-        logger.debug("Using fallback PRIMARY settings for 1gen overlay")
+        # Fallback: use complete user settings (not extracted subset)
+        primary_settings = user_settings
+        logger.debug("Using complete user settings for 1gen overlay")
     else:
         logger.debug("Using stored primary settings for 1gen overlay")
 

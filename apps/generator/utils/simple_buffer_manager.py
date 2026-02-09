@@ -13,6 +13,65 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 from apps.parser.models import PersonData as PersonDataClass
+from wand.image import Image
+
+
+class BufferError(Exception):
+    """Custom exception for buffer-related errors."""
+
+    pass
+
+
+def create_image_buffer(
+    image: Image, format_name: str = "PNG", quality: Optional[int] = None
+) -> BytesIO:
+    """
+    Create a standardized image buffer from a Wand Image.
+
+    Args:
+        image: Wand Image object to save to buffer
+        format_name: Image format (PNG, PDF, etc.)
+        quality: Optional quality setting for compression
+
+    Returns:
+        BytesIO buffer containing image data
+
+    Raises:
+        BufferError: If buffer creation fails
+    """
+    try:
+        buffer = BytesIO()
+
+        # Set quality if specified
+        if quality is not None and format_name.upper() in ["JPEG", "JPG"]:
+            image.compression_quality = quality
+
+        # Save image to buffer
+        image.save(file=buffer)
+
+        # Validate buffer has content
+        if buffer.tell() == 0:
+            raise BufferError(f"Created buffer is empty for format: {format_name}")
+
+        # Reset position for reading
+        buffer.seek(0)
+
+        logger.debug(f"Created {format_name} buffer: {buffer.tell()} bytes")
+        return buffer
+
+    except Exception as e:
+        logger.error(f"Failed to create {format_name} buffer: {e}")
+        raise BufferError(f"Buffer creation failed: {e}")
+
+
+def create_preview_buffer(image: Image) -> BytesIO:
+    """Create a standard preview PNG buffer."""
+    return create_image_buffer(image, "PNG")
+
+
+def create_pdf_buffer(image: Image) -> BytesIO:
+    """Create a standard PDF buffer."""
+    return create_image_buffer(image, "PDF")
 
 
 class SimpleBufferManager:

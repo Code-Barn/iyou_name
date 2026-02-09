@@ -14,7 +14,7 @@ from apps.generator.utils.settings_validator import (
     get_validated_settings,
     GenerationError,
 )
-from apps.generator.utils.buffer_manager import (
+from apps.generator.utils.simple_buffer_manager import (
     create_preview_buffer,
     create_pdf_buffer,
     BufferError,
