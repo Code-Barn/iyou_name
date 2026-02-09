@@ -100,29 +100,32 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 
+
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "namechart",
-        "USER": "namechart_user",
-        "PASSWORD": "your_password",
-        "HOST": "localhost",
-        "PORT": "5432",
-        "HOST": "localhost",
-        "PORT": "5432",
+# Set USE_DOCKER_DB=1 in Docker environment or .env file
+if os.environ.get("USE_DOCKER_DB") == "1":
+    # Docker database configuration
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("POSTGRES_DB", "namechart"),
+            "USER": os.environ.get("POSTGRES_USER", "namechart_user"),
+            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "your_password"),
+            "HOST": os.environ.get("POSTGRES_HOST", "db"),
+            "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+        }
     }
-}
-"""
-
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', 'postgres://namechart_user:your_password@db:5432/namechart')
-    )
-}
-"""
+else:
+    # Local development database configuration
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=os.environ.get(
+                "DATABASE_URL",
+                "postgres://namechart_user:your_password@localhost:5432/namechart",
+            )
+        )
+    }
 
 TEST = {
     "NAME": "namechart",

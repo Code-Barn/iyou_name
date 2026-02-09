@@ -1,3 +1,9 @@
+OK.  i have performed a git reset --hard
+i need you to examine the [@STANDARDIZER_PROGRESS.md](file:///home/user/CODE_BASE/namechart/apps/generator/utils/STANDARDIZER_PROGRESS.md) [@MULTI_GENERATION_STANDARDIZATION_SPEC.md](file:///home/user/CODE_BASE/namechart/apps/generator/docs/MULTI_GENERATION_STANDARDIZATION_SPEC.md) and once again we are going to attempt to backup the previous [@image_5generator.py](file:///home/user/CODE_BASE/namechart/apps/generator/utils/image_5generator.py) files to [@unused_old_backup](file:///home/user/CODE_BASE/namechart/apps/generator/utils/unused_old_backup) and create a new standardized version in place to function exactly the same way that the previous generator scripts do, from top to bottom, with the only difference in the exact naming of the variables to account for different generations naming conventions, and the number of individuals documented increases by 2 fold each time so the 4 generation documents 8 individuals, this 5 generation chart will document 16. take your best attempt at creating a brand new image_5generator.py file to meet our exact standard and be perfectly compatible with the generators before (the ones after will be standardized next, if we can figure out how to do it)
+
+
+# PREVIOUS 
+
 I can see the issue! Looking at the console logs, there's a critical difference in how templates 1-4 vs template 5 are handled:
 
 ## 🔍 **The Problem**
