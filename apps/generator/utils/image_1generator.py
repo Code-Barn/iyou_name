@@ -26,12 +26,12 @@ class Generation1Constants:
     """Constants for 1-generation chart generation."""
 
     # Canvas dimensions
-    CANVAS_WIDTH = 1866
-    CANVAS_HEIGHT = 1866
-    BACKGROUND_LEFT = 42
-    BACKGROUND_TOP = 42
-    BACKGROUND_WIDTH = 1866
-    BACKGROUND_HEIGHT = 1866
+    CANVAS_WIDTH = 1822
+    CANVAS_HEIGHT = 1822
+    BACKGROUND_LEFT = 64
+    BACKGROUND_TOP = 64
+    BACKGROUND_WIDTH = 1822
+    BACKGROUND_HEIGHT = 1822
 
     # Initial translation
     INITIAL_TRANSLATE_X = 0

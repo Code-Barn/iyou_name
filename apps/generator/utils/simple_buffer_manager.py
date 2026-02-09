@@ -243,7 +243,12 @@ def get_chart_buffer(
         # Convert all individuals to PersonData objects for multi-generational charts
         person_data_objects = {}
         for person_id, person_data in family_data.get("individuals", {}).items():
-            person_data_objects[person_id] = PersonDataClass(**person_data)
+            # If already a PersonData object, use it directly
+            if isinstance(person_data, PersonDataClass):
+                person_data_objects[person_id] = person_data
+            else:
+                # Convert dict to PersonData object
+                person_data_objects[person_id] = PersonDataClass(**person_data)
 
         # Update family_data with PersonData objects
         family_data_with_person_objects = family_data.copy()

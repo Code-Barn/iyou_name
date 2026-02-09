@@ -781,8 +781,9 @@ def get_settings_panel(request, template_name):
     """
     try:
         # Debug logging
-        logger.debug(f"get_settings_panel called with template_name: {template_name}")
-        logger.debug(f"Request GET params: {dict(request.GET)}")
+        logger.info(f"get_settings_panel called with template_name: {template_name}")
+        logger.info(f"Request GET params: {dict(request.GET)}")
+        logger.info(f"Template path will be: hud/settings/{template_name}")
 
         # Get template information for context
         template_id = request.GET.get("template", "1")
@@ -802,7 +803,19 @@ def get_settings_panel(request, template_name):
 
         # Render the settings template (use template_name from URL parameter)
         template_path = f"hud/settings/{template_name}"
-        logger.debug(f"Template path: {template_path}")
+        logger.info(f"Template path: {template_path}")
+
+        # Check if template exists
+        from django.template.loader import get_template
+
+        try:
+            get_template(template_path)
+            logger.info(f"Template {template_path} found successfully")
+        except Exception as e:
+            logger.error(f"Template {template_path} not found: {e}")
+            # Fallback to default template
+            template_path = "hud/settings/default_settings.html"
+            logger.info(f"Falling back to {template_path}")
 
         context = {
             "hud_settings": request.session.get("hud_settings", {}),

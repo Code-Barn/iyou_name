@@ -254,7 +254,10 @@ def draw_individual_at_position(draw, individual, x, y, rotation, font_size):
 
     for j, line in enumerate(lines):
         line_y = start_y + (j * line_height)
-        draw.text(0, line_y, line)
+        draw.push()
+        draw.translate(0, line_y)
+        draw.text(0, 0, line)
+        draw.pop()
 
     draw.pop()
 

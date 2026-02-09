@@ -85,6 +85,103 @@ GENERATION_4_SETTINGS_SCHEMA = {
     "greatgrandparent_death_translate_x": (int, 0),
     "greatgrandparent_death_translate_y": (int, 0),
     "greatgrandparent_death_rotate": (int, 0),
+    # Individual great-grandparent settings for 8 compass positions
+    "great_grandparent_0_font_color": (Color, "black"),
+    "great_grandparent_0_stroke_color": (Color, "black"),
+    "great_grandparent_0_font_size": (int, 32),
+    "great_grandparent_0_translate_x": (int, 0),
+    "great_grandparent_0_translate_y": (int, 0),
+    "great_grandparent_0_rotate": (int, 0),
+    "great_grandparent_0_birth_translate_x": (int, 0),
+    "great_grandparent_0_birth_translate_y": (int, 0),
+    "great_grandparent_0_birth_rotate": (int, 0),
+    "great_grandparent_0_death_translate_x": (int, 0),
+    "great_grandparent_0_death_translate_y": (int, 0),
+    "great_grandparent_0_death_rotate": (int, 0),
+    "great_grandparent_1_font_color": (Color, "black"),
+    "great_grandparent_1_stroke_color": (Color, "black"),
+    "great_grandparent_1_font_size": (int, 32),
+    "great_grandparent_1_translate_x": (int, 0),
+    "great_grandparent_1_translate_y": (int, 0),
+    "great_grandparent_1_rotate": (int, 0),
+    "great_grandparent_1_birth_translate_x": (int, 0),
+    "great_grandparent_1_birth_translate_y": (int, 0),
+    "great_grandparent_1_birth_rotate": (int, 0),
+    "great_grandparent_1_death_translate_x": (int, 0),
+    "great_grandparent_1_death_translate_y": (int, 0),
+    "great_grandparent_1_death_rotate": (int, 0),
+    "great_grandparent_2_font_color": (Color, "black"),
+    "great_grandparent_2_stroke_color": (Color, "black"),
+    "great_grandparent_2_font_size": (int, 32),
+    "great_grandparent_2_translate_x": (int, 0),
+    "great_grandparent_2_translate_y": (int, 0),
+    "great_grandparent_2_rotate": (int, 0),
+    "great_grandparent_2_birth_translate_x": (int, 0),
+    "great_grandparent_2_birth_translate_y": (int, 0),
+    "great_grandparent_2_birth_rotate": (int, 0),
+    "great_grandparent_2_death_translate_x": (int, 0),
+    "great_grandparent_2_death_translate_y": (int, 0),
+    "great_grandparent_2_death_rotate": (int, 0),
+    "great_grandparent_3_font_color": (Color, "black"),
+    "great_grandparent_3_stroke_color": (Color, "black"),
+    "great_grandparent_3_font_size": (int, 32),
+    "great_grandparent_3_translate_x": (int, 0),
+    "great_grandparent_3_translate_y": (int, 0),
+    "great_grandparent_3_rotate": (int, 0),
+    "great_grandparent_3_birth_translate_x": (int, 0),
+    "great_grandparent_3_birth_translate_y": (int, 0),
+    "great_grandparent_3_birth_rotate": (int, 0),
+    "great_grandparent_3_death_translate_x": (int, 0),
+    "great_grandparent_3_death_translate_y": (int, 0),
+    "great_grandparent_3_death_rotate": (int, 0),
+    "great_grandparent_4_font_color": (Color, "black"),
+    "great_grandparent_4_stroke_color": (Color, "black"),
+    "great_grandparent_4_font_size": (int, 32),
+    "great_grandparent_4_translate_x": (int, 0),
+    "great_grandparent_4_translate_y": (int, 0),
+    "great_grandparent_4_rotate": (int, 0),
+    "great_grandparent_4_birth_translate_x": (int, 0),
+    "great_grandparent_4_birth_translate_y": (int, 0),
+    "great_grandparent_4_birth_rotate": (int, 0),
+    "great_grandparent_4_death_translate_x": (int, 0),
+    "great_grandparent_4_death_translate_y": (int, 0),
+    "great_grandparent_4_death_rotate": (int, 0),
+    "great_grandparent_5_font_color": (Color, "black"),
+    "great_grandparent_5_stroke_color": (Color, "black"),
+    "great_grandparent_5_font_size": (int, 32),
+    "great_grandparent_5_translate_x": (int, 0),
+    "great_grandparent_5_translate_y": (int, 0),
+    "great_grandparent_5_rotate": (int, 0),
+    "great_grandparent_5_birth_translate_x": (int, 0),
+    "great_grandparent_5_birth_translate_y": (int, 0),
+    "great_grandparent_5_birth_rotate": (int, 0),
+    "great_grandparent_5_death_translate_x": (int, 0),
+    "great_grandparent_5_death_translate_y": (int, 0),
+    "great_grandparent_5_death_rotate": (int, 0),
+    "great_grandparent_6_font_color": (Color, "black"),
+    "great_grandparent_6_stroke_color": (Color, "black"),
+    "great_grandparent_6_font_size": (int, 32),
+    "great_grandparent_6_translate_x": (int, 0),
+    "great_grandparent_6_translate_y": (int, 0),
+    "great_grandparent_6_rotate": (int, 0),
+    "great_grandparent_6_birth_translate_x": (int, 0),
+    "great_grandparent_6_birth_translate_y": (int, 0),
+    "great_grandparent_6_birth_rotate": (int, 0),
+    "great_grandparent_6_death_translate_x": (int, 0),
+    "great_grandparent_6_death_translate_y": (int, 0),
+    "great_grandparent_6_death_rotate": (int, 0),
+    "great_grandparent_7_font_color": (Color, "black"),
+    "great_grandparent_7_stroke_color": (Color, "black"),
+    "great_grandparent_7_font_size": (int, 32),
+    "great_grandparent_7_translate_x": (int, 0),
+    "great_grandparent_7_translate_y": (int, 0),
+    "great_grandparent_7_rotate": (int, 0),
+    "great_grandparent_7_birth_translate_x": (int, 0),
+    "great_grandparent_7_birth_translate_y": (int, 0),
+    "great_grandparent_7_birth_rotate": (int, 0),
+    "great_grandparent_7_death_translate_x": (int, 0),
+    "great_grandparent_7_death_translate_y": (int, 0),
+    "great_grandparent_7_death_rotate": (int, 0),
     # Information styling
     "info_stroke_color": (Color, "gray"),
     "info_stroke_width": (float, 0.25),
@@ -178,14 +275,13 @@ def generate_4gen_preview(
                 # Apply drawing to image
                 draw(content_img)
 
-            # Generate 3gen overlay with PRIMARY settings
-            primary_settings = _extract_primary_settings(user_settings)
+            # Generate 3gen overlay with complete user settings
             logger.debug(
-                f"Generating 3gen overlay with settings: {len(primary_settings)} settings"
+                f"Generating 3gen overlay with complete user settings: {len(user_settings) if user_settings else 0} settings"
             )
 
             gen3_img_buffer = generate_3gen_preview(
-                primary_individual, family_data, "preview", primary_settings
+                primary_individual, family_data, "preview", user_settings
             )
 
             # Composite the 3gen overlay onto the 4gen image
@@ -258,6 +354,7 @@ def _draw_great_grandparents(
             _draw_great_grandparent_at_position(
                 draw,
                 great_grandparent,
+                index,
                 int(edge_x),
                 int(edge_y),
                 rotation,
@@ -270,6 +367,7 @@ def _draw_great_grandparents(
 def _draw_great_grandparent_at_position(
     draw,
     great_grandparent,
+    index,
     edge_x,
     edge_y,
     rotation,
@@ -279,39 +377,81 @@ def _draw_great_grandparent_at_position(
 ):
     """Draw a single great-grandparent at the specified edge position."""
 
+    # Get individual-specific settings for this great-grandparent
+    prefix = f"great_grandparent_{index}_"
+
+    font_color = validated_settings.get(
+        f"{prefix}font_color", validated_settings["greatgrandparent_font_color"]
+    )
+    stroke_color = validated_settings.get(
+        f"{prefix}stroke_color", validated_settings["greatgrandparent_stroke_color"]
+    )
+    individual_font_size = validated_settings.get(f"{prefix}font_size", font_size)
+    translate_x = validated_settings.get(f"{prefix}translate_x", 0)
+    translate_y = validated_settings.get(f"{prefix}translate_y", 0)
+    individual_rotation = validated_settings.get(f"{prefix}rotate", 0)
+
+    # Set drawing properties
+    draw.fill_color = font_color
+    draw.stroke_color = stroke_color
+    draw.font_size = individual_font_size
+
     # Get name display information using standardized approach
     name_info = get_name_display_info(great_grandparent.full_name)
     display_text = name_info["display_text"]
 
     # Draw name with multiline support using translation
     lines = display_text.split("\n")
-    line_height = font_size * Generation4Constants.MULTILINE_LINE_HEIGHT_RATIO
+    line_height = (
+        individual_font_size * Generation4Constants.MULTILINE_LINE_HEIGHT_RATIO
+    )
     start_y = -(len(lines) - 1) * line_height / 2
 
     for i, line in enumerate(lines):
         line_y = start_y + (i * line_height)
 
         draw.push()
-        draw.translate(edge_x, edge_y)
-        draw.rotate(rotation)
-        draw.text(0, int(round(line_y)), line)
+        draw.translate(edge_x + translate_x, edge_y + translate_y)
+        draw.rotate(rotation + individual_rotation)
+        draw.push()
+        draw.translate(0, line_y)
+        draw.text(0, 0, line)
+        draw.pop()
         draw.pop()
 
     # Draw birth date if available
     if great_grandparent.birth_date:
         draw.push()
-        draw.translate(edge_x, edge_y + date_distance)
-        draw.rotate(rotation)
-        draw.font_size = int(font_size * Generation4Constants.DATE_FONT_SIZE_RATIO)
+        birth_translate_x = validated_settings.get(f"{prefix}birth_translate_x", 0)
+        birth_translate_y = validated_settings.get(f"{prefix}birth_translate_y", 0)
+        birth_rotate = validated_settings.get(f"{prefix}birth_rotate", 0)
+
+        draw.translate(
+            edge_x + translate_x + birth_translate_x,
+            edge_y + translate_y + birth_translate_y + date_distance,
+        )
+        draw.rotate(rotation + individual_rotation + birth_rotate)
+        draw.font_size = int(
+            individual_font_size * Generation4Constants.DATE_FONT_SIZE_RATIO
+        )
         draw.text(0, 0, great_grandparent.birth_date)
         draw.pop()
 
     # Draw death date if available
     if great_grandparent.death_date:
         draw.push()
-        draw.translate(edge_x, edge_y + date_distance + 15)
-        draw.rotate(rotation)
-        draw.font_size = int(font_size * Generation4Constants.DATE_FONT_SIZE_RATIO)
+        death_translate_x = validated_settings.get(f"{prefix}death_translate_x", 0)
+        death_translate_y = validated_settings.get(f"{prefix}death_translate_y", 0)
+        death_rotate = validated_settings.get(f"{prefix}death_rotate", 0)
+
+        draw.translate(
+            edge_x + translate_x + death_translate_x,
+            edge_y + translate_y + death_translate_y + date_distance + 15,
+        )
+        draw.rotate(rotation + individual_rotation + death_rotate)
+        draw.font_size = int(
+            individual_font_size * Generation4Constants.DATE_FONT_SIZE_RATIO
+        )
         draw.text(0, 0, great_grandparent.death_date)
         draw.pop()
 
@@ -364,24 +504,6 @@ def get_great_grandparents(primary_individual, family_data):
 
     # Filter out None values and return
     return [gp for gp in great_grandparents if gp is not None]
-
-
-def _extract_primary_settings(user_settings):
-    """Extract PRIMARY settings for 3gen overlay generation."""
-
-    # Check for stored primary settings first (from JavaScript)
-    primary_settings = user_settings.get("primary_settings", {})
-
-    if not primary_settings:
-        # Fallback to extracting PRIMARY from current settings
-        from apps.generator.utils.settings_helper import extract_generation_settings
-
-        primary_settings = extract_generation_settings(user_settings, "PRIMARY")
-        logger.debug("Using fallback PRIMARY settings for 3gen overlay")
-    else:
-        logger.debug("Using stored primary settings for 3gen overlay")
-
-    return primary_settings
 
 
 def _composite_overlay(content_img, gen3_img_buffer, validated_settings):

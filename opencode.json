@@ -1,0 +1,7 @@
+{
+  "mode": {
+    "default": {
+      "prompt": "prefix python commands with 'uv run'"
+    }
+  }
+}

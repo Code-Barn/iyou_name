@@ -363,7 +363,10 @@ def _draw_grandparent(draw, grandparent, gp_type, x, y, rotation, validated_sett
 
     for i, line in enumerate(lines):
         line_y = start_y + (i * line_height)
-        draw.text(0, line_y, line)
+        draw.push()
+        draw.translate(0, line_y)
+        draw.text(0, 0, line)
+        draw.pop()
 
     draw.pop()
 
@@ -570,8 +573,3 @@ def _create_final_pdf(content_img, validated_settings):
 
         # Create PDF buffer
         return create_pdf_buffer(base_img)
-
-
-def get_name_display_info(full_name):
-    """Get name display information (compatibility function)."""
-    return get_name_display_info(full_name)

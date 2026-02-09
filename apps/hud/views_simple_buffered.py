@@ -139,7 +139,11 @@ def get_template_preview_simple(request, template_id):
     # Handle both GET and POST requests
     if request.method == "GET":
         individual_id = request.GET.get("individual_id")
-        user_settings = {}
+        # For GET requests, use current session settings
+        user_settings = request.session.get("hud_settings", {})
+        logger.info(
+            f"GET request for template {template_id}: using {len(user_settings)} session settings"
+        )
     elif request.method == "POST":
         data = json.loads(request.body)
         individual_id = data.get("individual_id")
@@ -194,82 +198,28 @@ def get_template_preview_simple(request, template_id):
     except ValueError:
         return HttpResponse(f"Invalid template ID: {template_id}", status=400)
 
-    # Generate chart using the working buffer system
+    # Generate chart using the standardized buffer system
     try:
-        # Debug: Log what we're passing to the generator
-        print(f"DEBUG: Calling get_chart_buffer with:")
-        print(f"  - primary_individual type: {type(primary_individual)}")
-        print(
-            f"  - primary_individual.id: {getattr(primary_individual, 'id', 'NO_ID')}"
+        logger.debug(
+            f"Generating chart for template {template_id} (generation {generation})"
         )
-        print(
-            f"  - primary_individual.full_name: {getattr(primary_individual, 'full_name', 'NO_FULL_NAME')}"
-        )
-        print(f"  - generation: {generation}")
 
         buffer = get_chart_buffer(
             primary_individual, family_data, user_settings, generation
         )
 
-        if buffer:
-            # Return cached image
-            buffer.seek(0)
-            image_data = buffer.read()
-            return HttpResponse(image_data, content_type="image/png")
-        else:
-            # Buffer miss - log and return fresh generation
-            logger.info(f"Generating fresh buffer for generation {generation}")
+        if buffer is None:
+            logger.error(f"get_chart_buffer returned None for generation {generation}")
+            return HttpResponse("Chart generation failed", status=500)
 
-            # Fall back to direct generation if buffer fails
-            try:
-                if generation == 1:
-                    from apps.generator.utils.image_1generator import (
-                        generate_1gen_preview,
-                    )
-
-                    generator_func = generate_1gen_preview
-                elif generation == 2:
-                    from apps.generator.utils.image_2generator import (
-                        generate_2gen_preview,
-                    )
-                elif generation == 3:
-                    from apps.generator.utils.image_3generator import (
-                        generate_3gen_preview,
-                    )
-                elif generation == 4:
-                    from apps.generator.utils.image_4generator import (
-                        generate_4gen_preview,
-                    )
-                elif generation == 5:
-                    from apps.generator.utils.image_5generator import (
-                        generate_5gen_preview,
-                    )
-                elif generation == 6:
-                    from apps.generator.utils.image_6generator import (
-                        generate_6gen_preview,
-                    )
-                elif generation == 7:
-                    from apps.generator.utils.image_7generator import (
-                        generate_7gen_preview,
-                    )
-                else:
-                    return HttpResponse(
-                        f"Unsupported template: {template_id}", status=400
-                    )
-
-                # Generate the chart and return
-                buffer = generator_func(primary_individual, family_data, user_settings)
-                buffer.seek(0)
-                image_data = buffer.read()
-                return HttpResponse(image_data, content_type="image/png")
-
-            except Exception as e:
-                logger.error(f"Error in get_template_preview_simple: {e}")
-                return HttpResponse(f"Error: {str(e)}", status=500)
+        # Return the generated image
+        buffer.seek(0)
+        image_data = buffer.read()
+        return HttpResponse(image_data, content_type="image/png")
 
     except Exception as e:
-        logger.error(f"Error in get_template_preview_simple: {e}")
-        return HttpResponse(f"Error: {str(e)}", status=500)
+        logger.error(f"Error generating chart for template {template_id}: {e}")
+        return HttpResponse(f"Chart generation failed: {str(e)}", status=500)
 
 
 @csrf_exempt

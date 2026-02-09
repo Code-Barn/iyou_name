@@ -317,7 +317,10 @@ def _draw_parent(draw, content_img, parent, parent_type, validated_settings):
 
     for i, line in enumerate(lines):
         line_y = start_y + (i * line_height)
-        draw.text(0, int(round(line_y)), line)
+        draw.push()
+        draw.translate(0, line_y)
+        draw.text(0, 0, line)
+        draw.pop()
 
     draw.pop()
 
