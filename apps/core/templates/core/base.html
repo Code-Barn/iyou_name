@@ -67,6 +67,11 @@
                                 >Profile</a
                             >
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://github.com" target="_blank" rel="noopener noreferrer">
+                                <i class="bi bi-github"></i>
+                            </a>
+                        </li>
                         {% if user.is_authenticated %}
                         <li class="nav-item d-flex align-items-center">
                             <form method="post" action="{% url 'users:logout' %}" class="d-flex align-items-center">

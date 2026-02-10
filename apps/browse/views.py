@@ -19,6 +19,11 @@ def browse_individuals(request):
     if request.method == "POST" and "file_id" in request.POST:
         gedcom_file_id = request.POST["file_id"]
         request.session["current_gedcom_file_id"] = gedcom_file_id
+
+        # Check if we should redirect to individual detail
+        if "redirect_to_individual" in request.POST:
+            individual_id = request.POST["redirect_to_individual"]
+            return redirect("browse:individual_detail", ind_id=individual_id)
     else:
         gedcom_file_id = request.session.get("current_gedcom_file_id")
         if not gedcom_file_id:
