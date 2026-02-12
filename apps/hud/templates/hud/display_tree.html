@@ -2,7 +2,7 @@
 {% load custom_filters static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/zoom.css' %}">
+<link rel="stylesheet" href="{% static 'core/css/zoom.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -43,9 +43,9 @@
                         </div>
                         
                         <!-- Rotation and Zoom Controls -->
-                        <div class="d-flex justify-content-center align-items-center mt-3">
+                        <div class="d-flex justify-content-between align-items-center mt-3">
                             <!-- Rotation Controls -->
-                            <div class="d-flex align-items-center me-4">
+                            <div class="d-flex align-items-center">
                                 <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="HUD.Rotation.rotateCounterClockwise()" title="Rotate Counter-Clockwise (90°)">
                                     <i class="bi bi-arrow-counterclockwise"></i> Rotate Left
                                 </button>
@@ -185,7 +185,7 @@
                         <script src="{% static 'hud/js/hud-organized.js' %}?v={% now 'Y-m-d-H-i-s' %}"></script>
                         
                         <!-- Load Shared Zoom JavaScript -->
-                        <script src="{% static 'js/zoom.js' %}"></script>
+                        <script src="{% static 'core/js/zoom.js' %}"></script>
 
                         <!-- Responsive Preview JavaScript -->
                         <script>

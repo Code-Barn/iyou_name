@@ -839,6 +839,13 @@ HUD.Rotation = (function() {
         updateRotation();
     }
 
+    function getCurrentZoom() {
+        if (window.ZoomManager && typeof window.ZoomManager.getCurrentZoom === 'function') {
+            return window.ZoomManager.getCurrentZoom();
+        }
+        return 100;
+    }
+    
     function updateRotation() {
         const previewImg = HUD.Main.getPreviewImg();
         if (!previewImg) {
@@ -852,8 +859,12 @@ HUD.Rotation = (function() {
             normalizedRotation += 360;
         }
 
-        // Apply CSS transform
-        previewImg.style.transform = `rotate(${currentRotation}deg)`;
+        // Get current zoom level to preserve it
+        const zoomLevel = getCurrentZoom();
+        const scale = zoomLevel / 100;
+        
+        // Apply combined rotation and zoom transform
+        previewImg.style.transform = `rotate(${currentRotation}deg) scale(${scale})`;
 
         // Update display
         const rotationDisplay = document.getElementById('rotation-display');
@@ -861,7 +872,7 @@ HUD.Rotation = (function() {
             rotationDisplay.textContent = `${normalizedRotation}°`;
         }
 
-        console.log(`Rotated preview to ${currentRotation}° (normalized: ${normalizedRotation}°)`);
+        console.log(`Rotated preview to ${currentRotation}° (normalized: ${normalizedRotation}°) with zoom ${zoomLevel}%`);
     }
 
     function getCurrentRotation() {
