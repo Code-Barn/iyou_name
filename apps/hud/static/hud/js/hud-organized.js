@@ -423,37 +423,38 @@ HUD.Templates = (function() {
 
         // Load template-specific settings panel
         loadSettingsPanel(templateValue).then(() => {
-// After panel loads, load settings from session and update form
-        return HUD.Session.loadSettingsFromSession();
-}).then(sessionSettings => {
-            if (sessionSettings) {
-                console.log('Updating form with session settings:', sessionSettings);
-                HUD.Utils.updateFormWithStoredSettings(sessionSettings);
-            } else {
-                console.log('No session settings found, trying localStorage for 1gen');
-                // For 1gen, try to load from localStorage as fallback
-                if (templateValue === '1') {
-                    const stored1GenSettings = HUD.Storage.getStored1GenSettings();
-                    if (stored1GenSettings) {
-                        console.log('Updating form with localStorage settings:', stored1GenSettings);
-                        HUD.Utils.updateFormWithStoredSettings(stored1GenSettings);
+            // After panel loads, load settings from session and update form
+            return HUD.Session.loadSettingsFromSession()
+                .then(sessionSettings => {
+                    if (sessionSettings) {
+                        console.log('Updating form with session settings:', sessionSettings);
+                        HUD.Utils.updateFormWithStoredSettings(sessionSettings);
+                    } else {
+                        console.log('No session settings found, trying localStorage for 1gen');
+                        // For 1gen, try to load from localStorage as fallback
+                        if (templateValue === '1') {
+                            const stored1GenSettings = HUD.Storage.getStored1GenSettings();
+                            if (stored1GenSettings) {
+                                console.log('Updating form with localStorage settings:', stored1GenSettings);
+                                HUD.Utils.updateFormWithStoredSettings(stored1GenSettings);
+                            }
+                        }
                     }
-                }
-            }
 
-            // After updating form, generate preview with loaded settings
-            if (templateValue === '1') {
-                console.log('Generating 1gen preview with loaded settings');
-                const form = HUD.Main.getForm();
-                const formData = new FormData(form);
-                const userSettings = HUD.Utils.collectUserSettings(formData);
-                return HUD.Preview.generatePreview(userSettings);
-            }
+                    // After updating form, generate preview with loaded settings
+                    if (templateValue === '1') {
+                        console.log('Generating 1gen preview with loaded settings');
+                        const form = HUD.Main.getForm();
+                        const formData = new FormData(form);
+                        const userSettings = HUD.Utils.collectUserSettings(formData);
+                        return HUD.Preview.generatePreview(userSettings);
+                    }
 
-            // Update preview image (for non-1gen templates)
-            if (templateValue !== '1') {
-                updatePreviewImage(templateValue);
-            }
+                    // Update preview image (for non-1gen templates)
+                    if (templateValue !== '1') {
+                        updatePreviewImage(templateValue);
+                    }
+                });
         });
     }
 
@@ -617,9 +618,7 @@ HUD.Templates = (function() {
             return HUD.Preview.generatePreview(userSettings);
         } else if (templateValue === '5') {
             console.log('Template 5 selected - generating preview with 5gen settings');
-            console.log('DEBUG: templateValue type:', typeof templateValue, 'value:', templateValue);
-            console.log('DEBUG: templateValue === "5":', templateValue === '5');
-
+            
             // Collect current form settings (for 5gen-specific fields)
             const form = HUD.Main.getForm();
             const formData = new FormData(form);
@@ -641,133 +640,58 @@ HUD.Templates = (function() {
 
             // Generate 5gen preview with POST
             return HUD.Preview.generatePreview(userSettings);
-        } else {
-            // For templates 6+, use GET request with stored settings
-            const timestamp = Date.now();
-            const individualId = document.querySelector('input[name="individual_id"]').value;
-            const fileIdInput = document.querySelector('input[name="file_id"]');
-            const fileId = fileIdInput ? fileIdInput.value : '';
-
-            // Collect current form settings (for template-specific fields)
+        } else if (templateValue === '6') {
+            console.log('Template 6 selected - generating preview with 6gen settings');
+            
+            // Collect current form settings (for 6gen-specific fields)
             const form = HUD.Main.getForm();
             const formData = new FormData(form);
             const userSettings = HUD.Utils.collectUserSettings(formData);
 
-            // Add stored 1gen settings for overlay inheritance
+            // Add stored 1gen settings for 5gen overlay inheritance
             const stored1GenSettings = HUD.Storage.getStored1GenSettings();
             if (stored1GenSettings) {
                 userSettings.primary_settings = stored1GenSettings;
-                console.log(`Including stored 1gen settings for ${templateValue} overlay:`, stored1GenSettings);
+                console.log('Including stored 1gen settings for 6gen overlay:', stored1GenSettings);
             } else {
-                console.log(`No stored 1gen settings found for ${templateValue} preview`);
+                console.log('No stored 1gen settings found for 6gen preview');
             }
 
-            let url = `/hud/get-template-preview/${templateValue}/?individual_id=${individualId}&t=${timestamp}`;
-            if (fileId) {
-                url += `&file_id=${fileId}`;
-            }
-
-            console.log(`Loading template ${templateValue} preview with URL: ${url}`);
-            console.log(`Complete request data being sent:`, {
-                individual_id: individualId,
+            console.log('Complete 6gen request data being sent:', {
+                individual_id: document.querySelector('input[name="individual_id"]').value,
                 user_settings: userSettings
             });
 
-            // Add error handling with fallback logic
-            previewImg.onerror = function() {
-                console.error(`Failed to load preview for template ${templateValue} with individual_id=${individualId}`);
+            // Generate 6gen preview with POST
+            return HUD.Preview.generatePreview(userSettings);
+        } else if (templateValue === '7') {
+            console.log('Template 7 selected - generating preview with 7gen settings');
+            
+            // Collect current form settings (for 7gen-specific fields)
+            const form = HUD.Main.getForm();
+            const formData = new FormData(form);
+            const userSettings = HUD.Utils.collectUserSettings(formData);
 
-                // If we have a file_id, try to get a valid individual from the file
-                if (fileId) {
-                    console.log('Attempting to get a valid individual from the file...');
+            // Add stored 1gen settings for 6gen overlay inheritance
+            const stored1GenSettings = HUD.Storage.getStored1GenSettings();
+            if (stored1GenSettings) {
+                userSettings.primary_settings = stored1GenSettings;
+                console.log('Including stored 1gen settings for 7gen overlay:', stored1GenSettings);
+            } else {
+                console.log('No stored 1gen settings found for 7gen preview');
+            }
 
-                    // Make a request to get a valid individual ID from this file
-                    fetch(`/hud/get-file-individuals/?file_id=${fileId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success && data.individuals && data.individuals.length > 0) {
-                                // Use the first available individual
-                                const fallbackIndividualId = data.individuals[0].id;
-                                console.log(`Using fallback individual_id: ${fallbackIndividualId}`);
+            console.log('Complete 7gen request data being sent:', {
+                individual_id: document.querySelector('input[name="individual_id"]').value,
+                user_settings: userSettings
+            });
 
-                                // Update the hidden input with the valid ID
-                                document.querySelectorAll('input[name="individual_id"]').forEach(input => {
-                                    input.value = fallbackIndividualId;
-                                });
-
-                                // Retry the preview with the valid individual
-                                const retryUrl = `/hud/get-template-preview/${templateValue}/?individual_id=${fallbackIndividualId}&t=${Date.now()}`;
-                                console.log(`Retrying preview with URL: ${retryUrl}`);
-                                previewImg.src = retryUrl;
-                            } else {
-                                console.error('No valid individuals found in the file');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error getting fallback individual:', error);
-                        });
-                }
-            };
-
-            previewImg.onload = function() {
-                console.log(`Template ${templateValue} preview loaded successfully`);
-            };
-
-            // Generate preview with POST for all templates (not just GET)
-            HUD.Preview.generatePreview(userSettings);
-        }
-
-            console.log(`Loading template ${templateValue} preview with URL: ${url}`);
-
-            // Add error handling with fallback logic
-            previewImg.onerror = function() {
-                console.error(`Failed to load preview for template ${templateValue} with individual_id=${individualId}`);
-
-                // If we have a file_id, try to get a valid individual from the file
-                if (fileId) {
-                    console.log('Attempting to get a valid individual from the file...');
-
-                    // Make a request to get a valid individual ID from this file
-                    fetch(`/hud/get-file-individuals/?file_id=${fileId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success && data.individuals && data.individuals.length > 0) {
-                                // Use the first available individual
-                                const fallbackIndividualId = data.individuals[0].id;
-                                console.log(`Using fallback individual_id: ${fallbackIndividualId}`);
-
-                                // Update the hidden input with the valid ID
-                                document.querySelectorAll('input[name="individual_id"]').forEach(input => {
-                                    input.value = fallbackIndividualId;
-                                });
-
-                                // Retry the preview with the valid individual
-                                const fallbackUrl = `/hud/get-template-preview/${templateValue}/?individual_id=${fallbackIndividualId}&t=${Date.now()}`;
-                                console.log(`Retrying with URL: ${fallbackUrl}`);
-                                previewImg.src = fallbackUrl;
-                            } else {
-                                console.error('No valid individuals found in the file');
-                                previewImg.style.opacity = '0.5';
-                                previewImg.title = `Template ${templateValue} preview failed - no valid individuals found`;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error getting file individuals:', error);
-                            previewImg.style.opacity = '0.5';
-                            previewImg.title = `Template ${templateValue} preview failed`;
-                        });
-                } else {
-                    previewImg.style.opacity = '0.5';
-                    previewImg.title = `Template ${templateValue} preview failed - no file_id available`;
-                }
-            };
-
-            previewImg.src = url;
-            previewImg.style.opacity = '1';
-            previewImg.title = `Template ${templateValue} preview`;
-
-            // Reset rotation when template changes
-            HUD.Rotation.resetOnNewPreview();
+            // Generate 7gen preview with POST
+            return HUD.Preview.generatePreview(userSettings);
+        } else {
+            // Handle unknown template values
+            console.warn(`Unknown template value: ${templateValue}`);
+            return;
         }
     }
 

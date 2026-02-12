@@ -1,5 +1,6 @@
 # User added notes, etc
 gitignore_strategy.txt
+apps/hud/AI_PROMPT.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -23,7 +24,8 @@ lib64/
 parts/
 sdist/
 var/
-wheels/
+wheels/rn {
+
 share/python-wheels/
 *.egg-info/
 .installed.cfg

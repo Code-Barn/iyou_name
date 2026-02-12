@@ -1,3 +1,4 @@
+import os
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import JSONField
@@ -5,9 +6,17 @@ from django.db.models.signals import post_delete
 from django.dispatch import receiver
 
 
+def user_gedcom_upload_path(instance, filename):
+    """Generate user-specific upload path for GEDCOM files."""
+    if instance.user:
+        return f"gedcom_files/user_{instance.user.id}/{filename}"
+    else:
+        return f"gedcom_files/anonymous/{filename}"
+
+
 class GedcomFile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    file = models.FileField(upload_to="gedcom_files/")
+    file = models.FileField(upload_to=user_gedcom_upload_path)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     parsed_data = JSONField(null=True, blank=True)  # Store parsed data directly here
     home_person_id = models.CharField(max_length=100, null=True, blank=True)

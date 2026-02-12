@@ -1,5 +1,6 @@
 {% extends 'core/base.html' %}
 {% load tz %}
+{% load custom_filters %}
 
 {% block content %}
 <div class="container mt-5">
@@ -23,7 +24,7 @@
                     <tbody>
                         {% for file in gedcom_files %}
                         <tr>
-                            <td>{{ file.file.name }}</td>
+                            <td>{{ file.file.name|filename }}</td>
                             <td>{% localtime on %}{{ file.uploaded_at }}{% endlocaltime %}</td>
                             <td>
                                 {% if file.home_person_id %}
@@ -62,7 +63,7 @@
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body">
-                                                Are you sure you want to delete the file "{{ file.file.name }}"?
+                                                Are you sure you want to delete the file "{{ file.file.name|filename }}"?
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>

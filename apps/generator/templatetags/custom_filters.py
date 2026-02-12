@@ -26,6 +26,17 @@ def append_list(value, arg):
     return [value, arg]
 
 
+@register.filter(name="filename")
+def filename(value):
+    """
+    Template filter to extract just the filename from a path
+    Usage: {{ file_path|filename }}
+    """
+    if value:
+        return value.split("/")[-1]
+    return value
+
+
 @register.simple_tag(name="empty_list")
 def empty_list():
     """

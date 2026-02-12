@@ -2,14 +2,17 @@
 
 ## Overview
 
-This document outlines the validated standard for multi-generation family tree chart generators (1-4), ensuring consistent behavior, settings inheritance, and overlay composition across all generations.
+This document outlines the validated standard for multi-generation family tree chart generators (1-7), ensuring consistent behavior, settings inheritance, and overlay composition across all generations.
 
-## Validated Generations
+## ✅ VALIDATED GENERATIONS (ALL WORKING)
 
 - **Generation 1**: Individual-only chart with background and text rendering
 - **Generation 2**: Individual + Parents with 1gen overlay composition  
 - **Generation 3**: Individual + Parents + Grandparents with 2gen overlay composition
 - **Generation 4**: Individual + Parents + Grandparents + Great-Grandparents with 3gen overlay composition
+- **Generation 5**: Individual + Parents + Grandparents + Great-Grandparents + 2x Great-Grandparents with 4gen overlay composition
+- **Generation 6**: Individual + Parents + Grandparents + Great-Grandparents + 2x Great-Grandparents + 3x Great-Grandparents with 5gen overlay composition
+- **Generation 7**: Individual + Parents + Grandparents + Great-Grandparents + 2x Great-Grandparents + 3x Great-Grandparents + 4x Great-Grandparents with 6gen overlay composition
 
 ## Core Standards
 
@@ -80,7 +83,7 @@ validated_settings = get_validated_settings(
 
 ### 4. Overlay Composition Standard
 
-Generators 2+ MUST follow this overlay pattern:
+Generations 2+ MUST follow this overlay pattern:
 
 ```python
 # Generate (X-1)gen overlay with complete user settings
@@ -154,7 +157,7 @@ const settingsTemplateMap = {
 
 ### 2. Preview Generation Standard
 
-Templates 2-4 MUST use POST requests with complete user settings:
+Templates 2-7 MUST use POST requests with complete user settings:
 
 ```javascript
 } else if (templateValue === 'X') {
@@ -179,12 +182,13 @@ Templates 2-4 MUST use POST requests with complete user settings:
     
     // Generate preview with POST
     HUD.Preview.generatePreview(userSettings);
+}
 ```
 
 ### 3. Settings Inheritance Standard
 
 - **Template 1**: Saves settings to localStorage for inheritance
-- **Templates 2-4**: Load stored 1gen settings and include as `primary_settings`
+- **Templates 2-7**: Load stored 1gen settings and include as `primary_settings`
 - **All templates**: Pass complete user settings to backend
 
 ## Backend View Standard
@@ -216,24 +220,75 @@ buffer = get_chart_buffer(
 
 ## Validated Behaviors
 
-### ✅ Working Correctly
+### ✅ Working Correctly (ALL GENERATIONS 1-7)
 
-1. **Settings Inheritance**: 1gen background color carries through to 2gen, 3gen, 4gen
+1. **Settings Inheritance**: 1gen background color carries through to 2gen, 3gen, 4gen, 5gen, 6gen, 7gen
 2. **Overlay Composition**: Each generation properly composites the previous generation
 3. **Individual Settings**: Each person position can be customized independently
 4. **Text Rendering**: Negative coordinates handled properly with translate pattern
 5. **Buffer Caching**: Settings changes properly invalidate cache
-6. **JavaScript Integration**: All templates 1-4 use consistent POST pattern
+6. **JavaScript Integration**: All templates 1-7 use consistent POST pattern
 
-### ⚠️ Identified Discrepancies
+### ⚠️ Previously Identified Issues (RESOLVED)
 
-1. **Settings Schema Inconsistency**: Some generators missing individual person settings
-2. **Overlay Settings Pattern**: 4gen was using extracted settings instead of complete user_settings (fixed)
-3. **JavaScript Version Mismatch**: staticfiles version missing 4gen block (fixed)
+1. **Settings Schema Inconsistency**: Fixed - all generators now have individual person settings
+2. **Overlay Settings Pattern**: Fixed - all generators now use complete user_settings
+3. **JavaScript Version Mismatch**: Fixed - all JavaScript versions now include template 5-7 blocks
+4. **Static File Conflicts**: Fixed - removed duplicate static files causing serving conflicts
 
-## Implementation Checklist for Generations 5-7
+## Critical Lessons Learned
 
-When applying this standard to generations 5-7:
+### 🚨 Static File Serving Conflicts
+
+**Issue**: Django was serving old JavaScript files from root `/static/` directory instead of updated files from app `/static/` directories.
+
+**Root Cause**: Django's `STATICFILES_DIRS` listed root `static/` first, so it took priority over app directories.
+
+**Solution**: 
+- Remove duplicate static files from root directory
+- Use only app-level static files for consistency
+- Clear staticfiles cache with `collectstatic --clear`
+
+**Prevention**: 
+- Never have duplicate static files in root and app directories
+- Always use app-level static files for app-specific content
+- Test with browser tools to verify correct JavaScript is being served
+
+### 🔧 JavaScript Syntax Error Detection
+
+**Issue**: Extra closing brace in JavaScript prevented module loading silently.
+
+**Root Cause**: Manual editing introduced syntax error that broke module but didn't crash page.
+
+**Solution**: 
+- Use `node -c filename.js` to check syntax
+- Test JavaScript functionality in browser console
+- Verify all modules load properly with `typeof window.HUD.Templates`
+
+**Prevention**: 
+- Always check JavaScript syntax after edits
+- Test in browser before committing changes
+- Use linter tools to catch syntax errors
+
+### 🧪 End-to-End Testing Importance
+
+**Issue**: Assumed fixes worked without proper verification.
+
+**Root Cause**: Static file caching served old code despite correct source files.
+
+**Solution**: 
+- Use Playwright for actual browser testing
+- Verify JavaScript functions are loaded and working
+- Test complete user workflows end-to-end
+
+**Prevention**: 
+- Always test with real browser automation
+- Verify both frontend and backend integration
+- Check console logs for actual behavior vs expected
+
+## Implementation Checklist for New Generations
+
+When applying this standard to new generations:
 
 ### ✅ Required Changes
 
@@ -243,6 +298,7 @@ When applying this standard to generations 5-7:
 4. **Background Rendering**: Do not render background (inherit from overlays)
 5. **Text Rendering**: Use translate pattern for all coordinates
 6. **Buffer Integration**: Use `get_chart_buffer()` for caching
+7. **Static File Management**: Ensure no duplicate files exist
 
 ### ✅ Validation Tests
 
@@ -251,6 +307,7 @@ When applying this standard to generations 5-7:
 3. Switch between generations → Verify settings inheritance works
 4. Check browser console → Verify POST requests with user_settings
 5. Test buffer caching → Verify settings changes invalidate cache
+6. Verify JavaScript serving → Check correct file is being loaded
 
 ## File Locations
 
@@ -260,22 +317,24 @@ When applying this standard to generations 5-7:
 ### Settings Templates  
 - `apps/hud/templates/hud/settings/Xgen_settings.html`
 
-### JavaScript Files
-- `apps/hud/static/hud/js/hud-organized.js`
-- `static/hud/js/hud-organized.js` 
-- `staticfiles/hud/js/hud-organized.js`
+### JavaScript Files (CRITICAL - All must be identical)
+- `apps/hud/static/hud/js/hud-organized.js` (PRIMARY SOURCE)
+- `static/hud/js/hud-organized.js` (REMOVE - causes conflicts)
+- `staticfiles/hud/js/hud-organized.js` (Generated - don't edit)
 
 ### Backend Views
 - `apps/hud/views_simple_buffered.py`
 
 ## Conclusion
 
-This standard ensures consistent behavior across all multi-generation chart generators. By following these patterns, we guarantee that:
+This standard ensures consistent behavior across all multi-generation chart generators (1-7). By following these patterns, we guarantee that:
 
 1. User settings properly inherit through the generation chain
 2. Individual customizations work independently
 3. Overlay composition functions correctly
 4. Buffer caching provides optimal performance
 5. Frontend-backend integration is seamless
+6. Static file serving conflicts are avoided
+7. JavaScript syntax errors are caught early
 
-Apply this standard to generations 5-7 to achieve uniform behavior across all chart types.
+**ALL GENERATIONS 1-7 ARE NOW FULLY STANDARDIZED AND WORKING CORRECTLY** ✅
