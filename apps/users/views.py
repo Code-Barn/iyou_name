@@ -4,6 +4,8 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_POST
 
 from apps.generator.forms import RegisterForm
 from apps.generator.models import GedcomFile
@@ -93,38 +95,67 @@ def user_login(request):
     return render(request, "users/auth/login.html", {"form": form})
 
 
+@csrf_protect
+@require_POST
 def delete_gedcom_file(request, file_id):
     """
     View for deleting a GEDCOM file
     """
-    print(f"delete_gedcom_file called with file_id: {file_id}")
+    logger.info(
+        f"Delete GEDCOM file requested",
+        extra={
+            "file_id": file_id,
+            "user_id": request.user.id if request.user.is_authenticated else None,
+        },
+    )
     if not request.user.is_authenticated:
-        print("User not authenticated")
+        logger.warning("User not authenticated")
         return JsonResponse({"error": "Not authenticated"}, status=401)
 
     try:
-        print(f"Attempting to delete GEDCOM file with ID: {file_id}")
+        logger.info(
+            f"Attempting to delete GEDCOM file",
+            extra={
+                "file_id": file_id,
+                "user_id": request.user.id if request.user.is_authenticated else None,
+            },
+        )
         # Retrieve the file and ensure it belongs to the current user
         gedcom_file = GedcomFile.objects.get(id=file_id)
-        print(f"Found GEDCOM file: {gedcom_file.id}, user: {gedcom_file.user}")
+        logger.info(
+            f"Found GEDCOM file for deletion: {gedcom_file.file.name} (ID: {gedcom_file.id})"
+        )
 
         # Verify the file belongs to the current user
         if gedcom_file.user != request.user:
-            print(f"File {gedcom_file.id} does not belong to user {request.user}")
+            logger.warning(
+                f"Unauthorized access attempt for file {gedcom_file.id}",
+                extra={
+                    "file_id": gedcom_file.id,
+                    "user_id": request.user.id
+                    if request.user.is_authenticated
+                    else None,
+                    "file_name": gedcom_file.file.name
+                    if gedcom_file.file
+                    else "unnamed",
+                    "ip_address": request.META.get("REMOTE_ADDR", "unknown"),
+                },
+            )
             return HttpResponse("File not found", status=404)
 
         # Delete the file
         file_id_to_delete = gedcom_file.id
-        print(f"Before deletion - GEDCOM files count: {GedcomFile.objects.count()}")
+        file_name = gedcom_file.file.name if gedcom_file.file else "unnamed"
         gedcom_file.delete()
-        print(f"After deletion - GEDCOM files count: {GedcomFile.objects.count()}")
-        print(f"GEDCOM file {file_id_to_delete} deleted successfully")
+        logger.info(
+            f"User {request.user.username} deleted GEDCOM file: {file_name} (ID: {file_id_to_delete})"
+        )
         return redirect("users:profile")
     except GedcomFile.DoesNotExist:
-        print(f"GEDCOM file {file_id} not found")
+        logger.error(f"GEDCOM file not found: {file_id}")
         return HttpResponse("File not found", status=404)
     except Exception as e:
-        print(f"Error deleting GEDCOM file {file_id}: {e}")
+        logger.error(f"Error deleting GEDCOM file {file_id}: {e}")
         return HttpResponse(f"Error deleting file: {e}", status=500)
 
 

@@ -251,18 +251,8 @@ HUD.Preview = (function() {
             user_settings: userSettings
         };
 
-        // Add stored 1gen settings for 2gen overlay
-        if (currentTemplate === '2') {
-            const stored1GenSettings = HUD.Storage.getStored1GenSettings();
-            if (stored1GenSettings) {
-                // Merge 1gen settings into user_settings (not as separate object)
-                Object.assign(requestData.user_settings, stored1GenSettings);
-                console.log('Merged stored 1gen settings into user_settings for 2gen overlay:', stored1GenSettings);
-                console.log('Complete merged request data being sent:', requestData);
-            } else {
-                console.log('No stored 1gen settings found for 2gen overlay');
-            }
-        }
+        // Note: Template-specific settings merging is now handled by updatePreviewImage()
+        // This function just makes the API call with the provided settings
 
         // Generate preview
         const previewUrl = `/hud/get-template-preview/${currentTemplate}/`;
@@ -496,55 +486,12 @@ function handleTemplateChange() {
                 console.log('No cumulative settings found, using current form only');
             }
             
-            // Then generate preview with the updated form
-            return HUD.Preview.generatePreview();
+            // Then generate preview with the updated form using the comprehensive function
+            return HUD.Templates.updatePreviewImage(templateValue);
         }).catch(error => {
             console.error('Error in template change handling:', error);
         });
     }
-
-        // Load template-specific settings panel
-        loadSettingsPanel(templateValue).then(() => {
-            // After panel loads, load cumulative settings and update form
-            if (templateValue === '1') {
-                // For 1gen, load from session or localStorage
-                return HUD.Session.loadSettingsFromSession()
-                    .then(sessionSettings => {
-                        if (sessionSettings) {
-                            console.log('Updating form with session settings:', sessionSettings);
-                            HUD.Utils.updateFormWithStoredSettings(sessionSettings);
-                        } else {
-                            console.log('No session settings found, trying localStorage for 1gen');
-                            const stored1GenSettings = HUD.Storage.getStored1GenSettings();
-                            if (stored1GenSettings) {
-                                console.log('Updating form with localStorage settings:', stored1GenSettings);
-                                HUD.Utils.updateFormWithStoredSettings(stored1GenSettings);
-                            }
-                        }
-
-                        // Generate 1gen preview with loaded settings
-                        const form = HUD.Main.getForm();
-                        const formData = new FormData(form);
-                        const userSettings = HUD.Utils.collectUserSettings(formData);
-                        return HUD.Preview.generatePreview(userSettings);
-                    });
-            } else {
-                // For 2gen+, load cumulative settings from localStorage
-                const cumulativeSettings = HUD.Storage.getCumulativeSettings(parseInt(templateValue));
-                if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
-                    console.log(`Updating form with cumulative settings for template ${templateValue}:`, cumulativeSettings);
-                    HUD.Utils.updateFormWithStoredSettings(cumulativeSettings);
-                } else {
-                    console.log(`No cumulative settings found for template ${templateValue}, using defaults`);
-                }
-
-                // Update preview image with cumulative settings
-                updatePreviewImage(templateValue);
-                return Promise.resolve();
-            }
-        });
-    }
-
     function loadSettingsPanel(templateValue) {
         const settingsPanel = document.getElementById('settings-panel');
         if (!settingsPanel) {
