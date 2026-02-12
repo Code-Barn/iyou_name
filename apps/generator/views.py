@@ -37,99 +37,176 @@ def generate_final_chart(request):
     """
     try:
         # Extract parameters from GET or POST data
-        individual_id = request.POST.get("individual_id") or request.GET.get("individual_id")
+        individual_id = request.POST.get("individual_id") or request.GET.get(
+            "individual_id"
+        )
         template = request.POST.get("template") or request.GET.get("template") or "1"
 
         # Initialize hud_settings early to avoid UnboundLocalError
         hud_settings = request.session.get("hud_settings", {})
 
-        # Collect user settings from POST or session with proper type conversion
-        def get_int(name, default):
-            try:
-                return int(request.POST.get(name, default))
-            except (TypeError, ValueError):
-                return default
+        # Collect ALL form settings (same as live preview) - not just hardcoded 1gen settings
+        user_settings = {}
+        for key, value in request.POST.items():
+            if key.startswith(
+                (
+                    "primary_",
+                    "parent_",
+                    "grandparent_",
+                    "greatgrandparent_",
+                    "twox_great_",
+                    "threex_great_",
+                    "fourx_great_",
+                )
+            ) or key in [
+                "font_family",
+                "default_stroke_width",
+                "composite_1gen_scale",
+                "composite_overlay_x",
+                "composite_overlay_y",
+            ]:
+                # Convert numeric values
+                if key.endswith(
+                    (
+                        "_font_size",
+                        "_translate_x",
+                        "_translate_y",
+                        "_rotate",
+                        "_scale",
+                        "_stroke_width",
+                    )
+                ):
+                    try:
+                        if "." in value:
+                            user_settings[key] = float(value)
+                        else:
+                            user_settings[key] = int(value)
+                    except (ValueError, TypeError):
+                        user_settings[key] = value
+                else:
+                    user_settings[key] = value
 
-        def get_float(name, default):
-            try:
-                return float(request.POST.get(name, default))
-            except (TypeError, ValueError):
-                return default
+        logger.debug(
+            f"Collected {len(user_settings)} settings from POST for PDF generation"
+        )
 
-        user_settings = {
-            "font_family": request.POST.get("font_family", "Arial"),
-            "primary_name_font_size": get_int("primary_name_font_size", 84),
-            "primary_date_info_font_size": get_int("primary_date_info_font_size", 60),
-            "primary_place_info_font_size": get_int("primary_place_info_font_size", 28),
-            "default_stroke_width": get_float("default_stroke_width", 0.5),
-            "primary_background_color": request.POST.get("primary_background_color", "#FFFFFF"),
-            "primary_stroke_color": request.POST.get("primary_stroke_color", "#000000"),
-            "primary_font_color": request.POST.get("primary_font_color", "#000000"),
-            "primary_birth_color": request.POST.get("primary_birth_color", "#000000"),
-            "primary_birth_place_color": request.POST.get("primary_birth_place_color", "#000000"),
-            "primary_death_color": request.POST.get("primary_death_color", "#000000"),
-            "primary_death_place_color": request.POST.get("primary_death_place_color", "#000000"),
-            "primary_translate_x": get_int("primary_translate_x", 0),
-            "primary_translate_y": get_int("primary_translate_y", 0),
-            "primary_name_rotate": get_int("primary_name_rotate", -45),
-            "primary_birth_translate_x": get_int("primary_birth_translate_x", 0),
-            "primary_birth_translate_y": get_int("primary_birth_translate_y", 0),
-            "primary_birth_rotate": get_int("primary_birth_rotate", -90),
-            "primary_birth_place_translate_x": get_int("primary_birth_place_translate_x", 0),
-            "primary_birth_place_translate_y": get_int("primary_birth_place_translate_y", 0),
-            "primary_birth_place_rotate": get_int("primary_birth_place_rotate", 0),
-            "primary_death_translate_x": get_int("primary_death_translate_x", 0),
-            "primary_death_translate_y": get_int("primary_death_translate_y", 0),
-            "primary_death_rotate": get_int("primary_death_rotate", 0),
-            "primary_death_place_translate_x": get_int("primary_death_place_translate_x", 0),
-            "primary_death_place_translate_y": get_int("primary_death_place_translate_y", 0),
-            "primary_death_place_rotate": get_int("primary_death_place_rotate", -90),
-        }
+        # For cumulative inheritance, we need to merge stored settings from previous generations
+        # This matches the same logic as the live preview
+        if template != "1":
+            # Load cumulative settings from localStorage (same as live preview)
+            # Note: This is a simplified approach - in production, we'd want session-based storage
+            # For now, we'll use the POST data which should contain all the merged settings already
+            logger.debug(
+                f"Using cumulative settings for template {template} PDF generation"
+            )
+        else:
+            logger.debug(
+                f"Using current settings only for template {template} PDF generation"
+            )
 
         # If no POST settings, use session settings
         # Check if we have any POST data for settings (more reliable than checking values)
-        has_post_settings = any(key in request.POST for key in [
-            "font_family", "primary_name_font_size", "primary_date_info_font_size",
-            "primary_place_info_font_size", "default_stroke_width", "primary_background_color",
-            "primary_stroke_color", "primary_font_color", "primary_birth_color",
-            "primary_birth_place_color", "primary_death_color", "primary_death_place_color",
-            "primary_translate_x", "primary_translate_y", "primary_name_rotate", "primary_birth_translate_x",
-            "primary_birth_translate_y", "primary_birth_rotate", "primary_birth_place_translate_x",
-            "primary_birth_place_translate_y", "primary_birth_place_rotate", "primary_death_translate_x",
-            "primary_death_translate_y", "primary_death_rotate", "primary_death_place_translate_x",
-            "primary_death_place_translate_y", "primary_death_place_rotate"
-        ])
+        has_post_settings = any(
+            key in request.POST
+            for key in [
+                "font_family",
+                "primary_name_font_size",
+                "primary_date_info_font_size",
+                "primary_place_info_font_size",
+                "default_stroke_width",
+                "primary_background_color",
+                "primary_stroke_color",
+                "primary_font_color",
+                "primary_birth_color",
+                "primary_birth_place_color",
+                "primary_death_color",
+                "primary_death_place_color",
+                "primary_translate_x",
+                "primary_translate_y",
+                "primary_name_rotate",
+                "primary_birth_translate_x",
+                "primary_birth_translate_y",
+                "primary_birth_rotate",
+                "primary_birth_place_translate_x",
+                "primary_birth_place_translate_y",
+                "primary_birth_place_rotate",
+                "primary_death_translate_x",
+                "primary_death_translate_y",
+                "primary_death_rotate",
+                "primary_death_place_translate_x",
+                "primary_death_place_translate_y",
+                "primary_death_place_rotate",
+            ]
+        )
 
         if not has_post_settings:
             logger.debug("No POST settings found, using session settings")
             user_settings = {
                 "font_family": hud_settings.get("font_family", "Arial"),
-                "primary_name_font_size": hud_settings.get("primary_name_font_size", 84),
-                "primary_date_info_font_size": hud_settings.get("primary_date_info_font_size", 60),
-                "primary_place_info_font_size": hud_settings.get("primary_place_info_font_size", 28),
+                "primary_name_font_size": hud_settings.get(
+                    "primary_name_font_size", 84
+                ),
+                "primary_date_info_font_size": hud_settings.get(
+                    "primary_date_info_font_size", 60
+                ),
+                "primary_place_info_font_size": hud_settings.get(
+                    "primary_place_info_font_size", 28
+                ),
                 "default_stroke_width": hud_settings.get("default_stroke_width", 0.5),
-                "primary_background_color": hud_settings.get("primary_background_color", "#FFFFFF"),
-                "primary_stroke_color": hud_settings.get("primary_stroke_color", "#000000"),
+                "primary_background_color": hud_settings.get(
+                    "primary_background_color", "#FFFFFF"
+                ),
+                "primary_stroke_color": hud_settings.get(
+                    "primary_stroke_color", "#000000"
+                ),
                 "primary_font_color": hud_settings.get("primary_font_color", "#000000"),
-                "primary_birth_color": hud_settings.get("primary_birth_color", "#000000"),
-                "primary_birth_place_color": hud_settings.get("primary_birth_place_color", "#000000"),
-                "primary_death_color": hud_settings.get("primary_death_color", "#000000"),
-                "primary_death_place_color": hud_settings.get("primary_death_place_color", "#000000"),
+                "primary_birth_color": hud_settings.get(
+                    "primary_birth_color", "#000000"
+                ),
+                "primary_birth_place_color": hud_settings.get(
+                    "primary_birth_place_color", "#000000"
+                ),
+                "primary_death_color": hud_settings.get(
+                    "primary_death_color", "#000000"
+                ),
+                "primary_death_place_color": hud_settings.get(
+                    "primary_death_place_color", "#000000"
+                ),
                 "primary_translate_x": hud_settings.get("primary_translate_x", 0),
                 "primary_translate_y": hud_settings.get("primary_translate_y", 0),
                 "primary_name_rotate": hud_settings.get("primary_name_rotate", -45),
-                "primary_birth_translate_x": hud_settings.get("primary_birth_translate_x", 0),
-                "primary_birth_translate_y": hud_settings.get("primary_birth_translate_y", 0),
+                "primary_birth_translate_x": hud_settings.get(
+                    "primary_birth_translate_x", 0
+                ),
+                "primary_birth_translate_y": hud_settings.get(
+                    "primary_birth_translate_y", 0
+                ),
                 "primary_birth_rotate": hud_settings.get("primary_birth_rotate", -90),
-                "primary_birth_place_translate_x": hud_settings.get("primary_birth_place_translate_x", 0),
-                "primary_birth_place_translate_y": hud_settings.get("primary_birth_place_translate_y", 0),
-                "primary_birth_place_rotate": hud_settings.get("primary_birth_place_rotate", 0),
-                "primary_death_translate_x": hud_settings.get("primary_death_translate_x", 0),
-                "primary_death_translate_y": hud_settings.get("primary_death_translate_y", 0),
+                "primary_birth_place_translate_x": hud_settings.get(
+                    "primary_birth_place_translate_x", 0
+                ),
+                "primary_birth_place_translate_y": hud_settings.get(
+                    "primary_birth_place_translate_y", 0
+                ),
+                "primary_birth_place_rotate": hud_settings.get(
+                    "primary_birth_place_rotate", 0
+                ),
+                "primary_death_translate_x": hud_settings.get(
+                    "primary_death_translate_x", 0
+                ),
+                "primary_death_translate_y": hud_settings.get(
+                    "primary_death_translate_y", 0
+                ),
                 "primary_death_rotate": hud_settings.get("primary_death_rotate", 0),
-                "primary_death_place_translate_x": hud_settings.get("primary_death_place_translate_x", 0),
-                "primary_death_place_translate_y": hud_settings.get("primary_death_place_translate_y", 0),
-                "primary_death_place_rotate": hud_settings.get("primary_death_place_rotate", -90),
+                "primary_death_place_translate_x": hud_settings.get(
+                    "primary_death_place_translate_x", 0
+                ),
+                "primary_death_place_translate_y": hud_settings.get(
+                    "primary_death_place_translate_y", 0
+                ),
+                "primary_death_place_rotate": hud_settings.get(
+                    "primary_death_place_rotate", -90
+                ),
             }
         else:
             logger.debug("Using POST settings for final chart generation")
@@ -250,7 +327,6 @@ def generate_final_chart(request):
             {"status": "error", "message": "Internal server error"},
             status=500,
         )
-
 
 
 def test_template_selection(request):

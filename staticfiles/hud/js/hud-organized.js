@@ -126,14 +126,33 @@ HUD.Settings = (function() {
 
             console.log('User settings collected:', userSettings);
 
-            // Store 1gen settings for potential 2gen overlay use
-            if (HUD.Main.getCurrentTemplate() === '1') {
+            // Store current generation settings for cumulative inheritance
+            const currentTemplate = HUD.Main.getCurrentTemplate();
+            if (currentTemplate === '1') {
                 HUD.Storage.store1GenSettings(userSettings);
                 console.log('Stored 1gen settings for future 2gen overlay:', userSettings);
+            } else {
+                HUD.Storage.storeGenerationSettings(currentTemplate, userSettings);
+                console.log(`Stored ${currentTemplate}gen settings for cumulative inheritance:`, userSettings);
             }
 
-            // Update final chart form first
-            HUD.Utils.updateFinalChartForm(userSettings);
+            // Update final chart form with cumulative settings for PDF generation
+            if (currentTemplate === '1') {
+                // For 1gen, use current settings
+                HUD.Utils.updateFinalChartForm(userSettings);
+            } else {
+                // For 2gen+, get cumulative settings and update form
+                const cumulativeSettings = HUD.Storage.getCumulativeSettings(parseInt(currentTemplate));
+                if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
+                    // Merge current settings with cumulative settings (current takes precedence)
+                    const finalSettings = Object.assign({}, cumulativeSettings, userSettings);
+                    console.log(`Updating final chart form with cumulative settings for template ${currentTemplate}:`, finalSettings);
+                    HUD.Utils.updateFinalChartForm(finalSettings, cumulativeSettings);
+                } else {
+                    console.log(`No cumulative settings found for template ${currentTemplate}, using current settings for final chart form`);
+                    HUD.Utils.updateFinalChartForm(userSettings);
+                }
+            }
 
             // Generate preview
             HUD.Preview.generatePreview(userSettings)
@@ -236,9 +255,10 @@ HUD.Preview = (function() {
         if (currentTemplate === '2') {
             const stored1GenSettings = HUD.Storage.getStored1GenSettings();
             if (stored1GenSettings) {
-                requestData.primary_settings = stored1GenSettings;
-                console.log('Including stored 1gen settings for 2gen overlay:', stored1GenSettings);
-                console.log('Complete request data being sent:', requestData);
+                // Merge 1gen settings into user_settings (not as separate object)
+                Object.assign(requestData.user_settings, stored1GenSettings);
+                console.log('Merged stored 1gen settings into user_settings for 2gen overlay:', stored1GenSettings);
+                console.log('Complete merged request data being sent:', requestData);
             } else {
                 console.log('No stored 1gen settings found for 2gen overlay');
             }
@@ -395,10 +415,52 @@ HUD.Storage = (function() {
         console.log('Stored 1gen settings for inheritance:', settings);
     }
 
+    function storeGenerationSettings(generation, settings) {
+        const key = `hud_${generation}gen_settings`;
+        localStorage.setItem(key, JSON.stringify(settings));
+        console.log(`Stored ${generation}gen settings for inheritance:`, settings);
+    }
+
+    function getStoredGenerationSettings(generation) {
+        const key = `hud_${generation}gen_settings`;
+        const stored = localStorage.getItem(key);
+        if (stored) {
+            try {
+                return JSON.parse(stored);
+            } catch (e) {
+                console.error(`Failed to parse stored ${generation}gen settings:`, e);
+                return null;
+            }
+        }
+        return null;
+    }
+
+    function getCumulativeSettings(currentGeneration) {
+        const cumulativeSettings = {};
+
+        // Merge all previous generation settings INCLUDING current generation
+        for (let gen = 1; gen <= currentGeneration; gen++) {
+            const genSettings = getStoredGenerationSettings(gen);
+            if (genSettings) {
+                console.log(`Retrieved ${gen}gen settings:`, genSettings);
+                Object.assign(cumulativeSettings, genSettings);
+            } else {
+                console.log(`No stored settings found for generation ${gen}`);
+            }
+        }
+
+        console.log(`Final cumulative settings for generation ${currentGeneration}:`, cumulativeSettings);
+        console.log(`Cumulative settings keys:`, Object.keys(cumulativeSettings));
+        return cumulativeSettings;
+    }
+
     // Public API
     return {
         getStored1GenSettings: getStored1GenSettings,
-        store1GenSettings: store1GenSettings
+        store1GenSettings: store1GenSettings,
+        storeGenerationSettings: storeGenerationSettings,
+        getStoredGenerationSettings: getStoredGenerationSettings,
+        getCumulativeSettings: getCumulativeSettings
     };
 })();
 
@@ -406,55 +468,80 @@ HUD.Storage = (function() {
 HUD.Templates = (function() {
     'use strict';
 
-    function handleTemplateChange() {
+function handleTemplateChange() {
         const templateSelect = document.getElementById('template-select');
         const templateValue = templateSelect.value;
-
+        
         console.log("Template changed to:", templateValue);
-
+        
         // Update current template
         HUD.Main.setCurrentTemplate(templateValue);
-
+        
         // Update hidden template input
         const hiddenTemplateInput = document.querySelector('input[name="template"]');
         if (hiddenTemplateInput) {
             hiddenTemplateInput.value = templateValue;
         }
+        
+        console.log("Updated current template");
+        
+        // ⭐ KEY FIX: Wait for settings panel to finish loading before generating preview
+        loadSettingsPanel(templateValue).then(() => {
+            // ⭐ Load cumulative settings first, then generate preview
+            const cumulativeSettings = HUD.Storage.getCumulativeSettings(parseInt(templateValue));
+            if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
+                console.log('Cumulative settings calculated, updating form...');
+                HUD.Utils.updateFormWithStoredSettings(cumulativeSettings);
+            } else {
+                console.log('No cumulative settings found, using current form only');
+            }
+            
+            // Then generate preview with the updated form
+            return HUD.Preview.generatePreview();
+        }).catch(error => {
+            console.error('Error in template change handling:', error);
+        });
+    }
 
         // Load template-specific settings panel
         loadSettingsPanel(templateValue).then(() => {
-            // After panel loads, load settings from session and update form
-            return HUD.Session.loadSettingsFromSession()
-                .then(sessionSettings => {
-                    if (sessionSettings) {
-                        console.log('Updating form with session settings:', sessionSettings);
-                        HUD.Utils.updateFormWithStoredSettings(sessionSettings);
-                    } else {
-                        console.log('No session settings found, trying localStorage for 1gen');
-                        // For 1gen, try to load from localStorage as fallback
-                        if (templateValue === '1') {
+            // After panel loads, load cumulative settings and update form
+            if (templateValue === '1') {
+                // For 1gen, load from session or localStorage
+                return HUD.Session.loadSettingsFromSession()
+                    .then(sessionSettings => {
+                        if (sessionSettings) {
+                            console.log('Updating form with session settings:', sessionSettings);
+                            HUD.Utils.updateFormWithStoredSettings(sessionSettings);
+                        } else {
+                            console.log('No session settings found, trying localStorage for 1gen');
                             const stored1GenSettings = HUD.Storage.getStored1GenSettings();
                             if (stored1GenSettings) {
                                 console.log('Updating form with localStorage settings:', stored1GenSettings);
                                 HUD.Utils.updateFormWithStoredSettings(stored1GenSettings);
                             }
                         }
-                    }
 
-                    // After updating form, generate preview with loaded settings
-                    if (templateValue === '1') {
-                        console.log('Generating 1gen preview with loaded settings');
+                        // Generate 1gen preview with loaded settings
                         const form = HUD.Main.getForm();
                         const formData = new FormData(form);
                         const userSettings = HUD.Utils.collectUserSettings(formData);
                         return HUD.Preview.generatePreview(userSettings);
-                    }
+                    });
+            } else {
+                // For 2gen+, load cumulative settings from localStorage
+                const cumulativeSettings = HUD.Storage.getCumulativeSettings(parseInt(templateValue));
+                if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
+                    console.log(`Updating form with cumulative settings for template ${templateValue}:`, cumulativeSettings);
+                    HUD.Utils.updateFormWithStoredSettings(cumulativeSettings);
+                } else {
+                    console.log(`No cumulative settings found for template ${templateValue}, using defaults`);
+                }
 
-                    // Update preview image (for non-1gen templates)
-                    if (templateValue !== '1') {
-                        updatePreviewImage(templateValue);
-                    }
-                });
+                // Update preview image with cumulative settings
+                updatePreviewImage(templateValue);
+                return Promise.resolve();
+            }
         });
     }
 
@@ -556,8 +643,9 @@ HUD.Templates = (function() {
             // Add stored 1gen settings for overlay
             const stored1GenSettings = HUD.Storage.getStored1GenSettings();
             if (stored1GenSettings) {
-                userSettings.primary_settings = stored1GenSettings;
-                console.log('Including stored 1gen settings for 2gen preview:', stored1GenSettings);
+                // Merge 1gen settings into user_settings (not as separate object)
+                Object.assign(userSettings, stored1GenSettings);
+                console.log('Merged stored 1gen settings into user_settings for 2gen preview:', stored1GenSettings);
                 console.log('Complete request data being sent:', {
                     individual_id: document.querySelector('input[name="individual_id"]').value,
                     user_settings: userSettings
@@ -569,20 +657,21 @@ HUD.Templates = (function() {
             // Generate 2gen preview with POST
             return HUD.Preview.generatePreview(userSettings);
         } else if (templateValue === '3') {
-            console.log('Template 3 selected - generating preview with 3gen settings');
+            console.log('Template 3 selected - generating preview with cumulative settings (1gen + 2gen)');
 
             // Collect current form settings (for 3gen-specific fields)
             const form = HUD.Main.getForm();
             const formData = new FormData(form);
             const userSettings = HUD.Utils.collectUserSettings(formData);
 
-            // Add stored 1gen settings for 2gen overlay
-            const stored1GenSettings = HUD.Storage.getStored1GenSettings();
-            if (stored1GenSettings) {
-                userSettings.primary_settings = stored1GenSettings;
-                console.log('Including stored 1gen settings for 3gen overlay:', stored1GenSettings);
+            // Add cumulative settings from previous generations (1gen + 2gen)
+            const cumulativeSettings = HUD.Storage.getCumulativeSettings(3);
+            if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
+                // Merge cumulative settings into user_settings
+                Object.assign(userSettings, cumulativeSettings);
+                console.log('Merged cumulative settings (1gen + 2gen) into user_settings for 3gen overlay:', cumulativeSettings);
             } else {
-                console.log('No stored 1gen settings found for 3gen preview');
+                console.log('No cumulative settings found for 3gen preview, using current form settings only');
             }
 
             console.log('Complete 3gen request data being sent:', {
@@ -593,20 +682,21 @@ HUD.Templates = (function() {
             // Generate 3gen preview with POST
             return HUD.Preview.generatePreview(userSettings);
         } else if (templateValue === '4') {
-            console.log('Template 4 selected - generating preview with 4gen settings');
+            console.log('Template 4 selected - generating preview with cumulative settings (1gen + 2gen + 3gen)');
 
             // Collect current form settings (for 4gen-specific fields)
             const form = HUD.Main.getForm();
             const formData = new FormData(form);
             const userSettings = HUD.Utils.collectUserSettings(formData);
 
-            // Add stored 1gen settings for 3gen overlay inheritance
-            const stored1GenSettings = HUD.Storage.getStored1GenSettings();
-            if (stored1GenSettings) {
-                userSettings.primary_settings = stored1GenSettings;
-                console.log('Including stored 1gen settings for 4gen overlay:', stored1GenSettings);
+            // Add cumulative settings from previous generations (1gen + 2gen + 3gen)
+            const cumulativeSettings = HUD.Storage.getCumulativeSettings(4);
+            if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
+                // Merge cumulative settings into user_settings
+                Object.assign(userSettings, cumulativeSettings);
+                console.log('Merged cumulative settings (1gen + 2gen + 3gen) into user_settings for 4gen overlay:', cumulativeSettings);
             } else {
-                console.log('No stored 1gen settings found for 4gen preview');
+                console.log('No cumulative settings found for 4gen preview, using current form settings only');
             }
 
             console.log('Complete 4gen request data being sent:', {
@@ -617,20 +707,21 @@ HUD.Templates = (function() {
             // Generate 4gen preview with POST
             return HUD.Preview.generatePreview(userSettings);
         } else if (templateValue === '5') {
-            console.log('Template 5 selected - generating preview with 5gen settings');
-            
+            console.log('Template 5 selected - generating preview with cumulative settings (1gen + 2gen + 3gen + 4gen)');
+
             // Collect current form settings (for 5gen-specific fields)
             const form = HUD.Main.getForm();
             const formData = new FormData(form);
             const userSettings = HUD.Utils.collectUserSettings(formData);
 
-            // Add stored 1gen settings for 4gen overlay inheritance
-            const stored1GenSettings = HUD.Storage.getStored1GenSettings();
-            if (stored1GenSettings) {
-                userSettings.primary_settings = stored1GenSettings;
-                console.log('Including stored 1gen settings for 5gen overlay:', stored1GenSettings);
+            // Add cumulative settings from previous generations (1gen + 2gen + 3gen + 4gen)
+            const cumulativeSettings = HUD.Storage.getCumulativeSettings(5);
+            if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
+                // Merge cumulative settings into user_settings
+                Object.assign(userSettings, cumulativeSettings);
+                console.log('Merged cumulative settings (1gen + 2gen + 3gen + 4gen) into user_settings for 5gen overlay:', cumulativeSettings);
             } else {
-                console.log('No stored 1gen settings found for 5gen preview');
+                console.log('No cumulative settings found for 5gen preview, using current form settings only');
             }
 
             console.log('Complete 5gen request data being sent:', {
@@ -641,20 +732,21 @@ HUD.Templates = (function() {
             // Generate 5gen preview with POST
             return HUD.Preview.generatePreview(userSettings);
         } else if (templateValue === '6') {
-            console.log('Template 6 selected - generating preview with 6gen settings');
-            
+            console.log('Template 6 selected - generating preview with cumulative settings (1gen + 2gen + 3gen + 4gen + 5gen)');
+
             // Collect current form settings (for 6gen-specific fields)
             const form = HUD.Main.getForm();
             const formData = new FormData(form);
             const userSettings = HUD.Utils.collectUserSettings(formData);
 
-            // Add stored 1gen settings for 5gen overlay inheritance
-            const stored1GenSettings = HUD.Storage.getStored1GenSettings();
-            if (stored1GenSettings) {
-                userSettings.primary_settings = stored1GenSettings;
-                console.log('Including stored 1gen settings for 6gen overlay:', stored1GenSettings);
+            // Add cumulative settings from previous generations (1gen + 2gen + 3gen + 4gen + 5gen)
+            const cumulativeSettings = HUD.Storage.getCumulativeSettings(6);
+            if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
+                // Merge cumulative settings into user_settings
+                Object.assign(userSettings, cumulativeSettings);
+                console.log('Merged cumulative settings (1gen + 2gen + 3gen + 4gen + 5gen) into user_settings for 6gen overlay:', cumulativeSettings);
             } else {
-                console.log('No stored 1gen settings found for 6gen preview');
+                console.log('No cumulative settings found for 6gen preview, using current form settings only');
             }
 
             console.log('Complete 6gen request data being sent:', {
@@ -665,20 +757,21 @@ HUD.Templates = (function() {
             // Generate 6gen preview with POST
             return HUD.Preview.generatePreview(userSettings);
         } else if (templateValue === '7') {
-            console.log('Template 7 selected - generating preview with 7gen settings');
-            
+            console.log('Template 7 selected - generating preview with cumulative settings (1gen + 2gen + 3gen + 4gen + 5gen + 6gen)');
+
             // Collect current form settings (for 7gen-specific fields)
             const form = HUD.Main.getForm();
             const formData = new FormData(form);
             const userSettings = HUD.Utils.collectUserSettings(formData);
 
-            // Add stored 1gen settings for 6gen overlay inheritance
-            const stored1GenSettings = HUD.Storage.getStored1GenSettings();
-            if (stored1GenSettings) {
-                userSettings.primary_settings = stored1GenSettings;
-                console.log('Including stored 1gen settings for 7gen overlay:', stored1GenSettings);
+            // Add cumulative settings from previous generations (1gen + 2gen + 3gen + 4gen + 5gen + 6gen)
+            const cumulativeSettings = HUD.Storage.getCumulativeSettings(7);
+            if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
+                // Merge cumulative settings into user_settings
+                Object.assign(userSettings, cumulativeSettings);
+                console.log('Merged cumulative settings (1gen + 2gen + 3gen + 4gen + 5gen + 6gen) into user_settings for 7gen overlay:', cumulativeSettings);
             } else {
-                console.log('No stored 1gen settings found for 7gen preview');
+                console.log('No cumulative settings found for 7gen preview, using current form settings only');
             }
 
             console.log('Complete 7gen request data being sent:', {
@@ -895,10 +988,13 @@ HUD.Utils = (function() {
         return userSettings;
     }
 
-    function updateFinalChartForm(userSettings) {
+    function updateFinalChartForm(userSettings, cumulativeSettings = null) {
         try {
             console.log('=== FORM UPDATE DEBUG ===');
-            console.log('Updating final chart form with current settings...');
+
+            // Use cumulative settings if provided, otherwise use current settings
+            const settingsToUpdate = cumulativeSettings || userSettings;
+            console.log('Updating final chart form with settings:', settingsToUpdate);
 
             let finalChartForm = document.querySelector('form[action*="generate_final_chart"]');
             if (!finalChartForm) {
@@ -912,7 +1008,7 @@ HUD.Utils = (function() {
                 console.log('Found form:', finalChartForm);
 
                 let updatedCount = 0;
-                for (const [key, value] of Object.entries(userSettings)) {
+                for (const [key, value] of Object.entries(settingsToUpdate)) {
                     const input = finalChartForm.querySelector(`input[name="${key}"]`);
                     if (input) {
                         console.log(`Updating ${key}: ${input.value} -> ${value}`);

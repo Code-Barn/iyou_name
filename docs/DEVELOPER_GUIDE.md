@@ -1,448 +1,541 @@
-# Namechart Developer Quick Reference Guide
+# Namechart Developer Guide
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
-### Setup
-```bash
-# Install dependencies
-uv pip install -r requirements.txt
+This guide will get you up and running with the Namechart project quickly, understanding the architecture and development workflow.
 
-# Run migrations
-uv run python manage.py migrate
-
-# Start development server
-uv run python manage.py runserver
-
-# Run all tests
-uv run python -m pytest test_basic_flow.py test_logged_out_flow.py test_edge_cases.py test_integration.py test_views.py -v
-
-
-## 📁 Project Structure
+## 📁 Project Structure Overview
 
 ```
 namechart/
 ├── apps/
-│   ├── core/              # Core templates, base.html
-│   ├── upload/            # File upload views and templates
-│   ├── users/             # Authentication and profile management
-│   ├── selector/          # NEW: Unified individual selection
-│   ├── browse/            # Individual browsing functionality
-│   ├── hud/               # Interactive chart customization
-│   ├── charts/            # Chart generation
-│   ├── generator/         # Core models (GedcomFile)
-│   └── parser/            # GEDCOM parsing logic
-├── config/                # Django settings and URLs
-├── static/                # Static files
-└── templates/             # Global templates
+│   ├── core/              # 🏛 Foundation layer (templates, middleware, shared services)
+│   ├── upload/            # 📤 File upload and GEDCOM processing
+│   ├── users/             # 👤 User authentication and management  
+│   ├── selector/          # 🎯 Individual selection interface
+│   ├── browse/            # 🔍 Individual browsing and family details
+│   ├── hud/               # 🎨 Interactive chart customization (LIVE PREVIEW)
+│   ├── charts/            # 📊 Chart generation and download
+│   ├── parser/            # 📚 GEDCOM parsing and data structure
+│   └── generator/         # ⚙️ Core chart generation engine
+├── config/                # Django settings and configuration
+├── templates/             # Global templates
+├── static/                 # Global static assets
+└── manage.py             # Django management command
 ```
 
-## 🔧 Common Tasks
+## 🎯 Key App Responsibilities
 
-### 1. Adding a New Feature
+| App | Purpose | Key Files | Primary Users |
+|------|---------|------------|--------------|
+| **Core** | Foundation layer | `core/base.html`, middleware, shared services | All apps |
+| **Upload** | File upload & processing | `upload/views.py`, file handling | New users |
+| **Users** | Authentication & profiles | `users/views.py`, user management | User accounts |
+| **Selector** | Individual selection | `selector/views.py`, choice interface | After upload |
+| **Browse** | Data browsing | `browse/views.py`, family details | Data exploration |
+| **HUD** | Live preview & customization | `hud/views.py`, real-time UI | Chart creation |
+| **Charts** | Chart generation | `charts/views.py`, PDF download | Final output |
+| **Parser** | GEDCOM processing | `parser/models.py`, data structure | All apps |
+| **Generator** | Chart engine | `generator/utils/*`, core logic | Charts/HUD |
 
-```python
-# 1. Add view to views.py
-def my_new_view(request):
-    return render(request, "my_template.html", {})
+## 🔧 Development Setup
 
-# 2. Add URL to app/urls.py
-path("my-url/", my_new_view, name="my_view")
+### Prerequisites
+- Python 3.11+
+- Django 4.2+
+- PostgreSQL (recommended) or SQLite for development
+- Node.js (for frontend development)
 
-# 3. Include in config/urls.py
-path("prefix/", include("apps.myapp.urls")),
+### Installation
+```bash
+# Clone repository
+git clone <repository-url>
+cd namechart
 
-# 4. Create template in app/templates/app/my_template.html
-{% extends "core/base.html" %}
-{% block content %}...{% endblock %}
+# Install dependencies (using uv for faster installs)
+pip install uv
+uv sync
 
-# 5. Add tests to test files
+# Set up environment
+cp .env.example .env
+# Edit .env with your database settings
+
+# Run migrations
+uv run python manage.py migrate
+
+# Create superuser (if needed)
+uv run python manage.py createsuperuser
+
+# Start development server
+uv run python manage.py runserver
 ```
 
-### 2. Working with GEDCOM Files
+## 🎨 Current Architecture Patterns
 
-```python
-from apps.generator.models import GedcomFile
-from apps.parser.models import PersonData
-
-# Get file for authenticated user
-file = GedcomFile.objects.get(id=file_id, user=request.user)
-
-# Get file for anonymous user (check session)
-file_id = request.session.get("current_gedcom_file_id")
-file = GedcomFile.objects.get(id=file_id)
-
-# Access parsed data
-individuals = file.parsed_data.get("individuals", {})
-person = PersonData(**individuals["I1"])
-
-# Update home person
-file.home_person_id = "I1"
-file.save()
-```
-
-### 3. Session Management
-
-```python
-# Set current file
-request.session["current_gedcom_file_id"] = file.id
-
-# Get current file
-file_id = request.session.get("current_gedcom_file_id")
-
-# Set selected individual
-request.session["selected_individual_id"] = individual_id
-
-# Get/Set HUD settings
-settings = request.session.get("hud_settings", {
-    "template": "4",
-    "show_photos": True,
-    # ...
-})
-request.session["hud_settings"] = settings
-```
-
-### 4. Access Control
-
-```python
-# Check file ownership
-if file.user and file.user != request.user:
-    return HttpResponse("Unauthorized", status=403)
-
-# Check authentication
-if not request.user.is_authenticated:
-    return redirect("users:login")
-
-# Anonymous user check
-is_anonymous = not request.user.is_authenticated
-```
-
-## 🌐 URL Patterns Quick Reference
-
-
-### Main URLs
-```python
-# Upload
-reverse("upload:home")                # /
-reverse("upload:upload_file")         # /upload-file/
-
-# Users
-reverse("users:profile")              # /users/profile/
-reverse("users:login")               # /users/auth/login/
-reverse("users:register")            # /users/auth/register/
-
-# Selector (NEW)
-reverse("selector:select_individual", args=[file_id])  # /selector/select/<file_id>/
-reverse("selector:confirm_selection", args=[file_id])  # /selector/confirm/<file_id>/
-
-# Browse
-reverse("browse:browse_individuals")  # /browse/browse/
-reverse("browse:individual_detail", args=["I1"])  # /browse/person/I1/
-
-# HUD
-reverse("hud:display_tree")           # /hud/display-tree/
-reverse("hud:save_settings")          # /hud/save-settings/
-reverse("hud:hud_family_data")        # /hud/api/family-data/
-reverse("hud:hud_preview")            # /hud/api/preview/
-reverse("hud:hud_settings")          # /hud/api/settings/
-
-# Charts
-reverse("charts:generate_chart", args=[file_id, individual_id])  # /charts/generate/<file_id>/<individual_id>/
-
-```
-
-## 📦 Key Models
-
-### GedcomFile
-```python
-# Fields
-user = models.ForeignKey(User, null=True, blank=True)  # NULL for anonymous
-file = models.FileField(upload_to="gedcom_files/")
-parsed_data = JSONField()  # {individuals: {}, families: {}, root_individuals: []}
-home_person_id = models.CharField(max_length=100, null=True, blank=True)
-is_processed = models.BooleanField(default=False)
-processing_date = models.DateTimeField(null=True, blank=True)
-```
-
-### PersonData (dataclass)
-```python
-id: str
-full_name: str
-given_name: str
-surname: str
-birth_date: Optional[str]
-birth_place: Optional[str]
-death_date: Optional[str]
-death_place: Optional[str]
-# ... additional fields
-```
-
-## 🧪 Testing Patterns
-
-### Test Structure
-```python
-from django.test import TestCase
-from django.test import RequestFactory
-from django.contrib.sessions.backends.db import SessionStore
-
-class MyTest(TestCase):
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.session = SessionStore()
-        self.session.save()
-
-    def test_my_feature(self):
-        request = self.factory.get("/my-url/")
-        request.user = self.user  # or AnonymousUser()
-        request.session = self.session
-        request.session.save()
-
-        response = my_view(request)
-        self.assertEqual(response.status_code, 200)
-```
-
-### Creating Test Data
-```python
-# Create unique user
-import uuid
-username = f"test_{uuid.uuid4().hex[:8]}"
-user = User.objects.create_user(username=username, password="test123")
-
-# Create GEDCOM file
-file = GedcomFile.objects.create(
-    user=user,
-    file=f"test_{username}.ged",
-    parsed_data={
-        "individuals": {
-            "I1": {"id": "I1", "full_name": "Test Person", ...}
-        },
-        "families": {},
-        "root_individuals": ["I1"]
-    },
-    is_processed=True
-)
-```
-
-## 🎨 Template Structure
-
-### Base Template
+### Component System
+**Use Core Templates**: All templates should extend `core/base.html`
 ```html
-{% extends "core/base.html" %}
-{% load static %}
+{% extends 'core/base.html' %}
 
 {% block content %}
-<!-- Your content here -->
-{% endblock %}
-
-{% block extra_css %}
-<!-- Additional CSS -->
-{% endblock %}
-
-{% block extra_js %}
-<!-- Additional JavaScript -->
+    <!-- Your app content -->
 {% endblock %}
 ```
 
-### Common Template Variables
-```python
-# Selector template
-{
-    "individuals": [PersonData objects],
-    "gedcom_file": GedcomFile object,
-    "is_logged_in": bool
-}
-
-# HUD template
-{
-    "gedcom_file_id": int,
-    "individual": PersonData object,
-    "hud_settings": dict,
-    "TEMPLATE_MAPPING": dict
-}
-
-# Profile template
-{
-    "user": User object,
-    "gedcom_files": [GedcomFile objects],
-    "current_file": GedcomFile object
-}
+**Shared Components**: Use core components where possible
+```html
+{% include 'core/components/individual_header.html' with individual=person %}
+{% include 'core/components/back_button.html' with back_url=previous_page %}
 ```
 
-## 🔧 Common Utilities
+### Data Flow Pattern
+1. **Upload** → Users upload GEDCOM files
+2. **Parser** → Files processed into structured data
+3. **Selector** → Users select individuals
+4. **HUD** → Live preview and customization
+5. **Charts** → Final chart generation
+6. **Browse** → Data exploration and navigation
 
-### Template Mapping
+### Session Management
 ```python
-def get_template_mapping():
-    return {
-        "1": {
-            "module": "apps.generator.utils.image_1generator",
-            "function": "generate_family_tree",
-            "filename": "US_LETTER_1GEN_BW.pdf",
-            "name": "1 Generation (Individual Only)",
-        },
-        "2": {...},  # 2 Generation Chart
-        "3": {...},  # 3 Generation Chart
-        "4": {...},  # 4 Generation Chart (default)
-        "5": {...},  # 5 Generation Chart
-        "6": {...},  # 6 Generation Chart
-        "7": {...},  # 7 Generation Chart
-    }
+# Standard session keys
+request.session['current_gedcom_file_id'] = file_id
+request.session['selected_individual_id'] = individual_id
+request.session['selected_template'] = template_id
 ```
 
-### File Processing
+## 🔥 Current Development Priorities
+
+Based on our recent analysis, focus areas:
+
+### 🚨 **IMMEDIATE** (Security Issues)
+1. **Fix Upload Security** - Add CSRF protection, validation, rate limiting
+2. **Clean HUD Code** - Remove duplicate implementations, massive functions
+3. **Remove Debug Code** - Replace print() statements with proper logging
+4. **Add Input Validation** - Comprehensive validation across all apps
+
+### 📈 **MEDIUM** (Performance & UX)
+1. **Implement Core Services** - Shared caching, security, utilities
+2. **Add Search Functionality** - Individual search in Selector/Browse
+3. **Optimize Database** - Add indexes, optimize queries
+4. **Enhance Error Handling** - Structured error responses and recovery
+
+### 🎯 **LOW** (Features & Enhancement)
+1. **Add File Management** - Versioning, sharing, organization
+2. **Modernize Frontend** - Drag-and-drop uploads, real-time progress
+3. **Add User Preferences** - Themes, customization options
+4. **Implement Analytics** - Usage tracking and insights
+
+## 🛠 Development Workflow
+
+### 1. Code Quality Standards
+
+**Python Style**: Follow PEP 8, use Black for formatting
 ```python
-from apps.parser.utils import convert_to_utf8, parse_gedcom_data
+# Install dev dependencies
+pip install black flake8 mypy
 
-# Process uploaded file
-gedcom_content_bytes = request.FILES["gedcom_file"].read()
-gedcom_content = convert_to_utf8(gedcom_content_bytes)
-family_data = parse_gedcom_data(gedcom_content)
+# Format code
+black .
 
-# Store parsed data
-gedcom_file.parsed_data = {
-    "individuals": {ind_id: person.to_dict() for ind_id, person in family_data["individuals"].items()},
-    "families": family_data.get("families", {}),
-    "root_individuals": family_data.get("root_individuals", [])
-}
-gedcom_file.save()
+# Lint code
+flake8 apps/
 ```
 
-## 💡 Best Practices
+**Django Best Practices**:
+- Use Django's built-in features (forms, auth, ORM)
+- Implement proper error handling and logging
+- Use Django's template system safely
+- Follow Django URL patterns and naming conventions
 
-### 1. Always Check Access
-```python
-# For user-specific files
-if file.user and file.user != request.user:
-    return HttpResponse("Unauthorized", status=403)
+### 2. Testing Strategy
+```bash
+# Run all tests
+uv run python -m pytest
 
-# For authenticated-only views
-if not request.user.is_authenticated:
-    return redirect("users:login")
+# Test specific app
+uv run python -m pytest apps/parser/test_*.py
+
+# Run with coverage
+uv run python -m pytest --cov=apps --cov-report=html
 ```
 
-### 2. Handle Both Authenticated and Anonymous Users
-```python
-if request.user.is_authenticated:
-    # Redirect to profile
-    return redirect("users:profile")
-else:
-    # Check session for anonymous user files
-    if request.session.get("current_gedcom_file_id"):
-        return redirect("browse:browse_individuals")
-    else:
-        return redirect("upload:home")
+### 3. Git Workflow
+```bash
+# Create feature branch
+git checkout -b feature/new-feature-name
+
+# Commit changes
+git add .
+git commit -m "feat: add new feature"
+
+# Push and create PR
+git push origin feature/new-feature-name
+# Open pull request for review
 ```
 
-### 3. Use Session for Anonymous User State
-```python
-# Store file ID in session for anonymous users
-request.session["current_gedcom_file_id"] = gedcom_file.id
+## 📚 Key Dependencies & Usage
 
-# Get file from session
-file_id = request.session.get("current_gedcom_file_id")
+### Django Apps Used
+- **django.contrib.auth** - User authentication
+- **django.contrib.sessions** - Session management
+- **django.contrib.staticfiles** - Static file serving
+- **django.contrib.messages** - User feedback messaging
+
+### External Libraries
+- **ged4py** - GEDCOM file parsing
+- **chardet** - Character encoding detection
+- **reportlab** - PDF generation (in generator)
+- **pillow** - Image processing
+
+### Database Models
+```python
+# Core User Model (Django built-in)
+from django.contrib.auth.models import AbstractUser
+
+class CustomUser(AbstractUser):
+    # Add custom fields as needed
+    pass
+
+# File Model (in generator/models.py)
+class GedcomFile(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    file = models.FileField(upload_to='uploads/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    is_processed = models.BooleanField(default=False)
+    parsed_data = models.JSONField(default=dict)
+    home_person_id = models.CharField(max_length=50, blank=True, null=True)
 ```
 
-### 4. Provide Clear Error Messages
+## 🔍 Common Development Tasks
+
+### Adding a New View
 ```python
-try:
-    # Operation that might fail
-    gedcom_file = GedcomFile.objects.get(id=file_id)
-except GedcomFile.DoesNotExist:
-    return render(request, "error.html", {
-        "error": "GEDCOM file not found",
-        "suggested_action": "Upload a new file"
+# In apps/yourapp/views.py
+from django.shortcuts import render
+
+def new_view(request):
+    if request.method == 'POST':
+        # Handle form submission
+        pass
+    
+    return render(request, 'yourapp/template.html', {
+        'form': form
     })
+
+# In apps/yourapp/urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('new-view/', views.new_view, name='new_view'),
+]
+```
+
+### Adding New Templates
+```html
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>New Page</h1>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+{% endblock %}
+```
+
+## 🎨 Frontend Development
+
+### CSS Organization
+```css
+/* In apps/core/static/core/css/style.css */
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Mobile-first responsive design */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+}
+```
+
+### JavaScript Integration
+```javascript
+// In static files, include before closing body tag
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize interactive components
+    initializeFileUpload();
+    initializeSearch();
+    initializeProgressIndicators();
+});
+
+function initializeFileUpload() {
+    // File upload logic
+}
+
+function initializeSearch() {
+    // Search functionality
+}
+```
+
+## 🧪 Debugging & Troubleshooting
+
+### Common Issues & Solutions
+```python
+# 1. Database Connection Errors
+# Solution: Check DATABASE_URL in .env
+# Run: uv run python manage.py check
+
+# 2. Template Not Found Errors
+# Solution: Check template paths and Django settings
+# Run: uv run python manage.py findstatic --verbosity=2
+
+# 3. Static Files Not Loading
+# Solution: Run collectstatic in production
+# Run: uv run python manage.py collectstatic --noinput
+
+# 4. Import Errors
+# Solution: Check INSTALLED_APPS and Python path
+# Run: uv run python manage.py check --deploy
+```
+
+### Debugging Tools
+```python
+# Django Debug Toolbar (development only)
+pip install django-debug-toolbar
+
+# Add to INSTALLED_APPS for development
+if DEBUG:
+    INSTALLED_APPS += ['debug_toolbar']
+```
+
+## 📊 Performance Optimization
+
+### Database Optimization
+```python
+# Use select_related to reduce queries
+files = GedcomFile.objects.select_related('user').all()
+
+# Use prefetch_related for many-to-many
+users = User.objects.prefetch_related('gedcomfile_set').all()
+
+# Add database indexes
+class GedcomFile(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'uploaded_at']),
+            models.Index(fields=['is_processed']),
+        ]
+```
+
+### Caching Strategy
+```python
+# View caching
+from django.views.decorators.cache import cache_page
+
+@cache_page(60 * 15)  # 15 minutes
+def expensive_view(request):
+    # View logic
+    pass
+
+# Template fragment caching
+from django.core.cache import cache
+
+def get_expensive_data():
+    data = cache.get('expensive_data_key')
+    if data is None:
+        data = compute_expensive_data()
+        cache.set('expensive_data_key', data, 60 * 60)
+    return data
+```
+
+## 🔐 Security Best Practices
+
+### Input Validation
+```python
+from django.core.exceptions import ValidationError
+import re
+
+def validate_gedcom_file(file):
+    # File size validation
+    if file.size > 100 * 1024 * 1024:  # 100MB limit
+        raise ValidationError("File too large")
+    
+    # File type validation
+    allowed_extensions = ['.ged', '.gedcom']
+    file_ext = os.path.splitext(file.name)[1].lower()
+    if file_ext not in allowed_extensions:
+        raise ValidationError("Invalid file type")
+    
+    # Content validation
+    if not is_valid_gedcom_content(file):
+        raise ValidationError("Invalid GEDCOM file")
+```
+
+### Authentication Security
+```python
+# Custom middleware for security
+class SecurityMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+    
+    def __call__(self, request):
+        response = self.get_response(request)
+        
+        # Add security headers
+        response['X-Content-Type-Options'] = 'nosniff'
+        response['X-Frame-Options'] = 'DENY'
+        response['X-XSS-Protection'] = '1; mode=block'
+        
+        return response
+```
+
+## 📋 API Development
+
+### RESTful Patterns
+```python
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_protect
+
+@csrf_protect
+@require_http_methods(["GET", "POST"])
+def api_endpoint(request):
+    if request.method == 'GET':
+        return JsonResponse({'data': get_data()})
+    
+    elif request.method == 'POST':
+        if request.is_ajax():
+            data = json.loads(request.body)
+            result = process_data(data)
+            return JsonResponse({'status': 'success', 'data': result})
+    
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+```
+
+### Error Handling
+```python
+# Structured error responses
+class APIError(Exception):
+    def __init__(self, message, error_code='UNKNOWN', status=400):
+        self.message = message
+        self.error_code = error_code
+        self.status = status
+
+def handle_api_error(request, error):
+    return JsonResponse({
+        'error': error.message,
+        'error_code': error.error_code,
+        'timestamp': timezone.now().isoformat()
+    }, status=error.status)
 ```
 
 ## 🚀 Deployment Checklist
 
-### Before Deployment
-- [ ] Run all tests: `uv run python test_*.py`
-- [ ] Check for migrations: `uv run python manage.py makemigrations`
-- [ ] Apply migrations: `uv run python manage.py migrate`
-- [ ] Collect static files: `uv run python manage.py collectstatic`
-- [ ] Set `DEBUG=False` in settings
-- [ ] Configure proper `ALLOWED_HOSTS`
-- [ ] Set up proper database backups
+### Pre-Deployment
+- [ ] Remove all debug code and print statements
+- [ ] Set DEBUG=False in production settings
+- [ ] Configure proper database settings
+- [ ] Run all tests and ensure they pass
+- [ ] Collect static files: `manage.py collectstatic`
+- [ ] Verify all environment variables
+- [ ] Check security settings (ALLOWED_HOSTS, etc.)
 
-### Environment Variables
+### Production Settings
+```python
+# SECURITY SETTINGS
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_X_FRAME_OPTIONS = 'DENY'
+
+# DATABASE SETTINGS
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
+    }
+}
+
+# CACHE SETTINGS (Redis recommended for production)
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
 ```
-SECRET_KEY=your-secret-key-here
-DEBUG=False
-ALLOWED_HOSTS=yourdomain.com,localhost
-DATABASE_URL=postgres://user:password@host:port/dbname
-```
 
-### Monitoring
-- Set up error monitoring (Sentry, etc.)
-- Configure logging
-- Monitor database performance
-- Set up backup verification
+## 📞 Getting Help
 
-## 📚 Troubleshooting
+### Common Issues & Solutions
+1. **"No module named X"** → Check INSTALLED_APPS, run `pip install X`
+2. **"Template does not exist"** → Check template paths, run `findstatic`
+3. **"Can't connect to database"** → Check DATABASE_URL, run `check --deploy`
+4. **"Static files not loading"** → Check STATIC_URL, run `collectstatic`
+5. **"Permission denied"** → Check file permissions, database user rights
 
-### Common Issues
-
-**Database Constraints**
-- Use unique usernames in tests
-- Clean up test data properly
-- Check foreign key constraints
-
-**Session Issues**
-- Ensure session middleware is enabled
-- Check session storage configuration
-- Verify session data is being saved
-
-**Template Errors**
-- Check template inheritance
-- Verify template paths
-- Ensure all template variables are defined
-
-**URL Reversals**
-- Use `reverse("app_name:url_name")` format
-- Check URL names in urls.py
-- Verify app_name is defined in urls.py
-
-## 🎯 Quick Reference Commands
-
+### Useful Commands
 ```bash
-# Run specific test
-uv run python -m pytest test_basic_flow.py -v
+# Check project health
+uv run python manage.py check --deploy
 
-# Create superuser
-uv run python manage.py createsuperuser
+# Create migrations after model changes
+uv run python manage.py makemigrations appname
 
-# Shell access
+# Reset migrations if needed
+uv run python manage.py migrate appname zero
+
+# Shell access for debugging
 uv run python manage.py shell
 
-# Check URL patterns
-uv run python manage.py show_urls  # If available
-
-# Database shell
-uv run python manage.py dbshell
-
-# Run management command
-uv run python manage.py my_command
+# Create superuser if needed
+uv run python manage.py createsuperuser
 ```
 
-## 🤝 Contributing
+## 🎯 Success Metrics
 
-### Code Style
-- Follow Django best practices
-- Use descriptive variable names
-- Add docstrings to functions
-- Keep functions focused and small
-- Write comprehensive tests
+### Code Quality Goals
+- 90%+ test coverage
+- Zero security vulnerabilities
+- <5 second average page load time
+- <500ms average API response time
+- Zero production debug statements
 
-### Pull Request Process
-1. Create feature branch
-2. Write tests first
-3. Implement functionality
-4. Update documentation
-5. Run all tests
-6. Submit pull request
+### Development Efficiency
+- Consistent code style
+- Comprehensive documentation
+- Automated testing pipeline
+- Fast development feedback loop
 
-### Commit Messages
-- Use imperative mood ("Add feature" not "Added feature")
-- Keep first line under 50 characters
-- Add detailed description if needed
-- Reference related issues
+This guide provides a solid foundation for Namechart development. Start with the security fixes (highest priority), then move to performance and feature enhancements. Good luck! 🚀

@@ -162,6 +162,11 @@ def generate_3gen_preview(
     """
     # Validate and process settings
     user_settings = user_settings or {}
+
+    # Debug logging to check what settings are received
+    logger.info(f"3gen generator received {len(user_settings)} user_settings")
+    logger.debug(f"3gen user_settings keys: {list(user_settings.keys())}")
+
     validated_settings = get_validated_settings(
         user_settings, GENERATION_3_SETTINGS_SCHEMA, "3gen"
     )
@@ -223,9 +228,10 @@ def generate_3gen_preview(
 
             # Generate 2gen overlay with enhanced settings
             overlay_settings = _extract_overlay_settings(user_settings)
-            logger.debug(
-                f"Generating 2gen overlay with settings: {len(overlay_settings)} settings"
+            logger.info(
+                f"Generating 2gen overlay with {len(overlay_settings)} settings"
             )
+            logger.debug(f"2gen overlay settings keys: {list(overlay_settings.keys())}")
 
             gen2_img_buffer = generate_2gen_preview(
                 primary_individual, family_data, "preview", overlay_settings
@@ -483,21 +489,18 @@ def _draw_grandparent_death_info(draw, grandparent, gp_type, x, y, validated_set
 
 
 def _extract_overlay_settings(user_settings):
-    """Extract settings for 2gen overlay generation."""
+    """Extract cumulative settings for 2gen overlay generation (1gen + 2gen)."""
 
-    # Check for stored primary settings first (from JavaScript)
-    primary_settings = user_settings.get("primary_settings", {})
+    # For cumulative inheritance, we need to pass the COMPLETE user_settings
+    # which contains both 1gen and 2gen settings merged together
+    # The 2gen generator will extract what it needs from this complete set
 
-    if not primary_settings:
-        # Fallback to extracting PRIMARY from current settings
-        from apps.generator.utils.settings_helper import extract_generation_settings
+    logger.debug(
+        f"Passing cumulative settings to 2gen overlay: {len(user_settings)} total settings"
+    )
 
-        primary_settings = extract_generation_settings(user_settings, "PRIMARY")
-        logger.debug("Using fallback PRIMARY settings for 2gen overlay")
-    else:
-        logger.debug("Using stored primary settings for 2gen overlay")
-
-    return primary_settings
+    # Return the complete user_settings (not extracted) so 2gen gets both 1gen + 2gen settings
+    return user_settings
 
 
 def _composite_overlay(content_img, gen2_img_buffer, validated_settings):
