@@ -3,6 +3,7 @@ import logging
 
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods
 
 from apps.generator.models import GedcomFile
@@ -13,6 +14,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
+@csrf_protect
 @require_http_methods(["GET", "POST"])
 def generate_chart(request, file_id, individual_id):
     """

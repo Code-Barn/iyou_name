@@ -74,6 +74,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "apps.core.middleware.SessionCleanupMiddleware",
+    "apps.core.rate_limiting.RateLimitMiddleware",
 ]
 
 AUTHENTICATION_BACKENDS = [

@@ -1,5 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_POST
 
 from apps.generator.models import GedcomFile
 from apps.parser.models import PersonData
@@ -60,6 +62,8 @@ def select_individual(request, file_id):
         )
 
 
+@csrf_protect
+@require_POST
 def confirm_selection(request, file_id):
     """
     Handle the confirmation of individual selection

@@ -6,7 +6,7 @@ import json
 import logging
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods, require_POST, require_GET
 
 from apps.generator.models import GedcomFile
@@ -126,7 +126,7 @@ def display_tree_hud(request):
         )
 
 
-@csrf_exempt
+@csrf_protect
 @require_http_methods(["GET", "POST"])
 def get_template_preview_simple(request, template_id):
     """
@@ -222,7 +222,7 @@ def get_template_preview_simple(request, template_id):
         return HttpResponse(f"Chart generation failed: {str(e)}", status=500)
 
 
-@csrf_exempt
+@csrf_protect
 @require_POST
 def save_hud_settings(request):
     """

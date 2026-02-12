@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
 
+from apps.core.rate_limiting import upload_rate_limit, auth_rate_limit
 from apps.generator.models import GedcomFile
 from apps.generator.template_mapping import get_template_mapping
 from apps.parser.utils import convert_to_utf8, parse_gedcom_data
@@ -31,6 +32,7 @@ def upload_file(request):
 
 
 @csrf_protect
+@upload_rate_limit
 def upload_and_generate(request):
     """
     View for handling the main upload and generate workflow.
@@ -205,6 +207,7 @@ def set_current_gedcom_file(request, file_id):
 
 @csrf_protect
 @require_POST
+@upload_rate_limit
 def delete_anonymous_file(request):
     """
     Delete an anonymous user's GEDCOM file with proper authorization checks

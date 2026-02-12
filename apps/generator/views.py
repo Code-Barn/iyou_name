@@ -5,7 +5,7 @@ from io import BytesIO
 
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods
 
 from apps.generator.models import GedcomFile
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 TEMPLATE_MAPPING = get_template_mapping()
 
 
-@csrf_exempt
+@csrf_protect
 @require_http_methods(["GET", "POST"])
 def generate_final_chart(request):
     """

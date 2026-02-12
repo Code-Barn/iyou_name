@@ -7,6 +7,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 
+from apps.core.rate_limiting import auth_rate_limit, user_rate_limit
 from apps.generator.forms import RegisterForm
 from apps.generator.models import GedcomFile
 
@@ -54,6 +55,8 @@ def profile(request):
         )
 
 
+@csrf_protect
+@auth_rate_limit
 def register(request):
     """
     View for user registration
@@ -73,6 +76,8 @@ def register(request):
     return render(request, "users/register.html", {"form": form})
 
 
+@csrf_protect
+@auth_rate_limit
 def user_login(request):
     """
     Custom login view
@@ -97,6 +102,7 @@ def user_login(request):
 
 @csrf_protect
 @require_POST
+@user_rate_limit(limit=20, window=60)
 def delete_gedcom_file(request, file_id):
     """
     View for deleting a GEDCOM file

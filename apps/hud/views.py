@@ -7,7 +7,7 @@ from io import BytesIO
 
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.generator.models import GedcomFile
@@ -125,9 +125,8 @@ def display_tree_hud(request):
         return render(request, "hud/error.html", {"error": str(e)})
 
 
+@csrf_protect
 @require_http_methods(["POST"])
-@csrf_exempt
-@require_POST
 def update_settings_timestamp(request):
     """
     Update the timestamp in the session to force a preview reload.
@@ -575,7 +574,7 @@ def get_hud_family_data(request):
 
 
 # THIS IS THE ONE BEING USED/SEEN IN CONSOLE (kept for backward compatibility)
-@csrf_exempt
+@csrf_protect
 def get_1gen_preview(request):
     """
     API endpoint for generating the 1-generation preview.
@@ -719,7 +718,6 @@ def get_1gen_preview(request):
         return HttpResponse(f"Error generating preview: {str(e)}", status=500)
 
 
-@csrf_exempt
 def get_file_individuals(request):
     """
     API endpoint to get list of valid individuals from a GEDCOM file.
@@ -839,7 +837,7 @@ def get_settings_panel(request, template_name):
         )
 
 
-@csrf_exempt
+@csrf_protect
 def get_template_preview(request, template_id):
     """
     Generic template preview endpoint that handles all template types.
