@@ -8,6 +8,12 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 
 from apps.core.rate_limiting import auth_rate_limit, user_rate_limit
+from apps.core.auth_security import (
+    check_login_security,
+    record_authentication_result,
+    get_client_ip,
+    get_user_agent,
+)
 from apps.generator.forms import RegisterForm
 from apps.generator.models import GedcomFile
 
@@ -80,7 +86,7 @@ def register(request):
 @auth_rate_limit
 def user_login(request):
     """
-    Custom login view
+    Custom login view with security monitoring
     """
     if request.user.is_authenticated:
         return redirect("upload:home")
@@ -90,10 +96,37 @@ def user_login(request):
         if form.is_valid():
             username = form.cleaned_data.get("username")
             password = form.cleaned_data.get("password")
+
+            # Get client info for security monitoring
+            ip_address = get_client_ip(request)
+            user_agent = get_user_agent(request)
+
+            # Check security before authentication
+            is_allowed, error_message = check_login_security(
+                username, password, ip_address, user_agent
+            )
+            if not is_allowed:
+                logger.warning(
+                    f"Login blocked by security: {error_message} (user: {username}, IP: {ip_address})"
+                )
+                form.add_error(None, error_message)
+                return render(request, "users/auth/login.html", {"form": form})
+
+            # Attempt authentication
             user = authenticate(username=username, password=password)
             if user is not None:
+                # Record successful login
+                record_authentication_result(username, True, ip_address, user_agent)
                 login(request, user)
+                logger.info(f"User logged in: {username} from {ip_address}")
                 return redirect("upload:home")
+            else:
+                # Record failed login attempt
+                record_authentication_result(username, False, ip_address, user_agent)
+                logger.warning(
+                    f"Failed login attempt for user: {username} from {ip_address}"
+                )
+                form.add_error(None, "Invalid username or password")
     else:
         form = AuthenticationForm()
 

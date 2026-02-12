@@ -11,6 +11,7 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
 
 from apps.core.rate_limiting import upload_rate_limit, auth_rate_limit
+from apps.core.file_validation import validate_uploaded_file
 from apps.generator.models import GedcomFile
 from apps.generator.template_mapping import get_template_mapping
 from apps.parser.utils import convert_to_utf8, parse_gedcom_data
@@ -89,6 +90,19 @@ def upload_and_generate(request):
             logger.info(
                 f"Processing uploaded file: {gedcom_file.name} ({len(gedcom_content_bytes)} bytes)"
             )
+
+            # Validate file content for malicious patterns and GEDCOM structure
+            is_valid, error_message = validate_uploaded_file(
+                gedcom_content_bytes, gedcom_file.name
+            )
+            if not is_valid:
+                logger.warning(
+                    f"File validation failed for {gedcom_file.name}: {error_message}"
+                )
+                return JsonResponse(
+                    {"status": "error", "message": f"Invalid file: {error_message}"},
+                    status=400,
+                )
 
             # Save the file
             gedcom_model = GedcomFile.objects.create(
