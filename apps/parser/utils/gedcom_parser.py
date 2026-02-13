@@ -311,19 +311,8 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
             wife_record = record.sub_tag("WIFE")
             wife_id = wife_record.xref_id if wife_record else None
 
-            # Check if the family record is incomplete
-            if not husb_record or not wife_record:
-                logger.warning(
-                    f"Incomplete family record: {fam_id} (missing husband or wife)"
-                )
-                continue
-
-            # Skip if husband or wife is missing
-            if not husband_id or not wife_id:
-                logger.warning(
-                    f"Skipping family record {fam_id} due to missing husband or wife"
-                )
-                continue
+            # Process family record even if only one spouse is present
+            # (GEDCOM allows single-parent families)
 
             if husband_id and husband_id in individual_records:
                 family["husband"] = husband_id.replace("@", "") if husband_id else None
@@ -338,6 +327,19 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                     # Add wife's ID to husband's spouse list
                     if wife_id:
                         husband_individual.spouse.append(wife_id.replace("@", ""))
+                        print(
+                            f"  Added spouse {wife_id.replace('@', '')} to {husband_individual.id}, now has {len(husband_individual.spouse)} spouses"
+                        )
+                        # Initialize spouses_children for this spouse even if no children
+                        if husband_individual.spouses_children is None:
+                            husband_individual.spouses_children = {}
+                        if (
+                            wife_id.replace("@", "")
+                            not in husband_individual.spouses_children
+                        ):
+                            husband_individual.spouses_children[
+                                wife_id.replace("@", "")
+                            ] = []
 
             if wife_id and wife_id in individual_records:
                 family["wife"] = wife_id.replace("@", "") if wife_id else None
@@ -349,6 +351,16 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                     # Add husband's ID to wife's spouse list
                     if husband_id:
                         wife_individual.spouse.append(husband_id.replace("@", ""))
+                        # Initialize spouses_children for this spouse even if no children
+                        if wife_individual.spouses_children is None:
+                            wife_individual.spouses_children = {}
+                        if (
+                            husband_id.replace("@", "")
+                            not in wife_individual.spouses_children
+                        ):
+                            wife_individual.spouses_children[
+                                husband_id.replace("@", "")
+                            ] = []
 
             # Get children by following XREF pointers
             for child_record in record.sub_tags("CHIL"):
@@ -387,6 +399,9 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                                 husband_individual.children.append(
                                     child_id.replace("@", "")
                                 )
+                                print(
+                                    f"  Added child {child_id.replace('@', '')} to husband {husband_individual.id}, now has {len(husband_individual.children)} children"
+                                )
 
                         if (
                             family["wife"]
@@ -416,23 +431,24 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                             # Initialize spouses_children if not exists
                             if husband_individual.spouses_children is None:
                                 husband_individual.spouses_children = {}
-                            # Add child to this spouse's children list
-                            if (
-                                family["wife"].replace("@", "")
-                                not in husband_individual.spouses_children
-                            ):
-                                husband_individual.spouses_children[
+                            # Add child to this spouse's children list (only if wife exists)
+                            if family["wife"]:
+                                if (
                                     family["wife"].replace("@", "")
-                                ] = []
-                            if (
-                                child_id.replace("@", "")
-                                not in husband_individual.spouses_children[
-                                    family["wife"].replace("@", "")
-                                ]
-                            ):
-                                husband_individual.spouses_children[
-                                    family["wife"].replace("@", "")
-                                ].append(child_id.replace("@", ""))
+                                    not in husband_individual.spouses_children
+                                ):
+                                    husband_individual.spouses_children[
+                                        family["wife"].replace("@", "")
+                                    ] = []
+                                if (
+                                    child_id.replace("@", "")
+                                    not in husband_individual.spouses_children[
+                                        family["wife"].replace("@", "")
+                                    ]
+                                ):
+                                    husband_individual.spouses_children[
+                                        family["wife"].replace("@", "")
+                                    ].append(child_id.replace("@", ""))
 
                         if (
                             family["wife"]
@@ -445,23 +461,24 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                             # Initialize spouses_children if not exists
                             if wife_individual.spouses_children is None:
                                 wife_individual.spouses_children = {}
-                            # Add child to this spouse's children list
-                            if (
-                                family["husband"].replace("@", "")
-                                not in wife_individual.spouses_children
-                            ):
-                                wife_individual.spouses_children[
+                            # Add child to this spouse's children list (only if husband exists)
+                            if family["husband"]:
+                                if (
                                     family["husband"].replace("@", "")
-                                ] = []
-                            if (
-                                child_id.replace("@", "")
-                                not in wife_individual.spouses_children[
-                                    family["husband"].replace("@", "")
-                                ]
-                            ):
-                                wife_individual.spouses_children[
-                                    family["husband"].replace("@", "")
-                                ].append(child_id.replace("@", ""))
+                                    not in wife_individual.spouses_children
+                                ):
+                                    wife_individual.spouses_children[
+                                        family["husband"].replace("@", "")
+                                    ] = []
+                                if (
+                                    child_id.replace("@", "")
+                                    not in wife_individual.spouses_children[
+                                        family["husband"].replace("@", "")
+                                    ]
+                                ):
+                                    wife_individual.spouses_children[
+                                        family["husband"].replace("@", "")
+                                    ].append(child_id.replace("@", ""))
 
             # Extract family events
             for event in record.sub_tags("MARR", "DIV", "EVEN"):
@@ -495,25 +512,71 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
 
         # Identify siblings for each individual
         for ind, individual in family_data["individuals"].items():
-            siblings = []
-            # Find all families where the individual is a child
+            full_siblings = []  # Same both parents
+            half_siblings = []  # Same one parent only
+
+            # Get all families where this individual is a child
+            individual_families = []
             for fam_id, family in family_data["families"].items():
                 if ind in family.get("children", []):
-                    # Collect all children in the family except the individual
-                    for child_id in family.get("children", []):
-                        if child_id != ind:
-                            siblings.append(child_id)
-            # Also check for siblings in other families with the same parents
-            if individual.father and individual.mother:
-                for fam_id, family in family_data["families"].items():
-                    if (
-                        family["husband"] == individual.father
-                        and family["wife"] == individual.mother
-                    ):
-                        for child_id in family.get("children", []):
-                            if child_id != ind and child_id not in siblings:
-                                siblings.append(child_id)
-            individual.siblings = siblings
+                    individual_families.append((fam_id, family))
+
+            # For each family this person belongs to
+            for fam_id, fam in individual_families:
+                father_id = fam.get("husband")
+                mother_id = fam.get("wife")
+
+                # First: add siblings from the SAME family (definitely full siblings)
+                for child_id in fam.get("children", []):
+                    if child_id == ind:
+                        continue
+                    if child_id not in full_siblings:
+                        full_siblings.append(child_id)
+
+                # Then: look at other families to find half-siblings
+                for other_fam_id, other_fam in family_data["families"].items():
+                    if other_fam_id == fam_id:
+                        continue
+
+                    other_father = other_fam.get("husband")
+                    other_mother = other_fam.get("wife")
+
+                    # Get children of the other family
+                    other_children = other_fam.get("children", [])
+
+                    for child_id in other_children:
+                        if child_id == ind:
+                            continue
+
+                        # Check if this child is already identified as full sibling
+                        if child_id in full_siblings:
+                            continue
+
+                        # Get the other child's parents
+                        child_obj = family_data["individuals"].get(child_id)
+                        if not child_obj:
+                            continue
+
+                        child_father = child_obj.father
+                        child_mother = child_obj.mother
+
+                        # Count shared parents
+                        shared_parents = 0
+                        if father_id and child_father and father_id == child_father:
+                            shared_parents += 1
+                        if mother_id and child_mother and mother_id == child_mother:
+                            shared_parents += 1
+
+                        if shared_parents == 1:
+                            # Half siblings - same one parent
+                            if child_id not in half_siblings:
+                                half_siblings.append(child_id)
+
+            individual.siblings = full_siblings
+            individual.half_siblings = half_siblings
+            # step_siblings requires step-parent data which is complex to determine
+            # Leave as empty for now - can be enhanced later with PEDI tags
+            individual.step_siblings = []
 
         # Identify adoptive, foster, and step parents
         for ind, individual in family_data["individuals"].items():

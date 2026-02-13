@@ -18,11 +18,12 @@ class PersonData:
     mother: Optional[str] = None  # Reference to mother's ID
     spouse: Optional[List[str]] = None  # List of spouse IDs
     children: Optional[List[str]] = None  # List of child IDs
-    siblings: Optional[List[str]] = None  # List of sibling IDs
+    siblings: Optional[List[str]] = None  # List of full sibling IDs (both parents)
+    half_siblings: Optional[List[str]] = None  # List of half-sibling IDs (one parent)
     adoptive_parents: Optional[List[str]] = None  # List of adoptive parent IDs
     foster_parents: Optional[List[str]] = None  # List of foster parent IDs
     step_parents: Optional[List[str]] = None  # List of step-parent IDs
-    step_siblings: Optional[List[str]] = None  # List of step-sibling IDs
+    step_siblings: Optional[List[str]] = None  # List of step-sibling IDs (no biological relation)
     spouses_children: Optional[Dict[str, List[str]]] = (
         None  # Dictionary to store children for each spouse
     )

@@ -265,6 +265,16 @@ window.ZoomManager = {
     },
     
     /**
+     * Get current rotation from HUD.Rotation if available
+     */
+    getCurrentRotation: function() {
+        if (window.HUD && window.HUD.Rotation && typeof window.HUD.Rotation.getCurrentRotation === 'function') {
+            return window.HUD.Rotation.getCurrentRotation();
+        }
+        return 0;
+    },
+    
+    /**
      * Set zoom level for scale mode
      */
     setZoom: function(zoomLevel) {
@@ -273,19 +283,20 @@ window.ZoomManager = {
         const container = document.getElementById(this.previewContainerId);
         
         if (preview && container) {
+            const rotation = this.getCurrentRotation();
+            const scale = zoomLevel / 100;
+            
             if (this.zoomMode === 'scale') {
-                // Apply zoom transform for scale mode
-                const scale = zoomLevel / 100;
-                preview.style.transform = `scale(${scale})`;
-                preview.style.transformOrigin = 'center center';
+                // Apply combined zoom and rotation transform
+                preview.style.transform = `rotate(${rotation}deg) scale(${scale})`;
                 
                 // Add visual feedback
                 container.style.boxShadow = zoomLevel > 100 ? 
                     '0 8px 16px rgba(0, 0, 0, 0.2)' : 
                     '0 4px 8px rgba(0, 0, 0, 0.1)';
             } else {
-                // Reset transform in magnifier mode
-                preview.style.transform = 'none';
+                // Reset transform in magnifier mode (keep rotation only)
+                preview.style.transform = `rotate(${rotation}deg)`;
                 container.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
             }
             
@@ -293,7 +304,7 @@ window.ZoomManager = {
             this.updateDisplay();
             
             // Log current state
-            console.log('Zoom set to:', zoomLevel + '%', 'Mode:', this.zoomMode);
+            console.log('Zoom set to:', zoomLevel + '%', 'Mode:', this.zoomMode, 'Rotation:', rotation + 'deg');
         }
     },
     

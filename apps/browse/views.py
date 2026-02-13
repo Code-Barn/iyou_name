@@ -11,6 +11,49 @@ from apps.parser.models import PersonData
 logger = logging.getLogger(__name__)
 
 
+def get_spouse_sort_key(spouse, individual, individuals_dict):
+    """
+    Get sorting key for a spouse: marriage date or oldest child's birth date.
+    Returns a tuple (has_date, date_value) for sorting - earlier dates come first.
+    """
+    spouse_id = spouse.id
+
+    # Check for marriage date in spouse's events
+    if spouse.events:
+        for event in spouse.events:
+            if event.get("tag") == "MARR" and event.get("date"):
+                return (True, event.get("date", ""))
+
+    # Check for marriage date in individual's events (the marriage to this spouse)
+    if individual.events:
+        for event in individual.events:
+            if event.get("tag") == "MARR" and event.get("date"):
+                return (True, event.get("date", ""))
+
+    # Check for oldest child's birth date from spouses_children
+    # Handle both attribute access (PersonData) and dict access
+    spouses_children = None
+    if hasattr(individual, "spouses_children"):
+        spouses_children = individual.spouses_children
+    elif isinstance(individual, dict):
+        spouses_children = individual.get("spouses_children")
+
+    if spouses_children:
+        children_ids = spouses_children.get(spouse_id, [])
+        oldest_date = None
+        for child_id in children_ids:
+            if child_id in individuals_dict:
+                child = individuals_dict[child_id]
+                if child.birth_date:
+                    if oldest_date is None or child.birth_date < oldest_date:
+                        oldest_date = child.birth_date
+        if oldest_date:
+            return (True, oldest_date)
+
+    # No date found - put at end
+    return (False, "")
+
+
 def browse_individuals(request):
     """
     View for browsing all individuals in the uploaded GEDCOM file
@@ -251,12 +294,19 @@ def individual_detail(request, ind_id):
         if individual.mother and individual.mother in individuals_dict:
             mother = individuals_dict[individual.mother]
 
-        # Get siblings objects
+        # Get siblings objects (full siblings)
         siblings = []
         if individual.siblings:
             for sibling_id in individual.siblings:
                 if sibling_id in individuals_dict:
                     siblings.append(individuals_dict[sibling_id])
+
+        # Get half-siblings objects
+        half_siblings = []
+        if hasattr(individual, "half_siblings") and individual.half_siblings:
+            for sibling_id in individual.half_siblings:
+                if sibling_id in individuals_dict:
+                    half_siblings.append(individuals_dict[sibling_id])
 
         # Get spouses objects
         spouses = []
@@ -264,6 +314,9 @@ def individual_detail(request, ind_id):
             for spouse_id in individual.spouse:
                 if spouse_id in individuals_dict:
                     spouses.append(individuals_dict[spouse_id])
+
+        # Sort spouses by marriage date or oldest child's birth date
+        spouses.sort(key=lambda s: get_spouse_sort_key(s, individual, individuals_dict))
 
         # Get children objects
         children = []
@@ -286,6 +339,7 @@ def individual_detail(request, ind_id):
                 "father": father,
                 "mother": mother,
                 "siblings": siblings,
+                "half_siblings": half_siblings,
                 "spouses": spouses,
                 "children": children,
                 "individuals_dict": individuals_dict,

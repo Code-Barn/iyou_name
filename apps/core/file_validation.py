@@ -34,12 +34,12 @@ GEDCOM_TRAILER_PATTERN = re.compile(r"^0\s+TRLR", re.IGNORECASE)
 SUSPICIOUS_PATTERNS = [
     (re.compile(r"<script[^>]*>", re.IGNORECASE), "XSS_SCRIPT_TAG"),
     (re.compile(r"javascript:", re.IGNORECASE), "JAVASCRIPT_PROTOCOL"),
-    (re.compile(r"on\w+\s*=", re.IGNORECASE), "EVENT_HANDLER"),
+    # Only match event handlers in actual HTML tag context (not GEDCOM)
+    (re.compile(r"<\w+[^>]*\s+on\w+\s*=", re.IGNORECASE), "EVENT_HANDLER"),
     (re.compile(r"<\?php", re.IGNORECASE), "PHP_CODE"),
     (re.compile(r"<%", re.IGNORECASE), "TEMPLATE_INJECTION"),
     (re.compile(r"eval\s*\(", re.IGNORECASE), "EVAL_FUNCTION"),
     (re.compile(r"exec\s*\(", re.IGNORECASE), "EXEC_FUNCTION"),
-    (re.compile(r"system\s*\(", re.IGNORECASE), "SYSTEM_CALL"),
     (re.compile(r"shell_exec", re.IGNORECASE), "SHELL_EXEC"),
     (re.compile(r"base64_decode", re.IGNORECASE), "ENCODED_PAYLOAD"),
     (re.compile(r"UNC_PATH|\\\\", re.IGNORECASE), "PATH_traversal"),

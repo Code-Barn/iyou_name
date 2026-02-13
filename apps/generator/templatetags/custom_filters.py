@@ -12,6 +12,19 @@ def get_item(dictionary, key):
     return dictionary.get(key)
 
 
+@register.filter(name="get_name")
+def get_name(ind_id, individuals_dict):
+    """
+    Template filter to get an individual's full name from their ID
+    Usage: {{ ind_id|get_name:individuals_dict }}
+    """
+    if ind_id and individuals_dict:
+        individual = individuals_dict.get(ind_id)
+        if individual:
+            return individual.full_name
+    return ""
+
+
 @register.filter(name="append")
 def append_list(value, arg):
     """
