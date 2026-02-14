@@ -71,10 +71,10 @@ def scan_file_content(
         Tuple of (is_safe, threat_type or None)
     """
     try:
-        content_str = file_content.decode("utf-8", errors="ignore")
+        content_str = file_content.decode("utf-8", errors="ignore").lstrip("\ufeff")
     except Exception as e:
         logger.warning(f"Could not decode file {filename} as UTF-8: {e}")
-        content_str = file_content.decode("latin-1", errors="ignore")
+        content_str = file_content.decode("latin-1", errors="ignore").lstrip("\ufeff")
 
     lines = content_str.split("\n")
 
@@ -113,10 +113,10 @@ def validate_gedcom_structure(
         Tuple of (is_valid, error_message or None)
     """
     try:
-        content_str = file_content.decode("utf-8", errors="ignore")
+        content_str = file_content.decode("utf-8", errors="ignore").lstrip("\ufeff")
     except Exception as e:
         logger.warning(f"Could not decode file {filename}: {e}")
-        content_str = file_content.decode("latin-1", errors="ignore")
+        content_str = file_content.decode("latin-1", errors="ignore").lstrip("\ufeff")
 
     lines = content_str.split("\n")
 
@@ -225,7 +225,7 @@ def detect_file_type(file_content: bytes) -> str:
         return "gedcom"
 
     try:
-        content_str = file_content.decode("utf-8", errors="ignore")
+        content_str = file_content.decode("utf-8", errors="ignore").lstrip("\ufeff")
         if "<?xml" in content_str[:100]:
             return "xml"
     except:
