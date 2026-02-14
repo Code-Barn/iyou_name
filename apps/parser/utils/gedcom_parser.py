@@ -121,14 +121,68 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
             occupation = None
             events = []
 
-            # Extract name information safely
+            # Extract name information safely, prioritizing birth names
+            # GEDCOM supports multiple NAME records with TYPE to indicate name type
             name_obj = getattr(record, "name", None)
+            given_name = ""
+            surname = ""
+            full_name = ""
+
             if name_obj:
-                given_name = getattr(name_obj, "given", "")
-                surname = getattr(name_obj, "surname", "")
-                full_name = getattr(
-                    name_obj, "format", lambda: f"{given_name} {surname}"
-                )()
+                given_name = getattr(name_obj, "given", "") or ""
+                surname = getattr(name_obj, "surname", "") or ""
+                full_name = (
+                    getattr(name_obj, "format", lambda: f"{given_name} {surname}")()
+                    or f"{given_name} {surname}".strip()
+                )
+
+            # Check for TYPE BIRTH name among NAME records
+            birth_given = ""
+            birth_surname = ""
+            birth_full = ""
+            try:
+                name_records = list(record.sub_tags("NAME"))
+                print(f"[DEBUG] Found {len(name_records)} NAME records for {ind}")
+                # Search ALL name records for TYPE=BIRTH (not just multiple)
+                for i, name_record in enumerate(name_records):
+                    print(
+                        f"[DEBUG] NAME record {i}: {getattr(name_record, 'format', lambda: 'N/A')()}"
+                    )
+                    # Get all sub-tags and look for TYPE
+                    type_value = ""
+                    for sub in name_record.sub_tags():
+                        print(
+                            f"[DEBUG]   sub-tag: {getattr(sub, 'tag', '?')} = {getattr(sub, 'value', '?')}"
+                        )
+                        if hasattr(sub, "tag") and sub.tag == "TYPE":
+                            if hasattr(sub, "value") and sub.value:
+                                type_value = str(sub.value).upper()
+                            print(f"[DEBUG]   Found TYPE: {type_value}")
+                            break
+
+                    if type_value == "BIRTH":
+                        # Extract given and surname from sub-tags
+                        birth_given = ""
+                        birth_surname = ""
+                        for sub in name_record.sub_tags():
+                            if hasattr(sub, "tag"):
+                                if sub.tag == "GIVN" and hasattr(sub, "value"):
+                                    birth_given = str(sub.value)
+                                elif sub.tag == "SURN" and hasattr(sub, "value"):
+                                    birth_surname = str(sub.value)
+                        birth_full = f"{birth_given} {birth_surname}".strip()
+                        print(f"[DEBUG] Found BIRTH name: {birth_full}")
+                        break
+
+                # Use birth name if found and valid
+                if birth_surname:
+                    given_name = birth_given
+                    surname = birth_surname
+                    full_name = birth_full
+            except Exception as e:
+                # If anything goes wrong, keep the default name
+                print(f"[DEBUG] Error finding birth name: {e}")
+                pass
 
             # Extract sex information safely
             sex = getattr(record, "sex", None)

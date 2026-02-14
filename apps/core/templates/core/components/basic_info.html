@@ -3,22 +3,22 @@
     <ul class="list-group">
         {% if individual.birth_date %}
         <li class="list-group-item">
-            <strong>Birth Date:</strong> {{ individual.birth_date }}
+            <strong>Birth Date:</strong> <span class="fs-5">{{ individual.birth_date }}</span>
         </li>
         {% endif %}
         {% if individual.birth_place %}
         <li class="list-group-item">
-            <strong>Birth Place:</strong> {{ individual.birth_place }}
+            <strong>Birth Place:</strong> <span class="fs-5">{{ individual.birth_place }}</span>
         </li>
         {% endif %}
         {% if individual.death_date %}
         <li class="list-group-item">
-            <strong>Death Date:</strong> {{ individual.death_date }}
+            <strong>Death Date:</strong> <span class="fs-5">{{ individual.death_date }}</span>
         </li>
         {% endif %}
         {% if individual.death_place %}
         <li class="list-group-item">
-            <strong>Death Place:</strong> {{ individual.death_place }}
+            <strong>Death Place:</strong> <span class="fs-5">{{ individual.death_place }}</span>
         </li>
         {% endif %}
     </ul>

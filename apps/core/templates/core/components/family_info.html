@@ -11,7 +11,7 @@
                 {% if father %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
-                        <strong>Father:</strong> {{ father.full_name }}
+                        <strong>Father:</strong> <span class="fs-5">{{ father.full_name }}</span>
                         {% if father.birth_date or father.birth_place %}
                         <div class="mt-1">
                             <small class="text-muted">
@@ -35,7 +35,7 @@
                 {% if mother %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
-                        <strong>Mother:</strong> {{ mother.full_name }}
+                        <strong>Mother:</strong> <span class="fs-5">{{ mother.full_name }}</span>
                         {% if mother.birth_date or mother.birth_place %}
                         <div class="mt-1">
                             <small class="text-muted">
@@ -58,22 +58,19 @@
                 {% endif %}
             </ul>
             {% endif %}
-        </li>
-        {% endif %}
 
-        {% if siblings or half_siblings %}
-        <li class="list-group-item">
+            {% if siblings or half_siblings %}
             <div class="mt-2">
                 {% if siblings %}
                 <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="collapse" data-bs-target="#siblingsCollapse" aria-expanded="true" aria-controls="siblingsCollapse">
-                    <strong>Siblings:</strong> ({{ siblings|length }})
+                    <strong>Siblings ({{ siblings|length }}):</strong>
                 </button>
                 <div class="collapse show" id="siblingsCollapse">
                     <ul class="list-group mt-2">
                         {% for sibling in siblings %}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                {{ sibling.full_name }}
+                                <span class="fs-5">{{ sibling.full_name }}</span>
                                 {% if sibling.birth_date or sibling.birth_place %}
                                 <div class="mt-1">
                                     <small class="text-muted">
@@ -91,15 +88,15 @@
                 {% endif %}
 
                 {% if half_siblings %}
-                <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="collapse" data-bs-target="#halfSiblingsCollapse" aria-expanded="false" aria-controls="halfSiblingsCollapse">
-                    <strong>Half-Siblings:</strong> ({{ half_siblings|length }})
+                <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="collapse" data-bs-target="#halfSiblingsCollapse" aria-expanded="true" aria-controls="halfSiblingsCollapse">
+                    <strong>Half-Siblings ({{ half_siblings|length }}):</strong>
                 </button>
-                <div class="collapse" id="halfSiblingsCollapse">
+                <div class="collapse show" id="halfSiblingsCollapse">
                     <ul class="list-group mt-2">
                         {% for sibling in half_siblings %}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                {{ sibling.full_name }}
+                                <span class="fs-5">{{ sibling.full_name }}</span>
                                 {% if sibling.father == individual.father and sibling.father %}
                                 <span class="text-muted">(via father)</span>
                                 {% elif sibling.mother == individual.mother and sibling.mother %}
@@ -121,6 +118,7 @@
                 </div>
                 {% endif %}
             </div>
+            {% endif %}
         </li>
         {% endif %}
 
@@ -132,7 +130,7 @@
                 <li class="list-group-item">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            {{ spouse.full_name }}
+                            <span class="fs-5">{{ spouse.full_name }}</span>
                             {% if spouse.birth_date or spouse.birth_place %}
                             <div class="mt-1">
                                 <small class="text-muted">
@@ -156,7 +154,7 @@
                                 {% if child %}
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <div>
-                                        {{ child.full_name }}
+                                        <span class="fs-5">{{ child.full_name }}</span>
                                         {% if child.birth_date or child.birth_place %}
                                         <div class="mt-1">
                                             <small class="text-muted">

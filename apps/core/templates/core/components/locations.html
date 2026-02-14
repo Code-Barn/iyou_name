@@ -3,12 +3,12 @@
     <ul class="list-group">
         {% if individual.birth_place %}
         <li class="list-group-item">
-            <strong>Birth Place:</strong> {{ individual.birth_place }}
+            <strong>Birth Place:</strong> <span class="fs-5">{{ individual.birth_place }}</span>
         </li>
         {% endif %}
         {% if individual.death_place %}
         <li class="list-group-item">
-            <strong>Death Place:</strong> {{ individual.death_place }}
+            <strong>Death Place:</strong> <span class="fs-5">{{ individual.death_place }}</span>
         </li>
         {% endif %}
     </ul>
