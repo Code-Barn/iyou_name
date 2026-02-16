@@ -1,0 +1,526 @@
+"""
+Modular individual printer for chart generation.
+
+This module provides a standardized way to print an individual's
+name and birth/death information at any position with any rotation.
+
+Used by image_1generator through image_7generator scripts.
+"""
+
+import logging
+
+from wand.color import Color
+
+from apps.generator.utils.name_utils import get_name_display_info
+
+logger = logging.getLogger(__name__)
+
+# Default PIXEL_RATIO for 300 DPI
+PIXEL_RATIO = 300 / 72  # ~4.167
+
+
+def get_text_width_px(draw, content_img, text):
+    """Get text width in pixels for centering with PIXEL_RATIO."""
+    if not text:
+        return 0
+    metrics = draw.get_font_metrics(content_img, text, False)
+    return metrics.text_width * PIXEL_RATIO
+
+
+def get_text_height_px(draw, content_img, text):
+    """Get text height in pixels (approximate using font size)."""
+    if not text:
+        return 0
+    # Height is approximately font_size
+    return draw.font_size * PIXEL_RATIO
+
+
+def print_individual(
+    draw,
+    content_img,
+    individual,
+    settings,
+    # Position parameters
+    center_x=0,
+    center_y=0,
+    rotation=0,
+    # Font sizes
+    name_font_size=72,
+    date_font_size=48,
+    place_font_size=24,
+    # Name positions - base position (like dates/places in 1gen)
+    first_name_base_x=None,
+    first_name_base_y=None,
+    first_name_offset_x=0,
+    first_name_offset_y=0,
+    first_name_rotation=0,
+    middle_name_base_x=None,
+    middle_name_base_y=None,
+    middle_name_offset_x=0,
+    middle_name_offset_y=0,
+    middle_name_rotation=0,
+    last_name_base_x=None,
+    last_name_base_y=None,
+    last_name_offset_x=0,
+    last_name_offset_y=0,
+    last_name_rotation=0,
+    # Birth info - absolute base positions (user translate adjusts from there)
+    birth_date_base_x=0,
+    birth_date_base_y=None,
+    birth_date_offset_x=0,
+    birth_date_offset_y=0,
+    birth_date_rotation=0,
+    birth_place_base_x=None,
+    birth_place_base_y=0,
+    birth_place_offset_x=0,
+    birth_place_offset_y=0,
+    birth_place_rotation=0,
+    # Death info
+    death_date_base_x=None,
+    death_date_base_y=0,
+    death_date_offset_x=0,
+    death_date_offset_y=0,
+    death_date_rotation=0,
+    death_place_base_x=0,
+    death_place_base_y=None,
+    death_place_offset_x=0,
+    death_place_offset_y=0,
+    death_place_rotation=0,
+    # Options
+    use_display_text=True,
+    use_gravity_center=False,
+):
+    """
+    Print an individual's name and birth/death info at a given position.
+
+    For name: uses either gravity center or offset-based positioning.
+    For info text: uses absolute base positions + user offsets + centering.
+
+    Args:
+        draw: Wand Drawing object
+        content_img: Wand Image object (for font metrics)
+        individual: PersonData object
+        settings: Validated settings dictionary
+        center_x/y: Image center for offset-based positioning
+        rotation: Base rotation for 180/90/270 positioning
+        name_font_size: Font size for name
+        date_font_size: Font size for dates
+        place_font_size: Font size for places
+        *_offset_x/y: User adjustment from base position
+        *_base_x/y: Absolute base position (None = use center)
+        *_rotation: Rotation angle
+        use_display_text: Use display_text with newlines
+        use_gravity_center: Use gravity="center" for name
+    """
+    # Get name info
+    name_info = get_name_display_info(individual.full_name)
+    first_name = name_info.get("first_name", "")
+    middle_name = name_info.get("middle_name", "")
+    last_name = name_info.get("last_name", "")
+    display_text = name_info.get("display_text", "")
+
+    # Get text info
+    birth_date = individual.birth_date or ""
+    birth_place = individual.birth_place or ""
+    death_date = individual.death_date or ""
+    death_place = individual.death_place or ""
+
+    # Track if name has been drawn (to avoid duplicates)
+    name_drawn = False
+
+    # Set common font properties
+    draw.font = settings.get("font_family", "Arial")
+    draw.stroke_color = settings.get("info_stroke_color", Color("gray"))
+    draw.stroke_width = settings.get("info_stroke_width", 0.25)
+    draw.stroke_antialias = True
+
+    # Stroke settings for primary name
+    primary_stroke_color = settings.get("primary_stroke_color", Color("black"))
+    primary_stroke_width = settings.get("primary_stroke_width", 0.5)
+
+    # Calculate effective rotation for this individual (base + element-specific)
+    # For 180° rotation (mother in 2gen), we flip both X and Y offsets
+
+    # Draw name - mutually exclusive options
+    if use_gravity_center and display_text:
+        # Option 1: gravity center (simplest - uses image center)
+        draw.push()
+        draw.fill_color = settings.get("primary_font_color", Color("black"))
+        draw.stroke_color = primary_stroke_color
+        draw.stroke_width = primary_stroke_width
+        draw.font_size = name_font_size
+        draw.gravity = "center"
+        draw.rotate(first_name_rotation)
+        draw.text(0, 0, display_text)
+        draw.pop()
+        name_drawn = True
+
+    elif use_display_text and display_text:
+        # Option 2: display_text with multiline offset positioning
+        draw.push()
+        draw.fill_color = settings.get("primary_font_color", Color("black"))
+        draw.stroke_color = primary_stroke_color
+        draw.stroke_width = primary_stroke_width
+        draw.font_size = name_font_size
+
+        # Handle rotation
+        if rotation == 180:
+            offset_x = -first_name_offset_x
+            offset_y = -first_name_offset_y
+            rot = rotation + first_name_rotation
+        elif rotation == 90:
+            offset_x = -first_name_offset_y
+            offset_y = first_name_offset_x
+            rot = rotation + first_name_rotation
+        elif rotation == 270:
+            offset_x = first_name_offset_y
+            offset_y = -first_name_offset_x
+            rot = rotation + first_name_rotation
+        else:
+            offset_x = first_name_offset_x
+            offset_y = first_name_offset_y
+            rot = rotation + first_name_rotation
+
+        # Multiline centering: calculate total height and offset
+        lines = display_text.split("\n")
+        line_height = name_font_size * 1.2
+        total_height = len(lines) * line_height
+        y_offset = -total_height // 2 + line_height // 2
+
+        draw.translate(center_x + offset_x, center_y + offset_y + y_offset)
+        draw.rotate(rot)
+
+        # Draw each line centered
+        for i, line in enumerate(lines):
+            line_y = i * line_height - y_offset
+            draw.push()
+            draw.translate(0, line_y)
+            draw.text(0, 0, line)
+            draw.pop()
+        draw.pop()
+        name_drawn = True
+
+    elif first_name:
+        # Draw individual name parts (first, middle, last)
+        draw.push()
+        draw.fill_color = settings.get("primary_font_color", Color("black"))
+        draw.stroke_color = primary_stroke_color
+        draw.stroke_width = primary_stroke_width
+        draw.font_size = name_font_size
+
+        text_width = get_text_width_px(draw, content_img, first_name)
+
+        # Determine base position
+        if first_name_base_x is not None:
+            base_x = first_name_base_x
+        else:
+            base_x = center_x
+        if first_name_base_y is not None:
+            base_y = first_name_base_y
+        else:
+            base_y = center_y
+
+        # Handle rotation - transform base position around center
+        if rotation == 180:
+            # 180°: flip both X and Y around center
+            final_base_x = 2 * center_x - base_x
+            final_base_y = 2 * center_y - base_y
+            offset_x = -first_name_offset_x
+            offset_y = -first_name_offset_y
+            rot = rotation + first_name_rotation
+        elif rotation == 90:
+            # 90°: swap X/Y with flip
+            final_base_x = 2 * center_x - base_y
+            final_base_y = base_x
+            offset_x = -first_name_offset_y
+            offset_y = first_name_offset_x
+            rot = rotation + first_name_rotation
+        elif rotation == 270:
+            # 270°: swap X/Y
+            final_base_x = base_y
+            final_base_y = 2 * center_y - base_x
+            offset_x = first_name_offset_y
+            offset_y = -first_name_offset_x
+            rot = rotation + first_name_rotation
+        else:
+            # No rotation
+            final_base_x = base_x
+            final_base_y = base_y
+            offset_x = first_name_offset_x
+            offset_y = first_name_offset_y
+            rot = rotation + first_name_rotation
+
+        # Apply offset
+        final_x = final_base_x + offset_x
+        final_y = final_base_y + offset_y
+
+        # 1gen pattern: translate, rotate, then center
+        draw.translate(final_x, final_y)
+        draw.rotate(rot)
+        # Center horizontally
+        draw.translate(-text_width // 2, 0)
+        draw.text(0, 0, first_name)
+        draw.pop()
+
+    # Draw middle name (skip if name was already drawn via gravity_center or use_display_text)
+    if middle_name and not name_drawn:
+        draw.push()
+        draw.fill_color = settings.get("primary_font_color", Color("black"))
+        draw.stroke_color = primary_stroke_color
+        draw.stroke_width = primary_stroke_width
+        draw.font_size = name_font_size
+
+        text_width = get_text_width_px(draw, content_img, middle_name)
+
+        # Determine base position
+        if middle_name_base_x is not None:
+            base_x = middle_name_base_x
+        else:
+            base_x = center_x
+        if middle_name_base_y is not None:
+            base_y = middle_name_base_y
+        else:
+            base_y = center_y
+
+        # Handle rotation - transform base position around center
+        if rotation == 180:
+            final_base_x = 2 * center_x - base_x
+            final_base_y = 2 * center_y - base_y
+            offset_x = -middle_name_offset_x
+            offset_y = -middle_name_offset_y
+            rot = rotation + middle_name_rotation
+        elif rotation == 90:
+            final_base_x = 2 * center_x - base_y
+            final_base_y = base_x
+            offset_x = -middle_name_offset_y
+            offset_y = middle_name_offset_x
+            rot = rotation + middle_name_rotation
+        elif rotation == 270:
+            final_base_x = base_y
+            final_base_y = 2 * center_y - base_x
+            offset_x = middle_name_offset_y
+            offset_y = -middle_name_offset_x
+            rot = rotation + middle_name_rotation
+        else:
+            final_base_x = base_x
+            final_base_y = base_y
+            offset_x = middle_name_offset_x
+            offset_y = middle_name_offset_y
+            rot = rotation + middle_name_rotation
+
+        # Apply offset
+        final_x = final_base_x + offset_x
+        final_y = final_base_y + offset_y
+
+        # 1gen pattern: translate, rotate, then center
+        draw.translate(final_x, final_y)
+        draw.rotate(rot)
+        draw.translate(-text_width // 2, 0)
+        draw.text(0, 0, middle_name)
+        draw.pop()
+
+    # Draw last name (skip if name was already drawn via gravity_center or use_display_text)
+    if last_name and not name_drawn:
+        draw.push()
+        draw.fill_color = settings.get("primary_font_color", Color("black"))
+        draw.stroke_color = primary_stroke_color
+        draw.stroke_width = primary_stroke_width
+        draw.font_size = name_font_size
+
+        text_width = get_text_width_px(draw, content_img, last_name)
+
+        # Determine base position
+        if last_name_base_x is not None:
+            base_x = last_name_base_x
+        else:
+            base_x = center_x
+        if last_name_base_y is not None:
+            base_y = last_name_base_y
+        else:
+            base_y = center_y
+
+        # Handle rotation - transform base position around center
+        if rotation == 180:
+            # 180°: flip both X and Y around center
+            final_base_x = 2 * center_x - base_x
+            final_base_y = 2 * center_y - base_y
+            offset_x = -last_name_offset_x
+            offset_y = -last_name_offset_y
+            rot = rotation + last_name_rotation
+        elif rotation == 90:
+            # 90°: swap X/Y with flip
+            final_base_x = 2 * center_x - base_y
+            final_base_y = base_x
+            offset_x = -last_name_offset_y
+            offset_y = last_name_offset_x
+            rot = rotation + last_name_rotation
+        elif rotation == 270:
+            # 270°: swap X/Y
+            final_base_x = base_y
+            final_base_y = 2 * center_y - base_x
+            offset_x = last_name_offset_y
+            offset_y = -last_name_offset_x
+            rot = rotation + last_name_rotation
+        else:
+            # No rotation
+            final_base_x = base_x
+            final_base_y = base_y
+            offset_x = last_name_offset_x
+            offset_y = last_name_offset_y
+            rot = rotation + last_name_rotation
+
+        # Apply offset
+        final_x = final_base_x + offset_x
+        final_y = final_base_y + offset_y
+
+        # 1gen pattern: translate, rotate, then center
+        draw.translate(final_x, final_y)
+        draw.rotate(rot)
+        # After rotation, translate by -text_width//2 to center
+        # For vertical text (-90°), this centers along the vertical line
+        # For horizontal text (0°), this centers horizontally
+        draw.translate(-text_width // 2, 0)
+        draw.text(0, 0, last_name)
+        draw.pop()
+
+    # Reset to info stroke settings for birth/death info
+    draw.stroke_color = settings.get("info_stroke_color", Color("gray"))
+    draw.stroke_width = settings.get("info_stroke_width", 0.25)
+
+    # Draw birth date
+    # Pattern: translate to (base_x + offset_x, center_y + offset_y), rotate, center, draw
+    if birth_date:
+        draw.push()
+        draw.fill_color = settings.get("primary_birth_color", Color("black"))
+        draw.font_size = date_font_size
+
+        text_width = get_text_width_px(draw, content_img, birth_date)
+
+        # Base X: use provided base_x, or center if None
+        base_x = birth_date_base_x if birth_date_base_x is not None else center_x
+        # Base Y: use center_y if not specified
+        base_y = birth_date_base_y if birth_date_base_y is not None else center_y
+
+        translate_x = base_x + birth_date_offset_x
+        translate_y = base_y + birth_date_offset_y
+
+        draw.translate(translate_x, translate_y)
+        draw.rotate(birth_date_rotation)
+        draw.translate(-text_width // 2, 0)
+        draw.text(0, 0, birth_date)
+        draw.pop()
+
+    # Draw birth place
+    # Pattern: translate to (center_x + offset_x, base_y + offset_y), rotate, center, draw
+    if birth_place:
+        draw.push()
+        draw.fill_color = settings.get("primary_birth_place_color", Color("black"))
+        draw.font_size = place_font_size
+
+        text_width = get_text_width_px(draw, content_img, birth_place)
+
+        # Base X: use center if not specified
+        base_x = birth_place_base_x if birth_place_base_x is not None else center_x
+        # Base Y: use provided base_y, or center if None
+        base_y = birth_place_base_y if birth_place_base_y is not None else center_y
+
+        translate_x = base_x + birth_place_offset_x
+        translate_y = base_y + birth_place_offset_y
+
+        draw.translate(translate_x, translate_y)
+        draw.rotate(birth_place_rotation)
+        draw.translate(-text_width // 2, 0)
+        draw.text(0, 0, birth_place)
+        draw.pop()
+
+    # Draw death date
+    # Pattern: translate to (center_x + offset_x, base_y + offset_y), rotate, center, draw
+    if death_date:
+        draw.push()
+        draw.fill_color = settings.get("primary_death_color", Color("black"))
+        draw.font_size = date_font_size
+
+        text_width = get_text_width_px(draw, content_img, death_date)
+
+        # Base X: use center if not specified
+        base_x = death_date_base_x if death_date_base_x is not None else center_x
+        # Base Y: use provided base_y, or center if None
+        base_y = death_date_base_y if death_date_base_y is not None else center_y
+
+        translate_x = base_x + death_date_offset_x
+        translate_y = base_y + death_date_offset_y
+
+        draw.translate(translate_x, translate_y)
+        draw.rotate(death_date_rotation)
+        draw.translate(-text_width // 2, 0)
+        draw.text(0, 0, death_date)
+        draw.pop()
+
+    # Draw death place
+    # Pattern: translate to (base_x + offset_x, center_y + offset_y), rotate, center, draw
+    if death_place:
+        draw.push()
+        draw.fill_color = settings.get("primary_death_place_color", Color("black"))
+        draw.font_size = place_font_size
+
+        text_width = get_text_width_px(draw, content_img, death_place)
+
+        # Base X: use provided base_x, or center if None
+        base_x = death_place_base_x if death_place_base_x is not None else center_x
+        # Base Y: use center if not specified
+        base_y = death_place_base_y if death_place_base_y is not None else center_y
+
+        translate_x = base_x + death_place_offset_x
+        translate_y = base_y + death_place_offset_y
+
+        draw.translate(translate_x, translate_y)
+        draw.rotate(death_place_rotation)
+        draw.translate(-text_width // 2, 0)
+        draw.text(0, 0, death_place)
+        draw.pop()
+
+
+def print_individual_simple(
+    draw,
+    content_img,
+    individual,
+    settings,
+    # Simplified parameters for basic use
+    x,
+    y,
+    rotation=0,
+    font_size=72,
+    text=None,
+):
+    """
+    Simple version - print a single text at a position with rotation.
+
+    Args:
+        draw: Wand Drawing object
+        content_img: Wand Image object
+        individual: PersonData object (or None if using text param)
+        settings: Validated settings dictionary
+        x: X position
+        y: Y position
+        rotation: Rotation in degrees
+        font_size: Font size
+        text: Optional text to print (if None, uses individual's full_name)
+    """
+    if text is None:
+        text = individual.full_name if individual else ""
+
+    if not text:
+        return
+
+    draw.push()
+    draw.font = settings.get("font_family", "Arial")
+    draw.font_size = font_size
+    draw.fill_color = settings.get("primary_font_color", Color("black"))
+
+    text_width = get_text_width_px(draw, content_img, text)
+
+    draw.translate(x, y)
+    draw.rotate(rotation)
+    draw.translate(-text_width // 2, 0)
+    draw.text(0, 0, text)
+    draw.pop()

@@ -632,94 +632,76 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
             # Leave as empty for now - can be enhanced later with PEDI tags
             individual.step_siblings = []
 
-        # Identify adoptive, foster, and step parents
+        # Identify adoptive, foster parents using PEDI tags
+        # Use direct string parsing as ged4py doesn't expose PEDI reliably
+        pedi_map = {}  # {individual_id: {family_id: pedi_type}}
+
+        lines = gedcom_content.split("\n")
+        current_indi = None
+        current_famc = None
+
+        for i, line in enumerate(lines):
+            line = line.strip()
+            if line.startswith("0 ") and " INDI" in line:
+                # New individual record
+                parts = line.split()
+                if len(parts) >= 2:
+                    current_indi = parts[1].replace("@", "")
+                    current_famc = None
+            elif line.startswith("1 FAMC @"):
+                # Family where individual is child
+                fam_id = line.split("@")[1] if "@" in line else None
+                if fam_id and current_indi:
+                    if current_indi not in pedi_map:
+                        pedi_map[current_indi] = {}
+                    current_famc = fam_id
+            elif line.startswith("2 PEDI ") and current_famc and current_indi:
+                # PEDI tag for the current FAMC
+                pedi_type = line.replace("2 PEDI ", "").strip().lower()
+                if current_indi in pedi_map:
+                    pedi_map[current_indi][current_famc] = pedi_type
+                    print(
+                        f"[PEDI DEBUG] Set {current_indi}.{current_famc} = {pedi_type}"
+                    )
+
+        print(f"[PEDI DEBUG] PEDI map: {pedi_map}")
+
+        # Now apply PEDI info to individuals
         for ind, individual in family_data["individuals"].items():
             adoptive_parents = []
             foster_parents = []
-            step_parents = []
-            # Check for adoptive parents
-            individual_record = individual_records.get(f"@{ind}@")
-            if individual_record:
-                for famc_record in individual_record.sub_tags("FAMC"):
-                    # Manually parse the GEDCOM content to extract the PEDI tag
-                    fam_id = famc_record.xref_id.replace("@", "")
+
+            if ind in pedi_map:
+                for fam_id, pedi_type in pedi_map[ind].items():
                     if fam_id in family_data["families"]:
                         family = family_data["families"][fam_id]
-                        # Check if the individual has a PEDI tag indicating adoption
-                        # This requires manually parsing the GEDCOM content
-                        for line in gedcom_content.split("\n"):
-                            if f"0 @{ind}@ INDI" in line:
-                                # Look for the FAMC tag and PEDI sub-tag
-                                lines = gedcom_content.split("\n")
-                                for i, line in enumerate(lines):
-                                    if f"1 FAMC @{fam_id}@" in line:
-                                        # Check the next line for the PEDI tag
-                                        if (
-                                            i + 1 < len(lines)
-                                            and "2 PEDI adopted" in lines[i + 1]
-                                        ):
-                                            if family["husband"]:
-                                                adoptive_parents.append(
-                                                    family["husband"].replace("@", "")
-                                                )
-                                            if family["wife"]:
-                                                adoptive_parents.append(
-                                                    family["wife"].replace("@", "")
-                                                )
-                                            break
+                        husband_id = (family.get("husband") or "").replace("@", "")
+                        wife_id = (family.get("wife") or "").replace("@", "")
+
+                        if pedi_type == "adopted":
+                            if husband_id:
+                                adoptive_parents.append(husband_id)
+                            if wife_id:
+                                adoptive_parents.append(wife_id)
+                        elif pedi_type == "foster":
+                            if husband_id:
+                                foster_parents.append(husband_id)
+                            if wife_id:
+                                foster_parents.append(wife_id)
+
             individual.adoptive_parents = adoptive_parents
-
-            # Check for foster parents
-            individual_record = individual_records.get(f"@{ind}@")
-            if individual_record:
-                for famc_record in individual_record.sub_tags("FAMC"):
-                    # Manually parse the GEDCOM content to extract the PEDI tag
-                    fam_id = famc_record.xref_id.replace("@", "")
-                    if fam_id in family_data["families"]:
-                        family = family_data["families"][fam_id]
-                        # Check if the individual has a PEDI tag indicating foster
-                        # This requires manually parsing the GEDCOM content
-                        for line in gedcom_content.split("\n"):
-                            if f"0 @{ind}@ INDI" in line:
-                                # Look for the FAMC tag and PEDI sub-tag
-                                lines = gedcom_content.split("\n")
-                                for i, line in enumerate(lines):
-                                    if f"1 FAMC @{fam_id}@" in line:
-                                        # Check the next line for the PEDI tag
-                                        if (
-                                            i + 1 < len(lines)
-                                            and "2 PEDI foster" in lines[i + 1]
-                                        ):
-                                            if family["husband"]:
-                                                foster_parents.append(
-                                                    family["husband"].replace("@", "")
-                                                )
-                                            if family["wife"]:
-                                                foster_parents.append(
-                                                    family["wife"].replace("@", "")
-                                                )
-                                            break
             individual.foster_parents = foster_parents
+            individual.step_parents = []  # Phase 2
 
-            # Identify step-parents
-            # Step-parents are identified when an individual has multiple families
-            # with the same parent but different spouses
-            if individual.father or individual.mother:
-                for fam_id, family in family_data["families"].items():
-                    if ind in family.get("children", []):
-                        # Check if the husband is not the biological father
-                        if (
-                            family["husband"]
-                            and family["husband"].replace("@", "") != individual.father
-                        ):
-                            step_parents.append(family["husband"].replace("@", ""))
-                        # Check if the wife is not the biological mother
-                        if (
-                            family["wife"]
-                            and family["wife"].replace("@", "") != individual.mother
-                        ):
-                            step_parents.append(family["wife"].replace("@", ""))
-            individual.step_parents = step_parents
+            # Debug output for adoptive/foster parents
+            if adoptive_parents:
+                print(
+                    f"[PEDI] {individual.full_name} has adoptive parents: {adoptive_parents}"
+                )
+            if foster_parents:
+                print(
+                    f"[PEDI] {individual.full_name} has foster parents: {foster_parents}"
+                )
 
         # Debug: Print all individuals and their relationships
         print("\n=== Debug: Individuals and Relationships ===")
@@ -730,6 +712,10 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
             print(f"  Spouse: {individual.spouse}")
             print(f"  Children: {individual.children}")
             print(f"  Siblings: {individual.siblings}")
+            if individual.adoptive_parents:
+                print(f"  Adoptive Parents: {individual.adoptive_parents}")
+            if individual.foster_parents:
+                print(f"  Foster Parents: {individual.foster_parents}")
 
         print(f"\nRoot individuals: {family_data['root_individuals']}")
         print(f"Total individuals parsed: {len(family_data['individuals'])}")

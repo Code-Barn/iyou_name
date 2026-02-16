@@ -12,6 +12,8 @@
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
                         <strong>Father:</strong> <span class="fs-5">{{ father.full_name }}</span>
+                        {% if individual.adoptive_parents and father.id in individual.adoptive_parents %}<span class="text-info">(adoptive)</span>{% endif %}
+                        {% if individual.foster_parents and father.id in individual.foster_parents %}<span class="text-warning">(foster)</span>{% endif %}
                         {% if father.birth_date or father.birth_place %}
                         <div class="mt-1">
                             <small class="text-muted">
@@ -36,6 +38,8 @@
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
                         <strong>Mother:</strong> <span class="fs-5">{{ mother.full_name }}</span>
+                        {% if individual.adoptive_parents and mother.id in individual.adoptive_parents %}<span class="text-info">(adoptive)</span>{% endif %}
+                        {% if individual.foster_parents and mother.id in individual.foster_parents %}<span class="text-warning">(foster)</span>{% endif %}
                         {% if mother.birth_date or mother.birth_place %}
                         <div class="mt-1">
                             <small class="text-muted">
@@ -155,6 +159,17 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <div>
                                         <span class="fs-5">{{ child.full_name }}</span>
+                                        {% with child_rel=spouse_children_relationship|get_item:spouse.id|get_item:child.id %}
+                                        {% if child_rel == 'adopted' %}
+                                            {% if spouse.sex == 'M' %}<span class="text-muted">(biological father: unknown)</span>{% endif %}
+                                            {% if spouse.sex == 'F' %}<span class="text-muted">(biological mother: unknown)</span>{% endif %}
+                                        {% elif child_rel == 'other' %}
+                                            {% if spouse.sex == 'M' %}{% with other_parent=individuals_dict|get_item:child.mother %}{% if other_parent %}<span class="text-muted">(biological mother: {{ other_parent.full_name }})</span>{% else %}<span class="text-muted">(biological mother: unknown)</span>{% endif %}{% endwith %}{% endif %}
+                                            {% if spouse.sex == 'F' %}{% with other_parent=individuals_dict|get_item:child.father %}{% if other_parent %}<span class="text-muted">(biological father: {{ other_parent.full_name }})</span>{% else %}<span class="text-muted">(biological father: unknown)</span>{% endif %}{% endwith %}{% endif %}
+                                        {% elif child_rel == 'foster' %}
+                                            <span class="text-warning">(foster)</span>
+                                        {% endif %}
+                                        {% endwith %}
                                         {% if child.birth_date or child.birth_place %}
                                         <div class="mt-1">
                                             <small class="text-muted">

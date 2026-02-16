@@ -320,10 +320,66 @@ def individual_detail(request, ind_id):
 
         # Get children objects
         children = []
+        children_relationship = {}  # {child_id: 'biological', 'adopted', 'foster'}
+        spouse_children_relationship = {}  # {spouse_id: {child_id: 'biological', 'adopted', 'foster', 'other'}}
+
         if individual.children:
             for child_id in individual.children:
                 if child_id in individuals_dict:
-                    children.append(individuals_dict[child_id])
+                    child = individuals_dict[child_id]
+                    children.append(child)
+
+                    # Determine relationship type based on child's adoptive_parents/foster_parents
+                    rel_type = "biological"
+                    if hasattr(child, "adoptive_parents") and child.adoptive_parents:
+                        if individual.id in child.adoptive_parents:
+                            rel_type = "adopted"
+                    if (
+                        rel_type == "biological"
+                        and hasattr(child, "foster_parents")
+                        and child.foster_parents
+                    ):
+                        if individual.id in child.foster_parents:
+                            rel_type = "foster"
+                    children_relationship[child_id] = rel_type
+
+        # Calculate spouse-children relationships (for children listed under each spouse)
+        for spouse in spouses:
+            spouse_children_relationship[spouse.id] = {}
+            spouse_child_ids = (
+                individual.spouses_children.get(spouse.id, [])
+                if hasattr(individual, "spouses_children")
+                and individual.spouses_children
+                else []
+            )
+            for child_id in spouse_child_ids:
+                if child_id in individuals_dict:
+                    child = individuals_dict[child_id]
+                    # Determine child's relationship to this spouse
+                    rel_type = "biological"
+                    is_adopted_by_spouse = False
+                    is_foster_by_spouse = False
+
+                    if hasattr(child, "adoptive_parents") and child.adoptive_parents:
+                        if spouse.id in child.adoptive_parents:
+                            is_adopted_by_spouse = True
+                    if hasattr(child, "foster_parents") and child.foster_parents:
+                        if spouse.id in child.foster_parents:
+                            is_foster_by_spouse = True
+
+                    # If spouse is adoptive/foster parent, show the "other" biological parent info
+                    if is_adopted_by_spouse or is_foster_by_spouse:
+                        rel_type = "other"
+                    else:
+                        # Check if spouse is biological parent
+                        if spouse.sex == "M":
+                            if child.father != spouse.id:
+                                rel_type = "other"
+                        elif spouse.sex == "F":
+                            if child.mother != spouse.id:
+                                rel_type = "other"
+
+                    spouse_children_relationship[spouse.id][child_id] = rel_type
 
         # Check if this individual is the home person for this file
         is_home_person = False
@@ -342,6 +398,8 @@ def individual_detail(request, ind_id):
                 "half_siblings": half_siblings,
                 "spouses": spouses,
                 "children": children,
+                "children_relationship": children_relationship,
+                "spouse_children_relationship": spouse_children_relationship,
                 "individuals_dict": individuals_dict,
                 "individuals_json": json.dumps(
                     [ind.to_dict() for ind in processed_individuals]
