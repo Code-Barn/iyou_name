@@ -48,6 +48,18 @@ def print_individual(
     name_font_size=72,
     date_font_size=48,
     place_font_size=24,
+    # Individual date/place font sizes (for paired text)
+    birth_date_font_size=None,
+    death_date_font_size=None,
+    birth_place_font_size=None,
+    death_place_font_size=None,
+    # Paired dates helper: set both on same row
+    paired_dates_base_y=None,
+    birth_date_paired_offset_x=0,
+    death_date_paired_offset_x=0,
+    paired_places_base_y=None,
+    birth_place_paired_offset_x=0,
+    death_place_paired_offset_x=0,
     # Name positions - base position (like dates/places in 1gen)
     first_name_base_x=None,
     first_name_base_y=None,
@@ -392,20 +404,55 @@ def print_individual(
     if birth_date:
         draw.push()
         draw.fill_color = settings.get("primary_birth_color", Color("black"))
-        draw.font_size = date_font_size
+        # Use individual font size if provided, otherwise use shared date_font_size
+        draw.font_size = (
+            birth_date_font_size if birth_date_font_size is not None else date_font_size
+        )
 
         text_width = get_text_width_px(draw, content_img, birth_date)
 
         # Base X: use provided base_x, or center if None
         base_x = birth_date_base_x if birth_date_base_x is not None else center_x
-        # Base Y: use center_y if not specified
-        base_y = birth_date_base_y if birth_date_base_y is not None else center_y
+        # Base Y: use paired_dates_base_y if provided, otherwise use birth_date_base_y or center_y
+        if paired_dates_base_y is not None:
+            base_y = paired_dates_base_y
+        else:
+            base_y = birth_date_base_y if birth_date_base_y is not None else center_y
 
-        translate_x = base_x + birth_date_offset_x
-        translate_y = base_y + birth_date_offset_y
+        # Apply paired offset if provided
+        effective_offset_x = birth_date_offset_x + birth_date_paired_offset_x
+
+        # Apply rotation transformation around center
+        if rotation == 180:
+            final_base_x = 2 * center_x - base_x
+            final_base_y = 2 * center_y - base_y
+            offset_x = -effective_offset_x
+            offset_y = -birth_date_offset_y
+            rot = rotation + birth_date_rotation
+        elif rotation == 90:
+            final_base_x = 2 * center_x - base_y
+            final_base_y = base_x
+            offset_x = -birth_date_offset_y
+            offset_y = effective_offset_x
+            rot = rotation + birth_date_rotation
+        elif rotation == 270:
+            final_base_x = base_y
+            final_base_y = 2 * center_y - base_x
+            offset_x = birth_date_offset_y
+            offset_y = -effective_offset_x
+            rot = rotation + birth_date_rotation
+        else:
+            final_base_x = base_x
+            final_base_y = base_y
+            offset_x = birth_date_offset_x
+            offset_y = birth_date_offset_y
+            rot = birth_date_rotation
+
+        translate_x = final_base_x + offset_x
+        translate_y = final_base_y + offset_y
 
         draw.translate(translate_x, translate_y)
-        draw.rotate(birth_date_rotation)
+        draw.rotate(rot)
         draw.translate(-text_width // 2, 0)
         draw.text(0, 0, birth_date)
         draw.pop()
@@ -424,11 +471,37 @@ def print_individual(
         # Base Y: use provided base_y, or center if None
         base_y = birth_place_base_y if birth_place_base_y is not None else center_y
 
-        translate_x = base_x + birth_place_offset_x
-        translate_y = base_y + birth_place_offset_y
+        # Apply rotation transformation around center
+        if rotation == 180:
+            final_base_x = 2 * center_x - base_x
+            final_base_y = 2 * center_y - base_y
+            offset_x = -birth_place_offset_x
+            offset_y = -birth_place_offset_y
+            rot = rotation + birth_place_rotation
+        elif rotation == 90:
+            final_base_x = 2 * center_x - base_y
+            final_base_y = base_x
+            offset_x = -birth_place_offset_y
+            offset_y = birth_place_offset_x
+            rot = rotation + birth_place_rotation
+        elif rotation == 270:
+            final_base_x = base_y
+            final_base_y = 2 * center_y - base_x
+            offset_x = birth_place_offset_y
+            offset_y = -birth_place_offset_x
+            rot = rotation + birth_place_rotation
+        else:
+            final_base_x = base_x
+            final_base_y = base_y
+            offset_x = birth_place_offset_x
+            offset_y = birth_place_offset_y
+            rot = birth_place_rotation
+
+        translate_x = final_base_x + offset_x
+        translate_y = final_base_y + offset_y
 
         draw.translate(translate_x, translate_y)
-        draw.rotate(birth_place_rotation)
+        draw.rotate(rot)
         draw.translate(-text_width // 2, 0)
         draw.text(0, 0, birth_place)
         draw.pop()
@@ -438,20 +511,55 @@ def print_individual(
     if death_date:
         draw.push()
         draw.fill_color = settings.get("primary_death_color", Color("black"))
-        draw.font_size = date_font_size
+        # Use individual font size if provided, otherwise use shared date_font_size
+        draw.font_size = (
+            death_date_font_size if death_date_font_size is not None else date_font_size
+        )
 
         text_width = get_text_width_px(draw, content_img, death_date)
 
         # Base X: use center if not specified
         base_x = death_date_base_x if death_date_base_x is not None else center_x
-        # Base Y: use provided base_y, or center if None
-        base_y = death_date_base_y if death_date_base_y is not None else center_y
+        # Base Y: use paired_dates_base_y if provided, otherwise use death_date_base_y or center_y
+        if paired_dates_base_y is not None:
+            base_y = paired_dates_base_y
+        else:
+            base_y = death_date_base_y if death_date_base_y is not None else center_y
 
-        translate_x = base_x + death_date_offset_x
-        translate_y = base_y + death_date_offset_y
+        # Apply paired offset if provided
+        effective_offset_x = death_date_offset_x + death_date_paired_offset_x
+
+        # Apply rotation transformation around center
+        if rotation == 180:
+            final_base_x = 2 * center_x - base_x
+            final_base_y = 2 * center_y - base_y
+            offset_x = -effective_offset_x
+            offset_y = -death_date_offset_y
+            rot = rotation + death_date_rotation
+        elif rotation == 90:
+            final_base_x = 2 * center_x - base_y
+            final_base_y = base_x
+            offset_x = -death_date_offset_y
+            offset_y = effective_offset_x
+            rot = rotation + death_date_rotation
+        elif rotation == 270:
+            final_base_x = base_y
+            final_base_y = 2 * center_y - base_x
+            offset_x = death_date_offset_y
+            offset_y = -effective_offset_x
+            rot = rotation + death_date_rotation
+        else:
+            final_base_x = base_x
+            final_base_y = base_y
+            offset_x = death_date_offset_x
+            offset_y = death_date_offset_y
+            rot = death_date_rotation
+
+        translate_x = final_base_x + offset_x
+        translate_y = final_base_y + offset_y
 
         draw.translate(translate_x, translate_y)
-        draw.rotate(death_date_rotation)
+        draw.rotate(rot)
         draw.translate(-text_width // 2, 0)
         draw.text(0, 0, death_date)
         draw.pop()
@@ -470,11 +578,37 @@ def print_individual(
         # Base Y: use center if not specified
         base_y = death_place_base_y if death_place_base_y is not None else center_y
 
-        translate_x = base_x + death_place_offset_x
-        translate_y = base_y + death_place_offset_y
+        # Apply rotation transformation around center
+        if rotation == 180:
+            final_base_x = 2 * center_x - base_x
+            final_base_y = 2 * center_y - base_y
+            offset_x = -death_place_offset_x
+            offset_y = -death_place_offset_y
+            rot = rotation + death_place_rotation
+        elif rotation == 90:
+            final_base_x = 2 * center_x - base_y
+            final_base_y = base_x
+            offset_x = -death_place_offset_y
+            offset_y = death_place_offset_x
+            rot = rotation + death_place_rotation
+        elif rotation == 270:
+            final_base_x = base_y
+            final_base_y = 2 * center_y - base_x
+            offset_x = death_place_offset_y
+            offset_y = -death_place_offset_x
+            rot = rotation + death_place_rotation
+        else:
+            final_base_x = base_x
+            final_base_y = base_y
+            offset_x = death_place_offset_x
+            offset_y = death_place_offset_y
+            rot = death_place_rotation
+
+        translate_x = final_base_x + offset_x
+        translate_y = final_base_y + offset_y
 
         draw.translate(translate_x, translate_y)
-        draw.rotate(death_place_rotation)
+        draw.rotate(rot)
         draw.translate(-text_width // 2, 0)
         draw.text(0, 0, death_place)
         draw.pop()

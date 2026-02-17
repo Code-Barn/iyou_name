@@ -8,11 +8,19 @@ This prototype implements a modular approach to family tree chart generation, pr
 
 ### ✅ Working Implementations
 - **1gen**: Single individual with gravity center or base position placement
-- **2gen**: Two individuals (father/mother) rotated 180° apart with middle names
+- **2gen**: Two individuals (father/mother) rotated 180° apart with names, dates, places
 
 ### 🎯 Current Focus
-- Adding birth/death info to 2gen
-- Testing and refining positioning
+- 2gen complete with standardized positioning
+- Planning for 3gen (4 positions: A, B, C, D)
+
+## Position Naming
+
+| Generation | Positions | Rotation |
+|------------|-----------|----------|
+| 1gen | Position 0 | N/A |
+| 2gen | Position 1, 2 | 0°, 180° |
+| 3gen | Position A, B, C, D | 0°, 90°, 180°, 270° |
 
 ## Core Concept: Standardized Centering
 

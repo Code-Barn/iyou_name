@@ -59,6 +59,41 @@ class Generation2Constants:
     POSITION_1_LAST_NAME_BASE_X = 1725  # 1875 - 150
     POSITION_1_LAST_NAME_BASE_Y = 975
 
+    # Position 1 (Father): Birth/Death info positions
+    # Image is 1950x1950, center is (975, 975), border is 32px from edge
+    # Birth date: left side (x=200), near first name at bottom (y=1700)
+    POSITION_1_BIRTH_DATE_BASE_X = 200
+    POSITION_1_BIRTH_DATE_BASE_Y = 1700
+
+    # Birth place: bottom area, 50px from edge (y=1900)
+    POSITION_1_BIRTH_PLACE_BASE_X = 975
+    POSITION_1_BIRTH_PLACE_BASE_Y = 1900
+
+    # Death date: top area (y=225), near center/first name area
+    POSITION_1_DEATH_DATE_BASE_X = 975
+    POSITION_1_DEATH_DATE_BASE_Y = 225
+
+    # Death place: right side, 50px from edge (x=1900)
+    POSITION_1_DEATH_PLACE_BASE_X = 1900
+    POSITION_1_DEATH_PLACE_BASE_Y = 975
+
+    # Position 2 (Mother): 180° mirrored positions from Position 1
+    # Birth date: (200, 1700) mirrored → (1750, 225)
+    POSITION_2_BIRTH_DATE_BASE_X = 1750
+    POSITION_2_BIRTH_DATE_BASE_Y = 225
+
+    # Birth place: (975, 1900) mirrored → (975, 50)
+    POSITION_2_BIRTH_PLACE_BASE_X = 975
+    POSITION_2_BIRTH_PLACE_BASE_Y = 50
+
+    # Death date: (975, 200) mirrored → (975, 1750)
+    POSITION_2_DEATH_DATE_BASE_X = 975
+    POSITION_2_DEATH_DATE_BASE_Y = 1750
+
+    # Death place: (1900, 975) mirrored → (50, 975)
+    POSITION_2_DEATH_PLACE_BASE_X = 50
+    POSITION_2_DEATH_PLACE_BASE_Y = 975
+
     PARENT_NAME_FONT_SIZE = 48
     PARENT_DATE_INFO_FONT_SIZE = 36
     PARENT_PLACE_INFO_FONT_SIZE = 20
@@ -86,14 +121,13 @@ GENERATION_2_SETTINGS_SCHEMA = {
     "father_birth_translate_x": (int, 0),
     "father_birth_translate_y": (int, 0),
     "father_birth_rotate": (int, 0),
-    "father_birth_place_translate_x": (int, 0),
     "father_birth_place_translate_y": (int, 0),
     "father_birth_place_rotate": (int, 0),
     "father_death_translate_x": (int, 0),
-    "father_death_translate_y": (int, 280),
-    "father_death_rotate": (int, -90),
+    "father_death_translate_y": (int, 0),
+    "father_death_rotate": (int, 0),
     "father_death_place_translate_x": (int, 0),
-    "father_death_place_translate_y": (int, 280),
+    "father_death_place_translate_y": (int, 0),
     "father_death_place_rotate": (int, -90),
     "mother_font_color": (Color, "black"),
     "mother_stroke_color": (Color, "black"),
@@ -104,14 +138,13 @@ GENERATION_2_SETTINGS_SCHEMA = {
     "mother_birth_translate_x": (int, 0),
     "mother_birth_translate_y": (int, 0),
     "mother_birth_rotate": (int, 0),
-    "mother_birth_place_translate_x": (int, 0),
     "mother_birth_place_translate_y": (int, 0),
     "mother_birth_place_rotate": (int, 0),
     "mother_death_translate_x": (int, 0),
-    "mother_death_translate_y": (int, 280),
+    "mother_death_translate_y": (int, 0),
     "mother_death_rotate": (int, -90),
     "mother_death_place_translate_x": (int, 0),
-    "mother_death_place_translate_y": (int, 280),
+    "mother_death_place_translate_y": (int, 0),
     "mother_death_place_rotate": (int, -90),
     "overlay_scale": (float, 0.50),
     "overlay_position_x": (int, 0),
@@ -244,6 +277,44 @@ def generate_prototype_2gen_preview(
                             "father_translate_y", 0
                         ),
                         last_name_rotation=-90,  # Vertical text
+                        # Birth date: same position as first name, moved up 150px
+                        birth_date_base_x=Generation2Constants.POSITION_1_FIRST_NAME_BASE_X,
+                        birth_date_base_y=Generation2Constants.POSITION_1_FIRST_NAME_BASE_Y,
+                        birth_date_offset_x=validated_settings.get(
+                            "father_translate_x", 0
+                        ),
+                        birth_date_offset_y=-150,
+                        birth_date_rotation=0,
+                        # Death date: same position as last name, moved left 150px
+                        death_date_base_x=Generation2Constants.POSITION_1_LAST_NAME_BASE_X,
+                        death_date_base_y=Generation2Constants.POSITION_1_LAST_NAME_BASE_Y,
+                        death_date_offset_x=-150,
+                        death_date_offset_y=validated_settings.get(
+                            "father_translate_y", 0
+                        ),
+                        death_date_rotation=-90,
+                        birth_place_base_x=Generation2Constants.POSITION_1_BIRTH_PLACE_BASE_X,
+                        birth_place_base_y=Generation2Constants.POSITION_1_BIRTH_PLACE_BASE_Y,
+                        birth_place_offset_x=validated_settings.get(
+                            "father_birth_place_translate_x", 0
+                        ),
+                        birth_place_offset_y=validated_settings.get(
+                            "father_birth_place_translate_y", 0
+                        ),
+                        birth_place_rotation=validated_settings.get(
+                            "father_birth_place_rotate", 0
+                        ),
+                        death_place_base_x=Generation2Constants.POSITION_1_DEATH_PLACE_BASE_X,
+                        death_place_base_y=Generation2Constants.POSITION_1_DEATH_PLACE_BASE_Y,
+                        death_place_offset_x=validated_settings.get(
+                            "father_death_place_translate_x", 0
+                        ),
+                        death_place_offset_y=validated_settings.get(
+                            "father_death_place_translate_y", 0
+                        ),
+                        death_place_rotation=validated_settings.get(
+                            "father_death_place_rotate", -90
+                        ),
                         use_display_text=False,
                         use_gravity_center=False,
                     )
@@ -296,6 +367,42 @@ def generate_prototype_2gen_preview(
                             "mother_translate_y", 0
                         ),
                         last_name_rotation=-90,  # Vertical text (becomes +90° after 180° flip)
+                        # Birth date: same position as first name, moved up 150px
+                        birth_date_base_x=Generation2Constants.POSITION_1_FIRST_NAME_BASE_X,
+                        birth_date_base_y=Generation2Constants.POSITION_1_FIRST_NAME_BASE_Y,
+                        birth_date_offset_x=validated_settings.get(
+                            "mother_translate_x", 0
+                        ),
+                        birth_date_offset_y=-150,
+                        birth_date_rotation=0,
+                        # Death date: same position as last name, moved left 150px
+                        death_date_base_x=Generation2Constants.POSITION_1_LAST_NAME_BASE_X,
+                        death_date_base_y=Generation2Constants.POSITION_1_LAST_NAME_BASE_Y,
+                        death_date_offset_x=-150,
+                        death_date_offset_y=validated_settings.get(
+                            "mother_translate_y", 0
+                        ),
+                        death_date_rotation=-90,
+                        birth_place_offset_x=validated_settings.get(
+                            "mother_birth_place_translate_x", 0
+                        ),
+                        birth_place_offset_y=validated_settings.get(
+                            "mother_birth_place_translate_y", 0
+                        ),
+                        birth_place_rotation=validated_settings.get(
+                            "mother_birth_place_rotate", 0
+                        ),
+                        death_place_base_x=Generation2Constants.POSITION_1_DEATH_PLACE_BASE_X,
+                        death_place_base_y=Generation2Constants.POSITION_1_DEATH_PLACE_BASE_Y,
+                        death_place_offset_x=validated_settings.get(
+                            "mother_death_place_translate_x", 0
+                        ),
+                        death_place_offset_y=validated_settings.get(
+                            "mother_death_place_translate_y", 0
+                        ),
+                        death_place_rotation=validated_settings.get(
+                            "mother_death_place_rotate", -90
+                        ),
                         use_display_text=False,
                         use_gravity_center=False,
                     )
