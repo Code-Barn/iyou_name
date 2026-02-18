@@ -61,6 +61,7 @@ def print_individual(
     birth_place_paired_offset_x=0,
     death_place_paired_offset_x=0,
     # Name positions - base position (like dates/places in 1gen)
+    full_name=None,  # Simple single-line full name override
     first_name_base_x=None,
     first_name_base_y=None,
     first_name_offset_x=0,
@@ -131,6 +132,13 @@ def print_individual(
     last_name = name_info.get("last_name", "")
     display_text = name_info.get("display_text", "")
 
+    # Override with full_name if provided (simple single-line mode)
+    if full_name:
+        first_name = full_name
+        middle_name = ""
+        last_name = ""
+        display_text = ""
+
     # Get text info
     birth_date = individual.birth_date or ""
     birth_place = individual.birth_place or ""
@@ -154,8 +162,8 @@ def print_individual(
     # For 180° rotation (mother in 2gen), we flip both X and Y offsets
 
     # Draw name - mutually exclusive options
+    # Option 1: gravity center (1gen only - uses image center)
     if use_gravity_center and display_text:
-        # Option 1: gravity center (simplest - uses image center)
         draw.push()
         draw.fill_color = settings.get("primary_font_color", Color("black"))
         draw.stroke_color = primary_stroke_color
@@ -167,28 +175,46 @@ def print_individual(
         draw.pop()
         name_drawn = True
 
+    # Option 2: multiline display_text at base position (with \n between parts)
     elif use_display_text and display_text:
-        # Option 2: display_text with multiline offset positioning
         draw.push()
         draw.fill_color = settings.get("primary_font_color", Color("black"))
         draw.stroke_color = primary_stroke_color
         draw.stroke_width = primary_stroke_width
         draw.font_size = name_font_size
 
-        # Handle rotation
+        # Determine base position - use base_x/base_y if provided, else use center
+        if first_name_base_x is not None:
+            base_x = first_name_base_x
+        else:
+            base_x = center_x
+        if first_name_base_y is not None:
+            base_y = first_name_base_y
+        else:
+            base_y = center_y
+
+        # Handle rotation - transform base position around center
         if rotation == 180:
+            final_base_x = 2 * center_x - base_x
+            final_base_y = 2 * center_y - base_y
             offset_x = -first_name_offset_x
             offset_y = -first_name_offset_y
             rot = rotation + first_name_rotation
         elif rotation == 90:
+            final_base_x = 2 * center_x - base_y
+            final_base_y = base_x
             offset_x = -first_name_offset_y
             offset_y = first_name_offset_x
             rot = rotation + first_name_rotation
         elif rotation == 270:
+            final_base_x = base_y
+            final_base_y = 2 * center_y - base_x
             offset_x = first_name_offset_y
             offset_y = -first_name_offset_x
             rot = rotation + first_name_rotation
         else:
+            final_base_x = base_x
+            final_base_y = base_y
             offset_x = first_name_offset_x
             offset_y = first_name_offset_y
             rot = rotation + first_name_rotation
@@ -199,7 +225,7 @@ def print_individual(
         total_height = len(lines) * line_height
         y_offset = -total_height // 2 + line_height // 2
 
-        draw.translate(center_x + offset_x, center_y + offset_y + y_offset)
+        draw.translate(final_base_x + offset_x, final_base_y + offset_y + y_offset)
         draw.rotate(rot)
 
         # Draw each line centered
@@ -444,7 +470,7 @@ def print_individual(
         else:
             final_base_x = base_x
             final_base_y = base_y
-            offset_x = birth_date_offset_x
+            offset_x = effective_offset_x
             offset_y = birth_date_offset_y
             rot = birth_date_rotation
 
@@ -551,7 +577,7 @@ def print_individual(
         else:
             final_base_x = base_x
             final_base_y = base_y
-            offset_x = death_date_offset_x
+            offset_x = effective_offset_x
             offset_y = death_date_offset_y
             rot = death_date_rotation
 

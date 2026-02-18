@@ -144,3 +144,124 @@ def get_positions_for_generation(gen_number, family_data):
         positions.append((individual, rotation))
     return positions
 ```
+
+---
+
+## Session Date: 2026-02-17
+
+### Major Accomplishments
+
+### 1. Three Name Printing Modes
+
+The `print_individual()` function now supports three modes:
+
+#### Mode 1: Gravity Center (1gen only)
+```python
+use_gravity_center=True   # Uses image center (975, 975)
+use_display_text=True    # Multiline with \n
+```
+Best for: 1gen - single individual at center
+
+#### Mode 2: Multiline at Base Position
+```python
+use_display_text=True    # Uses display_text with \n for multiline
+use_gravity_center=False
+first_name_base_x=975   # Base position
+first_name_base_y=1500
+```
+Best for: When you want multiline names at specific positions
+
+#### Mode 3: Single-Line Full Name (Recommended for 3gen+)
+```python
+full_name=individual.full_name  # Single line, full name
+use_display_text=False
+use_gravity_center=False
+first_name_base_x=975   # Base position (applies to full_name too)
+first_name_base_y=1750
+```
+Best for: 3gen+ - simple single-line names that rotate around center
+
+### 2. Fixed use_display_text Base Position Bug
+
+**Problem**: `use_display_text=True` was using image center instead of base positions.
+
+**Solution**: Updated `print_individual()` to check for `first_name_base_x/first_name_base_y` and apply rotation transform:
+
+```python
+# Determine base position - use base_x/base_y if provided, else use center
+if first_name_base_x is not None:
+    base_x = first_name_base_base_x
+else:
+    base_x = center_x
+
+# Apply rotation transformation
+if rotation == 180:
+    final_base_x = 2 * center_x - base_x
+    final_base_y = 2 * center_y - base_y
+# ... other rotations
+```
+
+### 3. Added full_name Parameter
+
+New parameter to override name parsing for simple single-line printing:
+
+```python
+full_name=None,  # Simple single-line full name override
+
+# In function body:
+if full_name:
+    first_name = full_name
+    middle_name = ""
+    last_name = ""
+    display_text = ""
+```
+
+### 4. Refactored 2gen to Standard Pattern
+
+**Before**: Separate hardcoded constants for Position 1 and Position 2
+
+**After**: Single base positions + loop with rotation:
+
+```python
+positions = [
+    (father, 0, "father_translate_x", "father_translate_y"),
+    (mother, 180, "mother_translate_x", "mother_translate_y"),
+]
+
+base_params = dict(
+    center_x=Generation2Constants.IMAGE_CENTER_X,
+    center_y=Generation2Constants.IMAGE_CENTER_Y,
+    first_name_base_x=Generation2Constants.POSITION_1_FIRST_NAME_BASE_X,
+    # ... all common params
+)
+
+for individual, rotation, translate_x_key, translate_y_key in positions:
+    print_individual(
+        individual=individual,
+        rotation=rotation,
+        **base_params,
+    )
+```
+
+### Current Status
+
+### ✅ Working
+- 1gen: Gravity center with multiline
+- 2gen: Loop-based with rotation, separate name parts (complex case)
+- 3gen: Loop-based with rotation, full_name single-line
+
+### 📋 4gen Planning
+- 8 positions: A1, A2, B1, B2, C1, C2, D1, D2
+- Rotation intervals: 0°, 45°, 90°, 135°, 180°, 225°, 270°, 315°
+- Uses same pattern as 3gen (full_name single-line)
+
+---
+
+## Generation Naming Convention
+
+| Generation | Positions | Rotation Intervals |
+|------------|-----------|-------------------|
+| 1gen | Position 0 | N/A |
+| 2gen | Position 1, 2 | 0°, 180° |
+| 3gen | Position A, B, C, D | 0°, 90°, 180°, 270° |
+| 4gen | A1, A2, B1, B2, C1, C2, D1, D2 | 0°, 45°, 90°, ... |

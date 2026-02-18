@@ -60,8 +60,8 @@ GENERATION_1_SETTINGS_SCHEMA = {
     "primary_death_color": (Color, "black"),
     "primary_death_place_color": (Color, "black"),
     "primary_name_font_size": (int, 84),
-    "primary_date_info_font_size": (int, 60),
-    "primary_place_info_font_size": (int, 28),
+    "primary_date_info_font_size": (int, 52),
+    "primary_place_info_font_size": (int, 36),
     "primary_translate_x": (int, 0),
     "primary_translate_y": (int, 0),
     "primary_name_rotate": (int, -45),
@@ -147,7 +147,7 @@ def generate_prototype_1gen_preview(
                     date_font_size=validated_settings["primary_date_info_font_size"],
                     place_font_size=validated_settings["primary_place_info_font_size"],
                     first_name_rotation=validated_settings["primary_name_rotate"],
-                    birth_date_base_x=200,
+                    birth_date_base_x=300,
                     birth_date_offset_x=validated_settings["primary_birth_translate_x"],
                     birth_date_offset_y=validated_settings["primary_birth_translate_y"],
                     birth_date_rotation=validated_settings["primary_birth_rotate"],
@@ -161,7 +161,7 @@ def generate_prototype_1gen_preview(
                     birth_place_rotation=validated_settings[
                         "primary_birth_place_rotate"
                     ],
-                    death_date_base_y=200,
+                    death_date_base_y=300,
                     death_date_offset_x=validated_settings["primary_death_translate_x"],
                     death_date_offset_y=validated_settings["primary_death_translate_y"],
                     death_date_rotation=validated_settings["primary_death_rotate"],

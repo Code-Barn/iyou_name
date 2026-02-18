@@ -1,8 +1,34 @@
 # Quick Reference: 1gen & 2gen Implementation
 
-## 1gen: Single Individual
+## Three Name Printing Modes
 
-### Centering Pattern (ALL text uses this)
+### Mode 1: Gravity Center (1gen only)
+```
+use_gravity_center=True
+use_display_text=True
+# Uses image center (975, 975), multiline with \n
+```
+
+### Mode 2: Multiline at Base Position (3gen)
+```
+use_display_text=True
+use_gravity_center=False
+first_name_base_x=975, first_name_base_y=1500
+# Multiline display_text centered at base position
+```
+
+### Mode 3: Single-Line Full Name (Recommended 3gen+)
+```
+full_name=individual.full_name
+use_display_text=False
+use_gravity_center=False
+first_name_base_x=975, first_name_base_y=1750
+# Full name on ONE line at base position
+```
+
+---
+
+## Centering Pattern (ALL text uses this)
 ```
 translate(x, y) → rotate(degrees) → translate(-text_width//2, 0) → text(0, 0)
 ```

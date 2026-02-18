@@ -17,6 +17,36 @@ Each generation uses uniquely named positions that cannot be reused across gener
 
 **Important**: Positions are generation-specific. Position 1 in 2gen has no relationship to Position 1 in 3gen.
 
+## Name Printing Modes
+
+The `print_individual()` function supports three name printing modes:
+
+### Mode 1: Gravity Center (1gen only)
+```python
+use_gravity_center=True  # Uses image center (975, 975)
+use_display_text=True    # Multiline with \n
+```
+Best for: 1gen - single individual at center
+
+### Mode 2: Multiline at Base Position
+```python
+use_display_text=True   # Uses display_text with \n for multiline
+use_gravity_center=False
+first_name_base_x=975   # Base position
+first_name_base_y=1500
+```
+Best for: When you want multiline names at specific positions
+
+### Mode 3: Single-Line Full Name (Recommended for 3gen+)
+```python
+full_name=individual.full_name  # Single line, full name
+use_display_text=False
+use_gravity_center=False
+first_name_base_x=975   # Base position (applies to full_name too)
+first_name_base_y=1750
+```
+Best for: 3gen+ - simple single-line names that rotate around center
+
 ## Compositing Order
 
 Lower generation ON TOP of higher generation:

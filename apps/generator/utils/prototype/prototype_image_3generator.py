@@ -42,14 +42,14 @@ class Generation3Constants:
     IMAGE_CENTER_Y = 975
 
     POSITION_A_FIRST_NAME_BASE_X = 975
-    POSITION_A_FIRST_NAME_BASE_Y = 1500
+    POSITION_A_FIRST_NAME_BASE_Y = 1800
     POSITION_A_MIDDLE_NAME_BASE_X = 1650
     POSITION_A_MIDDLE_NAME_BASE_Y = 1650
     POSITION_A_MIDDLE_NAME_ROTATION = -45
     POSITION_A_LAST_NAME_BASE_X = 1725
     POSITION_A_LAST_NAME_BASE_Y = 975
 
-    GRANDPARENT_NAME_FONT_SIZE = 36
+    GRANDPARENT_NAME_FONT_SIZE = 30
     GRANDPARENT_DATE_INFO_FONT_SIZE = 20
     GRANDPARENT_PLACE_INFO_FONT_SIZE = 16
 
@@ -205,6 +205,8 @@ def generate_prototype_3gen_preview(
                     name_font_size=Generation3Constants.GRANDPARENT_NAME_FONT_SIZE,
                     date_font_size=Generation3Constants.GRANDPARENT_DATE_INFO_FONT_SIZE,
                     place_font_size=Generation3Constants.GRANDPARENT_PLACE_INFO_FONT_SIZE,
+                    first_name_base_x=Generation3Constants.POSITION_A_FIRST_NAME_BASE_X,
+                    first_name_base_y=Generation3Constants.POSITION_A_FIRST_NAME_BASE_Y,
                     birth_date_base_x=650,
                     birth_date_base_y=1650,
                     birth_date_offset_x=0,
@@ -231,8 +233,8 @@ def generate_prototype_3gen_preview(
                     death_place_offset_x=0,
                     death_place_offset_y=0,
                     death_place_rotation=0,
-                    use_display_text=True,
-                    use_gravity_center=True,
+                    use_display_text=False,
+                    use_gravity_center=False,
                 )
 
                 for individual, rotation in positions:
@@ -243,6 +245,7 @@ def generate_prototype_3gen_preview(
                             individual=individual,
                             settings=validated_settings,
                             rotation=rotation,
+                            full_name=individual.full_name,
                             **base_params,
                         )
 
