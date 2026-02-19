@@ -8,12 +8,12 @@ Position System:
 - Position A1, A2, B1, B2, C1, C2, D1, D2: Great-grandparents at 0°, 45°, 90°, 135°, 180°, 225°, 270°, 315°
   - A1 (Paternal grandfather's father): rotation=0
   - A2 (Paternal grandfather's mother): rotation=45
-  - B1 (Paternal grandmother's father): rotation=90
-  - B2 (Paternal grandmother's mother): rotation=135
+  - B1 (Paternal grandmother's father): rotation=270
+  - B2 (Paternal grandmother's mother): rotation=315
   - C1 (Maternal grandfather's father): rotation=180
   - C2 (Maternal grandfather's mother): rotation=225
-  - D1 (Maternal grandmother's father): rotation=270
-  - D2 (Maternal grandmother's mother): rotation=315
+  - D1 (Maternal grandmother's father): rotation=90
+  - D2 (Maternal grandmother's mother): rotation=135
 """
 
 import logging
@@ -47,18 +47,18 @@ class Generation4Constants:
     IMAGE_CENTER_Y = 975
 
     POSITION_A1_FIRST_NAME_BASE_X = 560
-    POSITION_A1_FIRST_NAME_BASE_Y = 1800
+    POSITION_A1_FIRST_NAME_BASE_Y = 1825
     POSITION_A1_BIRTH_DATE_BASE_X = 613
-    POSITION_A1_BIRTH_DATE_BASE_Y = 1700
-    POSITION_A1_BIRTH_PLACE_BASE_X = 511
-    POSITION_A1_BIRTH_PLACE_BASE_Y = 1900
+    POSITION_A1_BIRTH_DATE_BASE_Y = 1725
+    POSITION_A1_BIRTH_PLACE_BASE_X = 518
+    POSITION_A1_BIRTH_PLACE_BASE_Y = 1888
 
     POSITION_A2_FIRST_NAME_BASE_X = 1390
-    POSITION_A2_FIRST_NAME_BASE_Y = 1800
+    POSITION_A2_FIRST_NAME_BASE_Y = 1825
     POSITION_A2_BIRTH_DATE_BASE_X = 1337
-    POSITION_A2_BIRTH_DATE_BASE_Y = 1700
-    POSITION_A2_BIRTH_PLACE_BASE_X = 1439
-    POSITION_A2_BIRTH_PLACE_BASE_Y = 1900
+    POSITION_A2_BIRTH_DATE_BASE_Y = 1725
+    POSITION_A2_BIRTH_PLACE_BASE_X = 1432
+    POSITION_A2_BIRTH_PLACE_BASE_Y = 1888
 
     GREAT_GRANDPARENT_NAME_FONT_SIZE = 20
     GREAT_GRANDPARENT_DATE_INFO_FONT_SIZE = 12
@@ -125,12 +125,12 @@ def generate_prototype_4gen_preview(
     Positions (8 great-grandparents at 45° intervals):
     - A1: Paternal grandfather's father (rotation=0)
     - A2: Paternal grandfather's mother (rotation=45)
-    - B1: Paternal grandmother's father (rotation=90)
-    - B2: Paternal grandmother's mother (rotation=135)
+    - B1: Paternal grandmother's father (rotation=270)
+    - B2: Paternal grandmother's mother (rotation=315)
     - C1: Maternal grandfather's father (rotation=180)
     - C2: Maternal grandfather's mother (rotation=225)
-    - D1: Maternal grandmother's father (rotation=270)
-    - D2: Maternal grandmother's mother (rotation=315)
+    - D1: Maternal grandmother's father (rotation=90)
+    - D2: Maternal grandmother's mother (rotation=135)
     """
     user_settings = user_settings or {}
     validated_settings = get_validated_settings(
@@ -250,7 +250,7 @@ def generate_prototype_4gen_preview(
                                 Generation4Constants.POSITION_A1_BIRTH_DATE_BASE_Y,
                                 Generation4Constants.POSITION_A1_BIRTH_PLACE_BASE_X,
                                 Generation4Constants.POSITION_A1_BIRTH_PLACE_BASE_Y,
-                                90,
+                                270,
                             )
                         )
                     if pmg_mother_id:
@@ -263,7 +263,7 @@ def generate_prototype_4gen_preview(
                                 Generation4Constants.POSITION_A2_BIRTH_DATE_BASE_Y,
                                 Generation4Constants.POSITION_A2_BIRTH_PLACE_BASE_X,
                                 Generation4Constants.POSITION_A2_BIRTH_PLACE_BASE_Y,
-                                90,
+                                270,
                             )
                         )
 
@@ -310,7 +310,7 @@ def generate_prototype_4gen_preview(
                                 Generation4Constants.POSITION_A1_BIRTH_DATE_BASE_Y,
                                 Generation4Constants.POSITION_A1_BIRTH_PLACE_BASE_X,
                                 Generation4Constants.POSITION_A1_BIRTH_PLACE_BASE_Y,
-                                270,
+                                90,
                             )
                         )
                     if mmg_mother_id:
@@ -323,7 +323,7 @@ def generate_prototype_4gen_preview(
                                 Generation4Constants.POSITION_A2_BIRTH_DATE_BASE_Y,
                                 Generation4Constants.POSITION_A2_BIRTH_PLACE_BASE_X,
                                 Generation4Constants.POSITION_A2_BIRTH_PLACE_BASE_Y,
-                                270,
+                                90,
                             )
                         )
 
@@ -336,21 +336,12 @@ def generate_prototype_4gen_preview(
                     birth_date_offset_x=0,
                     birth_date_offset_y=0,
                     birth_date_rotation=0,
-                    birth_date_paired_offset_x=-125,
-                    death_date_offset_x=0,
-                    death_date_offset_y=0,
-                    death_date_rotation=0,
-                    death_date_paired_offset_x=125,
-                    paired_dates_base_y=1700,
-                    paired_places_base_y=1900,
-                    birth_place_offset_x=0,
-                    birth_place_offset_y=0,
-                    birth_place_rotation=0,
-                    birth_place_paired_offset_x=-125,
-                    death_place_offset_x=0,
-                    death_place_offset_y=0,
-                    death_place_rotation=0,
-                    death_place_paired_offset_x=125,
+                    birth_date_paired_offset_x=-200,
+                    death_date_paired_offset_x=200,
+                    paired_dates_base_y=1725,
+                    paired_places_base_y=1925,
+                    birth_place_paired_offset_x=-200,
+                    death_place_paired_offset_x=200,
                     use_display_text=False,
                     use_gravity_center=False,
                 )

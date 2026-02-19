@@ -102,6 +102,8 @@ def print_individual(
     # Options
     use_display_text=True,
     use_gravity_center=False,
+    multiline_line_spacing=1.2,
+    multiline_alignment="center",
 ):
     """
     Print an individual's name and birth/death info at a given position.
@@ -221,16 +223,38 @@ def print_individual(
 
         # Multiline centering: calculate total height and offset
         lines = display_text.split("\n")
-        line_height = name_font_size * 1.2
+        line_height = name_font_size * multiline_line_spacing
         total_height = len(lines) * line_height
-        y_offset = -total_height // 2 + line_height // 2
+        centering_offset = -total_height // 2 + line_height // 2
 
-        draw.translate(final_base_x + offset_x, final_base_y + offset_y + y_offset)
+        # Apply centering offset AFTER rotation - translation is in rotated coordinate space
+        # In rotated space: for 90°, rotated x points in original -y, rotated y points in original x
+        # To center vertically in original space, we need to offset appropriately
+        if rotation == 180:
+            # For 180°, both x and y flip - offset goes in rotated y (original -y)
+            final_x = final_base_x + offset_x
+            final_y = final_base_y + offset_y - centering_offset
+        elif rotation == 90:
+            # For 90°, rotated x points in original -y direction
+            final_x = final_base_x + offset_x - centering_offset
+            final_y = final_base_y + offset_y
+        elif rotation == 270:
+            # For 270°, rotated y points in original -x direction (offset_y becomes offset_x after swap)
+            # centering goes in rotated x which maps to original +y
+            final_x = final_base_x + offset_x + centering_offset
+            final_y = final_base_y + offset_y
+        else:
+            # No rotation - normal vertical centering
+            final_x = final_base_x + offset_x
+            final_y = final_base_y + offset_y + centering_offset
+
+        draw.translate(final_x, final_y)
         draw.rotate(rot)
 
-        # Draw each line centered
+        # Draw each line centered - use centering_offset for consistent line positioning
+        draw.text_alignment = multiline_alignment
         for i, line in enumerate(lines):
-            line_y = i * line_height - y_offset
+            line_y = i * line_height - centering_offset
             draw.push()
             draw.translate(0, line_y)
             draw.text(0, 0, line)
@@ -494,32 +518,38 @@ def print_individual(
 
         # Base X: use center if not specified
         base_x = birth_place_base_x if birth_place_base_x is not None else center_x
-        # Base Y: use provided base_y, or center if None
-        base_y = birth_place_base_y if birth_place_base_y is not None else center_y
+        # Base Y: use paired_places_base_y if provided, otherwise use birth_place_base_y or center_y
+        if paired_places_base_y is not None:
+            base_y = paired_places_base_y
+        else:
+            base_y = birth_place_base_y if birth_place_base_y is not None else center_y
+
+        # Apply paired offset if provided
+        effective_offset_x = birth_place_offset_x + birth_place_paired_offset_x
 
         # Apply rotation transformation around center
         if rotation == 180:
             final_base_x = 2 * center_x - base_x
             final_base_y = 2 * center_y - base_y
-            offset_x = -birth_place_offset_x
+            offset_x = -effective_offset_x
             offset_y = -birth_place_offset_y
             rot = rotation + birth_place_rotation
         elif rotation == 90:
             final_base_x = 2 * center_x - base_y
             final_base_y = base_x
             offset_x = -birth_place_offset_y
-            offset_y = birth_place_offset_x
+            offset_y = effective_offset_x
             rot = rotation + birth_place_rotation
         elif rotation == 270:
             final_base_x = base_y
             final_base_y = 2 * center_y - base_x
             offset_x = birth_place_offset_y
-            offset_y = -birth_place_offset_x
+            offset_y = -effective_offset_x
             rot = rotation + birth_place_rotation
         else:
             final_base_x = base_x
             final_base_y = base_y
-            offset_x = birth_place_offset_x
+            offset_x = effective_offset_x
             offset_y = birth_place_offset_y
             rot = birth_place_rotation
 
@@ -601,32 +631,38 @@ def print_individual(
 
         # Base X: use provided base_x, or center if None
         base_x = death_place_base_x if death_place_base_x is not None else center_x
-        # Base Y: use center if not specified
-        base_y = death_place_base_y if death_place_base_y is not None else center_y
+        # Base Y: use paired_places_base_y if provided, otherwise use death_place_base_y or center_y
+        if paired_places_base_y is not None:
+            base_y = paired_places_base_y
+        else:
+            base_y = death_place_base_y if death_place_base_y is not None else center_y
+
+        # Apply paired offset if provided
+        effective_offset_x = death_place_offset_x + death_place_paired_offset_x
 
         # Apply rotation transformation around center
         if rotation == 180:
             final_base_x = 2 * center_x - base_x
             final_base_y = 2 * center_y - base_y
-            offset_x = -death_place_offset_x
+            offset_x = -effective_offset_x
             offset_y = -death_place_offset_y
             rot = rotation + death_place_rotation
         elif rotation == 90:
             final_base_x = 2 * center_x - base_y
             final_base_y = base_x
             offset_x = -death_place_offset_y
-            offset_y = death_place_offset_x
+            offset_y = effective_offset_x
             rot = rotation + death_place_rotation
         elif rotation == 270:
             final_base_x = base_y
             final_base_y = 2 * center_y - base_x
             offset_x = death_place_offset_y
-            offset_y = -death_place_offset_x
+            offset_y = -effective_offset_x
             rot = rotation + death_place_rotation
         else:
             final_base_x = base_x
             final_base_y = base_y
-            offset_x = death_place_offset_x
+            offset_x = effective_offset_x
             offset_y = death_place_offset_y
             rot = death_place_rotation
 

@@ -257,11 +257,185 @@ for individual, rotation, translate_x_key, translate_y_key in positions:
 
 ---
 
+## Session Date: 2026-02-18
+
+### Major Accomplishments
+
+### 1. 4gen Implementation
+
+**Key Insight**: Since the chart is square (not circular), simple rotation doesn't work for all positions. The solution is to:
+1. Define A1 and A2 base positions (father/mother pair in bottom-left quadrant)
+2. Apply 90° rotation to get B1/B2, 180° for C1/C2, 270° for D1/D2
+
+```python
+# Define A1/A2 base positions once
+POSITION_A1_FIRST_NAME_BASE_X = 560
+POSITION_A1_FIRST_NAME_BASE_Y = 1825
+
+POSITION_A2_FIRST_NAME_BASE_X = 1390
+POSITION_A2_FIRST_NAME_BASE_Y = 1825
+
+# For each subclade, use A1/A2 base + rotation
+great_grandparents = [
+    (paternal_grandfather_father, A1_X, A1_Y, 0),      # A1 - rotation 0
+    (paternal_grandfather_mother, A2_X, A2_Y, 0),      # A2 - rotation 0
+    (paternal_grandmother_father, A1_X, A1_Y, 90),    # B1 - rotation 90
+    (paternal_grandmother_mother, A2_X, A2_Y, 90),    # B2 - rotation 90
+    # ... etc
+]
+```
+
+### 2. Fixed Paired Offset Bug for Rotation 0
+
+**Problem**: Birth/death date pairs and birth/death place pairs were printing on top of each other for rotation=0 positions (A1, A2).
+
+**Root Cause**: The rotation 0 case in `print_individual()` was using `offset_x` instead of `effective_offset_x` (which includes paired offset).
+
+**Fix**: Updated all four date/place blocks in individual_printer.py:
+```python
+# Before (broken for rotation 0):
+else:
+    offset_x = birth_date_offset_x  # Missing paired offset!
+
+# After (works for all rotations):
+else:
+    effective_offset_x = birth_date_offset_x + birth_date_paired_offset_x
+    offset_x = effective_offset_x
+```
+
+### 3. Paired Offsets Pattern
+
+For centering pairs of dates/places around a center point:
+```python
+# 400px gap between dates (center ± 200)
+birth_date_paired_offset_x = -200
+death_date_paired_offset_x = 200
+
+# 1050px gap between places (center ± 525)
+birth_place_paired_offset_x = -525
+death_place_paired_offset_x = 525
+```
+
+### Current Status
+
+### ✅ Working
+- 1gen: Gravity center with multiline
+- 2gen: Loop-based with rotation, separate name parts (complex case)
+- 3gen: Loop-based with rotation, full_name single-line
+- 4gen: A1/A2 base positions + rotation for B/C/D subclades, paired offsets
+
+### Key Learnings (Updated)
+
+1. **Square canvas requires manual A1/A2 positioning** - rotation alone doesn't fill the space correctly
+2. **Define base for father (A1) and mother (A2)** - then rotate to get other subclades
+3. **Paired offsets need `effective_offset_x`** - must include both offset and paired_offset
+4. **Use paired_offset for centering pairs** - birth on left, death on right, centered
+
+---
+
 ## Generation Naming Convention
 
-| Generation | Positions | Rotation Intervals |
-|------------|-----------|-------------------|
-| 1gen | Position 0 | N/A |
-| 2gen | Position 1, 2 | 0°, 180° |
-| 3gen | Position A, B, C, D | 0°, 90°, 180°, 270° |
-| 4gen | A1, A2, B1, B2, C1, C2, D1, D2 | 0°, 45°, 90°, ... |
+| Generation | Positions | Rotation Intervals | Notes |
+|------------|-----------|-------------------|-------|
+| 1gen | Position 0 | N/A | Gravity center |
+| 2gen | Position 1, 2 | 0°, 180° | Complex: separate name parts |
+| 3gen | A, B, C, D | 0°, 90°, 180°, 270° | Simple: full_name |
+| 4gen | A1, A2, B1, B2, C1, C2, D1, D2 | 0°, 45°, 90°, ... | A1/A2 base + rotate |
+
+---
+
+## Session Date: 2026-02-19
+
+### Major Accomplishments
+
+### 1. Fixed Place Name Separation in 4gen
+
+**Problem**: Birth and death places were printing on top of each other in A1 and A2 positions, unlike the dates above them which had proper separation.
+
+**Root Cause**: The place handling code in `individual_printer.py` was missing the `effective_offset_x` calculation that the date handling code was using. Places were using individual base coordinates without the paired offset logic.
+
+**Solution**: Applied the same centering technique to places as used for dates:
+
+1. **Added `effective_offset_x` calculation for places**:
+```python
+# For birth places
+effective_offset_x = birth_place_offset_x + birth_place_paired_offset_x
+
+# For death places  
+effective_offset_x = death_place_offset_x + death_place_paired_offset_x
+```
+
+2. **Added `paired_places_base_y` logic**:
+```python
+# For both birth and death places
+if paired_places_base_y is not None:
+    base_y = paired_places_base_y
+else:
+    base_y = birth_place_base_y if birth_place_base_y is not None else center_y
+```
+
+3. **Updated base positions to exact specifications**:
+```python
+# A1 position (bottom right to center)
+POSITION_A1_BIRTH_PLACE_BASE_X = 518  # was 511
+POSITION_A1_BIRTH_PLACE_BASE_Y = 1888  # was 1925
+
+# A2 position (mirrored across x=975)
+POSITION_A2_BIRTH_PLACE_BASE_X = 1432  # was 1439
+POSITION_A2_BIRTH_PLACE_BASE_Y = 1888  # was 1925
+```
+
+4. **Matched date gap length for consistency**:
+```python
+birth_place_paired_offset_x=-200,  # was -1000, now matches dates
+death_place_paired_offset_x=200,   # was 1000, now matches dates
+```
+
+### Final Configuration
+
+- **A1 Position**: Centered at `518, 1888` (bottom right to center)
+- **A2 Position**: Centered at `1432, 1888` (mirrored across x=975)
+- **Gap Length**: 400px total (same as dates)
+  - Birth place offset: `-200` (left)
+  - Death place offset: `+200` (right)
+- **Y Position**: `1888` (37px higher than original `1925`)
+
+### How It Works
+
+1. **Same Base Position**: Both birth and death places use the same Y coordinate (`1888`)
+2. **Horizontal Separation**: Birth place is offset left by 200 pixels, death place is offset right by 200 pixels
+3. **Centering**: Each place name is centered around its calculated position
+4. **Consistent with Dates**: Uses the exact same pattern and gap length as the dates above the names
+
+### Key Learnings
+
+1. **Paired offsets require `effective_offset_x`**: Must combine base offset with paired offset for all rotation cases
+2. **Use same base Y for pairs**: Both birth and death places should share the same vertical center
+3. **Match date styling exactly**: Same gap length creates visual consistency
+4. **Exact positioning matters**: Small pixel adjustments (37px in this case) can make significant visual differences
+
+### Files Modified
+
+1. **`apps/generator/utils/prototype/individual_printer.py`**:
+   - Added `effective_offset_x` calculation for birth places
+   - Added `effective_offset_x` calculation for death places
+   - Added `paired_places_base_y` logic for both birth and death places
+
+2. **`apps/generator/utils/prototype/prototype_image_4generator.py`**:
+   - Updated A1 and A2 base positions to exact specifications
+   - Changed place offsets from `-1000`/`1000` to `-200`/`200` to match dates
+
+---
+
+## Current Status
+
+### ✅ Working
+- 1gen: Gravity center with multiline
+- 2gen: Loop-based with rotation, separate name parts (complex case)
+- 3gen: Loop-based with rotation, full_name single-line
+- 4gen: A1/A2 base positions + rotation for B/C/D subclades, paired offsets for dates AND places
+
+### 📋 Next Steps
+- Test with real GEDCOM data to verify all edge cases
+- Add user-adjustable settings for fine-tuning positions
+- Document the complete positioning system for future reference

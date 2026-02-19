@@ -164,4 +164,57 @@ final_base_y = 2 * center_y - base_y  # 975→975, 1875→75
 
 For 2gen: 1 set of base positions → rotated 0° and 180°
 For 3gen: 1 set → rotated 0°, 90°, 180°, 270°
-For Ngen: 1 set → rotated N times around center
+For 4gen: 2 sets (A1, A2) → each rotated 0°, 90°, 180°, 270°
+
+---
+
+## 4gen: Eight Great-Grandparents
+
+### The Challenge
+- Chart is square, not circular
+- Simple rotation doesn't fill the space correctly
+- Need A1 (father) and A2 (mother) base positions for each subclade
+
+### Solution: A1/A2 Base + Rotation
+```python
+# Define A1 and A2 base positions ONCE
+POSITION_A1_FIRST_NAME_BASE_X = 560
+POSITION_A1_FIRST_NAME_BASE_Y = 1825
+POSITION_A2_FIRST_NAME_BASE_X = 1390
+POSITION_A2_FIRST_NAME_BASE_Y = 1825
+
+# Build list with A1/A2 base + rotation for each subclade
+great_grandparents = [
+    # A subclade (rotation=0)
+    (paternal_grandfather_father, A1_X, A1_Y, 0),
+    (paternal_grandfather_mother, A2_X, A2_Y, 0),
+    # B subclade (rotation=90)
+    (paternal_grandmother_father, A1_X, A1_Y, 90),
+    (paternal_grandmother_mother, A2_X, A2_Y, 90),
+    # C subclade (rotation=180)
+    (maternal_grandfather_father, A1_X, A1_Y, 180),
+    (maternal_grandmother_mother, A2_X, A2_Y, 180),
+    # D subclade (rotation=270)
+    (maternal_grandmother_father, A1_X, A1_Y, 270),
+    (maternal_grandmother_mother, A2_X, A2_Y, 270),
+]
+```
+
+### Paired Offsets (Centering Pairs)
+```python
+# Dates: birth on left, death on right, centered
+birth_date_paired_offset_x = -200   # Left of center
+death_date_paired_offset_x = 200    # Right of center
+
+# Places: larger gap
+birth_place_paired_offset_x = -525
+death_place_paired_offset_x = 525
+```
+
+### Rotation Math Summary
+| Rotation | Transform |
+|----------|-----------|
+| 0° | (x, y) - no change |
+| 90° | (2*center_y - y, x) |
+| 180° | (2*center_x - x, 2*center_y - y) |
+| 270° | (y, 2*center_x - x) |
