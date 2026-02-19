@@ -59,26 +59,26 @@ class Generation5Constants:
     POSITION_A12_BIRTH_PLACE_BASE_Y = 1919
 
     # A21 position (mirrors A12 over x=975)
-    POSITION_A21_FIRST_NAME_BASE_X = 1620
+    POSITION_A21_FIRST_NAME_BASE_X = 1190
     POSITION_A21_FIRST_NAME_BASE_Y = 1835
-    POSITION_A21_BIRTH_DATE_BASE_X = 1170
+    POSITION_A21_BIRTH_DATE_BASE_X = 1560
     POSITION_A21_BIRTH_DATE_BASE_Y = 1785
-    POSITION_A21_BIRTH_PLACE_BASE_X = 1211
+    POSITION_A21_BIRTH_PLACE_BASE_X = 1683
     POSITION_A21_BIRTH_PLACE_BASE_Y = 1919
 
     # A22 position (mirrors A11 over x=975)
-    POSITION_A22_FIRST_NAME_BASE_X = 1190
+    POSITION_A22_FIRST_NAME_BASE_X = 1620
     POSITION_A22_FIRST_NAME_BASE_Y = 1835
-    POSITION_A22_BIRTH_DATE_BASE_X = 1560
+    POSITION_A22_BIRTH_DATE_BASE_X = 1170
     POSITION_A22_BIRTH_DATE_BASE_Y = 1785
-    POSITION_A22_BIRTH_PLACE_BASE_X = 1683
+    POSITION_A22_BIRTH_PLACE_BASE_X = 1211
     POSITION_A22_BIRTH_PLACE_BASE_Y = 1919
 
     GREAT_GREAT_GRANDPARENT_NAME_FONT_SIZE = 14
     GREAT_GREAT_GRANDPARENT_DATE_INFO_FONT_SIZE = 10
     GREAT_GREAT_GRANDPARENT_PLACE_INFO_FONT_SIZE = 8
 
-    OVERLAY_SCALE = 0.7779
+    OVERLAY_SCALE = 0.7778
     COMPOSITE_X = 300
     COMPOSITE_Y = 570
     RESOLUTION = 300
@@ -92,7 +92,7 @@ GENERATION_5_SETTINGS_SCHEMA = {
     "great_great_grandparent_stroke_width": (float, 0.5),
     "info_stroke_color": (Color, "gray"),
     "info_stroke_width": (float, 0.25),
-    "overlay_scale": (float, 0.7779),
+    "overlay_scale": (float, 0.7778),
     "overlay_position_x": (int, 0),
     "overlay_position_y": (int, 0),
 }
@@ -182,39 +182,30 @@ def generate_prototype_5gen_preview(
 
                 individuals = family_data.get("individuals", {}) if family_data else {}
 
-                paternal_grandfather_id = getattr(
-                    primary_individual, "paternal_grandfather", None
-                )
-                paternal_grandmother_id = getattr(
-                    primary_individual, "paternal_grandmother", None
-                )
-                maternal_grandmother_id = getattr(
-                    primary_individual, "maternal_grandmother", None
-                )
-                maternal_grandfather_id = getattr(
-                    primary_individual, "maternal_grandfather", None
-                )
+                # Get parents by traversing father/mother relationships
+                father = individuals.get(getattr(primary_individual, "father", None))
+                mother = individuals.get(getattr(primary_individual, "mother", None))
 
-                paternal_grandfather = (
-                    individuals.get(paternal_grandfather_id)
-                    if paternal_grandfather_id
-                    else None
-                )
-                paternal_grandmother = (
-                    individuals.get(paternal_grandmother_id)
-                    if paternal_grandmother_id
-                    else None
-                )
-                maternal_grandmother = (
-                    individuals.get(maternal_grandmother_id)
-                    if maternal_grandmother_id
-                    else None
-                )
-                maternal_grandfather = (
-                    individuals.get(maternal_grandfather_id)
-                    if maternal_grandfather_id
-                    else None
-                )
+                # Get grandparents by traversing from parents
+                paternal_grandfather = None
+                paternal_grandmother = None
+                maternal_grandfather = None
+                maternal_grandmother = None
+
+                if father:
+                    paternal_grandfather = individuals.get(
+                        getattr(father, "father", None)
+                    )
+                    paternal_grandmother = individuals.get(
+                        getattr(father, "mother", None)
+                    )
+                if mother:
+                    maternal_grandfather = individuals.get(
+                        getattr(mother, "father", None)
+                    )
+                    maternal_grandmother = individuals.get(
+                        getattr(mother, "mother", None)
+                    )
 
                 great_great_grandparents = []
 

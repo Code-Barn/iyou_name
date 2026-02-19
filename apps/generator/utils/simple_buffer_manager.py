@@ -227,73 +227,87 @@ def get_chart_buffer(
     # Generate new buffer
     logger.info(f"Generating fresh buffer for generation {generation}")
 
-    # Dynamic import and generation
+    # Dynamic import and generation - using prototype generators
     try:
         if generation == 1:
-            from apps.generator.utils.image_1generator import generate_1gen_preview
+            from apps.generator.utils.prototype.prototype_image_1generator import (
+                generate_prototype_1gen_preview,
+            )
 
-            generator_func = generate_1gen_preview
+            generator_func = generate_prototype_1gen_preview
         elif generation == 2:
-            from apps.generator.utils.image_2generator import generate_2gen_preview
+            from apps.generator.utils.prototype.prototype_image_2generator import (
+                generate_prototype_2gen_preview,
+            )
 
-            generator_func = generate_2gen_preview
+            generator_func = generate_prototype_2gen_preview
         elif generation == 3:
-            from apps.generator.utils.image_3generator import generate_3gen_preview
+            from apps.generator.utils.prototype.prototype_image_3generator import (
+                generate_prototype_3gen_preview,
+            )
 
-            generator_func = generate_3gen_preview
+            generator_func = generate_prototype_3gen_preview
         elif generation == 4:
-            from apps.generator.utils.image_4generator import generate_4gen_preview
+            from apps.generator.utils.prototype.prototype_image_4generator import (
+                generate_prototype_4gen_preview,
+            )
 
-            generator_func = generate_4gen_preview
+            generator_func = generate_prototype_4gen_preview
         elif generation == 5:
-            from apps.generator.utils.image_5generator import generate_5gen_preview
+            from apps.generator.utils.prototype.prototype_image_5generator import (
+                generate_prototype_5gen_preview,
+            )
 
-            generator_func = generate_5gen_preview
+            generator_func = generate_prototype_5gen_preview
         elif generation == 6:
-            from apps.generator.utils.image_6generator import generate_6gen_preview
+            from apps.generator.utils.prototype.prototype_image_6generator import (
+                generate_prototype_6gen_preview,
+            )
 
-            generator_func = generate_6gen_preview
+            generator_func = generate_prototype_6gen_preview
         elif generation == 7:
-            from apps.generator.utils.image_7generator import generate_7gen_preview
+            from apps.generator.utils.prototype.prototype_image_7generator import (
+                generate_prototype_7gen_preview,
+            )
 
-            generator_func = generate_7gen_preview
+            generator_func = generate_prototype_7gen_preview
         elif generation == 8:
-            from apps.generator.utils.image_high_gen_generator import (
-                generate_high_gen_preview,
+            from apps.generator.utils.prototype.prototype_image_7generator import (
+                generate_prototype_7gen_preview,
             )
 
             generator_func = (
                 lambda primary_individual,
                 family_data,
                 template,
-                user_settings: generate_high_gen_preview(
-                    8, primary_individual, family_data, template, user_settings
+                user_settings: generate_prototype_7gen_preview(
+                    primary_individual, family_data, template, user_settings
                 )
             )
         elif generation == 9:
-            from apps.generator.utils.image_high_gen_generator import (
-                generate_high_gen_preview,
+            from apps.generator.utils.prototype.prototype_image_7generator import (
+                generate_prototype_7gen_preview,
             )
 
             generator_func = (
                 lambda primary_individual,
                 family_data,
                 template,
-                user_settings: generate_high_gen_preview(
-                    9, primary_individual, family_data, template, user_settings
+                user_settings: generate_prototype_7gen_preview(
+                    primary_individual, family_data, template, user_settings
                 )
             )
         elif generation == 10:
-            from apps.generator.utils.image_high_gen_generator import (
-                generate_high_gen_preview,
+            from apps.generator.utils.prototype.prototype_image_7generator import (
+                generate_prototype_7gen_preview,
             )
 
             generator_func = (
                 lambda primary_individual,
                 family_data,
                 template,
-                user_settings: generate_high_gen_preview(
-                    10, primary_individual, family_data, template, user_settings
+                user_settings: generate_prototype_7gen_preview(
+                    primary_individual, family_data, template, user_settings
                 )
             )
         else:

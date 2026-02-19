@@ -158,45 +158,36 @@ def generate_prototype_3gen_preview(
 
                 individuals = family_data.get("individuals", {}) if family_data else {}
 
-                paternal_grandfather_id = getattr(
-                    primary_individual, "paternal_grandfather", None
-                )
-                paternal_grandmother_id = getattr(
-                    primary_individual, "paternal_grandmother", None
-                )
-                maternal_grandmother_id = getattr(
-                    primary_individual, "maternal_grandmother", None
-                )
-                maternal_grandfather_id = getattr(
-                    primary_individual, "maternal_grandfather", None
-                )
+                # Get parents by traversing father/mother relationships
+                father = individuals.get(getattr(primary_individual, "father", None))
+                mother = individuals.get(getattr(primary_individual, "mother", None))
 
-                paternal_grandfather = (
-                    individuals.get(paternal_grandfather_id)
-                    if paternal_grandfather_id
-                    else None
-                )
-                paternal_grandmother = (
-                    individuals.get(paternal_grandmother_id)
-                    if paternal_grandmother_id
-                    else None
-                )
-                maternal_grandmother = (
-                    individuals.get(maternal_grandmother_id)
-                    if maternal_grandmother_id
-                    else None
-                )
-                maternal_grandfather = (
-                    individuals.get(maternal_grandfather_id)
-                    if maternal_grandfather_id
-                    else None
-                )
+                # Get grandparents by traversing from parents
+                paternal_grandfather = None
+                paternal_grandmother = None
+                maternal_grandfather = None
+                maternal_grandmother = None
+
+                if father:
+                    paternal_grandfather = individuals.get(
+                        getattr(father, "father", None)
+                    )
+                    paternal_grandmother = individuals.get(
+                        getattr(father, "mother", None)
+                    )
+                if mother:
+                    maternal_grandfather = individuals.get(
+                        getattr(mother, "father", None)
+                    )
+                    maternal_grandmother = individuals.get(
+                        getattr(mother, "mother", None)
+                    )
 
                 positions = [
                     (paternal_grandfather, 0),
-                    (paternal_grandmother, 90),
-                    (maternal_grandmother, 180),
-                    (maternal_grandfather, 270),
+                    (maternal_grandfather, 180),
+                    (paternal_grandmother, 270),
+                    (maternal_grandmother, 90),
                 ]
 
                 base_params = dict(
