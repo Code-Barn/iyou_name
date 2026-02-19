@@ -586,3 +586,38 @@ else:
 3. Spread out 6gen position coordinates
 4. Test with real GEDCOM data
 5. Apply dark theme to all generator levels (2gen-6gen)
+
+## Session Date: 2026-02-19 (Font Centering Investigation)
+### Issue Investigated
+A and B subclades in 7gen appeared slightly off from mirrored positions. Suspected font centering issue.
+
+### Investigation
+1. Analyzed `get_text_width_px()` function in individual_printer.py
+2. Found it multiplied by `PIXEL_RATIO` (300/72 = 4.167)
+3. Tested with `get_font_metrics()` - raw value was 21.0, multiplied became ~87
+4. Added vertical centering using baseline offset
+
+### Decision
+Reverted changes - original horizontal centering was working correctly. The visual offset was due to:
+- Sunbeam rotation angles causing text to appear at different positions
+- The B/C/D positions weren't being rendered in the test script
+
+### Accomplishments
+1. Created debug_7gen_positions_test.py with all 64 positions (A/B/C/D subclades)
+2. Verified sunbeam rotation logic works correctly
+3. Documented sunbeam rotation in PROTOTYPE_STANDARD.md
+
+### Files Modified
+- debug_7gen_positions_test.py - New test file with all subclades
+- PROTOTYPE_STANDARD.md - Added "Rotation Styles" section documenting sunbeam rotation
+
+## Current Status
+### ✅ Working
+- 3gen through 6gen generators with fixed rotation (subclade-based)
+- 7gen debug visualization with sunbeam rotation
+- Prototype generators integrated into simple_buffer_manager.py
+
+### 📋 Next Steps
+1. Carry sunbeam rotation logic into prototype_image_7generator.py for actual name/date/place rendering
+2. Verify 7gen positions display correctly with real family data
+3. Test full 7gen generation flow

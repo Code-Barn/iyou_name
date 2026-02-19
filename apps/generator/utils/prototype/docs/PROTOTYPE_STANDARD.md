@@ -76,6 +76,57 @@ first_name_base_y=1750
 ```
 Best for: 3gen - simple single-line names that rotate around center
 
+## Rotation Styles
+
+The `print_individual()` function supports two rotation styles:
+
+### Style 1: Fixed Rotation (Subclade-based)
+Use a fixed rotation value for all positions in a subclade:
+```python
+rotation=0        # A subclade - bottom
+rotation=270      # B subclade - right side
+rotation=180      # C subclade - top
+rotation=90       # D subclade - left side
+```
+Best for: 4gen, 5gen - where all positions in a subclade share the same orientation
+
+### Style 2: Sunbeam Rotation (Radial)
+Calculate rotation dynamically based on the angle from center - text points ALONG the ray from center:
+```python
+def get_sunbeam_rotation(x, y):
+    center_x = 975
+    center_y = 975
+    dx = x - center_x
+    dy = y - center_y
+    angle = math.degrees(math.atan2(dy, dx))
+    return int(angle) % 360
+```
+Best for: 7gen (square layout) - positions arranged around a square edge, where text should radiate outward
+
+#### Why Sunbeam Rotation?
+- Square layout positions (like A1111-A2222 along bottom edge) have varying angles
+- Fixed rotation would make text perpendicular to the edge (pointing toward center)
+- Sunbeam rotation makes text point ALONG the ray from center (radiating outward)
+- This ensures text is readable and follows the natural direction of the position
+
+#### Implementation Example:
+```python
+import math
+
+def get_sunbeam_rotation(x, y, center_x=975, center_y=975):
+    """Calculate rotation so text runs ALONG the sunbeam ray (pointing outward from center)."""
+    dx = x - center_x
+    dy = y - center_y
+    angle = math.degrees(math.atan2(dy, dx))
+    rotation = int(angle) % 360
+    return rotation
+
+# For 7gen square layout positions
+for label, x, y in a_positions:  # Bottom edge
+    rot = get_sunbeam_rotation(x, y)
+    positions.append((label, x, y, rot))
+```
+
 ## Paired Dates and Places
 
 For 4gen and 5gen, dates and places should print as pairs centered around a point:
@@ -283,3 +334,11 @@ def test_prototype_ngen():
 - Rotations: A=0, B=270, C=180, D=90
 - All 4 positions in each subclade share same rotation
 - Use multiline names (use_display_text=True) for space efficiency
+
+### 7gen (Square Layout)
+- 64 positions: A1111-A2222, B1111-B2222, C1111-C2222, D1111-D2222 (16 per edge)
+- Square edge layout: A=bottom, B=right, C=top, D=left
+- Uses **sunbeam rotation** - dynamic angle from center
+- 116px spacing between positions
+- Text points ALONG the ray from center (radiating outward)
+- Use single-line names (use_display_text=False) with small font size (8pt)

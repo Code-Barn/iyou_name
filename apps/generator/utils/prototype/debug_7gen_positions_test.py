@@ -1,7 +1,6 @@
 """
 Debug test to verify 7gen position placements.
-Uses the actual print_individual function to show position labels.
-Calculates sunbeam-style rotation based on position angle from center.
+Run via: uv run python manage.py shell < debug_7gen_positions_test.py
 """
 
 import logging
@@ -9,18 +8,8 @@ import math
 import os
 import sys
 
-# Add project root to path
-sys.path.insert(
-    0,
-    os.path.dirname(
-        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    ),
-)
-
-import django
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
-django.setup()
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 from django.conf import settings
 from wand.color import Color
@@ -33,8 +22,6 @@ from apps.generator.utils.prototype.prototype_image_7generator import (
 from apps.generator.utils.prototype.individual_printer import print_individual
 from apps.generator.utils.settings_validator import get_validated_settings
 from apps.generator.utils.simple_buffer_manager import create_preview_buffer
-
-logger = logging.getLogger(__name__)
 
 GENERATION_7_DEBUG_SCHEMA = {
     "font_family": (str, "Arial"),
@@ -86,27 +73,21 @@ def generate_7gen_position_debug():
             draw.stroke_width = 0.5
             draw.stroke_color = Color("black")
 
-            # All 64 positions for 7gen (A1111-A2222 and their B/C/D counterparts)
             positions = []
 
-            # Calculate sunbeam rotation based on position angle from center
             center_x = Generation7Constants.IMAGE_CENTER_X
             center_y = Generation7Constants.IMAGE_CENTER_Y
 
-            def get_sunbeam_rotation(x, y):
-                """Calculate rotation so text runs ALONG the sunbeam ray (pointing outward from center)"""
+            def get_sunbeam_rotation(x, y, inward=False):
+                """Calculate rotation so text runs ALONG the sunbeam ray (pointing outward from center)."""
                 dx = x - center_x
                 dy = y - center_y
                 angle = math.degrees(math.atan2(dy, dx))
-                # Rotation makes text point ALONG the ray away from center
-                # Currently we have angle-90 (perpendicular), change to just angle
-                rotation = int(angle)
-                # Normalize to 0-360
-                rotation = rotation % 360
+                rotation = int(angle) % 360
+                if inward:
+                    rotation = (rotation + 180) % 360
                 return rotation
 
-            # Position labels following father(1)/mother(2) binary pattern
-            # A1111 = father's father's father's father, A1112 = father's father's father's mother, etc.
             a_labels = [
                 "A1111",
                 "A1112",
@@ -180,57 +161,56 @@ def generate_7gen_position_debug():
                 "D2222",
             ]
 
-            # Square edge positions - 116px spacing starting at x=135
             bottom_x = [
-                135,
-                251,
-                367,
-                483,
-                599,
-                715,
-                831,
-                947,
-                1003,
-                1119,
-                1235,
-                1351,
-                1467,
-                1583,
-                1699,
-                1815,
+                125,  # A1111 (-10px)
+                241,  # A1112
+                357,  # A1121
+                473,  # A1122
+                577,  # A1211 (-22px)
+                693,  # A1212 (-22px)
+                809,  # A1221 (-22px)
+                925,  # A1222 (-22px)
+                993,  # A2111 (+20px, adjusted inward)
+                1109,  # A2112 (+20px)
+                1225,  # A2121 (+20px)
+                1341,  # A2122 (+20px)
+                1457,  # A2211 (+10px)
+                1573,  # A2212 (+10px)
+                1689,  # A2221 (+10px)
+                1805,  # A2222 (+10px)
             ]
 
-            # Square positions - 16 per edge
-            # A: bottom edge, left corner (x=135) going inward to center (x=975), then to right corner (x=1815)
-            a_positions = [(a_labels[i], bottom_x[i], 1885) for i in range(16)]
+            a_positions = [(a_labels[i], bottom_x[i], 1875) for i in range(16)]
 
-            # B: right edge, bottom corner (y=1815) going upward to top corner (y=135)
-            # Uses bottom_x for y values reversed so B0 is at corner where A ends
+            # B: right edge, bottom corner going up
             b_y = list(reversed(bottom_x))
-            b_positions = [(b_labels[i], 1885, b_y[i]) for i in range(16)]
+            b_positions = [(b_labels[i], 1875, b_y[i]) for i in range(16)]
 
-            # C: top edge, right corner (x=1815) going leftward to left corner (x=135)
+            # C: top edge, right corner going left
             c_x = list(reversed(bottom_x))
-            c_positions = [(c_labels[i], c_x[i], 65) for i in range(16)]
+            c_positions = [(c_labels[i], c_x[i], 55) for i in range(16)]
 
-            # D: left edge, top corner (y=135) going downward to bottom corner (y=1815)
-            d_positions = [(d_labels[i], 65, bottom_x[i]) for i in range(16)]
+            # D: left edge, top corner going down
+            d_positions = [(d_labels[i], 55, bottom_x[i]) for i in range(16)]
 
-            # All subclades with sunbeam rotation
+            # A = inward (pointing toward center)
             for label, x, y in a_positions:
-                rot = get_sunbeam_rotation(x, y)
+                rot = get_sunbeam_rotation(x, y, inward=True)
                 positions.append((label, x, y, rot))
 
+            # B = inward
             for label, x, y in b_positions:
-                rot = get_sunbeam_rotation(x, y)
+                rot = get_sunbeam_rotation(x, y, inward=True)
                 positions.append((label, x, y, rot))
 
+            # C = inward
             for label, x, y in c_positions:
-                rot = get_sunbeam_rotation(x, y)
+                rot = get_sunbeam_rotation(x, y, inward=True)
                 positions.append((label, x, y, rot))
 
+            # D = inward
             for label, x, y in d_positions:
-                rot = get_sunbeam_rotation(x, y)
+                rot = get_sunbeam_rotation(x, y, inward=True)
                 positions.append((label, x, y, rot))
 
             base_params = dict(
@@ -285,9 +265,10 @@ def generate_7gen_position_debug():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-
     result = generate_7gen_position_debug()
-    with open("debug_7gen_positions.png", "wb") as f:
+    output_path = os.path.join(
+        os.path.dirname(__file__), "..", "..", "..", "..", "debug_7gen_positions.png"
+    )
+    with open(output_path, "wb") as f:
         f.write(result.getvalue())
-    print("Saved to debug_7gen_positions.png")
+    print(f"Saved to {output_path}")

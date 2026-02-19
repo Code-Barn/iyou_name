@@ -9,6 +9,7 @@ approach as the 1-6gen generators, with:
 """
 
 import logging
+import math
 import os
 
 from django.conf import settings
@@ -288,26 +289,44 @@ def generate_prototype_7gen_preview(
                 )
 
                 # Base parameters for great-great-great-great-grandparents
+                # Using sunbeam rotation - text points inward toward center
                 base_params = dict(
                     center_x=Generation7Constants.IMAGE_CENTER_X,
                     center_y=Generation7Constants.IMAGE_CENTER_Y,
-                    name_font_size=8,
-                    date_font_size=6,
-                    place_font_size=5,
+                    name_font_size=7,
+                    date_font_size=5,
+                    place_font_size=4,
                     birth_date_offset_x=0,
                     birth_date_offset_y=0,
                     birth_date_rotation=0,
-                    birth_date_paired_offset_x=-30,
-                    death_date_paired_offset_x=30,
+                    birth_date_paired_offset_x=-25,
+                    death_date_paired_offset_x=25,
                     paired_dates_base_y=1860,
                     paired_places_base_y=1920,
-                    birth_place_paired_offset_x=-30,
-                    death_place_paired_offset_x=30,
-                    use_display_text=True,
+                    birth_place_paired_offset_x=-25,
+                    death_place_paired_offset_x=25,
+                    use_display_text=True,  # Multiline for full names
                     use_gravity_center=False,
-                    multiline_line_spacing=1.2,
+                    multiline_line_spacing=1.5,
                     multiline_alignment="center",
                 )
+
+                # Sunbeam rotation helper - text points INWARD toward center
+                def get_sunbeam_rotation(
+                    x,
+                    y,
+                    center_x=Generation7Constants.IMAGE_CENTER_X,
+                    center_y=Generation7Constants.IMAGE_CENTER_Y,
+                    inward=True,
+                ):
+                    """Calculate rotation so text points toward center (inward) or away (outward)."""
+                    dx = x - center_x
+                    dy = y - center_y
+                    angle = math.degrees(math.atan2(dy, dx))
+                    rotation = int(angle) % 360
+                    if inward:
+                        rotation = (rotation + 180) % 360
+                    return rotation
 
                 # Build family relationships
                 individuals = family_data.get("individuals", {}) if family_data else {}
@@ -334,208 +353,181 @@ def generate_prototype_7gen_preview(
                     individuals.get(getattr(mother, "mother", None)) if mother else None
                 )
 
-                # Get great-grandparents (gen 3) - for traversal
-                def get_parents(person):
-                    if not person:
-                        return None, None
-                    return getattr(person, "father", None), getattr(
-                        person, "mother", None
-                    )
-
-                # Build gen 3 (great-grandparents) dict for traversal
-                gg_parents = {}
-                for gp in [
-                    paternal_grandfather,
-                    paternal_grandmother,
-                    maternal_grandfather,
-                    maternal_grandmother,
-                ]:
-                    if gp:
-                        fid, mid = get_parents(gp)
-                        gg_parents[gp.id] = (
-                            individuals.get(fid) if fid else None,
-                            individuals.get(mid) if mid else None,
-                        )
-
-                # Build gen 4 (great-great-grandparents) dict
-                ggg_parents = {}
-                for gp_id, (p1, p2) in gg_parents.items():
-                    for p in [p1, p2]:
-                        if p:
-                            fid, mid = get_parents(p)
-                            ggg_parents[p.id] = (
-                                individuals.get(fid) if fid else None,
-                                individuals.get(mid) if mid else None,
-                            )
-
-                # Build gen 5 (great-great-great-grandparents) dict
-                gggg_parents = {}
-                for gp_id, (p1, p2) in ggg_parents.items():
-                    for p in [p1, p2]:
-                        if p:
-                            fid, mid = get_parents(p)
-                            gggg_parents[p.id] = (
-                                individuals.get(fid) if fid else None,
-                                individuals.get(mid) if mid else None,
-                            )
-
-                # Build gen 6 (great-great-great-great-grandparents) - these are what we print in 7gen
-                great_great_great_grandparents = []
-
-                # Get great-great-great-grandparents and their parents (great-great-great-great-grandparents)
-                for gp_id, (g3p1, g3p2) in gggg_parents.items():
-                    for parent in [g3p1, g3p2]:
-                        if parent:
-                            fid, mid = get_parents(parent)
-                            child1 = individuals.get(fid) if fid else None
-                            child2 = individuals.get(mid) if mid else None
-
-                            # Determine position based on ancestor path
-                            # This is complex - we'd need to track the full path
-                            # For now, let's just add them to the list
-                            if child1:
-                                great_great_great_grandparents.append(
-                                    (child1, 0, 0, 0, 0, 0, 0, 0)
-                                )
-                            if child2:
-                                great_great_great_grandparents.append(
-                                    (child2, 0, 0, 0, 0, 0, 0, 0)
-                                )
-
                 # =========================================================================
-                # Build great-great-great-great-grandparents (7gen) by traversing 6 levels up
+                # Build great-great-great-great-grandparents (7gen) - proper lineage traversal
                 # =========================================================================
                 great_great_great_grandparents = []
 
-                def get_ancestors_at_level(person, target_level, current_level=0):
-                    """Recursively get ancestors at a specific level"""
-                    if current_level >= target_level or not person:
-                        return [person] if current_level == target_level else []
+                def get_ancestor_by_path(start_person, path_digits):
+                    """
+                    Get ancestor at a specific position based on a 4-digit path.
+                    path_digits: string like "1111", "1112", etc.
+                    - Each digit: 1 = father's line, 2 = mother's line
+                    - For paternal grandfather's line: start at paternal_grandfather
+                    - Example "1111" = father's father's father's father
+                    """
+                    if not start_person:
+                        return None
 
-                    father = individuals.get(getattr(person, "father", None))
-                    mother = individuals.get(getattr(person, "mother", None))
+                    current = start_person
+                    for digit in path_digits:
+                        if not current:
+                            return None
+                        if digit == "1":
+                            next_id = getattr(current, "father", None)
+                        else:  # digit == "2"
+                            next_id = getattr(current, "mother", None)
 
-                    father_ancestors = (
-                        get_ancestors_at_level(father, target_level, current_level + 1)
-                        if father
-                        else []
-                    )
-                    mother_ancestors = (
-                        get_ancestors_at_level(mother, target_level, current_level + 1)
-                        if mother
-                        else []
-                    )
+                        if next_id:
+                            current = individuals.get(next_id)
+                        else:
+                            return None
 
-                    return father_ancestors + mother_ancestors
+                    return current
 
-                # Get gen 6 ancestors (great-great-great-great-grandparents) - 6 levels up from primary
-                # Primary (0) -> parents (1) -> grandparents (2) -> great-grandparents (3) ->
-                # great-great-grandparents (4) -> great-great-great-grandparents (5) -> great-great-great-great-grandparents (6)
+                # Position codes for each subclade (4 digits representing father=1/mother=2 path)
+                # A subclade: paternal_grandfather's line
+                # B subclade: paternal_grandmother's line
+                # C subclade: maternal_grandfather's line
+                # D subclade: maternal_grandmother's line
+                position_codes = [
+                    "1111",
+                    "1112",
+                    "1121",
+                    "1122",  # First 4 (father's father line)
+                    "1211",
+                    "1212",
+                    "1221",
+                    "1222",  # Next 4 (father's mother line)
+                    "2111",
+                    "2112",
+                    "2121",
+                    "2122",  # Next 4 (mother's father line)
+                    "2211",
+                    "2212",
+                    "2221",
+                    "2222",  # Last 4 (mother's mother line)
+                ]
 
-                # Get ancestors for each of the 4 grandparents' lines
-                # Paternal grandfather's line (A subclade)
+                # Build positions for each subclade
+                # B: right edge (x=1885)
+                # C: top edge (y=65-10=55)
+                # D: left edge (x=65)
+
+                # A positions: bottom edge (y=1885-10=1875)
+                # A1111 moved 10px left, A1 positions keep 116px gap
+                # A2 positions adjusted inward
+                a_x_positions = [
+                    128,  # A1111 (+3px)
+                    241,  # A1112
+                    357,  # A1121
+                    470,  # A1122 (-3px)
+                    577,  # A1211
+                    693,  # A1212
+                    809,  # A1221
+                    915,  # A1222 (-10px)
+                    1008,  # A2111 (+15px)
+                    1124,  # A2112 (new)
+                    1235,  # A2121 (+10px)
+                    1349,  # A2122 (+8px)
+                    1465,  # A2211 (+8px)
+                    1581,  # A2212 (+8px)
+                    1686,  # A2221 (-3px)
+                    1801,  # A2222 (-4px)
+                ]
+                b_y_positions = list(
+                    reversed(a_x_positions)
+                )  # Bottom to top on right edge
+                c_x_positions = list(
+                    reversed(a_x_positions)
+                )  # Right to left on top edge
+                d_y_positions = a_x_positions.copy()  # Top to bottom on left edge
+
+                a_positions = [
+                    (a_x_positions[i], 1875) for i in range(16)
+                ]  # Bottom (y-10)
+                b_positions = [(1885, b_y_positions[i]) for i in range(16)]  # Right
+                c_positions = [(c_x_positions[i], 55) for i in range(16)]  # Top (y-10)
+                d_positions = [(65, d_y_positions[i]) for i in range(16)]  # Left
+
+                # Paternal grandfather's line (A subclade - bottom)
+                # Each position has a specific father/mother path
                 if paternal_grandfather:
-                    pgf_line = get_ancestors_at_level(
-                        paternal_grandfather, 5
-                    )  # 5 more levels from grandparent = gen 6
-                    for i, ancestor in enumerate(pgf_line):
-                        if ancestor and i < 16:  # Max 16 per subclade
-                            pos_idx = i if i < 8 else i - 8
-                            pos_x = (
-                                [205, 310, 415, 520, 625, 730, 835, 940][pos_idx]
-                                if i < 8
-                                else [1010, 1115, 1220, 1325, 1430, 1535, 1640, 1745][
-                                    pos_idx
-                                ]
-                            )
+                    for i, path_code in enumerate(position_codes):
+                        ancestor = get_ancestor_by_path(paternal_grandfather, path_code)
+                        if ancestor:  # Only add if we have data for this ancestor
+                            pos_x, pos_y = a_positions[i]
+                            rot = get_sunbeam_rotation(pos_x, pos_y)
                             great_great_great_grandparents.append(
                                 (
                                     ancestor,
                                     pos_x,
-                                    1885,
-                                    pos_x + 40,
-                                    1835,
-                                    pos_x - 40,
-                                    1969,
-                                    0,
+                                    pos_y,
+                                    pos_x + 25,
+                                    1825,
+                                    pos_x - 25,
+                                    1910,
+                                    rot,
                                 )
                             )
 
-                # Paternal grandmother's line (B subclade - rotation 270)
+                # Paternal grandmother's line (B subclade - right)
                 if paternal_grandmother:
-                    pgm_line = get_ancestors_at_level(paternal_grandmother, 5)
-                    for i, ancestor in enumerate(pgm_line):
-                        if ancestor and i < 16:
-                            pos_idx = i if i < 8 else i - 8
-                            pos_x = (
-                                [205, 310, 415, 520, 625, 730, 835, 940][pos_idx]
-                                if i < 8
-                                else [1010, 1115, 1220, 1325, 1430, 1535, 1640, 1745][
-                                    pos_idx
-                                ]
-                            )
+                    for i, path_code in enumerate(position_codes):
+                        ancestor = get_ancestor_by_path(paternal_grandmother, path_code)
+                        if ancestor:
+                            pos_x, pos_y = b_positions[i]
+                            rot = get_sunbeam_rotation(pos_x, pos_y)
                             great_great_great_grandparents.append(
                                 (
                                     ancestor,
                                     pos_x,
-                                    1885,
-                                    pos_x + 40,
-                                    1835,
-                                    pos_x - 40,
-                                    1969,
-                                    270,
+                                    pos_y,
+                                    pos_x + 25,
+                                    1825,
+                                    pos_x - 25,
+                                    1910,
+                                    rot,
                                 )
                             )
 
-                # Maternal grandfather's line (C subclade - rotation 180)
+                # Maternal grandfather's line (C subclade - top)
                 if maternal_grandfather:
-                    mgf_line = get_ancestors_at_level(maternal_grandfather, 5)
-                    for i, ancestor in enumerate(mgf_line):
-                        if ancestor and i < 16:
-                            pos_idx = i if i < 8 else i - 8
-                            pos_x = (
-                                [205, 310, 415, 520, 625, 730, 835, 940][pos_idx]
-                                if i < 8
-                                else [1010, 1115, 1220, 1325, 1430, 1535, 1640, 1745][
-                                    pos_idx
-                                ]
-                            )
+                    for i, path_code in enumerate(position_codes):
+                        ancestor = get_ancestor_by_path(maternal_grandfather, path_code)
+                        if ancestor:
+                            pos_x, pos_y = c_positions[i]
+                            rot = get_sunbeam_rotation(pos_x, pos_y)
                             great_great_great_grandparents.append(
                                 (
                                     ancestor,
                                     pos_x,
-                                    1885,
-                                    pos_x + 40,
-                                    1835,
-                                    pos_x - 40,
-                                    1969,
-                                    180,
+                                    pos_y,
+                                    pos_x + 25,
+                                    1825,
+                                    pos_x - 25,
+                                    1910,
+                                    rot,
                                 )
                             )
 
-                # Maternal grandmother's line (D subclade - rotation 90)
+                # Maternal grandmother's line (D subclade - left)
                 if maternal_grandmother:
-                    mgm_line = get_ancestors_at_level(maternal_grandmother, 5)
-                    for i, ancestor in enumerate(mgm_line):
-                        if ancestor and i < 16:
-                            pos_idx = i if i < 8 else i - 8
-                            pos_x = (
-                                [205, 310, 415, 520, 625, 730, 835, 940][pos_idx]
-                                if i < 8
-                                else [1010, 1115, 1220, 1325, 1430, 1535, 1640, 1745][
-                                    pos_idx
-                                ]
-                            )
+                    for i, path_code in enumerate(position_codes):
+                        ancestor = get_ancestor_by_path(maternal_grandmother, path_code)
+                        if ancestor:
+                            pos_x, pos_y = d_positions[i]
+                            rot = get_sunbeam_rotation(pos_x, pos_y)
                             great_great_great_grandparents.append(
                                 (
                                     ancestor,
                                     pos_x,
-                                    1885,
-                                    pos_x + 40,
-                                    1835,
-                                    pos_x - 40,
-                                    1969,
-                                    90,
+                                    pos_y,
+                                    pos_x + 25,
+                                    1825,
+                                    pos_x - 25,
+                                    1910,
+                                    rot,
                                 )
                             )
 
