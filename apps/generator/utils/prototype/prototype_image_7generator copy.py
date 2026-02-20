@@ -301,12 +301,12 @@ def generate_prototype_7gen_preview(
                     place_font_size=4,
                     birth_date_offset_x=0,
                     birth_date_offset_y=0,
-                    birth_date_paired_offset_x=-20,
-                    death_date_paired_offset_x=20,
+                    birth_date_paired_offset_x=-25,
+                    death_date_paired_offset_x=25,
                     paired_dates_base_y=1860,
                     paired_places_base_y=1920,
-                    birth_place_paired_offset_x=-20,
-                    death_place_paired_offset_x=20,
+                    birth_place_paired_offset_x=-25,
+                    death_place_paired_offset_x=25,
                     use_display_text=True,  # Multiline for full names
                     use_gravity_center=False,
                     multiline_line_spacing=0.8,
@@ -441,101 +441,99 @@ def generate_prototype_7gen_preview(
                 # Use ONLY A positions - sunbeam rotation applied, print_individual handles quadrant rotation
                 a_positions = [(a_x_positions[i], 1828) for i in range(16)]
 
-                # Build master position coordinates from A subclade (position only, no ancestor yet)
-                # Each tuple: (name_x, name_y, birth_date_x, birth_date_y, birth_place_x, birth_place_y, text_rotation)
-                master_positions = []
-                for i in range(16):
-                    pos_x, pos_y = a_positions[i]
-                    text_rot = get_sunbeam_rotation(pos_x, pos_y)
-                    master_positions.append(
-                        (
-                            pos_x,
-                            pos_y,
-                            pos_x + 25,
-                            1825,
-                            pos_x - 25,
-                            1850,
-                            text_rot,
-                        )
-                    )
-
-                # A subclade (rotation 0) - uses paternal_grandfather lineage
+                # Paternal grandfather's line (A subclade) - rotation 0
                 if paternal_grandfather:
                     for i, path_code in enumerate(position_codes):
                         ancestor = get_ancestor_by_path(paternal_grandfather, path_code)
                         if ancestor:
-                            pos = master_positions[i]
+                            pos_x, pos_y = a_positions[i]
+                            rot = 0  # Fixed rotation for position quadrant
+                            text_rot = get_sunbeam_rotation(
+                                pos_x, pos_y
+                            )  # Sunbeam for text angle
                             great_great_great_grandparents.append(
                                 (
                                     ancestor,
-                                    pos[0],
-                                    pos[1],  # name_x, name_y
-                                    pos[2],
-                                    pos[3],  # birth_date_x, birth_date_y
-                                    pos[4],
-                                    pos[5],  # birth_place_x, birth_place_y
-                                    0,  # A subclade rotation
-                                    pos[6],  # text_rotation
+                                    pos_x,
+                                    pos_y,
+                                    pos_x + 25,
+                                    1825,
+                                    pos_x - 25,
+                                    1910,
+                                    rot,
+                                    text_rot,
                                 )
                             )
 
-                # B subclade (rotation 270) - uses paternal_grandmother lineage, reuses A positions
+                # Paternal grandmother's line (B subclade) - rotation 270
                 if paternal_grandmother:
                     for i, path_code in enumerate(position_codes):
                         ancestor = get_ancestor_by_path(paternal_grandmother, path_code)
                         if ancestor:
-                            pos = master_positions[i]
+                            pos_x, pos_y = a_positions[i]
+                            rot = 270  # Fixed rotation for position quadrant
+                            text_rot = get_sunbeam_rotation(
+                                pos_x, pos_y
+                            )  # Sunbeam for text angle
                             great_great_great_grandparents.append(
                                 (
                                     ancestor,
-                                    pos[0],
-                                    pos[1],
-                                    pos[2],
-                                    pos[3],
-                                    pos[4],
-                                    pos[5],
-                                    270,  # B subclade rotation
-                                    pos[6],
+                                    pos_x,
+                                    pos_y,
+                                    pos_x + 25,
+                                    1825,
+                                    pos_x - 25,
+                                    1850,
+                                    rot,
+                                    text_rot,
                                 )
                             )
 
-                # C subclade (rotation 180) - uses maternal_grandfather lineage, reuses A positions
+                # Maternal grandfather's line (C subclade) - rotation 180
                 if maternal_grandfather:
                     for i, path_code in enumerate(position_codes):
                         ancestor = get_ancestor_by_path(maternal_grandfather, path_code)
                         if ancestor:
-                            pos = master_positions[i]
+                            pos_x, pos_y = a_positions[i]
+                            rot = 180  # Fixed rotation for position quadrant
+                            text_rot = get_sunbeam_rotation(
+                                pos_x, pos_y
+                            )  # Sunbeam for text angle
                             great_great_great_grandparents.append(
                                 (
                                     ancestor,
-                                    pos[0],
-                                    pos[1],
-                                    pos[2],
-                                    pos[3],
-                                    pos[4],
-                                    pos[5],
-                                    180,  # C subclade rotation
-                                    pos[6],
+                                    pos_x,
+                                    pos_y,
+                                    pos_x + 25,
+                                    1825,
+                                    pos_x - 25,
+                                    1850,
+                                    rot,
+                                    text_rot,
                                 )
                             )
 
-                # D subclade (rotation 90) - uses maternal_grandmother lineage, reuses A positions
+                # Maternal grandmother's line (D subclade) - rotation 90
                 if maternal_grandmother:
                     for i, path_code in enumerate(position_codes):
                         ancestor = get_ancestor_by_path(maternal_grandmother, path_code)
                         if ancestor:
-                            pos = master_positions[i]
+                            pos_x, pos_y = a_positions[i]
+                            rot = 90  # Fixed rotation for position quadrant
+                            text_rot = get_sunbeam_rotation(
+                                pos_x, pos_y
+                            )  # Sunbeam for text angle
                             great_great_great_grandparents.append(
                                 (
                                     ancestor,
-                                    pos[0],
-                                    pos[1],
-                                    pos[2],
-                                    pos[3],
-                                    pos[4],
-                                    pos[5],
-                                    90,  # D subclade rotation
-                                    pos[6],
+                                    pos_x,
+                                    pos_y,
+                                    pos_x + 25,
+                                    1825,
+                                    pos_x - 25,
+                                    1850,
+                                    rot,
+                                    text_rot,
                                 )
                             )
 
@@ -563,9 +561,13 @@ def generate_prototype_7gen_preview(
                             first_name_rotation=sunbeam_rotation,
                             birth_date_base_x=birth_date_center_x,
                             birth_date_base_y=birth_date_center_y,
+                            birth_date_paired_offset_x=-20,
+                            death_date_paired_offset_x=20,
                             birth_date_rotation=sunbeam_rotation,
                             birth_place_base_x=birth_place_center_x,
                             birth_place_base_y=birth_place_center_y,
+                            birth_place_paired_offset_x=-20,
+                            death_place_paired_offset_x=20,
                             birth_place_rotation=sunbeam_rotation,
                             death_date_base_x=birth_date_center_x,
                             death_date_base_y=birth_date_center_y,

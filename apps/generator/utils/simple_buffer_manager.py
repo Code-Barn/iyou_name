@@ -46,21 +46,40 @@ def create_image_buffer(
         if quality is not None and format_name.upper() in ["JPEG", "JPG"]:
             image.compression_quality = quality
 
+        # Debug: Log image properties before saving
+        logger.debug(
+            f"[BufferDebug] Image dimensions: {image.width}x{image.height}, "
+            f"format: {image.format}, saving as: {format_name}"
+        )
+
         # Save image to buffer
         image.save(file=buffer)
 
+        # Get buffer size before seeking
+        buffer_size = buffer.tell()
+        logger.debug(f"[BufferDebug] Buffer tell() after save: {buffer_size} bytes")
+
         # Validate buffer has content
-        if buffer.tell() == 0:
+        if buffer_size == 0:
+            logger.error(
+                f"[BufferDebug] Created buffer is EMPTY (0 bytes) for format: {format_name}. "
+                f"Image: {image.width}x{image.height}, format={image.format}"
+            )
             raise BufferError(f"Created buffer is empty for format: {format_name}")
 
         # Reset position for reading
         buffer.seek(0)
 
-        logger.debug(f"Created {format_name} buffer: {buffer.tell()} bytes")
+        logger.debug(f"Created {format_name} buffer: {buffer_size} bytes")
         return buffer
 
+    except BufferError:
+        raise
     except Exception as e:
-        logger.error(f"Failed to create {format_name} buffer: {e}")
+        logger.error(
+            f"[BufferDebug] Failed to create {format_name} buffer: {e}. "
+            f"Image dimensions: {image.width if hasattr(image, 'width') else 'N/A'}"
+        )
         raise BufferError(f"Buffer creation failed: {e}")
 
 
@@ -138,14 +157,18 @@ class SimpleBufferManager:
 
             # Create a fresh copy to avoid closed file issues
             buffer.seek(0)
+            buffer_size = buffer.tell()
+            buffer.seek(0)
             fresh_buffer = BytesIO(buffer.read())
 
             self.cache_hits += 1
-            logger.debug(f"Cache hit for generation {generation}")
+            logger.debug(
+                f"[BufferDebug] Cache HIT for generation {generation}: {buffer_size} bytes"
+            )
             return fresh_buffer
         else:
             self.cache_misses += 1
-            logger.debug(f"Cache miss for generation {generation}")
+            logger.debug(f"[BufferDebug] Cache MISS for generation {generation}")
             return None
 
     def store_buffer(
@@ -162,10 +185,15 @@ class SimpleBufferManager:
 
         # Store buffer (create a copy to avoid external closure issues)
         buffer.seek(0)
+        buffer_size = buffer.tell()
+        buffer.seek(0)
         buffer_copy = BytesIO(buffer.read())
         self.buffers[buffer_key] = buffer_copy
 
-        logger.debug(f"Stored buffer for generation {generation}")
+        logger.debug(
+            f"[BufferDebug] Stored buffer for generation {generation}: {buffer_size} bytes, "
+            f"individual_id={individual_id}"
+        )
 
     def invalidate_all(self):
         """Invalidate all cached buffers."""

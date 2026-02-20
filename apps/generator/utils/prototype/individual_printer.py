@@ -8,6 +8,7 @@ Used by image_1generator through image_7generator scripts.
 """
 
 import logging
+import math
 
 from wand.color import Color
 
@@ -28,11 +29,32 @@ def get_text_width_px(draw, content_img, text):
 
 
 def get_text_height_px(draw, content_img, text):
-    """Get text height in pixels (approximate using font size)."""
+    """Get text height in pixels using font metrics for accurate centering."""
     if not text:
         return 0
-    # Height is approximately font_size
-    return draw.font_size * PIXEL_RATIO
+    metrics = draw.get_font_metrics(content_img, text, False)
+    return metrics.text_height * PIXEL_RATIO
+
+
+def get_text_bounding_box(draw, content_img, text):
+    """
+    Get the actual text bounding box dimensions using font metrics.
+    Returns (width, height) in pixels.
+    """
+    if not text:
+        return (0, 0)
+    metrics = draw.get_font_metrics(content_img, text, True)
+    width = (
+        (metrics.x1 - metrics.x0) * PIXEL_RATIO
+        if hasattr(metrics, "x1")
+        else metrics.text_width * PIXEL_RATIO
+    )
+    height = (
+        (metrics.y1 - metrics.y0) * PIXEL_RATIO
+        if hasattr(metrics, "y1")
+        else metrics.text_height * PIXEL_RATIO
+    )
+    return (width, height)
 
 
 def print_individual(
@@ -221,20 +243,30 @@ def print_individual(
             offset_y = first_name_offset_y
             rot = rotation + first_name_rotation
 
-        # Multiline centering: calculate total height and offset
+        # Multiline centering: use actual font metrics for vertical centering only
+        # (horizontal centering is handled by text_alignment="center" when drawing)
         lines = display_text.split("\n")
-        line_height = name_font_size * multiline_line_spacing
-        total_height = len(lines) * line_height
-        centering_offset = -total_height // 2 + line_height // 2
 
-        # For sunbeam/sunbeam-like rotations (non-quadrantal), calculate baseline offset
-        # This accounts for the vertical shift when text is rotated at angles like 15°, 45°, etc.
-        baseline_offset = 0
-        if rotation not in (0, 90, 180, 270):
-            import math
+        if lines:
+            # Use font metrics for line height (includes ascenders and descenders)
+            line_height = name_font_size * PIXEL_RATIO * multiline_line_spacing
+            # Calculate vertical centering offset based on FIXED 3-line reference
+            # This ensures all positions align consistently regardless of actual line count
+            # (most names have 1-3 lines, we use 3 as the reference for symmetry)
+            total_height_reference = 3 * line_height
+            centering_offset = total_height_reference // 2
 
-            angle_rad = math.radians(rotation)
-            baseline_offset = int(name_font_size * 0.25 * math.sin(angle_rad))
+            # For 2-line names, add offset to push them down to match 3-line center
+            # (difference between 3-line center and 2-line center = 0.5 * line_height)
+            if len(lines) == 2:
+                centering_offset += line_height // 2
+            # For 1-line names, add more offset to push them down to match 3-line center
+            # (difference between 3-line center and 1-line center = 1.0 * line_height)
+            elif len(lines) == 1:
+                centering_offset += line_height
+        else:
+            centering_offset = 0
+            line_height = name_font_size * PIXEL_RATIO
 
         # Apply centering offset AFTER rotation - translation is in rotated coordinate space
         # In rotated space: for 90°, rotated x points in original -y, rotated y points in original x
@@ -253,17 +285,17 @@ def print_individual(
             final_x = final_base_x + offset_x + centering_offset
             final_y = final_base_y + offset_y
         else:
-            # Non-quadrantal rotation (sunbeam-style) - apply baseline offset
+            # No rotation - normal vertical centering on base position
             final_x = final_base_x + offset_x
-            final_y = final_base_y + offset_y + centering_offset + baseline_offset
+            final_y = final_base_y + offset_y + centering_offset
 
         draw.translate(final_x, final_y)
         draw.rotate(rot)
 
-        # Draw each line centered - use centering_offset for consistent line positioning
-        draw.text_alignment = multiline_alignment
+        # Draw each line centered horizontally
+        draw.text_alignment = "center"
         for i, line in enumerate(lines):
-            line_y = i * line_height - centering_offset
+            line_y = i * line_height
             draw.push()
             draw.translate(0, line_y)
             draw.text(0, 0, line)
