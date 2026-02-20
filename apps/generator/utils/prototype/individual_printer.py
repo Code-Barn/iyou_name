@@ -227,6 +227,15 @@ def print_individual(
         total_height = len(lines) * line_height
         centering_offset = -total_height // 2 + line_height // 2
 
+        # For sunbeam/sunbeam-like rotations (non-quadrantal), calculate baseline offset
+        # This accounts for the vertical shift when text is rotated at angles like 15°, 45°, etc.
+        baseline_offset = 0
+        if rotation not in (0, 90, 180, 270):
+            import math
+
+            angle_rad = math.radians(rotation)
+            baseline_offset = int(name_font_size * 0.25 * math.sin(angle_rad))
+
         # Apply centering offset AFTER rotation - translation is in rotated coordinate space
         # In rotated space: for 90°, rotated x points in original -y, rotated y points in original x
         # To center vertically in original space, we need to offset appropriately
@@ -244,9 +253,9 @@ def print_individual(
             final_x = final_base_x + offset_x + centering_offset
             final_y = final_base_y + offset_y
         else:
-            # No rotation - normal vertical centering
+            # Non-quadrantal rotation (sunbeam-style) - apply baseline offset
             final_x = final_base_x + offset_x
-            final_y = final_base_y + offset_y + centering_offset
+            final_y = final_base_y + offset_y + centering_offset + baseline_offset
 
         draw.translate(final_x, final_y)
         draw.rotate(rot)

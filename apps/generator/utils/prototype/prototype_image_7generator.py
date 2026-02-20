@@ -293,7 +293,7 @@ def generate_prototype_7gen_preview(
                 base_params = dict(
                     center_x=Generation7Constants.IMAGE_CENTER_X,
                     center_y=Generation7Constants.IMAGE_CENTER_Y,
-                    name_font_size=7,
+                    name_font_size=6.5,
                     date_font_size=5,
                     place_font_size=4,
                     birth_date_offset_x=0,
@@ -306,7 +306,7 @@ def generate_prototype_7gen_preview(
                     death_place_paired_offset_x=25,
                     use_display_text=True,  # Multiline for full names
                     use_gravity_center=False,
-                    multiline_line_spacing=1.5,
+                    multiline_line_spacing=3.5,
                     multiline_alignment="center",
                 )
 
@@ -424,15 +424,15 @@ def generate_prototype_7gen_preview(
                     577,  # A1211
                     693,  # A1212
                     809,  # A1221
-                    915,  # A1222 (-10px)
+                    900,  # A1222 (-10px)
                     1008,  # A2111 (+15px)
                     1124,  # A2112 (new)
                     1235,  # A2121 (+10px)
                     1349,  # A2122 (+8px)
                     1465,  # A2211 (+8px)
                     1581,  # A2212 (+8px)
-                    1686,  # A2221 (-3px)
-                    1801,  # A2222 (-4px)
+                    1643,  # A2221 (-3px)
+                    1752,  # A2222 (-29px, moved in 25px from 1801)
                 ]
 
                 # Use ONLY A positions - sunbeam rotation applied, print_individual handles quadrant rotation
