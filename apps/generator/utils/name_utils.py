@@ -6,6 +6,7 @@ across all generation-specific image generators.
 """
 
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +57,60 @@ def parse_name_parts(full_name):
     return first_name, middle_name, last_name
 
 
+def parse_name_parts_with_settings(full_name, settings=None):
+    """
+    Parse a full name into first, middle, and last name parts with settings.
+
+    Args:
+        full_name: Full name string to parse
+        settings: Dictionary with settings:
+            - name_use_first_middle_only: bool - use only first middle name
+            - name_hide_hyphenated_surname: bool - hide hyphenated surnames
+
+    Returns:
+        tuple: (first_name, middle_name, last_name)
+
+    Examples:
+        parse_name_parts_with_settings("John Michael Smith", {}) -> ("John", "Michael", "Smith")
+        parse_name_parts_with_settings("John Michael Robert Smith", {"name_use_first_middle_only": True}) -> ("John", "Michael", "Smith")
+        parse_name_parts_with_settings("John Smith-Jones", {"name_hide_hyphenated_surname": True}) -> ("John", "", "")
+    """
+    settings = settings or {}
+    use_first_middle_only = settings.get("name_use_first_middle_only", False)
+    hide_hyphenated = settings.get("name_hide_hyphenated_surname", False)
+
+    name_parts = full_name.split()
+
+    if len(name_parts) == 0:
+        first_name = ""
+        middle_name = ""
+        last_name = ""
+    elif len(name_parts) == 1:
+        first_name = name_parts[0]
+        middle_name = ""
+        last_name = ""
+    elif len(name_parts) == 2:
+        first_name = name_parts[0]
+        middle_name = ""
+        last_name = name_parts[1]
+    else:
+        first_name = name_parts[0]
+        if use_first_middle_only:
+            middle_name = name_parts[1]
+        else:
+            middle_name = " ".join(name_parts[1:-1])
+        last_name = name_parts[-1]
+
+    # Handle hyphenated surname
+    if hide_hyphenated and last_name and "-" in last_name:
+        last_name = ""
+
+    logger.debug(
+        f"Parsed name '{full_name}' with settings -> first:'{first_name}', middle:'{middle_name}', last:'{last_name}'"
+    )
+    return first_name, middle_name, last_name
+
+
 def format_name_multiline(first_name, middle_name, last_name):
     """
     Format name parts as a multiline string, only including non-empty parts.
@@ -95,6 +150,37 @@ def get_name_display_info(full_name):
         }
     """
     first_name, middle_name, last_name = parse_name_parts(full_name)
+    display_text = format_name_multiline(first_name, middle_name, last_name)
+
+    return {
+        "first_name": first_name,
+        "middle_name": middle_name,
+        "last_name": last_name,
+        "display_text": display_text,
+    }
+
+
+def get_name_display_info_with_settings(full_name, settings=None):
+    """
+    Get complete name display information with settings applied.
+
+    Args:
+        full_name: Full name string to parse and format
+        settings: Dictionary with settings:
+            - name_use_first_middle_only: bool
+            - name_hide_hyphenated_surname: bool
+
+    Returns:
+        dict: {
+            'first_name': str,
+            'middle_name': str,
+            'last_name': str,
+            'display_text': str  # multiline formatted text
+        }
+    """
+    first_name, middle_name, last_name = parse_name_parts_with_settings(
+        full_name, settings
+    )
     display_text = format_name_multiline(first_name, middle_name, last_name)
 
     return {

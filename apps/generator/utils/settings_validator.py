@@ -216,6 +216,41 @@ def validate_rotation_setting(
     return validated
 
 
+VALID_DATE_FORMATS = (
+    "american",
+    "international",
+    "da_mon_year",
+    "american_month",
+    "international_month",
+)
+
+
+def validate_date_format_setting(
+    value: Any, default: str = "da_mon_year", setting_name: str = "date_format"
+) -> str:
+    """
+    Specialized validator for date format settings.
+
+    Args:
+        value: Raw date format value
+        default: Default date format
+        setting_name: Name of the date format setting
+
+    Returns:
+        Validated date format string
+    """
+    validated = validate_setting(value, str, default, setting_name)
+
+    if validated not in VALID_DATE_FORMATS:
+        logger.warning(
+            f"Invalid date format '{validated}' for '{setting_name}'. "
+            f"Valid options: {VALID_DATE_FORMATS}. Using default: {default}"
+        )
+        return default
+
+    return validated
+
+
 def get_validated_settings(
     user_settings: dict, settings_schema: dict, generator_name: str = "unknown"
 ) -> dict:
@@ -259,6 +294,10 @@ def get_validated_settings(
             )
         elif "rotate" in setting_key.lower() or setting_key.endswith("_rotate"):
             validated_value = validate_rotation_setting(
+                user_settings.get(setting_key), default_value, setting_key
+            )
+        elif setting_key == "date_format":
+            validated_value = validate_date_format_setting(
                 user_settings.get(setting_key), default_value, setting_key
             )
         else:

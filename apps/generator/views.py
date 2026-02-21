@@ -136,6 +136,19 @@ def generate_final_chart(request):
                 "primary_death_place_translate_x",
                 "primary_death_place_translate_y",
                 "primary_death_place_rotate",
+                "date_format",
+                "date_year_only",
+                "date_retain_leading_zeros",
+                "name_use_first_middle_only",
+                "name_hide_hyphenated_surname",
+                "place_use_country_abbrev",
+                "place_use_state_abbrev",
+                "place_show_county",
+                "place_show_country",
+                "place_hide_usa_with_state",
+                "place_show_township",
+                "place_show_flag",
+                "place_flag_type",
             ]
         )
 
@@ -207,6 +220,31 @@ def generate_final_chart(request):
                 "primary_death_place_rotate": hud_settings.get(
                     "primary_death_place_rotate", -90
                 ),
+                "date_format": hud_settings.get("date_format", "da_mon_year"),
+                "date_year_only": hud_settings.get("date_year_only", False),
+                "date_retain_leading_zeros": hud_settings.get(
+                    "date_retain_leading_zeros", False
+                ),
+                "name_use_first_middle_only": hud_settings.get(
+                    "name_use_first_middle_only", False
+                ),
+                "name_hide_hyphenated_surname": hud_settings.get(
+                    "name_hide_hyphenated_surname", False
+                ),
+                "place_use_country_abbrev": hud_settings.get(
+                    "place_use_country_abbrev", False
+                ),
+                "place_use_state_abbrev": hud_settings.get(
+                    "place_use_state_abbrev", False
+                ),
+                "place_show_county": hud_settings.get("place_show_county", True),
+                "place_show_country": hud_settings.get("place_show_country", True),
+                "place_hide_usa_with_state": hud_settings.get(
+                    "place_hide_usa_with_state", True
+                ),
+                "place_show_township": hud_settings.get("place_show_township", True),
+                "place_show_flag": hud_settings.get("place_show_flag", False),
+                "place_flag_type": hud_settings.get("place_flag_type", "birth"),
             }
         else:
             logger.debug("Using POST settings for final chart generation")

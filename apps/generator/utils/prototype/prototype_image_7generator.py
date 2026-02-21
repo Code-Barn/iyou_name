@@ -25,10 +25,6 @@ from apps.generator.utils.prototype.prototype_image_6generator import (
     generate_prototype_6gen_preview,
 )
 from apps.generator.utils.prototype.individual_printer import print_individual
-from apps.generator.utils.prototype.place_name_utils import (
-    format_place_from_settings,
-    get_flag_from_place,
-)
 from apps.generator.utils.settings_validator import get_validated_settings
 from apps.generator.utils.simple_buffer_manager import (
     create_preview_buffer,
@@ -198,6 +194,9 @@ GENERATION_7_SETTINGS_SCHEMA = {
     "overlay_scale": (float, 0.8457),
     "overlay_position_x": (int, 0),
     "overlay_position_y": (int, 0),
+    # Date format settings
+    "date_format": (str, "da_mon_year"),
+    "date_year_only": (bool, False),  # For compact display in 7gen+
     # Place name formatting settings
     "place_use_country_abbrev": (bool, False),
     "place_use_state_abbrev": (bool, True),
@@ -434,14 +433,14 @@ def generate_prototype_7gen_preview(
                 # A1111 moved 10px left, A1 positions keep 116px gap
                 # A2 positions adjusted inward
                 a_x_positions = [
-                    122,  # A1111 (+3px)
-                    236,  # A1112
-                    353,  # A1121
-                    465,  # A1122 (-3px)
-                    579,  # A1211
-                    690,  # A1212
+                    125,  # A1111 (+3px)
+                    240,  # A1112
+                    355,  # A1121
+                    468,  # A1122 (-3px)
+                    580,  # A1211
+                    692,  # A1212
                     809,  # A1221
-                    905,  # A1222 (-10px)
+                    907,  # A1222 (-10px)
                     1028,  # A2111 (+15px)
                     1143,  # A2112 (new)
                     1251,  # A2121 (+10px)
@@ -453,7 +452,7 @@ def generate_prototype_7gen_preview(
                 ]
 
                 # Use ONLY A positions - sunbeam rotation applied, print_individual handles quadrant rotation
-                a_positions = [(a_x_positions[i], 1828) for i in range(16)]
+                a_positions = [(a_x_positions[i], 1840) for i in range(16)]
 
                 # Build master position coordinates from A subclade (position only, no ancestor yet)
                 # Each tuple: (name_x, name_y, birth_date_x, birth_date_y, birth_place_x, birth_place_y, text_rotation)
@@ -566,31 +565,10 @@ def generate_prototype_7gen_preview(
                     sunbeam_rotation,
                 ) in great_great_great_grandparents:
                     if individual:
-                        # Format places based on settings
-                        formatted_birth_place = format_place_from_settings(
-                            getattr(individual, "birth_place", "") or "",
-                            validated_settings,
-                        )
-                        formatted_death_place = format_place_from_settings(
-                            getattr(individual, "death_place", "") or "",
-                            validated_settings,
-                        )
-
-                        # Create a modified individual with formatted places
-                        class FormattedIndividual:
-                            def __init__(self, original, birth_place, death_place):
-                                self.__dict__.update(original.__dict__)
-                                self.birth_place = birth_place
-                                self.death_place = death_place
-
-                        formatted_individual = FormattedIndividual(
-                            individual, formatted_birth_place, formatted_death_place
-                        )
-
                         print_individual(
                             draw=draw,
                             content_img=content_img,
-                            individual=formatted_individual,
+                            individual=individual,
                             settings=validated_settings,
                             rotation=subclade_rotation,
                             first_name_base_x=base_x,
@@ -609,6 +587,10 @@ def generate_prototype_7gen_preview(
                             death_place_base_y=birth_place_center_y,
                             death_place_rotation=sunbeam_rotation,
                             **base_params,
+                            chart_settings=validated_settings,
+                            date_year_only=validated_settings.get(
+                                "date_year_only", False
+                            ),
                         )
 
                 draw.pop()

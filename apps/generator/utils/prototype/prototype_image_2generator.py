@@ -24,10 +24,6 @@ from wand.image import Image
 
 from apps.parser.models import PersonData
 from apps.generator.utils.prototype.individual_printer import print_individual
-from apps.generator.utils.prototype.place_name_utils import (
-    format_place_from_settings,
-    get_flag_from_place,
-)
 from apps.generator.utils.prototype.prototype_image_1generator import (
     generate_prototype_1gen_preview,
 )
@@ -51,8 +47,7 @@ class Generation2Constants:
 
     # Position 1 (Base position - use for ALL positions, rotation handles placement)
     # First name: centered at bottom
-    POSITION_1_FIRST_NAME_BASE_X = 975
-    POSITION_1_FIRST_NAME_BASE_Y = 1725
+    POSITION_1_FIRST_NAME_BASE_Y = 1759
 
     # Middle name: at (1650, 1650), -45° angle
     POSITION_1_MIDDLE_NAME_BASE_X = 1650
@@ -60,25 +55,23 @@ class Generation2Constants:
     POSITION_1_MIDDLE_NAME_ROTATION = -45
 
     # Last name: centered on right
-    POSITION_1_LAST_NAME_BASE_X = 1725
+    POSITION_1_LAST_NAME_BASE_X = 1759
     POSITION_1_LAST_NAME_BASE_Y = 975
 
     # Birth/Death info positions - single base, rotation handles placement
-    POSITION_1_BIRTH_DATE_BASE_X = 200
-    POSITION_1_BIRTH_DATE_BASE_Y = 1700
+    POSITION_1_BIRTH_DATE_BASE_Y = 1565
 
-    POSITION_1_BIRTH_PLACE_BASE_X = 975
-    POSITION_1_BIRTH_PLACE_BASE_Y = 1900
+    POSITION_1_BIRTH_PLACE_BASE_Y = 1890
 
-    POSITION_1_DEATH_DATE_BASE_X = 975
-    POSITION_1_DEATH_DATE_BASE_Y = 225
+    POSITION_1_DEATH_DATE_BASE_X = 1565
+    POSITION_1_DEATH_DATE_BASE_Y = 975
 
-    POSITION_1_DEATH_PLACE_BASE_X = 1900
+    POSITION_1_DEATH_PLACE_BASE_X = 1890
     POSITION_1_DEATH_PLACE_BASE_Y = 975
 
     PARENT_NAME_FONT_SIZE = 48
-    PARENT_DATE_INFO_FONT_SIZE = 36
-    PARENT_PLACE_INFO_FONT_SIZE = 20
+    PARENT_DATE_INFO_FONT_SIZE = 32
+    PARENT_PLACE_INFO_FONT_SIZE = 24
 
     OVERLAY_SCALE = 0.50
     COMPOSITE_X = 300
@@ -131,16 +124,21 @@ GENERATION_2_SETTINGS_SCHEMA = {
     "overlay_scale": (float, 0.50),
     "overlay_position_x": (int, 0),
     "overlay_position_y": (int, 0),
+    # Date format settings
+    "date_format": (str, "da_mon_year"),
+    "date_year_only": (bool, True),
     # Place name formatting settings
-    "place_use_country_abbrev": (bool, False),
-    "place_use_state_abbrev": (bool, True),
     "place_use_country_abbrev": (bool, True),
+    "place_use_state_abbrev": (bool, True),
     "place_show_county": (bool, False),
     "place_show_country": (bool, True),
     "place_hide_usa_with_state": (bool, True),
     "place_show_township": (bool, True),
-    "place_show_flag": (bool, False),
+    "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
+    # Name formatting settings
+    "name_use_first_middle_only": (bool, True),
+    "name_hide_hyphenated_surname": (bool, True),
 }
 
 
@@ -232,25 +230,31 @@ def generate_prototype_2gen_preview(
                     center_y=Generation2Constants.IMAGE_CENTER_Y,
                     date_font_size=Generation2Constants.PARENT_DATE_INFO_FONT_SIZE,
                     place_font_size=Generation2Constants.PARENT_PLACE_INFO_FONT_SIZE,
-                    first_name_base_x=Generation2Constants.POSITION_1_FIRST_NAME_BASE_X,
+                    # Name positions
+                    first_name_base_x=None,
                     first_name_base_y=Generation2Constants.POSITION_1_FIRST_NAME_BASE_Y,
                     first_name_rotation=0,
                     middle_name_base_x=Generation2Constants.POSITION_1_MIDDLE_NAME_BASE_X,
                     middle_name_base_y=Generation2Constants.POSITION_1_MIDDLE_NAME_BASE_Y,
                     middle_name_rotation=Generation2Constants.POSITION_1_MIDDLE_NAME_ROTATION,
+                    # Last name - rotated -90° for vertical text at specified position
                     last_name_base_x=Generation2Constants.POSITION_1_LAST_NAME_BASE_X,
                     last_name_base_y=Generation2Constants.POSITION_1_LAST_NAME_BASE_Y,
                     last_name_rotation=-90,
-                    birth_date_base_x=Generation2Constants.POSITION_1_FIRST_NAME_BASE_X,
-                    birth_date_base_y=Generation2Constants.POSITION_1_FIRST_NAME_BASE_Y,
-                    birth_date_offset_y=-150,
+                    # Birth date - auto-centered at center_x
+                    birth_date_base_x=None,
+                    birth_date_base_y=Generation2Constants.POSITION_1_BIRTH_DATE_BASE_Y,
+                    birth_date_offset_y=0,
                     birth_date_rotation=0,
-                    death_date_base_x=Generation2Constants.POSITION_1_LAST_NAME_BASE_X,
-                    death_date_base_y=Generation2Constants.POSITION_1_LAST_NAME_BASE_Y,
-                    death_date_offset_x=-150,
+                    # Death date - rotated -90° at specified position
+                    death_date_base_x=Generation2Constants.POSITION_1_DEATH_DATE_BASE_X,
+                    death_date_base_y=Generation2Constants.POSITION_1_DEATH_DATE_BASE_Y,
+                    death_date_offset_x=0,
                     death_date_rotation=-90,
-                    birth_place_base_x=Generation2Constants.POSITION_1_BIRTH_PLACE_BASE_X,
+                    # Birth place - auto-centered at center_x
+                    birth_place_base_x=None,
                     birth_place_base_y=Generation2Constants.POSITION_1_BIRTH_PLACE_BASE_Y,
+                    # Death place - rotated -90° at specified position
                     death_place_base_x=Generation2Constants.POSITION_1_DEATH_PLACE_BASE_X,
                     death_place_base_y=Generation2Constants.POSITION_1_DEATH_PLACE_BASE_Y,
                     death_place_rotation=-90,
@@ -264,56 +268,19 @@ def generate_prototype_2gen_preview(
                         translate_y = validated_settings.get(translate_y_key, 0)
 
                         show_flag = validated_settings.get("place_show_flag", False)
-                        flag_type = validated_settings.get("place_flag_type", "birth")
-
-                        birth_place_raw = getattr(individual, "birth_place", "") or ""
-                        death_place_raw = getattr(individual, "death_place", "") or ""
-
-                        birth_flag = (
-                            get_flag_from_place(birth_place_raw)
-                            if show_flag and flag_type == "birth"
-                            else ""
-                        )
-                        death_flag = (
-                            get_flag_from_place(death_place_raw)
-                            if show_flag and flag_type == "death"
-                            else ""
-                        )
-
                         flag_params = dict(
-                            birth_flag=birth_flag,
-                            death_flag=death_flag,
                             flag_base_x=Generation2Constants.IMAGE_CENTER_X,
                             flag_base_y=Generation2Constants.IMAGE_CENTER_Y,
                             flag_rotation=0,
                             flag_font_size=Generation2Constants.PARENT_PLACE_INFO_FONT_SIZE,
                         )
 
-                        formatted_birth_place = format_place_from_settings(
-                            birth_place_raw,
-                            validated_settings,
-                        )
-                        formatted_death_place = format_place_from_settings(
-                            death_place_raw,
-                            validated_settings,
-                        )
-
-                        # Create a modified individual with formatted places
-                        class FormattedIndividual:
-                            def __init__(self, original, birth_place, death_place):
-                                self.__dict__.update(original.__dict__)
-                                self.birth_place = birth_place
-                                self.death_place = death_place
-
-                        formatted_individual = FormattedIndividual(
-                            individual, formatted_birth_place, formatted_death_place
-                        )
-
                         print_individual(
                             draw=draw,
                             content_img=content_img,
-                            individual=formatted_individual,
+                            individual=individual,
                             settings=validated_settings,
+                            chart_settings=validated_settings,
                             rotation=rotation,
                             name_font_size=validated_settings.get(
                                 f"{'father' if rotation == 0 else 'mother'}_font_size",

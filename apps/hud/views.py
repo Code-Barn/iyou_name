@@ -73,6 +73,22 @@ def display_tree_hud(request):
                 "compact_mode": False,
                 "theme": "light",
                 "template": "1",  # Default to 1 Generation Chart
+                # Chart-wide place formatting defaults
+                "place_use_country_abbrev": True,
+                "place_use_state_abbrev": True,
+                "place_show_county": False,
+                "place_show_country": True,
+                "place_hide_usa_with_state": True,
+                "place_show_township": False,
+                "place_show_flag": True,
+                "place_flag_type": "birth",
+                # Chart-wide date formatting defaults
+                "date_format": "da_mon_year",
+                "date_year_only": True,
+                "date_retain_leading_zeros": False,
+                # Chart-wide name formatting defaults
+                "name_use_first_middle_only": True,
+                "name_hide_hyphenated_surname": True,
             },
         )
 
@@ -285,6 +301,30 @@ def save_hud_settings(request):
             "primary_death_place_rotate": int(
                 request.POST.get("primary_death_place_rotate", -90)
             ),
+            # Date format settings
+            "date_format": request.POST.get("date_format", "da_mon_year"),
+            "date_year_only": request.POST.get("date_year_only") == "on",
+            "date_retain_leading_zeros": request.POST.get("date_retain_leading_zeros")
+            == "on",
+            # Name formatting settings
+            "name_use_first_middle_only": request.POST.get("name_use_first_middle_only")
+            == "on",
+            "name_hide_hyphenated_surname": request.POST.get(
+                "name_hide_hyphenated_surname"
+            )
+            == "on",
+            # Place name formatting settings
+            "place_use_country_abbrev": request.POST.get("place_use_country_abbrev")
+            == "on",
+            "place_use_state_abbrev": request.POST.get("place_use_state_abbrev")
+            == "on",
+            "place_show_county": request.POST.get("place_show_county") == "on",
+            "place_show_country": request.POST.get("place_show_country") == "on",
+            "place_hide_usa_with_state": request.POST.get("place_hide_usa_with_state")
+            == "on",
+            "place_show_township": request.POST.get("place_show_township") == "on",
+            "place_show_flag": request.POST.get("place_show_flag") == "on",
+            "place_flag_type": request.POST.get("place_flag_type", "birth"),
         }
 
         # Add 2gen specific settings if present

@@ -12,7 +12,17 @@ import math
 
 from wand.color import Color
 
-from apps.generator.utils.name_utils import get_name_display_info
+from apps.generator.utils.name_utils import (
+    get_name_display_info,
+    get_name_display_info_with_settings,
+)
+from apps.generator.utils.prototype.date_utils import (
+    format_date_from_settings,
+)
+from apps.generator.utils.prototype.place_name_utils import (
+    format_place_from_settings,
+    get_flag_from_place,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -135,6 +145,8 @@ def print_individual(
     use_gravity_center=False,
     multiline_line_spacing=1.2,
     multiline_alignment="center",
+    chart_settings=None,
+    date_year_only=False,
 ):
     """
     Print an individual's name and birth/death info at a given position.
@@ -157,9 +169,30 @@ def print_individual(
         *_rotation: Rotation angle
         use_display_text: Use display_text with newlines
         use_gravity_center: Use gravity="center" for name
+        chart_settings: Settings dict for date and name formatting (from settings_validator)
+        date_year_only: If True, print only year for dates (for compact display)
     """
-    # Get name info
-    name_info = get_name_display_info(individual.full_name)
+    # Get settings with optional chart settings
+    chart_settings = chart_settings or {}
+
+    # Check if name formatting settings are provided
+    name_settings = {}
+    if "name_use_first_middle_only" in chart_settings:
+        name_settings["name_use_first_middle_only"] = chart_settings.get(
+            "name_use_first_middle_only", False
+        )
+    if "name_hide_hyphenated_surname" in chart_settings:
+        name_settings["name_hide_hyphenated_surname"] = chart_settings.get(
+            "name_hide_hyphenated_surname", False
+        )
+
+    if name_settings:
+        name_info = get_name_display_info_with_settings(
+            individual.full_name, name_settings
+        )
+    else:
+        name_info = get_name_display_info(individual.full_name)
+
     first_name = name_info.get("first_name", "")
     middle_name = name_info.get("middle_name", "")
     last_name = name_info.get("last_name", "")
@@ -177,6 +210,34 @@ def print_individual(
     birth_place = individual.birth_place or ""
     death_date = individual.death_date or ""
     death_place = individual.death_place or ""
+
+    # Apply date formatting if settings provided
+    if birth_date:
+        birth_date = format_date_from_settings(
+            birth_date, chart_settings, year_only=date_year_only
+        )
+    if death_date:
+        death_date = format_date_from_settings(
+            death_date, chart_settings, year_only=date_year_only
+        )
+
+    # Apply place formatting if settings provided
+    if birth_place:
+        birth_place = format_place_from_settings(birth_place, chart_settings)
+    if death_place:
+        death_place = format_place_from_settings(death_place, chart_settings)
+
+    # Handle flags if enabled in settings
+    show_flag = chart_settings.get("place_show_flag", False)
+    flag_type = chart_settings.get("place_flag_type", "birth")
+
+    birth_flag = ""
+    death_flag = ""
+    if show_flag:
+        if flag_type == "birth":
+            birth_flag = get_flag_from_place(individual.birth_place or "")
+        elif flag_type == "death":
+            death_flag = get_flag_from_place(individual.death_place or "")
 
     # Track if name has been drawn (to avoid duplicates)
     name_drawn = False

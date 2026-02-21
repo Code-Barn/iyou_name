@@ -165,39 +165,75 @@
                         <div class="mb-4">
                             <h6 class="text-muted mb-3">Place Name Formatting</h6>
                             <div class="form-check">
-                                <input type="checkbox" name="place_use_country_abbrev" class="form-check-input" id="place-use-country-abbrev" {% if hud_settings.place_use_country_abbrev %}checked{% endif %}>
+                                <input type="checkbox" name="place_use_country_abbrev" class="form-check-input" id="place-use-country-abbrev" {% if hud_settings.place_use_country_abbrev|default:True %}checked{% endif %}>
                                 <label class="form-check-label" for="place-use-country-abbrev">Abbreviate Country Names (USA, UK)</label>
                             </div>
                             <div class="form-check">
-                                <input type="checkbox" name="place_use_state_abbrev" class="form-check-input" id="place-use-state-abbrev" {% if hud_settings.place_use_state_abbrev %}checked{% endif %}>
+                                <input type="checkbox" name="place_use_state_abbrev" class="form-check-input" id="place-use-state-abbrev" {% if hud_settings.place_use_state_abbrev|default:True %}checked{% endif %}>
                                 <label class="form-check-label" for="place-use-state-abbrev">Abbreviate State Names (IL, CA)</label>
                             </div>
                             <div class="form-check">
-                                <input type="checkbox" name="place_show_county" class="form-check-input" id="place-show-county" {% if hud_settings.place_show_county %}checked{% endif %}>
+                                <input type="checkbox" name="place_show_county" class="form-check-input" id="place-show-county" {% if hud_settings.place_show_county|default:False %}checked{% endif %}>
                                 <label class="form-check-label" for="place-show-county">Show County</label>
                             </div>
                             <div class="form-check">
-                                <input type="checkbox" name="place_show_country" class="form-check-input" id="place-show-country" {% if hud_settings.place_show_country %}checked{% endif %}>
+                                <input type="checkbox" name="place_show_country" class="form-check-input" id="place-show-country" {% if hud_settings.place_show_country|default:True %}checked{% endif %}>
                                 <label class="form-check-label" for="place-show-country">Show Country</label>
                             </div>
                             <div class="form-check">
-                                <input type="checkbox" name="place_hide_usa_with_state" class="form-check-input" id="place-hide-usa-with-state" {% if hud_settings.place_hide_usa_with_state %}checked{% endif %}>
+                                <input type="checkbox" name="place_hide_usa_with_state" class="form-check-input" id="place-hide-usa-with-state" {% if hud_settings.place_hide_usa_with_state|default:True %}checked{% endif %}>
                                 <label class="form-check-label" for="place-hide-usa-with-state">Hide "USA" when State is shown</label>
                             </div>
                             <div class="form-check">
-                                <input type="checkbox" name="place_show_township" class="form-check-input" id="place-show-township" {% if hud_settings.place_show_township %}checked{% endif %}>
+                                <input type="checkbox" name="place_show_township" class="form-check-input" id="place-show-township" {% if hud_settings.place_show_township|default:False %}checked{% endif %}>
                                 <label class="form-check-label" for="place-show-township">Show Township</label>
                             </div>
                             <div class="form-check">
-                                <input type="checkbox" name="place_show_flag" class="form-check-input" id="place-show-flag" {% if hud_settings.place_show_flag %}checked{% endif %}>
+                                <input type="checkbox" name="place_show_flag" class="form-check-input" id="place-show-flag" {% if hud_settings.place_show_flag|default:True %}checked{% endif %}>
                                 <label class="form-check-label" for="place-show-flag">Show Country Flag</label>
                             </div>
                             <div class="mb-2">
                                 <label class="form-label small" for="place-flag-type">Flag Type</label>
                                 <select name="place_flag_type" class="form-select form-select-sm" id="place-flag-type">
-                                    <option value="birth" {% if hud_settings.place_flag_type == 'birth' %}selected{% endif %}>Birth Place</option>
-                                    <option value="death" {% if hud_settings.place_flag_type == 'death' %}selected{% endif %}>Death Place</option>
+                                    <option value="birth" {% if hud_settings.place_flag_type|default:'birth' == 'birth' %}selected{% endif %}>Birth Place</option>
+                                    <option value="death" {% if hud_settings.place_flag_type|default:'birth' == 'death' %}selected{% endif %}>Death Place</option>
                                 </select>
+                            </div>
+                        </div>
+
+                        <!-- Chart-Wide Date Formatting -->
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">Date Format</h6>
+                            <div class="mb-2">
+                                <label class="form-label small" for="date-format">Date Display Format</label>
+                                <select name="date_format" class="form-select form-select-sm" id="date-format">
+                                    <option value="da_mon_year" {% if hud_settings.date_format|default:'da_mon_year' == 'da_mon_year' %}selected{% endif %}>Day Month Year (13 Aug 1985)</option>
+                                    <option value="american_month" {% if hud_settings.date_format|default:'da_mon_year' == 'american_month' %}selected{% endif %}>Month Day Year (Aug 13 1985)</option>
+                                    <option value="international_month" {% if hud_settings.date_format|default:'da_mon_year' == 'international_month' %}selected{% endif %}>Day Month Year (13 Aug 1985)</option>
+                                    <option value="american" {% if hud_settings.date_format|default:'da_mon_year' == 'american' %}selected{% endif %}>American (8/13/1985)</option>
+                                    <option value="international" {% if hud_settings.date_format|default:'da_mon_year' == 'international' %}selected{% endif %}>International (13/8/1985)</option>
+                                </select>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="date_year_only" class="form-check-input" id="date-year-only" {% if hud_settings.date_year_only|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="date-year-only">Show Year Only (for compact display)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="date_retain_leading_zeros" class="form-check-input" id="date-retain-leading-zeros" {% if hud_settings.date_retain_leading_zeros|default:False %}checked{% endif %}>
+                                <label class="form-check-label" for="date-retain-leading-zeros">Retain Leading Zeros (e.g., 03 Aug or 08/03)</label>
+                            </div>
+                        </div>
+
+                        <!-- Chart-Wide Name Formatting -->
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">Name Formatting</h6>
+                            <div class="form-check">
+                                <input type="checkbox" name="name_use_first_middle_only" class="form-check-input" id="name-use-first-middle-only" {% if hud_settings.name_use_first_middle_only|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="name-use-first-middle-only">Use First Middle Name Only</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="name_hide_hyphenated_surname" class="form-check-input" id="name-hide-hyphenated-surname" {% if hud_settings.name_hide_hyphenated_surname|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="name-hide-hyphenated-surname">Hide Hyphenated Surnames</label>
                             </div>
                         </div>
 

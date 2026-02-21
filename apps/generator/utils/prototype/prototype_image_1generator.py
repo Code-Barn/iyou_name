@@ -15,10 +15,6 @@ from wand.image import Image
 
 from apps.parser.models import PersonData
 from apps.generator.utils.prototype.individual_printer import print_individual
-from apps.generator.utils.prototype.place_name_utils import (
-    format_place_from_settings,
-    get_flag_from_place,
-)
 from apps.generator.utils.settings_validator import (
     get_validated_settings,
     GenerationError,
@@ -81,6 +77,8 @@ GENERATION_1_SETTINGS_SCHEMA = {
     "primary_death_place_translate_x": (int, 0),
     "primary_death_place_translate_y": (int, 0),
     "primary_death_place_rotate": (int, -90),
+    # Date format settings
+    "date_format": (str, "da_mon_year"),
     # Place name formatting settings
     "place_use_country_abbrev": (bool, False),
     "place_use_state_abbrev": (bool, True),
@@ -149,49 +147,12 @@ def generate_prototype_1gen_preview(
                     y=Generation1Constants.INITIAL_TRANSLATE_Y,
                 )
 
-                # Format places based on settings
-                show_flag = validated_settings.get("place_show_flag", False)
-                flag_type = validated_settings.get("place_flag_type", "birth")
-
-                birth_place_raw = getattr(primary_individual, "birth_place", "") or ""
-                death_place_raw = getattr(primary_individual, "death_place", "") or ""
-
-                birth_flag = (
-                    get_flag_from_place(birth_place_raw)
-                    if show_flag and flag_type == "birth"
-                    else ""
-                )
-                death_flag = (
-                    get_flag_from_place(death_place_raw)
-                    if show_flag and flag_type == "death"
-                    else ""
-                )
-
-                formatted_birth_place = format_place_from_settings(
-                    birth_place_raw,
-                    validated_settings,
-                )
-                formatted_death_place = format_place_from_settings(
-                    death_place_raw,
-                    validated_settings,
-                )
-
-                # Create a modified individual with formatted places
-                class FormattedIndividual:
-                    def __init__(self, original, birth_place, death_place):
-                        self.__dict__.update(original.__dict__)
-                        self.birth_place = birth_place
-                        self.death_place = death_place
-
-                formatted_individual = FormattedIndividual(
-                    primary_individual, formatted_birth_place, formatted_death_place
-                )
-
                 print_individual(
                     draw=draw,
                     content_img=content_img,
-                    individual=formatted_individual,
+                    individual=primary_individual,
                     settings=validated_settings,
+                    chart_settings=validated_settings,
                     center_x=Generation1Constants.CENTER_X,
                     center_y=Generation1Constants.CENTER_Y,
                     rotation=0,
@@ -229,8 +190,6 @@ def generate_prototype_1gen_preview(
                     death_place_rotation=validated_settings[
                         "primary_death_place_rotate"
                     ],
-                    birth_flag=birth_flag,
-                    death_flag=death_flag,
                     flag_base_x=Generation1Constants.CENTER_X,
                     flag_base_y=Generation1Constants.CENTER_Y + 80,
                     flag_rotation=validated_settings["primary_name_rotate"],
