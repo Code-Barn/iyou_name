@@ -9,10 +9,15 @@ This prototype implements a modular approach to family tree chart generation, pr
 ### ✅ Working Implementations
 - **1gen**: Single individual with gravity center or base position placement
 - **2gen**: Two individuals (father/mother) rotated 180° apart with names, dates, places
+- **3gen**: Four positions (A, B, C, D) grandparents with rotation
+- **4gen**: Eight great-grandparent positions with subclades
+- **5-7gen**: Higher generations with scaled positioning
 
 ### 🎯 Current Focus
-- 2gen complete with standardized positioning
-- Planning for 3gen (4 positions: A, B, C, D)
+- Chart-wide settings (name, place, date formatting) implemented and working
+- Name formatting: first middle only, hyphenated surname prefix handling
+- Place formatting: abbreviations, flags, show/hide options
+- Date formatting: year only, various format options
 
 ## Position Naming
 

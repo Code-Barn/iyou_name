@@ -101,9 +101,9 @@ def parse_name_parts_with_settings(full_name, settings=None):
             middle_name = " ".join(name_parts[1:-1])
         last_name = name_parts[-1]
 
-    # Handle hyphenated surname
+    # Handle hyphenated surname - keep prefix only (e.g., "Smith-Jones" -> "Smith")
     if hide_hyphenated and last_name and "-" in last_name:
-        last_name = ""
+        last_name = last_name.split("-")[0]
 
     logger.debug(
         f"Parsed name '{full_name}' with settings -> first:'{first_name}', middle:'{middle_name}', last:'{last_name}'"

@@ -141,15 +141,17 @@ GENERATION_6_SETTINGS_SCHEMA = {
     "date_format": (str, "da_mon_year"),
     "date_year_only": (bool, False),  # For compact display in 6gen+
     # Place name formatting settings
-    "place_use_country_abbrev": (bool, False),
-    "place_use_state_abbrev": (bool, True),
     "place_use_country_abbrev": (bool, True),
+    "place_use_state_abbrev": (bool, True),
     "place_show_county": (bool, False),
     "place_show_country": (bool, True),
     "place_hide_usa_with_state": (bool, True),
-    "place_show_township": (bool, True),
-    "place_show_flag": (bool, False),
+    "place_show_township": (bool, False),
+    "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
+    # Name formatting settings
+    "name_use_first_middle_only": (bool, True),
+    "name_hide_hyphenated_surname": (bool, True),
 }
 
 

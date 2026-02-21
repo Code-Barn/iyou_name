@@ -194,7 +194,15 @@ def parse_place(place: str) -> dict:
 
     def is_explicit_township(part: str) -> bool:
         part_lower = part.lower()
-        return "township" in part_lower or "twp" in part_lower
+        # Check for various township markers - be lenient since GEDCOM varies
+        # Includes: township, twp, twp., ward (treated similarly)
+        return (
+            "township" in part_lower
+            or part_lower.endswith(" twp")
+            or part_lower.endswith(" twp.")
+            or ", twp" in part_lower
+            or "ward" in part_lower
+        )
 
     known_countries = set(COUNTRY_ABBREVIATIONS.keys()) | {
         "usa",
@@ -360,7 +368,32 @@ def format_place(
     if use_state_abbrev and parsed["state"]:
         parsed["state"] = abbreviate_state(parsed["state"])
 
-    # Build output parts based on settings
+    # Filter out county/township parts based on settings (handles unusual GEDCOM formats)
+    # This catches cases where county/township aren't properly parsed into their fields
+    original_parts = [p.strip() for p in place.split(",")]
+    filtered_parts = []
+
+    for part in original_parts:
+        part_lower = part.lower()
+        is_county = (
+            "county" in part_lower
+            or part_lower.endswith(", co")
+            or part_lower.endswith(" co")
+            or part_lower.endswith(" co.")
+        )
+        is_township = (
+            "township" in part_lower or "twp" in part_lower or "ward" in part_lower
+        )
+
+        # Include part unless it's a county/township we're hiding
+        if is_county and not show_county:
+            continue
+        if is_township and not show_township:
+            continue
+        filtered_parts.append(part)
+
+    # Rebuild parsed from filtered parts (for "other" field)
+    # Then rebuild output parts based on settings
     parts = []
 
     # Clean up county suffix for display (only if showing)
@@ -432,6 +465,16 @@ def format_place(
 
     if parsed["other"]:
         parts.append(parsed["other"])
+
+    # Remove duplicate parts (case-insensitive) - handles GEDCOM data issues
+    seen = set()
+    unique_parts = []
+    for part in parts:
+        part_normalized = part.lower().strip()
+        if part_normalized not in seen:
+            seen.add(part_normalized)
+            unique_parts.append(part)
+    parts = unique_parts
 
     return ", ".join(parts)
 

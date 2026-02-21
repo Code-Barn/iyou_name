@@ -740,6 +740,93 @@ if (input.type === 'checkbox') {
 
 ---
 
+## Session Date: 2026-02-21
+
+### Major Accomplishments
+
+### 1. Fixed 2gen Last Name and Death Info Positioning [L750-785]
+
+**Problem**: Last name and death date/place were rendering in wrong positions (bottom of screen instead of right side).
+
+**Root Cause**: Multiple issues:
+- Using wrong constants (birth constants instead of death)
+- Rotation was 270° but printer only handles 0/90/180/270 (not -90)
+- X/Y coordinates were swapped
+
+**Fix**: 
+- Changed rotation from 270 to -90 (vertical text without quadrant swap)
+- Used correct death position constants: death_date (1565, 975), death_place (1890, 975)
+- Removed unused X constants (birth_date_base_x, birth_place_base_x) since they auto-center
+
+### 2. Chart-Wide Settings Defaults [L785-820]
+
+**Problem**: Name/place/date formatting options weren't working because:
+- Each generator had its own schema with different defaults
+- Settings weren't flowing from session to generators
+
+**Fix**:
+- Added chart-wide defaults to HUD session initialization in views.py
+- Updated template checkboxes with |default: filters to match session defaults
+- Removed duplicate place_use_country_abbrev entries
+- Set defaults: country_abbrev=True, state_abbrev=True, show_flag=True, year_only=True, first_middle_only=True, hide_hyphenated=True
+
+### 3. Name Formatting Options [L820-860]
+
+**Problem**: 
+- "Hide hyphenated surnames" was removing entire last name instead of keeping prefix
+- Double middle names still showing both
+- Settings weren't being applied in 3gen/4gen (used full_name parameter which bypassed settings)
+
+**Fixes**:
+1. Fixed hyphenated surname: now keeps prefix only (e.g., "Smith-Jones" → "Smith")
+2. Added import and name parsing logic to 3gen and 4gen generators
+3. Build formatted single-line name with settings applied:
+   ```python
+   name_settings = {
+       "name_use_first_middle_only": validated_settings.get("name_use_first_middle_only", True),
+       "name_hide_hyphenated_surname": validated_settings.get("name_hide_hyphenated_surname", True),
+   }
+   first, middle, last = parse_name_parts_with_settings(individual.full_name, name_settings)
+   formatted_name = " ".join([p for p in [first, middle, last] if p])
+   ```
+4. Pass formatted_name as full_name parameter to maintain single-line display
+
+### Files Modified
+
+- `prototype_image_2generator.py` - Fixed position constants and removed unused X constants
+- `prototype_image_1generator.py` - Added name formatting settings to schema
+- `prototype_image_3generator.py` - Added name parsing with settings, single-line format
+- `prototype_image_4generator.py` - Added name parsing with settings, single-line format  
+- `views.py` (HUD) - Added chart-wide defaults to session initialization
+- `display_tree.html` - Added |default: filters to checkbox inputs
+- `name_utils.py` - Fixed hyphenated surname to keep prefix only
+
+### Current Status
+
+### ✅ Working
+- 2gen: Last name, death date, death place all properly positioned on right side
+- Chart-wide settings persist in session and apply to all generations
+- Name formatting: first middle only works, hyphenated prefix kept
+- Place formatting: country/state abbreviations, flags, show/hide options
+- Date formatting: year only option, date format options
+
+### 📋 Next Steps
+1. Test all generation charts (1-7 gen) with new settings
+2. Consider removing redundant schema defaults since session provides them
+
+### 🐛 Known Issues - Place Name Formatting
+
+**Problem**: GEDCOM place names have varied formats that don't always parse correctly.
+
+**Known problematic patterns**:
+- "Richland Township, Morgan County, Missouri,,Missouri" - duplicate country, township/county not filtering properly
+- "Tell Township, PA" - not filtering when show_township unchecked  
+- "Monmouth Ward 1, IL" - "Ward" not being treated like township
+
+**Note**: These GEDCOM variations may not all be handled. Users may need to clean their data before import.
+
+---
+
 ## Documentation Created
 
 - **NAME_UTILS.md** - Documents name parsing utilities

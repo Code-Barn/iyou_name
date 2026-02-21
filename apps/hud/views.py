@@ -691,6 +691,34 @@ def get_1gen_preview(request):
                 ),
                 "subject_translate_x": hud_settings.get("subject_translate_x", 0),
                 "subject_translate_y": hud_settings.get("subject_translate_y", 0),
+                # Chart-wide place formatting settings
+                "place_use_country_abbrev": hud_settings.get(
+                    "place_use_country_abbrev", True
+                ),
+                "place_use_state_abbrev": hud_settings.get(
+                    "place_use_state_abbrev", True
+                ),
+                "place_show_county": hud_settings.get("place_show_county", False),
+                "place_show_country": hud_settings.get("place_show_country", True),
+                "place_hide_usa_with_state": hud_settings.get(
+                    "place_hide_usa_with_state", True
+                ),
+                "place_show_township": hud_settings.get("place_show_township", False),
+                "place_show_flag": hud_settings.get("place_show_flag", True),
+                "place_flag_type": hud_settings.get("place_flag_type", "birth"),
+                # Chart-wide date formatting settings
+                "date_format": hud_settings.get("date_format", "da_mon_year"),
+                "date_year_only": hud_settings.get("date_year_only", True),
+                "date_retain_leading_zeros": hud_settings.get(
+                    "date_retain_leading_zeros", False
+                ),
+                # Chart-wide name formatting settings
+                "name_use_first_middle_only": hud_settings.get(
+                    "name_use_first_middle_only", True
+                ),
+                "name_hide_hyphenated_surname": hud_settings.get(
+                    "name_hide_hyphenated_surname", True
+                ),
             }
         elif request.method == "POST":
             data = json.loads(request.body)

@@ -38,6 +38,7 @@ from apps.generator.utils.simple_buffer_manager import (
     create_pdf_buffer,
     BufferError,
 )
+from apps.generator.utils.name_utils import parse_name_parts_with_settings
 
 logger = logging.getLogger(__name__)
 
@@ -84,15 +85,17 @@ GENERATION_4_SETTINGS_SCHEMA = {
     # Date format settings
     "date_format": (str, "da_mon_year"),
     # Place name formatting settings
-    "place_use_country_abbrev": (bool, False),
-    "place_use_state_abbrev": (bool, True),
     "place_use_country_abbrev": (bool, True),
+    "place_use_state_abbrev": (bool, True),
     "place_show_county": (bool, False),
     "place_show_country": (bool, True),
     "place_hide_usa_with_state": (bool, True),
-    "place_show_township": (bool, True),
-    "place_show_flag": (bool, False),
+    "place_show_township": (bool, False),
+    "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
+    # Name formatting settings
+    "name_use_first_middle_only": (bool, True),
+    "name_hide_hyphenated_surname": (bool, True),
 }
 
 
@@ -360,13 +363,28 @@ def generate_prototype_4gen_preview(
                     subclade_rotation,
                 ) in great_grandparents:
                     if individual:
+                        name_settings = {
+                            "name_use_first_middle_only": validated_settings.get(
+                                "name_use_first_middle_only", True
+                            ),
+                            "name_hide_hyphenated_surname": validated_settings.get(
+                                "name_hide_hyphenated_surname", True
+                            ),
+                        }
+                        first, middle, last = parse_name_parts_with_settings(
+                            individual.full_name, name_settings
+                        )
+                        formatted_name = " ".join(
+                            [p for p in [first, middle, last] if p]
+                        )
+
                         print_individual(
                             draw=draw,
                             content_img=content_img,
                             individual=individual,
                             settings=validated_settings,
                             rotation=subclade_rotation,
-                            full_name=individual.full_name,
+                            full_name=formatted_name,
                             first_name_base_x=base_x,
                             first_name_base_y=base_y,
                             birth_date_base_x=birth_date_center_x,
