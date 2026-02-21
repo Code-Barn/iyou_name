@@ -24,7 +24,10 @@ from wand.image import Image
 
 from apps.parser.models import PersonData
 from apps.generator.utils.prototype.individual_printer import print_individual
-from apps.generator.utils.prototype.place_name_utils import format_place_from_settings
+from apps.generator.utils.prototype.place_name_utils import (
+    format_place_from_settings,
+    get_flag_from_place,
+)
 from apps.generator.utils.prototype.prototype_image_1generator import (
     generate_prototype_1gen_preview,
 )
@@ -130,10 +133,14 @@ GENERATION_2_SETTINGS_SCHEMA = {
     "overlay_position_y": (int, 0),
     # Place name formatting settings
     "place_use_country_abbrev": (bool, False),
-    "place_use_state_abbrev": (bool, False),
-    "place_show_county": (bool, True),
+    "place_use_state_abbrev": (bool, True),
+    "place_use_country_abbrev": (bool, True),
+    "place_show_county": (bool, False),
     "place_show_country": (bool, True),
     "place_hide_usa_with_state": (bool, True),
+    "place_show_township": (bool, True),
+    "place_show_flag": (bool, False),
+    "place_flag_type": (str, "birth"),
 }
 
 
@@ -256,13 +263,38 @@ def generate_prototype_2gen_preview(
                         translate_x = validated_settings.get(translate_x_key, 0)
                         translate_y = validated_settings.get(translate_y_key, 0)
 
-                        # Format places based on settings
+                        show_flag = validated_settings.get("place_show_flag", False)
+                        flag_type = validated_settings.get("place_flag_type", "birth")
+
+                        birth_place_raw = getattr(individual, "birth_place", "") or ""
+                        death_place_raw = getattr(individual, "death_place", "") or ""
+
+                        birth_flag = (
+                            get_flag_from_place(birth_place_raw)
+                            if show_flag and flag_type == "birth"
+                            else ""
+                        )
+                        death_flag = (
+                            get_flag_from_place(death_place_raw)
+                            if show_flag and flag_type == "death"
+                            else ""
+                        )
+
+                        flag_params = dict(
+                            birth_flag=birth_flag,
+                            death_flag=death_flag,
+                            flag_base_x=Generation2Constants.IMAGE_CENTER_X,
+                            flag_base_y=Generation2Constants.IMAGE_CENTER_Y,
+                            flag_rotation=0,
+                            flag_font_size=Generation2Constants.PARENT_PLACE_INFO_FONT_SIZE,
+                        )
+
                         formatted_birth_place = format_place_from_settings(
-                            getattr(individual, "birth_place", "") or "",
+                            birth_place_raw,
                             validated_settings,
                         )
                         formatted_death_place = format_place_from_settings(
-                            getattr(individual, "death_place", "") or "",
+                            death_place_raw,
                             validated_settings,
                         )
 
@@ -296,6 +328,7 @@ def generate_prototype_2gen_preview(
                             birth_date_offset_x=translate_x,
                             death_date_offset_y=translate_y,
                             **base_params,
+                            **flag_params,
                         )
 
                 draw.pop()

@@ -15,7 +15,10 @@ from wand.image import Image
 
 from apps.parser.models import PersonData
 from apps.generator.utils.prototype.individual_printer import print_individual
-from apps.generator.utils.prototype.place_name_utils import format_place_from_settings
+from apps.generator.utils.prototype.place_name_utils import (
+    format_place_from_settings,
+    get_flag_from_place,
+)
 from apps.generator.utils.settings_validator import (
     get_validated_settings,
     GenerationError,
@@ -80,10 +83,14 @@ GENERATION_1_SETTINGS_SCHEMA = {
     "primary_death_place_rotate": (int, -90),
     # Place name formatting settings
     "place_use_country_abbrev": (bool, False),
-    "place_use_state_abbrev": (bool, False),
-    "place_show_county": (bool, True),
+    "place_use_state_abbrev": (bool, True),
+    "place_use_country_abbrev": (bool, True),
+    "place_show_county": (bool, False),
     "place_show_country": (bool, True),
     "place_hide_usa_with_state": (bool, True),
+    "place_show_township": (bool, True),
+    "place_show_flag": (bool, False),
+    "place_flag_type": (str, "birth"),
 }
 
 
@@ -143,12 +150,29 @@ def generate_prototype_1gen_preview(
                 )
 
                 # Format places based on settings
+                show_flag = validated_settings.get("place_show_flag", False)
+                flag_type = validated_settings.get("place_flag_type", "birth")
+
+                birth_place_raw = getattr(primary_individual, "birth_place", "") or ""
+                death_place_raw = getattr(primary_individual, "death_place", "") or ""
+
+                birth_flag = (
+                    get_flag_from_place(birth_place_raw)
+                    if show_flag and flag_type == "birth"
+                    else ""
+                )
+                death_flag = (
+                    get_flag_from_place(death_place_raw)
+                    if show_flag and flag_type == "death"
+                    else ""
+                )
+
                 formatted_birth_place = format_place_from_settings(
-                    getattr(primary_individual, "birth_place", "") or "",
+                    birth_place_raw,
                     validated_settings,
                 )
                 formatted_death_place = format_place_from_settings(
-                    getattr(primary_individual, "death_place", "") or "",
+                    death_place_raw,
                     validated_settings,
                 )
 
@@ -205,6 +229,12 @@ def generate_prototype_1gen_preview(
                     death_place_rotation=validated_settings[
                         "primary_death_place_rotate"
                     ],
+                    birth_flag=birth_flag,
+                    death_flag=death_flag,
+                    flag_base_x=Generation1Constants.CENTER_X,
+                    flag_base_y=Generation1Constants.CENTER_Y + 80,
+                    flag_rotation=validated_settings["primary_name_rotate"],
+                    flag_font_size=validated_settings["primary_place_info_font_size"],
                     use_display_text=True,
                     use_gravity_center=True,
                 )

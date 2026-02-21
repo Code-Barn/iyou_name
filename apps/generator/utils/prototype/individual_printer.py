@@ -121,6 +121,15 @@ def print_individual(
     death_place_offset_x=0,
     death_place_offset_y=0,
     death_place_rotation=0,
+    # Flag options
+    birth_flag="",
+    death_flag="",
+    flag_base_x=None,
+    flag_base_y=None,
+    flag_offset_x=0,
+    flag_offset_y=0,
+    flag_rotation=0,
+    flag_font_size=None,
     # Options
     use_display_text=True,
     use_gravity_center=False,
@@ -715,6 +724,34 @@ def print_individual(
         draw.translate(-text_width // 2, 0)
         draw.text(0, 0, death_place)
         draw.pop()
+
+    # Draw flags - separate positioned elements aligned to name
+    if birth_flag or death_flag:
+        draw.fill_color = settings.get("primary_birth_place_color", Color("black"))
+        draw.font_size = (
+            flag_font_size if flag_font_size is not None else place_font_size
+        )
+
+        base_x = flag_base_x if flag_base_x is not None else center_x
+        base_y = flag_base_y if flag_base_y is not None else center_y
+
+        if birth_flag:
+            draw.push()
+            text_width = get_text_width_px(draw, content_img, birth_flag)
+            draw.translate(base_x + flag_offset_x, base_y + flag_offset_y)
+            draw.rotate(flag_rotation)
+            draw.translate(-text_width // 2, 0)
+            draw.text(0, 0, birth_flag)
+            draw.pop()
+
+        if death_flag:
+            draw.push()
+            text_width = get_text_width_px(draw, content_img, death_flag)
+            draw.translate(base_x + flag_offset_x, base_y + flag_offset_y + 50)
+            draw.rotate(flag_rotation)
+            draw.translate(-text_width // 2, 0)
+            draw.text(0, 0, death_flag)
+            draw.pop()
 
 
 def print_individual_simple(

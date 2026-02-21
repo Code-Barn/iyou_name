@@ -20,6 +20,49 @@ COUNTRY_ABBREVIATIONS = {
     "great britain": "GB",
 }
 
+# Country name to flag emoji mapping
+COUNTRY_FLAGS = {
+    "usa": "🇺🇸",
+    "us": "🇺🇸",
+    "united states": "🇺🇸",
+    "united states of america": "🇺🇸",
+    "u.s.": "🇺🇸",
+    "u.s.a.": "🇺🇸",
+    "uk": "🇬🇧",
+    "united kingdom": "🇬🇧",
+    "great britain": "🇬🇧",
+    "gb": "🇬🇧",
+    "england": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+    "scotland": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+    "wales": "🏴󠁧󠁢󠁷󠁬󠁳󠁿",
+    "canada": "🇨🇦",
+    "australia": "🇦🇺",
+    "germany": "🇩🇪",
+    "france": "🇫🇷",
+    "italy": "🇮🇹",
+    "spain": "🇪🇸",
+    "mexico": "🇲🇽",
+    "ireland": "🇮🇪",
+    "netherlands": "🇳🇱",
+    "belgium": "🇧🇪",
+    "switzerland": "🇨🇭",
+    "austria": "🇦🇹",
+    "poland": "🇵🇱",
+    "sweden": "🇸🇪",
+    "norway": "🇳🇴",
+    "denmark": "🇩🇰",
+    "finland": "🇫🇮",
+    "portugal": "🇵🇹",
+    "brazil": "🇧🇷",
+    "argentina": "🇦🇷",
+    "japan": "🇯🇵",
+    "china": "🇨🇳",
+    "india": "🇮🇳",
+    "russia": "🇷🇺",
+    "south africa": "🇿🇦",
+    "new zealand": "🇳🇿",
+}
+
 # Mapping of full US state names to abbreviations
 US_STATE_ABBREVIATIONS = {
     "alabama": "AL",
@@ -106,43 +149,53 @@ def parse_place(place: str) -> dict:
     """
     Parse a comma-separated place name into components.
 
-    Args:
-        place: Place string (e.g., "Chicago,Cook County,Illinois,USA")
+    For American places: town, county, state, country (4 parts) or town, county, state (3 parts)
+    The parts before the state are treated as town + county.
 
     Returns:
-        Dictionary with keys: city, county, state, country
-        Parts not matching known patterns go into 'other'
-
-    County detection: Only treats a part as county if it explicitly
-    contains "County" or "Co." - otherwise treated as city/town.
-
-    Special American patterns:
-    - 4 parts with state+USA at end: town, county, state, country
-    - 3 parts with state at end: town, county, state
+        Dictionary with keys: city, county, township, state, country, parts_count
     """
     if not place:
-        return {"city": "", "county": "", "state": "", "country": "", "other": ""}
+        return {
+            "city": "",
+            "county": "",
+            "township": "",
+            "state": "",
+            "country": "",
+            "other": "",
+            "parts_count": 0,
+        }
 
-    # Split by comma and clean up whitespace
     parts = [p.strip() for p in place.split(",")]
+    parts_count = len(parts)
 
     result = {
         "city": "",
         "county": "",
+        "township": "",
         "state": "",
         "country": "",
         "other": "",
+        "parts_count": parts_count,
     }
 
-    if len(parts) == 0:
+    if parts_count == 0:
         return result
 
-    # Helper to check if a part explicitly indicates a county
     def is_explicit_county(part: str) -> bool:
         part_lower = part.lower()
-        return "county" in part_lower or "co." in part_lower
+        # Check for various county markers
+        return (
+            "county" in part_lower
+            or "co." in part_lower
+            or part_lower.endswith(", co")
+            or part_lower.endswith(" co")
+        )
 
-    # Known countries (for quick lookup)
+    def is_explicit_township(part: str) -> bool:
+        part_lower = part.lower()
+        return "township" in part_lower or "twp" in part_lower
+
     known_countries = set(COUNTRY_ABBREVIATIONS.keys()) | {
         "usa",
         "us",
@@ -151,77 +204,8 @@ def parse_place(place: str) -> dict:
         "uk",
         "gb",
         "great britain",
-        "canada",
-        "australia",
-        "germany",
-        "france",
-        "italy",
-        "spain",
-        "mexico",
-        "ireland",
-        "scotland",
-        "wales",
-        "england",
-        # Add US states that might appear as country
         "united states",
         "united states of america",
-    }
-
-    # Work from the end backwards to identify components
-
-    # Step 1: Check last part - could be country or state
-    last_lower = parts[-1].lower().strip()
-
-    if last_lower in known_countries:
-        # Last part is country
-        result["country"] = parts[-1]
-        remaining = parts[:-1]
-    else:
-        # No country - last part might be state or city
-        remaining = parts[:]
-
-    # Step 2: Check what's now last (remaining[-1]) - could be state
-    if len(remaining) >= 1:
-        last_remaining_lower = remaining[-1].lower().strip()
-        if last_remaining_lower in STATE_ABBREVIATIONS:
-            result["state"] = remaining[-1]
-            remaining = remaining[:-1]
-
-    # Step 3: Check for explicit county (only if it has "County" or "Co.")
-    if len(remaining) >= 1:
-        if is_explicit_county(remaining[-1]):
-            result["county"] = remaining[-1]
-            remaining = remaining[:-1]
-
-    # Step 4: Whatever's left is city (or other)
-    if len(remaining) >= 1:
-        # Last remaining is city
-        result["city"] = remaining[-1]
-        if len(remaining) > 1:
-            # Anything before city goes to other
-            result["other"] = ", ".join(remaining[:-1])
-
-    return result
-
-    # Helper to check if a part explicitly indicates a county
-    def is_explicit_county(part: str) -> bool:
-        part_lower = part.lower()
-        return "county" in part_lower or "co." in part_lower
-
-    # Work from the end backwards to identify components
-
-    # Step 1: Check last part - could be country or state
-    last_lower = parts[-1].lower().strip()
-
-    # Known countries
-    known_countries = set(COUNTRY_ABBREVIATIONS.keys()) | {
-        "usa",
-        "us",
-        "u.s.",
-        "u.s.a.",
-        "uk",
-        "gb",
-        "great britain",
         "canada",
         "australia",
         "germany",
@@ -235,34 +219,54 @@ def parse_place(place: str) -> dict:
         "england",
     }
 
-    if last_lower in known_countries:
-        # Last part is country
+    # Find country
+    last_lower = parts[-1].lower().strip()
+    has_country = last_lower in known_countries
+
+    if has_country:
         result["country"] = parts[-1]
-        remaining = parts[:-1]
-    else:
-        # No country - last part might be state or city
-        remaining = parts
+        parts = parts[:-1]
+        parts_count = len(parts)
 
-    # Step 2: Check what's now last - could be state or city
-    if len(remaining) >= 1:
-        second_last_lower = remaining[-1].lower().strip()
-        if second_last_lower in STATE_ABBREVIATIONS:
-            result["state"] = remaining[-1]
-            remaining = remaining[:-1]
+    # Find state
+    if parts_count >= 1:
+        last_lower = parts[-1].lower().strip()
+        if last_lower in STATE_ABBREVIATIONS:
+            result["state"] = parts[-1]
+            parts = parts[:-1]
+            parts_count = len(parts)
 
-    # Step 3: Check for explicit county (only if it has "County" or "Co.")
-    if len(remaining) >= 1:
-        if is_explicit_county(remaining[-1]):
-            result["county"] = remaining[-1]
-            remaining = remaining[:-1]
+    # Now we have remaining parts - these are town/county
+    # For American style: first part is town, second is county (if 2 parts after removing state/country)
+    if parts_count >= 2:
+        # Check for explicit township first
+        if is_explicit_township(parts[-1]):
+            result["township"] = parts[-1]
+            parts = parts[:-1]
+            parts_count = len(parts)
 
-    # Step 4: Whatever's left is city (or other)
-    if len(remaining) >= 1:
-        # Last remaining is city
-        result["city"] = remaining[-1]
-        if len(remaining) > 1:
-            # Anything before city goes to other
-            result["other"] = ", ".join(remaining[:-1])
+        # Check for explicit county marker
+        if is_explicit_county(parts[-1]):
+            result["county"] = parts[-1]
+            parts = parts[:-1]
+        elif parts_count >= 2:
+            # US pattern with 2 parts remaining: town, county
+            # The SECOND part (parts[-1]) is the county, FIRST is town
+            # This applies to: town, county, state (3 parts) or town, county, state, country (4 parts)
+            result["county"] = parts[-1]
+            parts = parts[:-1]
+
+        # What remains is city/town
+        if len(parts) >= 1:
+            result["city"] = ", ".join(parts) if len(parts) > 1 else parts[0]
+    elif parts_count == 1:
+        # Single part remaining - could be city or county
+        if is_explicit_county(parts[0]):
+            result["county"] = parts[0]
+        elif is_explicit_township(parts[0]):
+            result["township"] = parts[0]
+        else:
+            result["city"] = parts[0]
 
     return result
 
@@ -306,6 +310,7 @@ def format_place(
     use_country_abbrev: bool = False,
     use_state_abbrev: bool = False,
     show_county: bool = True,
+    show_township: bool = True,
     show_country: bool = True,
     hide_usa_with_state: bool = True,
     country_first: bool = False,
@@ -318,6 +323,7 @@ def format_place(
         use_country_abbrev: Abbreviate country name (USA, UK, etc.)
         use_state_abbrev: Abbreviate state/province to 2-letter code
         show_county: Include county in output (only if detected as county)
+        show_township: Include township in output (only if detected as township)
         show_country: Include country in output
         hide_usa_with_state: Hide "USA" when a US state is present
         country_first: Put country before other parts
@@ -330,20 +336,10 @@ def format_place(
 
     parsed = parse_place(place)
 
-    # Apply abbreviations
-    if use_country_abbrev and parsed["country"]:
-        parsed["country"] = abbreviate_country(parsed["country"])
-
-    if use_state_abbrev and parsed["state"]:
-        parsed["state"] = abbreviate_state(parsed["state"])
-
-    # Determine if we should show country
+    # Check hide_usa_with_state BEFORE abbreviating (need original state name)
     should_show_country = show_country
-
-    # If hide_usa_with_state is enabled, check if we have a US state
     if hide_usa_with_state and show_country:
         country_lower = parsed["country"].lower() if parsed["country"] else ""
-        # Check if country is USA and we have a US state
         if country_lower in [
             "usa",
             "us",
@@ -354,34 +350,85 @@ def format_place(
         ]:
             if parsed["state"]:
                 state_lower = parsed["state"].lower().strip()
-                # Check if it's a US state (not Canadian province)
-                if state_lower in US_STATE_ABBREVIATIONS:
+                if state_lower in STATE_ABBREVIATIONS:
                     should_show_country = False
+
+    # Apply abbreviations
+    if use_country_abbrev and parsed["country"]:
+        parsed["country"] = abbreviate_country(parsed["country"])
+
+    if use_state_abbrev and parsed["state"]:
+        parsed["state"] = abbreviate_state(parsed["state"])
 
     # Build output parts based on settings
     parts = []
 
-    if country_first and should_show_country and parsed["country"]:
-        parts.append(parsed["country"])
-
-    if parsed["city"]:
-        parts.append(parsed["city"])
-
+    # Clean up county suffix for display (only if showing)
+    display_county = ""
     if show_county and parsed["county"]:
-        # Clean up county suffix for display
         county = parsed["county"]
         county_lower = county.lower()
         if county_lower.endswith(" county"):
-            county = county[:-7].strip()
+            display_county = county[:-7].strip()
         elif county_lower.endswith(", county"):
-            county = county[:-9].strip()
-        parts.append(county)
+            display_county = county[:-9].strip()
+        else:
+            display_county = county
 
-    if parsed["state"]:
-        parts.append(parsed["state"])
+    # Clean up township suffix for display (only if showing)
+    display_township = ""
+    if show_township and parsed["township"]:
+        township = parsed["township"]
+        township_lower = township.lower()
+        if township_lower.endswith(" township"):
+            display_township = township[:-9].strip()
+        elif township_lower.endswith(", township"):
+            display_township = township[:-11].strip()
+        elif township_lower.endswith(" twp"):
+            display_township = township[:-4].strip()
+        elif township_lower.endswith(" twp."):
+            display_township = township[:-5].strip()
+        else:
+            display_township = township
 
-    if not country_first and should_show_country and parsed["country"]:
-        parts.append(parsed["country"])
+    # Always order: town, county, state, country (for US places) or town, state, country (for non-US)
+    # County goes after state so it can be hidden
+    if show_county:
+        # Order: town, township, county, state, country
+        if country_first and should_show_country and parsed["country"]:
+            parts.append(parsed["country"])
+
+        if parsed["city"]:
+            parts.append(parsed["city"])
+
+        if show_township and display_township:
+            parts.append(display_township)
+
+        # County goes after state (for US: town, county, state, USA)
+        if display_county:
+            parts.append(display_county)
+
+        if parsed["state"]:
+            parts.append(parsed["state"])
+
+        if not country_first and should_show_country and parsed["country"]:
+            parts.append(parsed["country"])
+    else:
+        # Order when county hidden: town, township, state, country
+        if country_first and should_show_country and parsed["country"]:
+            parts.append(parsed["country"])
+
+        if parsed["city"]:
+            parts.append(parsed["city"])
+
+        if show_township and display_township:
+            parts.append(display_township)
+
+        if parsed["state"]:
+            parts.append(parsed["state"])
+
+        if not country_first and should_show_country and parsed["country"]:
+            parts.append(parsed["country"])
 
     if parsed["other"]:
         parts.append(parsed["other"])
@@ -414,7 +461,7 @@ def get_place_short(
     return ", ".join(parts[-max_parts:])
 
 
-def format_place_from_settings(place: str, settings: dict) -> str:
+def format_place_from_settings(place: str, settings: dict, flag: str = "") -> str:
     """
     Format a place name using settings from the generator.
 
@@ -424,9 +471,11 @@ def format_place_from_settings(place: str, settings: dict) -> str:
             - place_use_country_abbrev: bool
             - place_use_state_abbrev: bool
             - place_show_county: bool
+            - place_show_township: bool
             - place_show_country: bool
             - place_hide_usa_with_state: bool
             - place_country_first: bool
+        flag: Optional flag emoji to append to place
 
     Returns:
         Formatted place string
@@ -434,12 +483,41 @@ def format_place_from_settings(place: str, settings: dict) -> str:
     if not place:
         return place
 
-    return format_place(
+    formatted = format_place(
         place,
         use_country_abbrev=settings.get("place_use_country_abbrev", False),
         use_state_abbrev=settings.get("place_use_state_abbrev", False),
         show_county=settings.get("place_show_county", True),
+        show_township=settings.get("place_show_township", True),
         show_country=settings.get("place_show_country", True),
         hide_usa_with_state=settings.get("place_hide_usa_with_state", True),
         country_first=settings.get("place_country_first", False),
     )
+
+    if flag:
+        formatted = f"{formatted} {flag}"
+
+    return formatted
+
+
+def get_flag_from_place(place: str) -> str:
+    """
+    Extract country flag emoji from a place string.
+
+    Args:
+        place: Place string (e.g., "Chicago, Illinois, USA")
+
+    Returns:
+        Flag emoji if country detected, empty string otherwise
+    """
+    if not place:
+        return ""
+
+    parsed = parse_place(place)
+    country = parsed.get("country", "")
+
+    if not country:
+        return ""
+
+    country_lower = country.lower().strip()
+    return COUNTRY_FLAGS.get(country_lower, "")

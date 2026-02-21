@@ -21,7 +21,10 @@ from wand.image import Image
 
 from apps.parser.models import PersonData
 from apps.generator.utils.prototype.individual_printer import print_individual
-from apps.generator.utils.prototype.place_name_utils import format_place_from_settings
+from apps.generator.utils.prototype.place_name_utils import (
+    format_place_from_settings,
+    get_flag_from_place,
+)
 from apps.generator.utils.prototype.prototype_image_2generator import (
     generate_prototype_2gen_preview,
 )
@@ -85,10 +88,14 @@ GENERATION_3_SETTINGS_SCHEMA = {
     "overlay_position_y": (int, 0),
     # Place name formatting settings
     "place_use_country_abbrev": (bool, False),
-    "place_use_state_abbrev": (bool, False),
-    "place_show_county": (bool, True),
+    "place_use_state_abbrev": (bool, True),
+    "place_use_country_abbrev": (bool, True),
+    "place_show_county": (bool, False),
     "place_show_country": (bool, True),
     "place_hide_usa_with_state": (bool, True),
+    "place_show_township": (bool, True),
+    "place_show_flag": (bool, False),
+    "place_flag_type": (str, "birth"),
 }
 
 

@@ -621,3 +621,126 @@ Reverted changes - original horizontal centering was working correctly. The visu
 1. Carry sunbeam rotation logic into prototype_image_7generator.py for actual name/date/place rendering
 2. Verify 7gen positions display correctly with real family data
 3. Test full 7gen generation flow
+
+---
+
+## Session Date: 2026-02-20 (Evening)
+
+### Major Accomplishments
+
+### 1. Country Flag Emoji Feature
+
+**Goal**: Add country flag emoji display to family tree charts, positioned separately from place names.
+
+**Implementation**:
+
+1. **Added COUNTRY_FLAGS dictionary** in `place_name_utils.py`:
+```python
+COUNTRY_FLAGS = {
+    "usa": "🇺🇸",
+    "uk": "🇬🇧",
+    "england": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+    # ... more countries
+}
+```
+
+2. **Added get_flag_from_place() function** to extract flag from place string:
+```python
+def get_flag_from_place(place: str) -> str:
+    parsed = parse_place(place)
+    country = parsed.get("country", "")
+    country_lower = country.lower().strip()
+    return COUNTRY_FLAGS.get(country_lower, "")
+```
+
+3. **Added flag parameters to print_individual()** in `individual_printer.py`:
+```python
+birth_flag="",
+death_flag="",
+flag_base_x=None,
+flag_base_y=None,
+flag_offset_x=0,
+flag_offset_y=0,
+flag_rotation=0,
+flag_font_size=None,
+```
+
+4. **Added flag drawing code** to `individual_printer.py`:
+```python
+if birth_flag:
+    draw.push()
+    text_width = get_text_width_px(draw, content_img, birth_flag)
+    draw.translate(base_x + flag_offset_x, base_y + flag_offset_y)
+    draw.rotate(flag_rotation)
+    draw.translate(-text_width // 2, 0)
+    draw.text(0, 0, birth_flag)
+    draw.pop()
+```
+
+5. **Added settings to generators** (1gen-7gen):
+```python
+"place_show_flag": (bool, False),
+"place_flag_type": (str, "birth"),
+```
+
+6. **Added HUD controls** in `display_tree.html`:
+- Checkbox: "Show Country Flag"
+- Dropdown: "Flag Type" (birth/death)
+
+### 2. Fixed Checkbox Handling Bugs
+
+**Problem**: Unchecked checkboxes weren't being sent to server, causing default values to always be used.
+
+**Root Cause**: Template used `!= False` which always evaluated to True.
+
+**Fix in display_tree.html**:
+```python
+# Before (broken):
+{% if hud_settings.place_show_county != False %}checked{% endif %}
+
+# After (fixed):
+{% if hud_settings.place_show_county %}checked{% endif %}
+```
+
+**Fix in hud-organized.js** for `updateFormWithStoredSettings()`:
+```javascript
+// Before (broken):
+input.value = value;
+
+// After (fixed):
+if (input.type === 'checkbox') {
+    input.checked = value;
+} else {
+    input.value = value;
+}
+```
+
+### 3. Fixed State Abbreviation Check for hide_usa_with_state
+
+**Problem**: The `hide_usa_with_state` logic was checking against full state names, but the state had already been abbreviated.
+
+**Fix**: Check against `STATE_ABBREVIATIONS` which includes both full names and abbreviations.
+
+### Current Status
+
+### ✅ Working
+- Place name formatting: show county, show township, show country, abbreviate state/country
+- Checkbox handling properly sends unchecked values
+- Settings inheritance between generations works correctly
+- Flag emoji extraction from place strings implemented
+
+### 🐛 Known Issues
+- Flag emoji not yet appearing on chart (positioning issue under investigation)
+- Flag should be positioned at -45° rotated middle bottom center in 1gen
+
+### 📋 Next Steps
+1. Debug flag positioning in print_individual()
+2. Test flag display in output
+3. Consider position-specific offset settings for flags in different generations
+
+---
+
+## Documentation Created
+
+- **NAME_UTILS.md** - Documents name parsing utilities
+- **PLACE_NAME_UTILS.md** - Documents place name formatting, abbreviations, and flag extraction

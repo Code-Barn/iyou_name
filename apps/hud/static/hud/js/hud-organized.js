@@ -924,10 +924,24 @@ HUD.Utils = (function() {
         // Convert FormData to a simple object with all form fields
         const userSettings = {};
 
+        // First, handle checkboxes explicitly - include all checkbox settings
+        const checkboxes = document.querySelectorAll('#hud-settings-form input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            // For place-related checkboxes, always include them with their boolean state
+            if (checkbox.name && checkbox.name.startsWith('place_')) {
+                userSettings[checkbox.name] = checkbox.checked;
+            }
+        });
+
         // Iterate through all formData entries and collect them
         for (const [key, value] of formData.entries()) {
             if (key === 'csrfmiddlewaretoken' || key === 'individual_id' || key === 'template' || key === 'generations') {
                 continue; // Skip non-settings fields
+            }
+
+            // Skip place checkboxes (already handled above)
+            if (key.startsWith('place_')) {
+                continue;
             }
 
             // Convert numeric values appropriately
@@ -1005,7 +1019,12 @@ HUD.Utils = (function() {
         for (const [key, value] of Object.entries(storedSettings)) {
             const input = form.querySelector(`[name="${key}"]`);
             if (input) {
-                input.value = value;
+                // Handle checkboxes specially
+                if (input.type === 'checkbox') {
+                    input.checked = value;
+                } else {
+                    input.value = value;
+                }
                 console.log(`Updated ${key} with stored value: ${value}`);
 
                 // If it's a slider, also update the display value
