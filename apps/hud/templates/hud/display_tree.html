@@ -161,6 +161,31 @@
                             </div>
                         </div>
 
+                        <!-- Chart-Wide Place Name Formatting -->
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">Place Name Formatting</h6>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_use_country_abbrev" class="form-check-input" id="place-use-country-abbrev" {% if hud_settings.place_use_country_abbrev %}checked{% endif %}>
+                                <label class="form-check-label" for="place-use-country-abbrev">Abbreviate Country Names (USA, UK)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_use_state_abbrev" class="form-check-input" id="place-use-state-abbrev" {% if hud_settings.place_use_state_abbrev %}checked{% endif %}>
+                                <label class="form-check-label" for="place-use-state-abbrev">Abbreviate State Names (IL, CA)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_show_county" class="form-check-input" id="place-show-county" {% if hud_settings.place_show_county != False %}checked{% endif %}>
+                                <label class="form-check-label" for="place-show-county">Show County</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_show_country" class="form-check-input" id="place-show-country" {% if hud_settings.place_show_country != False %}checked{% endif %}>
+                                <label class="form-check-label" for="place-show-country">Show Country</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_hide_usa_with_state" class="form-check-input" id="place-hide-usa-with-state" {% if hud_settings.place_hide_usa_with_state != False %}checked{% endif %}>
+                                <label class="form-check-label" for="place-hide-usa-with-state">Hide "USA" when State is shown</label>
+                            </div>
+                        </div>
+
                         <!-- Dynamic Settings Panel - Template Specific -->
                         <div id="settings-panel">
                             {% include current_settings_template %}

@@ -25,6 +25,7 @@ from apps.generator.utils.prototype.prototype_image_6generator import (
     generate_prototype_6gen_preview,
 )
 from apps.generator.utils.prototype.individual_printer import print_individual
+from apps.generator.utils.prototype.place_name_utils import format_place_from_settings
 from apps.generator.utils.settings_validator import get_validated_settings
 from apps.generator.utils.simple_buffer_manager import (
     create_preview_buffer,
@@ -194,6 +195,12 @@ GENERATION_7_SETTINGS_SCHEMA = {
     "overlay_scale": (float, 0.8457),
     "overlay_position_x": (int, 0),
     "overlay_position_y": (int, 0),
+    # Place name formatting settings
+    "place_use_country_abbrev": (bool, False),
+    "place_use_state_abbrev": (bool, False),
+    "place_show_county": (bool, True),
+    "place_show_country": (bool, True),
+    "place_hide_usa_with_state": (bool, True),
 }
 
 
@@ -552,10 +559,31 @@ def generate_prototype_7gen_preview(
                     sunbeam_rotation,
                 ) in great_great_great_grandparents:
                     if individual:
+                        # Format places based on settings
+                        formatted_birth_place = format_place_from_settings(
+                            getattr(individual, "birth_place", "") or "",
+                            validated_settings,
+                        )
+                        formatted_death_place = format_place_from_settings(
+                            getattr(individual, "death_place", "") or "",
+                            validated_settings,
+                        )
+
+                        # Create a modified individual with formatted places
+                        class FormattedIndividual:
+                            def __init__(self, original, birth_place, death_place):
+                                self.__dict__.update(original.__dict__)
+                                self.birth_place = birth_place
+                                self.death_place = death_place
+
+                        formatted_individual = FormattedIndividual(
+                            individual, formatted_birth_place, formatted_death_place
+                        )
+
                         print_individual(
                             draw=draw,
                             content_img=content_img,
-                            individual=individual,
+                            individual=formatted_individual,
                             settings=validated_settings,
                             rotation=subclade_rotation,
                             first_name_base_x=base_x,
