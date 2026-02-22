@@ -771,6 +771,9 @@ HUD.Sliders = (function() {
         // Stroke width slider
         setupSlider('default-stroke-width-slider', 'default-stroke-width-value');
 
+        // Flag size slider
+        setupSlider('place-flag-size-slider', 'place-flag-size-value');
+
         // Primary individual coordinates sliders
         setupSlider('primary-translate-x-slider', 'primary-translate-x-value');
         setupSlider('primary-translate-y-slider', 'primary-translate-y-value');
@@ -946,7 +949,7 @@ HUD.Utils = (function() {
 
             // Convert numeric values appropriately
             if (value !== null && value !== '') {
-                if (key.includes('font_size') || key.includes('translate') || key.includes('rotate')) {
+                if (key.includes('font_size') || key.includes('translate') || key.includes('rotate') || key.includes('flag_size')) {
                     userSettings[key] = parseInt(value) || 0;
                 } else if (key.includes('stroke_width')) {
                     userSettings[key] = parseFloat(value) || 0.5;

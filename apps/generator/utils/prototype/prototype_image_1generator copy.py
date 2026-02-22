@@ -89,9 +89,7 @@ GENERATION_1_SETTINGS_SCHEMA = {
     "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
     "place_flag_format": (str, "png"),
-    "place_flag_size": (int, 300),
-    "place_flag_layer": (str, "bottom"),
-    "place_flag_in_overlay": (bool, True),
+    "place_flag_size": (int, 48),
     "flag_font": (str, "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf"),
     # Name formatting settings
     "name_use_first_middle_only": (bool, True),
@@ -149,38 +147,13 @@ def generate_prototype_1gen_preview(
                     height=Generation1Constants.BACKGROUND_HEIGHT,
                 )
 
-                # Apply background to image
-                draw(content_img)
-
-                # Render flag AFTER background, BEFORE text (on background)
-                # Position: 1584, 1584 = offset (609, 609) from center (975, 975)
-                # Flag size comes from settings (place_flag_size)
-                _render_flag_overlay(
-                    content_img,
-                    primary_individual,
-                    validated_settings,
-                    flag_base_x=609,
-                    flag_base_y=609,
-                    flag_rotation=-45,
-                    rotation=0,
-                )
-
-                # Now draw text on a new Drawing layer
-                text_draw = Drawing()
-                text_draw.font = validated_settings["font_family"]
-                text_draw.font_size = validated_settings["primary_name_font_size"]
-                text_draw.stroke_antialias = True
-                text_draw.stroke_color = validated_settings["primary_stroke_color"]
-                text_draw.stroke_width = validated_settings["primary_stroke_width"]
-                text_draw.fill_color = validated_settings["primary_font_color"]
-
-                text_draw.translate(
+                draw.translate(
                     x=Generation1Constants.INITIAL_TRANSLATE_X,
                     y=Generation1Constants.INITIAL_TRANSLATE_Y,
                 )
 
                 print_individual(
-                    draw=text_draw,
+                    draw=draw,
                     content_img=content_img,
                     individual=primary_individual,
                     settings=validated_settings,
@@ -222,13 +195,17 @@ def generate_prototype_1gen_preview(
                     death_place_rotation=validated_settings[
                         "primary_death_place_rotate"
                     ],
+                    flag_base_x=Generation1Constants.CENTER_X,
+                    flag_base_y=Generation1Constants.CENTER_Y - 50,
+                    flag_rotation=validated_settings["primary_name_rotate"],
+                    flag_font_size=validated_settings["primary_place_info_font_size"],
+                    flag_font=validated_settings.get("flag_font"),
                     use_display_text=True,
                     use_gravity_center=True,
                 )
 
-                text_draw(content_img)
-
                 draw.pop()
+                draw(content_img)
 
             if template == "preview":
                 return create_preview_buffer(content_img)
@@ -242,114 +219,6 @@ def generate_prototype_1gen_preview(
     except Exception as e:
         logger.error(f"Unexpected error in prototype 1gen generation: {e}")
         raise GenerationError(f"Prototype 1-gen chart generation failed: {e}")
-
-
-def _render_flag_overlay(
-    content_img,
-    individual,
-    validated_settings,
-    flag_base_x=None,
-    flag_base_y=None,
-    flag_rotation=0,
-    flag_size=None,
-    rotation=0,
-    center_x=None,
-    center_y=None,
-):
-    """Render flag as final overlay - composites AFTER all text drawing is complete.
-
-    This ensures the flag appears ON TOP of all text, not behind it.
-    Supports rotational translation for multi-gen charts.
-
-    Args:
-        content_img: The Wand image to composite onto
-        individual: The PersonData object with birth_place/death_place
-        validated_settings: Settings dictionary
-        flag_base_x: X offset from center for flag (default: center_x)
-        flag_base_y: Y offset from center for flag (default: center_y - 50)
-        flag_rotation: Rotation of the flag itself in degrees (default: 0)
-        flag_size: Size in pixels (default: from settings or 48)
-        rotation: Rotational position (0, 90, 180, 270) - applies same translation as text
-        center_x: Center X for rotation (default: 975)
-        center_y: Center Y for rotation (default: 975)
-    """
-    import math
-    from apps.generator.utils.prototype.place_name_utils import get_flag_image_path
-
-    show_flag = validated_settings.get("place_show_flag", False)
-    if not show_flag:
-        return
-
-    flag_type = validated_settings.get("place_flag_type", "birth")
-    flag_format = validated_settings.get("place_flag_format", "png")
-
-    if flag_format != "png":
-        return
-
-    place = ""
-    if flag_type == "birth":
-        place = individual.birth_place or ""
-    elif flag_type == "death":
-        place = individual.death_place or ""
-
-    flag_path = get_flag_image_path(place)
-    if not flag_path:
-        return
-
-    flag_full_path = os.path.join(
-        settings.BASE_DIR, "apps", "charts", "static", flag_path
-    )
-
-    if not os.path.exists(flag_full_path):
-        logger.warning(f"Flag image not found: {flag_full_path}")
-        return
-
-    size = (
-        flag_size
-        if flag_size is not None
-        else validated_settings.get("place_flag_size", 48)
-    )
-
-    # Default center
-    cx = center_x if center_x is not None else Generation1Constants.CENTER_X
-    cy = center_y if center_y is not None else Generation1Constants.CENTER_Y
-
-    # Base offset from center
-    dx = flag_base_x if flag_base_x is not None else 0
-    dy = flag_base_y if flag_base_y is not None else -50
-
-    # Apply rotational translation (same as text positioning)
-    # Convert rotation to radians
-    angle_rad = math.radians(rotation)
-
-    # Rotate the offset around center
-    rotated_x = dx * math.cos(angle_rad) - dy * math.sin(angle_rad)
-    rotated_y = dx * math.sin(angle_rad) + dy * math.cos(angle_rad)
-
-    # Final position
-    x = int(cx + rotated_x)
-    y = int(cy + rotated_y)
-
-    # Flag's own rotation = base rotation + position rotation
-    final_rotation = flag_rotation + rotation
-
-    try:
-        with Image(filename=flag_full_path) as flag_img:
-            new_height = int(size * flag_img.height / flag_img.width)
-            flag_img.resize(size, new_height)
-
-            if final_rotation != 0:
-                flag_img.rotate(final_rotation)
-
-            pos_x = int(x - flag_img.width // 2)
-            pos_y = int(y - flag_img.height // 2)
-
-            content_img.composite(flag_img, pos_x, pos_y)
-            logger.info(
-                f"Rendered flag at ({pos_x}, {pos_y}) rotation={final_rotation}: {flag_path}"
-            )
-    except Exception as e:
-        logger.warning(f"Failed to render flag overlay: {e}")
 
 
 def _create_prototype_final_pdf(content_img, validated_settings):

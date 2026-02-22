@@ -63,6 +63,50 @@ COUNTRY_FLAGS = {
     "new zealand": "🇳🇿",
 }
 
+# Country name to ISO 3166-1 alpha-2 country code mapping
+COUNTRY_CODES = {
+    "usa": "us",
+    "us": "us",
+    "united states": "us",
+    "united states of america": "us",
+    "u.s.": "us",
+    "u.s.a.": "us",
+    "uk": "gb",
+    "united kingdom": "gb",
+    "great britain": "gb",
+    "gb": "gb",
+    "england": "gb-eng",
+    "scotland": "gb-sct",
+    "wales": "gb-wls",
+    "northern ireland": "gb-nir",
+    "canada": "ca",
+    "australia": "au",
+    "germany": "de",
+    "france": "fr",
+    "italy": "it",
+    "spain": "es",
+    "mexico": "mx",
+    "ireland": "ie",
+    "netherlands": "nl",
+    "belgium": "be",
+    "switzerland": "ch",
+    "austria": "at",
+    "poland": "pl",
+    "sweden": "se",
+    "norway": "no",
+    "denmark": "dk",
+    "finland": "fi",
+    "portugal": "pt",
+    "brazil": "br",
+    "argentina": "ar",
+    "japan": "jp",
+    "china": "cn",
+    "india": "in",
+    "russia": "ru",
+    "south africa": "za",
+    "new zealand": "nz",
+}
+
 # Mapping of full US state names to abbreviations
 US_STATE_ABBREVIATIONS = {
     "alabama": "AL",
@@ -564,3 +608,31 @@ def get_flag_from_place(place: str) -> str:
 
     country_lower = country.lower().strip()
     return COUNTRY_FLAGS.get(country_lower, "")
+
+
+def get_flag_image_path(place: str) -> str:
+    """
+    Get the flag image path for a place string.
+
+    Args:
+        place: Place string (e.g., "Chicago, Illinois, USA")
+
+    Returns:
+        Relative path to flag image (e.g., "charts/images/flags/us.png") if country detected, empty string otherwise
+    """
+    if not place:
+        return ""
+
+    parsed = parse_place(place)
+    country = parsed.get("country", "")
+
+    if not country:
+        return ""
+
+    country_lower = country.lower().strip()
+    country_code = COUNTRY_CODES.get(country_lower)
+
+    if not country_code:
+        return ""
+
+    return f"charts/images/flags/{country_code}.png"

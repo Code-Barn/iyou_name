@@ -82,6 +82,9 @@ def display_tree_hud(request):
                 "place_show_township": False,
                 "place_show_flag": True,
                 "place_flag_type": "birth",
+                "place_flag_format": "png",
+                "place_flag_size": 48,
+                "flag_font": "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf",
                 # Chart-wide date formatting defaults
                 "date_format": "da_mon_year",
                 "date_year_only": True,
@@ -325,6 +328,12 @@ def save_hud_settings(request):
             "place_show_township": request.POST.get("place_show_township") == "on",
             "place_show_flag": request.POST.get("place_show_flag") == "on",
             "place_flag_type": request.POST.get("place_flag_type", "birth"),
+            "place_flag_format": request.POST.get("place_flag_format", "png"),
+            "place_flag_size": int(request.POST.get("place_flag_size", 48)),
+            "flag_font": request.POST.get(
+                "flag_font",
+                "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf",
+            ),
         }
 
         # Add 2gen specific settings if present
@@ -706,6 +715,12 @@ def get_1gen_preview(request):
                 "place_show_township": hud_settings.get("place_show_township", False),
                 "place_show_flag": hud_settings.get("place_show_flag", True),
                 "place_flag_type": hud_settings.get("place_flag_type", "birth"),
+                "place_flag_format": hud_settings.get("place_flag_format", "png"),
+                "place_flag_size": hud_settings.get("place_flag_size", 48),
+                "flag_font": hud_settings.get(
+                    "flag_font",
+                    "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf",
+                ),
                 # Chart-wide date formatting settings
                 "date_format": hud_settings.get("date_format", "da_mon_year"),
                 "date_year_only": hud_settings.get("date_year_only", True),

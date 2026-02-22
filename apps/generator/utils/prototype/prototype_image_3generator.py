@@ -24,6 +24,9 @@ from apps.generator.utils.prototype.individual_printer import print_individual
 from apps.generator.utils.prototype.prototype_image_2generator import (
     generate_prototype_2gen_preview,
 )
+from apps.generator.utils.prototype.prototype_image_1generator import (
+    _render_flag_overlay,
+)
 from apps.generator.utils.settings_validator import (
     get_validated_settings,
     GenerationError,
@@ -94,6 +97,11 @@ GENERATION_3_SETTINGS_SCHEMA = {
     "place_show_township": (bool, False),
     "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
+    "place_flag_format": (str, "png"),
+    "place_flag_size": (int, 200),
+    "place_flag_layer": (str, "bottom"),
+    "place_flag_in_overlay": (bool, False),
+    "flag_font": (str, "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf"),
     # Name formatting settings
     "name_use_first_middle_only": (bool, True),
     "name_hide_hyphenated_surname": (bool, True),
@@ -243,7 +251,7 @@ def generate_prototype_3gen_preview(
                     use_gravity_center=False,
                 )
 
-                for individual, rotation in positions:
+                for idx, (individual, rotation) in enumerate(positions):
                     if individual:
                         name_settings = {
                             "name_use_first_middle_only": validated_settings.get(
@@ -267,6 +275,8 @@ def generate_prototype_3gen_preview(
                             settings=validated_settings,
                             rotation=rotation,
                             full_name=formatted_name,
+                            flag_base_x=0,
+                            flag_base_y=645,
                             **base_params,
                             chart_settings=validated_settings,
                         )

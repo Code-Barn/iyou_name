@@ -149,6 +149,9 @@ GENERATION_6_SETTINGS_SCHEMA = {
     "place_show_township": (bool, False),
     "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
+    "place_flag_format": (str, "png"),
+    "place_flag_size": (int, 48),
+    "flag_font": (str, "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf"),
     # Name formatting settings
     "name_use_first_middle_only": (bool, True),
     "name_hide_hyphenated_surname": (bool, True),

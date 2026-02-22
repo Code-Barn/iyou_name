@@ -26,6 +26,7 @@ from apps.parser.models import PersonData
 from apps.generator.utils.prototype.individual_printer import print_individual
 from apps.generator.utils.prototype.prototype_image_1generator import (
     generate_prototype_1gen_preview,
+    _render_flag_overlay,
 )
 from apps.generator.utils.settings_validator import (
     get_validated_settings,
@@ -136,6 +137,11 @@ GENERATION_2_SETTINGS_SCHEMA = {
     "place_show_township": (bool, True),
     "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
+    "place_flag_format": (str, "png"),
+    "place_flag_size": (int, 200),
+    "place_flag_layer": (str, "bottom"),
+    "place_flag_in_overlay": (bool, False),
+    "flag_font": (str, "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf"),
     # Name formatting settings
     "name_use_first_middle_only": (bool, True),
     "name_hide_hyphenated_surname": (bool, True),
@@ -262,18 +268,15 @@ def generate_prototype_2gen_preview(
                     use_gravity_center=False,
                 )
 
-                for individual, rotation, translate_x_key, translate_y_key in positions:
+                for idx, (
+                    individual,
+                    rotation,
+                    translate_x_key,
+                    translate_y_key,
+                ) in enumerate(positions):
                     if individual:
                         translate_x = validated_settings.get(translate_x_key, 0)
                         translate_y = validated_settings.get(translate_y_key, 0)
-
-                        show_flag = validated_settings.get("place_show_flag", False)
-                        flag_params = dict(
-                            flag_base_x=Generation2Constants.IMAGE_CENTER_X,
-                            flag_base_y=Generation2Constants.IMAGE_CENTER_Y,
-                            flag_rotation=0,
-                            flag_font_size=Generation2Constants.PARENT_PLACE_INFO_FONT_SIZE,
-                        )
 
                         print_individual(
                             draw=draw,
@@ -294,8 +297,10 @@ def generate_prototype_2gen_preview(
                             last_name_offset_y=translate_y,
                             birth_date_offset_x=translate_x,
                             death_date_offset_y=translate_y,
+                            flag_base_x=609,
+                            flag_base_y=609,
+                            flag_rotation=-45,
                             **base_params,
-                            **flag_params,
                         )
 
                 draw.pop()
@@ -345,45 +350,44 @@ def _create_prototype_final_pdf(content_img, validated_settings):
 
 def test_prototype_2gen():
     """Test the prototype generator."""
+    import math
 
-    # Primary individual
     person = PersonData(
         id="I1",
         full_name="John Michael Smith",
         given_name="John",
         surname="Smith",
         birth_date="1970-05-15",
-        birth_place="New York, NY",
+        birth_place="Chicago, Illinois, USA",
         death_date="2020-01-01",
-        death_place="Boston, MA",
+        death_place="Chicago, Illinois, USA",
     )
 
-    # Father
     father = PersonData(
         id="I2",
         full_name="Robert James Smith",
         given_name="Robert",
         surname="Smith",
-        birth_date="1945-03-10",
-        birth_place="Chicago, IL",
-        death_date="2010-08-20",
-        death_place="Boston, MA",
+        birth_date="1945-03-20",
+        birth_place="New York, New York, USA",
+        death_date="2010-08-15",
+        death_place="New York, New York, USA",
     )
 
-    # Mother
     mother = PersonData(
         id="I3",
         full_name="Mary Elizabeth Johnson",
         given_name="Mary",
         surname="Johnson",
-        birth_date="1948-07-22",
-        birth_place="Boston, MA",
+        birth_date="1948-07-25",
+        birth_place="Los Angeles, California, USA",
         death_date="2015-12-01",
-        death_place="New York, NY",
+        death_place="Los Angeles, California, USA",
     )
 
     family_data = {
         "individuals": {
+            "I1": person,
             "I2": father,
             "I3": mother,
         }
@@ -403,5 +407,88 @@ def test_prototype_2gen():
     return result
 
 
+def debug_2gen_flag_positions():
+    """Debug test to show expected vs actual flag positions."""
+    import math
+    from wand.drawing import Drawing
+    from wand.image import Image
+    from django.conf import settings as django_settings
+    import os
+
+    # Constants
+    CENTER_X = 975
+    CENTER_Y = 975
+    FLAG_OFFSET_X = 609
+    FLAG_OFFSET_Y = 609
+    FLAG_SIZE = 200
+
+    print("=" * 60)
+    print("2GEN FLAG POSITION DEBUG")
+    print("=" * 60)
+    print(f"Center: ({CENTER_X}, {CENTER_Y})")
+    print(f"Flag offset (master position): ({FLAG_OFFSET_X}, {FLAG_OFFSET_Y})")
+    print()
+
+    # Calculate expected positions for each rotation
+    rotations = [0, 180]
+    for rotation in rotations:
+        angle_rad = math.radians(rotation)
+        rotated_x = FLAG_OFFSET_X * math.cos(angle_rad) - FLAG_OFFSET_Y * math.sin(
+            angle_rad
+        )
+        rotated_y = FLAG_OFFSET_X * math.sin(angle_rad) + FLAG_OFFSET_Y * math.cos(
+            angle_rad
+        )
+
+        final_x = CENTER_X + rotated_x
+        final_y = CENTER_Y + rotated_y
+
+        # Expected if we just rotate the offset
+        print(f"Rotation {rotation}:")
+        print(f"  Rotated offset: ({rotated_x:.1f}, {rotated_y:.1f})")
+        print(f"  Final position: ({final_x:.1f}, {final_y:.1f})")
+        print()
+
+        # Calculate distance from center
+        dist_from_center = math.sqrt(
+            (final_x - CENTER_X) ** 2 + (final_y - CENTER_Y) ** 2
+        )
+        print(f"  Distance from center: {dist_from_center:.1f}px")
+        print()
+
+    # Now test what print_individual does
+    print("=" * 60)
+    print("Simulating print_individual flag positioning:")
+    print("=" * 60)
+
+    # Simulate what happens in print_individual
+    # With flag_base_x=609, flag_base_y=609, center=975,975
+    flag_base_x = 609
+    flag_base_y = 609
+
+    dx = flag_base_x  # 609
+    dy = flag_base_y  # 609
+
+    for rotation in [0, 180]:
+        angle_rad = math.radians(rotation)
+        rotated_x = dx * math.cos(angle_rad) - dy * math.sin(angle_rad)
+        rotated_y = dx * math.sin(angle_rad) + dy * math.cos(angle_rad)
+
+        base_x = CENTER_X + rotated_x
+        base_y = CENTER_Y + rotated_y
+
+        # After rotation, flag_rotation = -45 + rotation
+        final_flag_rotation = -45 + rotation
+
+        print(f"\nRotation {rotation}:")
+        print(f"  Position after rotation: ({base_x:.1f}, {base_y:.1f})")
+        print(f"  Flag rotation: {final_flag_rotation} degrees")
+
+        # Simulate what ImageMagick does when rotating
+        # After rotate, dimensions change
+        print(f"  Note: After {final_flag_rotation}° rotation, image dimensions change")
+        print(f"  Centering on ({base_x}, {base_y}) using POST-rotation dimensions")
+
+
 if __name__ == "__main__":
-    test_prototype_2gen()
+    debug_2gen_flag_positions()

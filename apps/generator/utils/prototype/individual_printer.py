@@ -11,6 +11,7 @@ import logging
 import math
 
 from wand.color import Color
+from wand.image import Image
 
 from apps.generator.utils.name_utils import (
     get_name_display_info,
@@ -22,6 +23,7 @@ from apps.generator.utils.prototype.date_utils import (
 from apps.generator.utils.prototype.place_name_utils import (
     format_place_from_settings,
     get_flag_from_place,
+    get_flag_image_path,
 )
 
 logger = logging.getLogger(__name__)
@@ -139,7 +141,9 @@ def print_individual(
     flag_offset_x=0,
     flag_offset_y=0,
     flag_rotation=0,
+    flag_size=None,
     flag_font_size=None,
+    flag_font=None,
     # Options
     use_display_text=True,
     use_gravity_center=False,
@@ -228,16 +232,25 @@ def print_individual(
         death_place = format_place_from_settings(death_place, chart_settings)
 
     # Handle flags if enabled in settings
+    # Skip flag rendering in print_individual if using overlay approach (flag rendered separately in generator)
     show_flag = chart_settings.get("place_show_flag", False)
     flag_type = chart_settings.get("place_flag_type", "birth")
+    flag_format = chart_settings.get("place_flag_format", "png")
+    # New: if flag is rendered in generator's overlay stage, skip in print_individual
+    flag_in_overlay = chart_settings.get("place_flag_in_overlay", False)
 
     birth_flag = ""
     death_flag = ""
-    if show_flag:
+    birth_flag_path = ""
+    death_flag_path = ""
+    # Skip flag rendering in print_individual if using overlay approach
+    if show_flag and not flag_in_overlay:
         if flag_type == "birth":
             birth_flag = get_flag_from_place(individual.birth_place or "")
+            birth_flag_path = get_flag_image_path(individual.birth_place or "")
         elif flag_type == "death":
             death_flag = get_flag_from_place(individual.death_place or "")
+            death_flag_path = get_flag_image_path(individual.death_place or "")
 
     # Track if name has been drawn (to avoid duplicates)
     name_drawn = False
@@ -787,32 +800,113 @@ def print_individual(
         draw.pop()
 
     # Draw flags - separate positioned elements aligned to name
-    if birth_flag or death_flag:
+    if (
+        (birth_flag and flag_format == "emoji")
+        or (birth_flag_path and flag_format == "png")
+        or (death_flag and flag_format == "emoji")
+        or (death_flag_path and flag_format == "png")
+    ):
+        import math
+
         draw.fill_color = settings.get("primary_birth_place_color", Color("black"))
-        draw.font_size = (
-            flag_font_size if flag_font_size is not None else place_font_size
+
+        # Calculate flag position with rotational translation
+        # flag_base_x/flag_base_y are OFFSETS from center (like overlay approach)
+        dx = flag_base_x if flag_base_x is not None else 0
+        dy = flag_base_y if flag_base_y is not None else -50
+
+        # Apply rotation to offset
+        angle_rad = math.radians(rotation)
+        rotated_x = dx * math.cos(angle_rad) - dy * math.sin(angle_rad)
+        rotated_y = dx * math.sin(angle_rad) + dy * math.cos(angle_rad)
+
+        base_x = center_x + rotated_x
+        base_y = center_y + rotated_y
+
+        # Use emoji-compatible font for flags (when using emoji format)
+        flag_font = (
+            flag_font
+            or settings.get("flag_font")
+            or "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf"
         )
 
-        base_x = flag_base_x if flag_base_x is not None else center_x
-        base_y = flag_base_y if flag_base_y is not None else center_y
+        # Get flag size from parameter, settings, or default
+        flag_size = flag_size or settings.get("place_flag_size", 48)
 
-        if birth_flag:
-            draw.push()
-            text_width = get_text_width_px(draw, content_img, birth_flag)
-            draw.translate(base_x + flag_offset_x, base_y + flag_offset_y)
-            draw.rotate(flag_rotation)
-            draw.translate(-text_width // 2, 0)
-            draw.text(0, 0, birth_flag)
-            draw.pop()
+        # Combine flag's own rotation with position rotation
+        final_flag_rotation = flag_rotation + rotation
 
-        if death_flag:
-            draw.push()
-            text_width = get_text_width_px(draw, content_img, death_flag)
-            draw.translate(base_x + flag_offset_x, base_y + flag_offset_y + 50)
-            draw.rotate(flag_rotation)
-            draw.translate(-text_width // 2, 0)
-            draw.text(0, 0, death_flag)
-            draw.pop()
+        if flag_format == "png" and content_img:
+            from django.conf import settings as django_settings
+            import os
+
+            if birth_flag_path:
+                flag_img_path = os.path.join(
+                    django_settings.BASE_DIR,
+                    "apps",
+                    "charts",
+                    "static",
+                    birth_flag_path,
+                )
+                if os.path.exists(flag_img_path):
+                    with Image(filename=flag_img_path) as flag_img:
+                        # Resize flag to desired size
+                        flag_img.resize(
+                            flag_size, int(flag_size * flag_img.height / flag_img.width)
+                        )
+                        # Apply rotation BEFORE positioning (ImageMagick recenters after rotate)
+                        if final_flag_rotation != 0:
+                            flag_img.rotate(final_flag_rotation)
+                        # Calculate position AFTER rotation (dimensions may have changed)
+                        pos_x = int(base_x + flag_offset_x - flag_img.width // 2)
+                        pos_y = int(base_y + flag_offset_y - flag_img.height // 2)
+                        content_img.composite(flag_img, pos_x, pos_y)
+
+            if death_flag_path:
+                flag_img_path = os.path.join(
+                    django_settings.BASE_DIR,
+                    "apps",
+                    "charts",
+                    "static",
+                    death_flag_path,
+                )
+                if os.path.exists(flag_img_path):
+                    with Image(filename=flag_img_path) as flag_img:
+                        flag_img.resize(
+                            flag_size, int(flag_size * flag_img.height / flag_img.width)
+                        )
+                        if final_flag_rotation != 0:
+                            flag_img.rotate(final_flag_rotation)
+                        pos_x = int(base_x + flag_offset_x - flag_img.width // 2)
+                        pos_y = int(base_y + flag_offset_y + 50 - flag_img.height // 2)
+                        content_img.composite(flag_img, pos_x, pos_y)
+        else:
+            # Original emoji/text rendering
+            if birth_flag:
+                draw.push()
+                draw.font = flag_font
+                draw.font_size = (
+                    flag_font_size if flag_font_size is not None else place_font_size
+                )
+                text_width = get_text_width_px(draw, content_img, birth_flag)
+                draw.translate(base_x + flag_offset_x, base_y + flag_offset_y)
+                draw.rotate(final_flag_rotation)
+                draw.translate(-text_width // 2, 0)
+                draw.text(0, 0, birth_flag)
+                draw.pop()
+
+            if death_flag:
+                draw.push()
+                draw.font = flag_font
+                draw.font_size = (
+                    flag_font_size if flag_font_size is not None else place_font_size
+                )
+                text_width = get_text_width_px(draw, content_img, death_flag)
+                draw.translate(base_x + flag_offset_x, base_y + flag_offset_y + 50)
+                draw.rotate(final_flag_rotation)
+                draw.translate(-text_width // 2, 0)
+                draw.text(0, 0, death_flag)
+                draw.pop()
 
 
 def print_individual_simple(

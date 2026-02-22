@@ -199,6 +199,21 @@
                                     <option value="death" {% if hud_settings.place_flag_type|default:'birth' == 'death' %}selected{% endif %}>Death Place</option>
                                 </select>
                             </div>
+                            <div class="mb-2">
+                                <label class="form-label small" for="place-flag-format">Flag Format</label>
+                                <select name="place_flag_format" class="form-select form-select-sm" id="place-flag-format">
+                                    <option value="png" {% if hud_settings.place_flag_format|default:'png' == 'png' %}selected{% endif %}>PNG Image (recommended)</option>
+                                    <option value="emoji" {% if hud_settings.place_flag_format|default:'png' == 'emoji' %}selected{% endif %}>Emoji</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small" for="flag-font">Emoji Font (for emoji format)</label>
+                                <select name="flag_font" class="form-select form-select-sm" id="flag-font">
+                                    <option value="/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf" {% if hud_settings.flag_font|default:'/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf' == '/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf' %}selected{% endif %}>Symbola (Linux)</option>
+                                    <option value="Segoe UI Emoji" {% if hud_settings.flag_font|default:'/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf' == 'Segoe UI Emoji' %}selected{% endif %}>Segoe UI Emoji (Windows)</option>
+                                    <option value="Apple Color Emoji" {% if hud_settings.flag_font|default:'/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf' == 'Apple Color Emoji' %}selected{% endif %}>Apple Color Emoji (Mac)</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Chart-Wide Date Formatting -->
