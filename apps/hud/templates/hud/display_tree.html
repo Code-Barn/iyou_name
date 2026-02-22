@@ -39,7 +39,7 @@
 <div class="card-body d-flex justify-content-center">
                     <div class="hud-preview-area">
                         <div id="hud-preview-container" class="preview-container">
-                            <img id="hud-preview" class="preview-image" src="{% url 'hud:get_1gen_preview' %}?individual_id={{ individual.id }}&t={{ hud_settings_timestamp }}" />
+                            <img id="hud-preview" class="preview-image" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwMCIgaGVpZ2h0PSIxNTAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9" style="background-color: #000000;" />
                         </div>
                         
                         <!-- Rotation and Zoom Controls -->
@@ -148,17 +148,18 @@
 
                         <!-- Template Selection -->
                         <div class="mb-4">
-                            <label class="form-label">Chart Template</label>
-                            <select name="template" class="form-select" id="template-select" onchange="window.handleTemplateChange()">
-                                {% for key, template in TEMPLATE_MAPPING.items %}
-                                <option value="{{ key }}" {% if key == hud_settings.template|default:'1' %}selected{% endif %}>
-                                    {{ template.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                            <div class="form-text">
-                                Select the number of generations to include in your chart
+                            <label class="form-label">Chart Generation</label>
+                            <div class="d-flex align-items-center justify-content-center gap-3">
+                                <button type="button" class="btn btn-outline-secondary" id="prev-gen-btn" onclick="window.navigateGeneration(-1)">
+                                    <i class="bi bi-arrow-left"></i> Prev
+                                </button>
+                                <span class="h5 mb-0" id="current-gen-display">1 Generation</span>
+                                <button type="button" class="btn btn-outline-secondary" id="next-gen-btn" onclick="window.navigateGeneration(1)">
+                                    Next <i class="bi bi-arrow-right"></i>
+                                </button>
                             </div>
+                            <input type="hidden" name="template" id="template-input" value="{{ hud_settings.template|default:'1' }}">
+                            <input type="hidden" name="generations" value="{{ hud_settings.template|default:'1' }}">
                         </div>
 
                         <!-- Chart-Wide Place Name Formatting -->

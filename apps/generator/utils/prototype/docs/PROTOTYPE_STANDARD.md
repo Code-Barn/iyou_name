@@ -279,6 +279,57 @@ When user clicks "Apply Settings" at any level:
 - Update that generation's buffer
 - All buffers above need refresh
 
+### Buffer Caching Flow
+
+1. **Preview Request**: User navigates to a generation or changes settings
+2. **Settings Hash**: Calculate hash of all settings (cumulative from gen 1 to N)
+3. **Cache Check**: 
+   - If same individual AND same settings hash → return cached buffer
+   - Otherwise → generate new buffer and store
+4. **Cache Invalidation**: When settings change or individual changes
+
+### Cumulative Settings for Cache Keys
+
+To ensure efficient buffer reuse, always use cumulative settings when generating previews:
+
+```python
+# In generator function - get all settings from gen 1 to current
+def get_cumulative_settings(user_settings, generation):
+    # Settings already contain cumulative values from JavaScript
+    # Just use them directly for cache key consistency
+    return user_settings
+```
+
+The key principle: **Same visual output = Same settings = Same cache key**
+
+---
+
+## Flag System
+
+For 1-3gen, PNG flags can be overlayed on birth/death places with rotational translation.
+
+### Flag Settings
+
+```python
+place_show_flag: bool        # Enable flag display
+place_flag_type: str         # "birth" or "death"
+place_flag_size: int         # Flag size in pixels (default: 300 for 1gen, 200 for 2gen/3gen)
+```
+
+### Per-Generation Flag Sizes (Defaults)
+
+| Generation | Default Flag Size |
+|------------|------------------|
+| 1gen | 300px |
+| 2gen | 200px |
+| 3gen | 200px |
+
+### Flag Rotation
+
+Flags rotate with the text to maintain alignment:
+- Use rotational translation to offset flag position based on rotation angle
+- Flag position adjusts to stay near the place text as it rotates around center
+
 ## Testing Pattern
 
 ```python

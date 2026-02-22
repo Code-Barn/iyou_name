@@ -132,17 +132,25 @@ class SimpleBufferManager:
 
         # Check if buffer exists
         if buffer_key not in self.buffers:
+            logger.debug(f"[BufferDebug] No buffer found for generation {generation}")
             return False
 
         # Check if individual changed
         if self.current_individual_id != individual_id:
+            logger.debug(
+                f"[BufferDebug] Individual changed: {self.current_individual_id} -> {individual_id}"
+            )
             return False
 
         # Check if settings changed
         current_hash = self._calculate_settings_hash(settings)
         if self.current_settings_hash != current_hash:
+            logger.debug(
+                f"[BufferDebug] Settings changed: {self.current_settings_hash} -> {current_hash}"
+            )
             return False
 
+        logger.debug(f"[BufferDebug] Buffer VALID for generation {generation}")
         return True
 
     def get_buffer(
@@ -185,9 +193,9 @@ class SimpleBufferManager:
 
         # Store buffer (create a copy to avoid external closure issues)
         buffer.seek(0)
-        buffer_size = buffer.tell()
-        buffer.seek(0)
-        buffer_copy = BytesIO(buffer.read())
+        buffer_data = buffer.read()
+        buffer_size = len(buffer_data)
+        buffer_copy = BytesIO(buffer_data)
         self.buffers[buffer_key] = buffer_copy
 
         logger.debug(

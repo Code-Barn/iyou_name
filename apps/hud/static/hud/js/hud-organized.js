@@ -14,21 +14,23 @@ HUD.Main = (function() {
     let currentTemplate = '1';
     let form = null;
     let previewImg = null;
+    let initialized = false;
 
     // Default settings for reset functionality
     const DEFAULTS = {
-        primary_background_color: '#FFFFFF',
-        primary_stroke_color: '#000000',
-        primary_font_color: '#000000',
-        primary_birth_color: '#000000',
-        primary_birth_place_color: '#000000',
-        primary_death_color: '#000000',
-        primary_death_place_color: '#000000',
+        primary_background_color: '#000000',
+        primary_stroke_color: '#ffffff',
+        primary_font_color: '#ffffff',
+        primary_birth_color: '#ffffff',
+        primary_birth_place_color: '#ffffff',
+        primary_death_color: '#ffffff',
+        primary_death_place_color: '#ffffff',
         font_family: 'Arial',
         primary_name_font_size: 84,
         primary_date_info_font_size: 60,
         primary_place_info_font_size: 28,
         default_stroke_width: 0.5,
+        primary_stroke_width: 0.5,
         primary_translate_x: 0,
         primary_translate_y: 0,
         primary_name_rotate: -45,
@@ -49,6 +51,12 @@ HUD.Main = (function() {
 
     // Private methods
     function init() {
+        if (initialized) {
+            console.log('HUD already initialized, skipping...');
+            return;
+        }
+        initialized = true;
+        
         console.log('HUD JavaScript module initializing...');
 
         // Get DOM elements
@@ -63,6 +71,17 @@ HUD.Main = (function() {
 
         // Initialize rotation display
         HUD.Rotation.resetOnNewPreview();
+
+        // Initialize navigation button states
+        const templateInput = document.getElementById('template-input');
+        const currentGen = parseInt(templateInput ? templateInput.value : '1');
+        updateNavButtons(currentGen);
+
+        // Generate initial preview using current form settings
+        const userSettings = HUD.Utils.collectUserSettings(new FormData(form));
+        HUD.Preview.generatePreview(userSettings).catch(err => {
+            console.error('Initial preview generation failed:', err);
+        });
 
         console.log('HUD JavaScript module initialized successfully');
     }
@@ -459,19 +478,30 @@ HUD.Templates = (function() {
     'use strict';
 
 function handleTemplateChange() {
-        const templateSelect = document.getElementById('template-select');
-        const templateValue = templateSelect.value;
+        // Get template value from hidden input (used by arrow navigation)
+        const templateInput = document.getElementById('template-input');
+        const templateValue = templateInput ? templateInput.value : '1';
         
         console.log("Template changed to:", templateValue);
         
         // Update current template
         HUD.Main.setCurrentTemplate(templateValue);
         
-        // Update hidden template input
-        const hiddenTemplateInput = document.querySelector('input[name="template"]');
-        if (hiddenTemplateInput) {
-            hiddenTemplateInput.value = templateValue;
+        // Update display text and buttons
+        const genNames = {
+            1: '1 Generation',
+            2: '2 Generation Chart',
+            3: '3 Generation Chart',
+            4: '4 Generation Chart',
+            5: '5 Generation Chart',
+            6: '6 Generation Chart',
+            7: '7 Generation Chart'
+        };
+        const display = document.getElementById('current-gen-display');
+        if (display) {
+            display.textContent = genNames[parseInt(templateValue)] || '1 Generation';
         }
+        updateNavButtons(parseInt(templateValue));
         
         console.log("Updated current template");
         
@@ -578,161 +608,27 @@ function handleTemplateChange() {
             return;
         }
 
-        // For template 2, we need to send stored 1gen settings via POST
-        if (templateValue === '2') {
-            console.log('Template 2 selected - generating preview with stored 1gen settings');
-
-            // Collect current form settings (for 2gen-specific fields)
-            const form = HUD.Main.getForm();
-            const formData = new FormData(form);
-            const userSettings = HUD.Utils.collectUserSettings(formData);
-
-            // Add stored 1gen settings for overlay
-            const stored1GenSettings = HUD.Storage.getStored1GenSettings();
-            if (stored1GenSettings) {
-                // Merge 1gen settings into user_settings (not as separate object)
-                Object.assign(userSettings, stored1GenSettings);
-                console.log('Merged stored 1gen settings into user_settings for 2gen preview:', stored1GenSettings);
-                console.log('Complete request data being sent:', {
-                    individual_id: document.querySelector('input[name="individual_id"]').value,
-                    user_settings: userSettings
-                });
-            } else {
-                console.log('No stored 1gen settings found for 2gen preview');
-            }
-
-            // Generate 2gen preview with POST
-            return HUD.Preview.generatePreview(userSettings);
-        } else if (templateValue === '3') {
-            console.log('Template 3 selected - generating preview with cumulative settings (1gen + 2gen)');
-
-            // Collect current form settings (for 3gen-specific fields)
-            const form = HUD.Main.getForm();
-            const formData = new FormData(form);
-            const userSettings = HUD.Utils.collectUserSettings(formData);
-
-            // Add cumulative settings from previous generations (1gen + 2gen)
-            const cumulativeSettings = HUD.Storage.getCumulativeSettings(3);
-            if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
-                // Merge cumulative settings into user_settings
-                Object.assign(userSettings, cumulativeSettings);
-                console.log('Merged cumulative settings (1gen + 2gen) into user_settings for 3gen overlay:', cumulativeSettings);
-            } else {
-                console.log('No cumulative settings found for 3gen preview, using current form settings only');
-            }
-
-            console.log('Complete 3gen request data being sent:', {
-                individual_id: document.querySelector('input[name="individual_id"]').value,
-                user_settings: userSettings
-            });
-
-            // Generate 3gen preview with POST
-            return HUD.Preview.generatePreview(userSettings);
-        } else if (templateValue === '4') {
-            console.log('Template 4 selected - generating preview with cumulative settings (1gen + 2gen + 3gen)');
-
-            // Collect current form settings (for 4gen-specific fields)
-            const form = HUD.Main.getForm();
-            const formData = new FormData(form);
-            const userSettings = HUD.Utils.collectUserSettings(formData);
-
-            // Add cumulative settings from previous generations (1gen + 2gen + 3gen)
-            const cumulativeSettings = HUD.Storage.getCumulativeSettings(4);
-            if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
-                // Merge cumulative settings into user_settings
-                Object.assign(userSettings, cumulativeSettings);
-                console.log('Merged cumulative settings (1gen + 2gen + 3gen) into user_settings for 4gen overlay:', cumulativeSettings);
-            } else {
-                console.log('No cumulative settings found for 4gen preview, using current form settings only');
-            }
-
-            console.log('Complete 4gen request data being sent:', {
-                individual_id: document.querySelector('input[name="individual_id"]').value,
-                user_settings: userSettings
-            });
-
-            // Generate 4gen preview with POST
-            return HUD.Preview.generatePreview(userSettings);
-        } else if (templateValue === '5') {
-            console.log('Template 5 selected - generating preview with cumulative settings (1gen + 2gen + 3gen + 4gen)');
-
-            // Collect current form settings (for 5gen-specific fields)
-            const form = HUD.Main.getForm();
-            const formData = new FormData(form);
-            const userSettings = HUD.Utils.collectUserSettings(formData);
-
-            // Add cumulative settings from previous generations (1gen + 2gen + 3gen + 4gen)
-            const cumulativeSettings = HUD.Storage.getCumulativeSettings(5);
-            if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
-                // Merge cumulative settings into user_settings
-                Object.assign(userSettings, cumulativeSettings);
-                console.log('Merged cumulative settings (1gen + 2gen + 3gen + 4gen) into user_settings for 5gen overlay:', cumulativeSettings);
-            } else {
-                console.log('No cumulative settings found for 5gen preview, using current form settings only');
-            }
-
-            console.log('Complete 5gen request data being sent:', {
-                individual_id: document.querySelector('input[name="individual_id"]').value,
-                user_settings: userSettings
-            });
-
-            // Generate 5gen preview with POST
-            return HUD.Preview.generatePreview(userSettings);
-        } else if (templateValue === '6') {
-            console.log('Template 6 selected - generating preview with cumulative settings (1gen + 2gen + 3gen + 4gen + 5gen)');
-
-            // Collect current form settings (for 6gen-specific fields)
-            const form = HUD.Main.getForm();
-            const formData = new FormData(form);
-            const userSettings = HUD.Utils.collectUserSettings(formData);
-
-            // Add cumulative settings from previous generations (1gen + 2gen + 3gen + 4gen + 5gen)
-            const cumulativeSettings = HUD.Storage.getCumulativeSettings(6);
-            if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
-                // Merge cumulative settings into user_settings
-                Object.assign(userSettings, cumulativeSettings);
-                console.log('Merged cumulative settings (1gen + 2gen + 3gen + 4gen + 5gen) into user_settings for 6gen overlay:', cumulativeSettings);
-            } else {
-                console.log('No cumulative settings found for 6gen preview, using current form settings only');
-            }
-
-            console.log('Complete 6gen request data being sent:', {
-                individual_id: document.querySelector('input[name="individual_id"]').value,
-                user_settings: userSettings
-            });
-
-            // Generate 6gen preview with POST
-            return HUD.Preview.generatePreview(userSettings);
-        } else if (templateValue === '7') {
-            console.log('Template 7 selected - generating preview with cumulative settings (1gen + 2gen + 3gen + 4gen + 5gen + 6gen)');
-
-            // Collect current form settings (for 7gen-specific fields)
-            const form = HUD.Main.getForm();
-            const formData = new FormData(form);
-            const userSettings = HUD.Utils.collectUserSettings(formData);
-
-            // Add cumulative settings from previous generations (1gen + 2gen + 3gen + 4gen + 5gen + 6gen)
-            const cumulativeSettings = HUD.Storage.getCumulativeSettings(7);
-            if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
-                // Merge cumulative settings into user_settings
-                Object.assign(userSettings, cumulativeSettings);
-                console.log('Merged cumulative settings (1gen + 2gen + 3gen + 4gen + 5gen + 6gen) into user_settings for 7gen overlay:', cumulativeSettings);
-            } else {
-                console.log('No cumulative settings found for 7gen preview, using current form settings only');
-            }
-
-            console.log('Complete 7gen request data being sent:', {
-                individual_id: document.querySelector('input[name="individual_id"]').value,
-                user_settings: userSettings
-            });
-
-            // Generate 7gen preview with POST
-            return HUD.Preview.generatePreview(userSettings);
+        const currentGen = parseInt(templateValue);
+        const cumulativeSettings = HUD.Storage.getCumulativeSettings(currentGen);
+        
+        // Always use cumulative settings when available, fallback to form settings
+        let userSettings;
+        if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
+            console.log(`Using cumulative settings for generation ${templateValue}:`, cumulativeSettings);
+            userSettings = cumulativeSettings;
         } else {
-            // Handle unknown template values
-            console.warn(`Unknown template value: ${templateValue}`);
-            return;
+            console.log(`No cumulative settings found, using current form settings for generation ${templateValue}`);
+            const form = HUD.Main.getForm();
+            const formData = new FormData(form);
+            userSettings = HUD.Utils.collectUserSettings(formData);
         }
+
+        console.log(`Complete ${templateValue}gen request data being sent:`, {
+            individual_id: document.querySelector('input[name="individual_id"]').value,
+            user_settings: userSettings
+        });
+
+        return HUD.Preview.generatePreview(userSettings);
     }
 
     // Public API
@@ -770,6 +666,8 @@ HUD.Sliders = (function() {
 
         // Stroke width slider
         setupSlider('default-stroke-width-slider', 'default-stroke-width-value');
+        setupSlider('primary-stroke-width-slider', 'primary-stroke-width-value');
+        setupSlider('info-stroke-width-slider', 'info-stroke-width-value');
 
         // Flag size slider
         setupSlider('place-flag-size-slider', 'place-flag-size-value');
@@ -1051,20 +949,63 @@ HUD.Utils = (function() {
     };
 })();
 
-// Initialize when DOM is ready
+// Initialize when DOM is ready (guard in init() prevents duplicates)
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM ready, initializing HUD...');
     HUD.Main.init();
 });
 
 // Also initialize immediately if DOM is already loaded
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', HUD.Main.init);
-} else {
+if (document.readyState !== 'loading') {
     HUD.Main.init();
 }
 
 // Make functions available globally for onclick handlers
 window.saveAndApplySettings = HUD.Settings.saveAndApplySettings;
 window.handleTemplateChange = HUD.Templates.handleTemplateChange;
+window.navigateGeneration = navigateGeneration;
+
+// Navigation function for sequential generation selection
+function navigateGeneration(direction) {
+    const templateInput = document.getElementById('template-input');
+    const currentGen = parseInt(templateInput.value) || 1;
+    const newGen = currentGen + direction;
+    
+    if (newGen >= 1 && newGen <= 7) {
+        templateInput.value = newGen;
+        
+        // Update display text
+        const display = document.getElementById('current-gen-display');
+        const genNames = {
+            1: '1 Generation',
+            2: '2 Generation Chart',
+            3: '3 Generation Chart',
+            4: '4 Generation Chart',
+            5: '5 Generation Chart',
+            6: '6 Generation Chart',
+            7: '7 Generation Chart'
+        };
+        display.textContent = genNames[newGen];
+        
+        // Update button states
+        updateNavButtons(newGen);
+        
+        // Trigger template change
+        window.handleTemplateChange();
+    }
+}
+
+function updateNavButtons(gen) {
+    const prevBtn = document.getElementById('prev-gen-btn');
+    const nextBtn = document.getElementById('next-gen-btn');
+    
+    if (prevBtn) {
+        prevBtn.disabled = (gen <= 1);
+        prevBtn.classList.toggle('disabled', (gen <= 1));
+    }
+    if (nextBtn) {
+        nextBtn.disabled = (gen >= 7);
+        nextBtn.classList.toggle('disabled', (gen >= 7));
+    }
+}
 window.resetToDefaults = HUD.Settings.resetToDefaults;

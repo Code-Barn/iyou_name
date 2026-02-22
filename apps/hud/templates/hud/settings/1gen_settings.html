@@ -5,31 +5,31 @@
     <div class="d-flex flex-wrap gap-3">
         <div class="flex-grow-1">
             <label class="form-label">Background Color</label>
-            <input type="color" name="primary_background_color" class="form-control form-control-color" value="{{ hud_settings.primary_background_color|default:'#FFFFFF' }}">
+            <input type="color" name="primary_background_color" class="form-control form-control-color" value="{{ hud_settings.primary_background_color|default:'#000000' }}">
         </div>
         <div class="flex-grow-1">
             <label class="form-label">Stroke Color</label>
-            <input type="color" name="primary_stroke_color" class="form-control form-control-color" value="{{ hud_settings.primary_stroke_color|default:'#000000' }}">
+            <input type="color" name="primary_stroke_color" class="form-control form-control-color" value="{{ hud_settings.primary_stroke_color|default:'#ffffff' }}">
         </div>
         <div class="flex-grow-1">
             <label class="form-label">Name Color</label>
-            <input type="color" name="primary_font_color" class="form-control form-control-color" value="{{ hud_settings.primary_font_color|default:'#000000' }}">
+            <input type="color" name="primary_font_color" class="form-control form-control-color" value="{{ hud_settings.primary_font_color|default:'#ffffff' }}">
         </div>
         <div class="flex-grow-1">
             <label class="form-label">Birthdate Color</label>
-            <input type="color" name="primary_birth_color" class="form-control form-control-color" value="{{ hud_settings.primary_birth_color|default:'#000000' }}">
+            <input type="color" name="primary_birth_color" class="form-control form-control-color" value="{{ hud_settings.primary_birth_color|default:'#ffffff' }}">
         </div>
         <div class="flex-grow-1">
             <label class="form-label">Birthplace Color</label>
-            <input type="color" name="primary_birth_place_color" class="form-control form-control-color" value="{{ hud_settings.primary_birth_place_color|default:'#000000' }}">
+            <input type="color" name="primary_birth_place_color" class="form-control form-control-color" value="{{ hud_settings.primary_birth_place_color|default:'#ffffff' }}">
         </div>
         <div class="flex-grow-1">
             <label class="form-label">Deathdate Color</label>
-            <input type="color" name="primary_death_color" class="form-control form-control-color" value="{{ hud_settings.primary_death_color|default:'#000000' }}">
+            <input type="color" name="primary_death_color" class="form-control form-control-color" value="{{ hud_settings.primary_death_color|default:'#ffffff' }}">
         </div>
         <div class="flex-grow-1">
             <label class="form-label">Deathplace Color</label>
-            <input type="color" name="primary_death_place_color" class="form-control form-control-color" value="{{ hud_settings.primary_death_place_color|default:'#000000' }}">
+            <input type="color" name="primary_death_place_color" class="form-control form-control-color" value="{{ hud_settings.primary_death_place_color|default:'#ffffff' }}">
         </div>
     </div>
 </div>
@@ -84,11 +84,26 @@
     <h6 class="text-muted mb-3">Stroke Settings</h6>
     <div class="row g-3">
         <div class="col-md-4">
-            <label class="form-label">Stroke Width</label>
-            <input type="range" name="default_stroke_width" class="form-range" min="0.1" max="5" step="0.1" value="{{ hud_settings.default_stroke_width|default:0.5 }}" id="default-stroke-width-slider">
+            <label class="form-label">Name Stroke Width</label>
+            <input type="range" name="primary_stroke_width" class="form-range" min="0.1" max="5" step="0.1" value="{{ hud_settings.primary_stroke_width|default:0.5 }}" id="primary-stroke-width-slider">
             <div class="text-center">
-                <span id="default-stroke-width-value">{{ hud_settings.default_stroke_width|default:0.5 }}</span>
+                <span id="primary-stroke-width-value">{{ hud_settings.primary_stroke_width|default:0.5 }}</span>
             </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Name Stroke Color</label>
+            <input type="color" name="primary_stroke_color" class="form-control form-control-color" value="{{ hud_settings.primary_stroke_color|default:'#ffffff' }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Info Stroke Width</label>
+            <input type="range" name="info_stroke_width" class="form-range" min="0.1" max="5" step="0.1" value="{{ hud_settings.info_stroke_width|default:0.25 }}" id="info-stroke-width-slider">
+            <div class="text-center">
+                <span id="info-stroke-width-value">{{ hud_settings.info_stroke_width|default:0.25 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Info Stroke Color</label>
+            <input type="color" name="info_stroke_color" class="form-control form-control-color" value="{{ hud_settings.info_stroke_color|default:'#888888' }}">
         </div>
     </div>
 </div>

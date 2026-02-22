@@ -647,23 +647,23 @@ def get_1gen_preview(request):
                 ),
                 "default_stroke_width": hud_settings.get("default_stroke_width", 0.5),
                 "primary_stroke_color": hud_settings.get(
-                    "primary_stroke_color", "#000000"
+                    "primary_stroke_color", "#ffffff"
                 ),
                 "primary_background_color": hud_settings.get(
-                    "primary_background_color", "#ffffff"
+                    "primary_background_color", "#000000"
                 ),
-                "primary_font_color": hud_settings.get("primary_font_color", "#000000"),
+                "primary_font_color": hud_settings.get("primary_font_color", "#ffffff"),
                 "primary_birth_color": hud_settings.get(
-                    "primary_birth_color", "#000000"
+                    "primary_birth_color", "#ffffff"
                 ),
                 "primary_birth_place_color": hud_settings.get(
-                    "primary_birth_place_color", "#000000"
+                    "primary_birth_place_color", "#ffffff"
                 ),
                 "primary_death_color": hud_settings.get(
-                    "primary_death_color", "#000000"
+                    "primary_death_color", "#ffffff"
                 ),
                 "primary_death_place_color": hud_settings.get(
-                    "primary_death_place_color", "#000000"
+                    "primary_death_place_color", "#ffffff"
                 ),
                 "primary_name_rotate": hud_settings.get("primary_name_rotate", -45),
                 "primary_birth_translate_x": hud_settings.get(

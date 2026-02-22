@@ -2,7 +2,104 @@
 
 ## Overview
 
-This document catalogs the current settings systems in the codebase, analyzes their inconsistencies, and provides a roadmap for consolidation.
+This document catalogs the current settings systems in the codebase, analyzes their inconsistencies, and provides a roadmap for consolidation. It also documents the buffer caching system and cumulative settings approach for efficient navigation between generations.
+
+---
+
+## Buffer Caching System
+
+### Purpose
+
+The buffer caching system stores generated chart images to avoid regenerating them when navigating between generations, as long as settings haven't changed.
+
+### How It Works
+
+1. **Buffer Storage**: Generated chart images are stored in memory using `SimpleBufferManager`
+2. **Settings Hash**: Each buffer is associated with a hash of the settings used to generate it
+3. **Cache Validation**: When requesting a preview, the system checks if:
+   - The individual is the same
+   - The settings hash matches the cached version
+4. **Cache Hit**: If valid, returns the cached buffer
+5. **Cache Miss**: If invalid, generates new buffer and stores it
+
+### Buffer Key Components
+
+```python
+# From simple_buffer_manager.py
+buffer_key = str(generation)  # "1", "2", "3", etc.
+settings_hash = hash(json.dumps(settings, sort_keys=True))
+```
+
+### Cache Invalidation
+
+The buffer is invalidated when:
+- Individual changes
+- Settings change (detected via hash comparison)
+
+---
+
+## Cumulative Settings Approach
+
+### Problem
+
+When navigating between generations (e.g., 1gen → 2gen → 3gen), each generation has its own form with generation-specific settings. Without a unified approach, this caused:
+- Different settings sent to backend for each generation
+- Buffer cache misses even when user made no changes
+- Inefficient regeneration of charts
+
+### Solution
+
+The cumulative settings approach ensures consistent settings across generations:
+
+1. **Settings Storage**: Each generation's settings are stored in localStorage:
+   - `hud_1gen_settings` - 1gen specific settings
+   - `hud_2gen_settings` - 2gen specific settings
+   - `hud_3gen_settings` - 3gen specific settings
+   - etc.
+
+2. **Cumulative Retrieval**: When viewing generation N:
+   ```javascript
+   // Get settings from all generations 1 through N
+   function getCumulativeSettings(currentGeneration) {
+       const cumulativeSettings = {};
+       for (let gen = 1; gen <= currentGeneration; gen++) {
+           const genSettings = getStoredGenerationSettings(gen);
+           if (genSettings) {
+               Object.assign(cumulativeSettings, genSettings);
+           }
+       }
+       return cumulativeSettings;
+   }
+   ```
+
+3. **Preview Generation**: Always uses cumulative settings when available:
+   ```javascript
+   // In updatePreviewImage()
+   const cumulativeSettings = HUD.Storage.getCumulativeSettings(currentGen);
+   if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
+       userSettings = cumulativeSettings;  // Use cached cumulative settings
+   } else {
+       userSettings = collectUserSettings(formData);  // Fallback for first visit
+   }
+   ```
+
+### Benefits
+
+- **Consistent Cache Keys**: Same settings hash for same visual output
+- **Efficient Navigation**: Sequential navigation (Prev/Next arrows) uses cached buffers
+- **Settings Inheritance**: Lower generation settings apply to higher generations (for overlay compositing)
+
+### JavaScript Module Structure
+
+```javascript
+HUD.Storage = {
+    getStored1GenSettings()      // Get 1gen settings for 2gen overlay
+    store1GenSettings(settings)  // Store when Apply clicked at 1gen
+    storeGenerationSettings(gen, settings)  // Store for any generation
+    getStoredGenerationSettings(gen)  // Get specific generation's settings
+    getCumulativeSettings(gen)    // Get all settings from gen 1 to N
+}
+```
 
 ---
 
@@ -14,19 +111,25 @@ This document catalogs the current settings systems in the codebase, analyzes th
 
 | File | Settings Provided |
 |------|------------------|
-| `1gen_settings.html` | Color, Font, Font Size, Position (primary, birth date/place, death date/place) |
-| `2gen_settings.html` | Adds parent generation colors and positions |
-| `3gen_settings.html` | Adds grandparent generation colors and positions |
+| `1gen_settings.html` | Color, Font, Font Size, Position (primary, birth date/place, death date/place), Flag Size |
+| `2gen_settings.html` | Adds parent generation colors and positions, Flag Size |
+| `3gen_settings.html` | Adds grandparent generation colors and positions, Flag Size |
 | `4gen_settings.html` | Adds great-grandparent generation |
 | `5gen_settings.html` | Adds great-great-grandparent generation |
 | `6gen_settings.html` | Adds 3x great-grandparent generation |
 | `7gen_settings.html` | Adds 4x great-grandparent generation |
+
+**Per-Generation Flag Size** (defaults):
+- 1gen: 300px
+- 2gen: 200px  
+- 3gen: 200px
 
 **Characteristics**:
 - Per-generation specific settings (e.g., `primary_`, `parent_`, `grandparent_`, `greatgrandparent_`, etc.)
 - Position settings: translate_x, translate_y, rotate for each element
 - Color settings: background, stroke, font, birth/death dates/places
 - Font settings: family, sizes per generation
+- Flag settings: place_flag_size (controls PNG flag overlay size)
 
 ---
 
@@ -35,11 +138,22 @@ This document catalogs the current settings systems in the codebase, analyzes th
 **Purpose**: Chart-wide settings that apply to all generations
 
 **Current Sections**:
-- Generation selector
+- **Navigation**: Prev/Next arrow buttons for sequential generation navigation (replaced dropdown)
+- Generation display ("1 Generation", "2 Generation Chart", etc.)
 - Place Name Formatting (checkboxes)
 - Date Format (dropdown + checkboxes)
 - Name Formatting (checkboxes)
 - Dynamic settings panel (per-generation template)
+
+**Navigation Flow**:
+```
+[←] 1 Generation [→]  →  [←] 2 Generation Chart [→]  →  [←] 3 Generation Chart [→]
+```
+
+Each navigation triggers:
+1. Load new settings panel for target generation
+2. Apply cumulative settings from localStorage
+3. Generate preview using cached buffer (if settings unchanged)
 
 **Settings**:
 ```python
@@ -276,19 +390,24 @@ The `Xgen_settings.html` templates are:
 
 ## Roadmap for Consolidation
 
-### Phase 1: Unify Settings Flow (Recommended Next)
+### Phase 1: Unify Settings Flow (COMPLETED)
 
-1. **Move place formatting into `print_individual()`**
-   - Pass place settings through `chart_settings`
-   - Remove pre-processing in generators
-   - Simplifies generator code
+1. **Cumulative Settings System** ✅
+   - Settings stored per-generation in localStorage
+   - `getCumulativeSettings(N)` retrieves all settings from gen 1 to N
+   - Preview generation uses cumulative settings for consistent cache keys
 
-2. **Create single settings schema system**
-   - Base schema with chart-wide settings
-   - Per-generation extends base
-   - Use inheritance pattern
+2. **Buffer Caching** ✅
+   - `SimpleBufferManager` stores generated buffers
+   - Settings hash validates cache freshness
+   - Sequential navigation (Prev/Next) uses cached buffers when settings unchanged
 
-### Phase 2: Update HUD Templates
+3. **Navigation UI** ✅
+   - Replaced dropdown with Prev/Next arrow buttons
+   - Smooth sequential generation navigation
+   - Settings panel loads dynamically per generation
+
+### Phase 2: Update HUD Templates (IN PROGRESS)
 
 1. **Add new date/name settings to Xgen_settings.html**
    - Currently only in `display_tree.html`
@@ -297,10 +416,6 @@ The `Xgen_settings.html` templates are:
 2. **Standardize template structure**
    - Follow consistent pattern across 1-7gen
    - Include all format options
-
-3. **Consider merging into single UI**
-   - All settings in one place?
-   - Or clear separation: format vs. position?
 
 ### Phase 3: Documentation
 
@@ -353,9 +468,12 @@ GENERATION_1_SCHEMA = {
 
 | Aspect | Current State | Recommended |
 |--------|---------------|-------------|
+| Buffer Caching | Implemented with SimpleBufferManager | ✅ Complete |
+| Cumulative Settings | Implemented via localStorage | ✅ Complete |
+| Navigation UI | Prev/Next arrows | ✅ Complete |
 | Place formatting | Pre-processed in generator | Pass via chart_settings |
-| Date formatting | Via chart_settings | Good |
-| Name formatting | Via chart_settings | Good |
+| Date formatting | Via chart_settings | ✅ Good |
+| Name formatting | Via chart_settings | ✅ Good |
 | Settings UI | Split between 2 files | Unify |
 | Schemas | Duplicated per-gen | Use inheritance |
-| Documentation | Scattered | Centralize |
+| Documentation | Updated | ✅ Complete |
