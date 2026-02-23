@@ -44,7 +44,7 @@ class Generation7Constants:
 
     # A1111 (outermost-left)
     POSITION_A1111_FIRST_NAME_BASE_X = 115
-    POSITION_A1111_FIRST_NAME_BASE_Y = 1785
+    POSITION_A1111_FIRST_NAME_BASE_Y = 1788
     POSITION_A1111_BIRTH_DATE_BASE_X = 300
     POSITION_A1111_BIRTH_DATE_BASE_Y = 1795
     POSITION_A1111_BIRTH_PLACE_BASE_X = 184
@@ -172,6 +172,34 @@ class Generation7Constants:
     POSITION_A2222_BIRTH_DATE_BASE_Y = 1795
     POSITION_A2222_BIRTH_PLACE_BASE_X = 1785
     POSITION_A2222_BIRTH_PLACE_BASE_Y = 1969
+
+    # Date pair and place pair offsets (can be tuned per-position below)
+    DATE_PAIR_OFFSET_X = 25  # Birth date center offset from name
+    PLACE_PAIR_OFFSET_X = 25  # Birth place center offset from name
+
+    # Per-position fine-tuning: dict of {index: (name_y_adjust, date_y_adjust, place_y_adjust, date_x_adjust, place_x_adjust)}
+    # Use None for no adjustment, or specific pixel values
+    # Index corresponds to position in a_x_positions (0=A1111, 1=A1112, ... 15=A2222)
+    POSITION_FINE_TUNE = {
+        # index: (name_y, birth_date_y, birth_place_y, birth_date_x, birth_place_x)
+        0: (0, -10, 0, 33, 0),  # A1111
+        1: (0, 10, 0, 29, -5),  # A1112
+        2: (0, 5, 0, 20, -5),  # A1121
+        3: (0, 5, 0, 15, -10),  # A1122
+        4: (0, 10, 0, 5, -15),  # A1211
+        5: (0, 15, 0, 0, -25),  # A1212
+        6: (0, 15, 0, -5, -25),  # A1221
+        7: (6, 20, 0, -5, -40),  # A1222
+        8: (6, 20, -10, -18, -40),  # A2111
+        9: (7, 25, -10, -25, -45),  # A2112
+        10: (9, 25, 0, -30, -50),  # A2121
+        11: (10, 30, 0, -37, -55),  # A2122
+        12: (10, 30, -10, -45, -60),  # A2211
+        13: (8, 35, -5, -50, -65),  # A2212
+        14: (13, 35, 0, -50, -70),  # A2221
+        15: (15, -50, 0, -55, -75),  # A2222
+        # Add more fine-tuning as needed
+    }
 
     GREAT_GREAT_GREAT_GREAT_GRANDPARENT_NAME_FONT_SIZE = 8
     GREAT_GREAT_GREAT_GREAT_GRANDPARENT_DATE_INFO_FONT_SIZE = 7
@@ -314,12 +342,12 @@ def generate_prototype_7gen_preview(
                     place_font_size=4,
                     birth_date_offset_x=0,
                     birth_date_offset_y=0,
-                    birth_date_paired_offset_x=-40,
-                    death_date_paired_offset_x=40,
+                    birth_date_paired_offset_x=-38,
+                    death_date_paired_offset_x=38,
                     paired_dates_base_y=1823,
-                    paired_places_base_y=1920,
-                    birth_place_paired_offset_x=-38,
-                    death_place_paired_offset_x=38,
+                    paired_places_base_y=1910,
+                    birth_place_paired_offset_x=-40,
+                    death_place_paired_offset_x=40,
                     use_display_text=True,  # Multiline for full names
                     use_gravity_center=False,
                     multiline_line_spacing=0.8,
@@ -433,41 +461,76 @@ def generate_prototype_7gen_preview(
                 # A1111 moved 10px left, A1 positions keep 116px gap
                 # A2 positions adjusted inward
                 a_x_positions = [
-                    130,  # A1111 (+3px)
-                    240,  # A1112
+                    131,  # A1111 (+3px)
+                    241,  # A1112
                     355,  # A1121
                     468,  # A1122 (-3px)
-                    580,  # A1211
+                    578,  # A1211
                     692,  # A1212
-                    809,  # A1221
+                    805,  # A1221
                     907,  # A1222 (-10px)
                     1028,  # A2111 (+15px)
-                    1143,  # A2112 (new)
-                    1251,  # A2121 (+10px)
-                    1362,  # A2122 (+8px)
-                    1478,  # A2211 (+8px)
-                    1590,  # A2212 (+8px)
-                    1680,  # A2221 (-3px)
-                    1788,  # A2222 (-29px, moved in 25px from 1801)
+                    1140,  # A2112 (new)
+                    1249,  # A2121 (+10px)
+                    1360,  # A2122 (+8px)
+                    1473,  # A2211 (+8px)
+                    1585,  # A2212 (+8px)
+                    1695,  # A2221 (-3px)
+                    1807,  # A2222 (-29px, moved in 25px from 1801)
                 ]
 
                 # Use ONLY A positions - sunbeam rotation applied, print_individual handles quadrant rotation
-                a_positions = [(a_x_positions[i], 1840) for i in range(16)]
+                a_positions = [(a_x_positions[i], 1842) for i in range(16)]
 
                 # Build master position coordinates from A subclade (position only, no ancestor yet)
                 # Each tuple: (name_x, name_y, birth_date_x, birth_date_y, birth_place_x, birth_place_y, text_rotation)
+                # Apply fine-tuning from Generation7Constants.POSITION_FINE_TUNE
                 master_positions = []
                 for i in range(16):
                     pos_x, pos_y = a_positions[i]
                     text_rot = get_sunbeam_rotation(pos_x, pos_y)
+
+                    # Get fine-tune adjustments if defined
+                    tune = Generation7Constants.POSITION_FINE_TUNE.get(i)
+                    if tune:
+                        name_y_adj, date_y_adj, place_y_adj, date_x_adj, place_x_adj = (
+                            tune
+                        )
+                        # Apply adjustments (check for None, not for falsy 0)
+                        final_name_y = pos_y + (
+                            name_y_adj if name_y_adj is not None else 0
+                        )
+                        final_date_y = 1825 + (
+                            date_y_adj if date_y_adj is not None else 0
+                        )
+                        final_place_y = 1850 + (
+                            place_y_adj if place_y_adj is not None else 0
+                        )
+                        final_date_x = (
+                            pos_x
+                            + Generation7Constants.DATE_PAIR_OFFSET_X
+                            + (date_x_adj if date_x_adj is not None else 0)
+                        )
+                        final_place_x = (
+                            pos_x
+                            - Generation7Constants.PLACE_PAIR_OFFSET_X
+                            - (place_x_adj if place_x_adj is not None else 0)
+                        )
+                    else:
+                        final_name_y = pos_y
+                        final_date_y = 1825
+                        final_place_y = 1850
+                        final_date_x = pos_x + Generation7Constants.DATE_PAIR_OFFSET_X
+                        final_place_x = pos_x - Generation7Constants.PLACE_PAIR_OFFSET_X
+
                     master_positions.append(
                         (
                             pos_x,
-                            pos_y,
-                            pos_x + 25,
-                            1825,
-                            pos_x - 25,
-                            1850,
+                            final_name_y,
+                            final_date_x,
+                            final_date_y,
+                            final_place_x,
+                            final_place_y,
                             text_rot,
                         )
                     )
