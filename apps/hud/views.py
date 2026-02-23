@@ -121,11 +121,43 @@ def display_tree_hud(request):
         else:
             generations = current_template
 
+        # Check if this individual is the home person and load their saved settings
+        is_home_person = False
+        if (
+            gedcom_file.home_person_id == individual_id
+            and request.user.is_authenticated
+        ):
+            is_home_person = True
+            # Try to load saved settings for home person
+            try:
+                import hashlib
+
+                gedcom_hash = hashlib.sha256(gedcom_file.file.name.encode()).hexdigest()
+
+                from apps.chart_storage.models import IndividualSettings
+
+                home_settings = IndividualSettings.objects.filter(
+                    user=request.user,
+                    gedcom_hash=gedcom_hash,
+                    individual_id=individual_id,
+                    is_home_person=True,
+                ).first()
+
+                if home_settings and home_settings.settings_json:
+                    # Merge saved settings into hud_settings (saved settings take precedence)
+                    hud_settings = {**hud_settings, **home_settings.settings_json}
+                    logger.info(
+                        f"Loaded saved settings for home person {individual_id}"
+                    )
+            except Exception as e:
+                logger.warning(f"Could not load home person settings: {e}")
+
         return render(
             request,
             "hud/display_tree.html",
             {
                 "gedcom_file_id": gedcom_file_id,
+                "gedcom_file": gedcom_file,  # Add for home person checks
                 "individual": individual,
                 "hud_settings": hud_settings,
                 "hud_settings_timestamp": request.session.get(

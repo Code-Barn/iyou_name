@@ -80,9 +80,45 @@ def confirm_selection(request, file_id):
                 return HttpResponse(b"Unauthorized", status=403)
 
             if action == "set_home":
-                # Set this individual as the home person for this file
+                # Get individual name for storage
+                individuals = gedcom_file.parsed_data.get("individuals", {})
+                individual_data = individuals.get(individual_id, {})
+                individual_name = individual_data.get("full_name", "Unknown")
+
+                # Compute gedcom_hash from filename
+                import hashlib
+
+                gedcom_hash = hashlib.sha256(gedcom_file.file.name.encode()).hexdigest()
+
+                # Set home person in GedcomFile (for navigation)
                 gedcom_file.home_person_id = individual_id
                 gedcom_file.save()
+
+                # Also sync to chart_storage IndividualSettings
+                if request.user and request.user.is_authenticated:
+                    from apps.chart_storage.models import IndividualSettings
+
+                    # Unset any existing home person first
+                    IndividualSettings.objects.filter(
+                        user=request.user, gedcom_hash=gedcom_hash, is_home_person=True
+                    ).update(is_home_person=False)
+
+                    # Create/update IndividualSettings for this person
+                    # Don't set settings_json yet - just mark as home person
+                    settings, created = IndividualSettings.objects.get_or_create(
+                        user=request.user,
+                        gedcom_hash=gedcom_hash,
+                        individual_id=individual_id,
+                        defaults={
+                            "gedcom_name": gedcom_file.file.name,
+                            "individual_name": individual_name,
+                            "settings_json": {},
+                            "is_home_person": True,
+                        },
+                    )
+                    if not created:
+                        settings.is_home_person = True
+                        settings.save()
 
                 if request.user and request.user.is_authenticated:
                     return redirect("users:profile")

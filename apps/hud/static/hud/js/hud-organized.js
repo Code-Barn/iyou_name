@@ -1045,3 +1045,206 @@ function updateNavButtons(gen) {
     }
 }
 window.resetToDefaults = HUD.Settings.resetToDefaults;
+
+// ============================================================================
+// PresetManager - Handles saving/loading presets and individual settings
+// ============================================================================
+
+HUD.PresetManager = (function() {
+    'use strict';
+
+    function getCSRFToken() {
+        const token = document.querySelector('input[name="csrfmiddlewaretoken"]');
+        return token ? token.value : '';
+    }
+
+    function getGedcomHash() {
+        // Get from session or generate from filename
+        const fileInput = document.querySelector('input[name="gedcom_file_id"]');
+        if (fileInput) {
+            return fileInput.value;
+        }
+        // Fallback: try to get from URL or generate a simple hash
+        return 'default';
+    }
+
+    return {
+        // --- Preset Management ---
+
+        savePreset(name, description = '') {
+            const currentGen = HUD.Main.getCurrentTemplate();
+            const settings = HUD.Storage.getCumulativeSettings(parseInt(currentGen));
+            
+            return fetch('/storage/presets/create/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: name,
+                    description: description,
+                    settings_json: settings
+                })
+            }).then(r => r.json());
+        },
+
+        loadPreset(presetId) {
+            return fetch(`/storage/presets/${presetId}/`)
+                .then(r => r.json())
+                .then(preset => {
+                    if (preset.settings_json) {
+                        const currentGen = HUD.Main.getCurrentTemplate();
+                        HUD.Storage.storeGenerationSettings(
+                            parseInt(currentGen),
+                            preset.settings_json
+                        );
+                        HUD.Utils.updateFormWithStoredSettings(preset.settings_json);
+                        HUD.Templates.updatePreviewImage(currentGen);
+                    }
+                    return preset;
+                });
+        },
+
+        listPresets() {
+            return fetch('/storage/presets/')
+                .then(r => r.json());
+        },
+
+        deletePreset(presetId) {
+            return fetch(`/storage/presets/${presetId}/delete/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                }
+            }).then(r => r.json());
+        },
+
+        setDefaultPreset(presetId) {
+            return fetch(`/storage/presets/${presetId}/set-default/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'Content-Type': 'application/json',
+                }
+            }).then(r => r.json());
+        },
+
+        // --- Individual Settings ---
+
+        saveIndividualSettings(gedcomHash, individualId, individualName, settings) {
+            return fetch('/storage/individual-settings/save/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    gedcom_hash: gedcomHash,
+                    individual_id: individualId,
+                    individual_name: individualName,
+                    settings_json: settings
+                })
+            }).then(r => r.json());
+        },
+
+        getIndividualSettings(gedcomHash, individualId) {
+            return fetch(`/storage/individual-settings/${gedcomHash}/${individualId}/`)
+                .then(r => r.json());
+        },
+
+        setHomePerson(gedcomHash, individualId, individualName) {
+            return fetch('/storage/home-person/set/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    gedcom_hash: gedcomHash,
+                    individual_id: individualId,
+                    individual_name: individualName
+                })
+            }).then(r => r.json());
+        },
+
+        getHomePerson(gedcomHash) {
+            return fetch(`/storage/home-person/${gedcomHash}/`)
+                .then(r => r.json());
+        },
+
+        // --- Storage Management ---
+
+        getStorageUsage() {
+            return fetch('/storage/storage/usage/')
+                .then(r => r.json());
+        },
+
+        clearAllBuffers() {
+            if (!confirm('This will delete all cached charts. You will need to regenerate them. Continue?')) {
+                return Promise.resolve({ cancelled: true });
+            }
+            
+            return fetch('/storage/storage/clear/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                }
+            }).then(r => r.json());
+        },
+
+        // --- Auto-load settings for individual ---
+
+        loadSettingsForIndividual(gedcomHash, individualId, individualName) {
+            // First try individual-specific settings
+            return this.getIndividualSettings(gedcomHash, individualId)
+                .then(data => {
+                    if (data.settings_json) {
+                        console.log('Loaded individual settings for', individualName);
+                        const currentGen = HUD.Main.getCurrentTemplate();
+                        HUD.Storage.storeGenerationSettings(
+                            parseInt(currentGen),
+                            data.settings_json
+                        );
+                        HUD.Utils.updateFormWithStoredSettings(data.settings_json);
+                        return data;
+                    }
+                    
+                    // Fall back to home person settings
+                    return this.getHomePerson(gedcomHash)
+                        .then(homeData => {
+                            if (homeData.settings_json) {
+                                console.log('Loaded home person settings for', individualName);
+                                const currentGen = HUD.Main.getCurrentTemplate();
+                                HUD.Storage.storeGenerationSettings(
+                                    parseInt(currentGen),
+                                    homeData.settings_json
+                                );
+                                HUD.Utils.updateFormWithStoredSettings(homeData.settings_json);
+                            }
+                            return homeData;
+                        });
+                });
+        },
+
+        // --- UI Helpers ---
+
+        showSavePresetDialog() {
+            const name = prompt('Enter preset name:');
+            if (!name) return Promise.resolve(null);
+            
+            const description = prompt('Enter description (optional):') || '';
+            
+            return this.savePreset(name, description);
+        },
+
+        showLoadPresetDropdown(presets) {
+            // This would typically populate a dropdown menu
+            // For now, just log the presets
+            console.log('Available presets:', presets);
+        }
+    };
+})();
+
+// Expose for global use
+window.HUD = HUD;

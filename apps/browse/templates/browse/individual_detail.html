@@ -2,16 +2,20 @@
 {% block content %}
 <div class="container mt-5">
     {% include 'core/components/individual_header.html' %}
-    {% if is_home_person %}
-    <div class="alert alert-info mt-3">
-        This is your selected "Home Person" for this GEDCOM file.
-    </div>
-    {% endif %}
 
     <div class="card">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
-                <h3 class="card-title fs-2">{{ individual.full_name }}</h3>
+                <div>
+                    <h3 class="card-title fs-2 d-inline">
+                        {{ individual.full_name }}
+                    </h3>
+                    {% if is_home_person %}
+                    <span class="badge bg-success ms-2 align-middle">
+                        <i class="bi bi-house-fill me-1"></i>Home Person
+                    </span>
+                    {% endif %}
+                </div>
                 <div>
                     <form method="post" class="d-inline" action="{% url 'hud:display_tree' %}">
                         {% csrf_token %}
@@ -21,6 +25,7 @@
                             Generate Family Tree
                         </button>
                     </form>
+                    {% if not is_home_person %}
                     <form method="post" class="d-inline ms-2" action="{% url 'selector:confirm_selection' file_id %}">
                         {% csrf_token %}
                         <input type="hidden" name="individual_id" value="{{ individual.id }}">
@@ -29,6 +34,7 @@
                             <i class="bi bi-person-check"></i> Set Home Person
                         </button>
                     </form>
+                    {% endif %}
                 </div>
             </div>
 

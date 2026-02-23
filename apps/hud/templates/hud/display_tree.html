@@ -12,7 +12,12 @@
             <h2 class="mb-4">Interactive Family Tree Preview</h2>
             <!-- Individual info alert box -->
             <div class="alert alert-info">
-                <strong>Primary Individual:</strong> {{ individual.full_name }}<br>
+                <strong>Primary Individual:</strong> {{ individual.full_name }}
+                {% if gedcom_file.home_person_id == individual.id %}
+                <span class="badge bg-success ms-2 align-middle">
+                    <i class="bi bi-house-fill me-1"></i>Home Person
+                </span>
+                {% endif %}<br>
                 <strong>Birth:</strong>
                 {% if individual.birth_date or individual.birth_place %}
                     {{ individual.birth_date }}{% if individual.birth_date and individual.birth_place %} in {% endif %}{{ individual.birth_place }}
@@ -538,6 +543,31 @@
                                 window.HUD.Zoom = window.ZoomManager;
                                 console.log('HUD.Zoom linked to ZoomManager');
                             }
+                            
+                            // Load storage usage on page load
+                            if (window.HUD && window.HUD.PresetManager) {
+                                window.HUD.PresetManager.getStorageUsage().then(data => {
+                                    const usageDiv = document.getElementById('storage-usage');
+                                    if (usageDiv) {
+                                        const usedMB = (data.bytes_used / 1024 / 1024).toFixed(1);
+                                        const limitMB = (data.bytes_limit / 1024 / 1024).toFixed(0);
+                                        const percent = data.usage_percentage.toFixed(1);
+                                        usageDiv.innerHTML = `
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <strong>Storage Usage</strong>
+                                                <span class="badge bg-secondary">${data.buffer_count} charts</span>
+                                            </div>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar ${percent > 80 ? 'bg-warning' : 'bg-primary'}" 
+                                                     style="width: ${Math.min(percent, 100)}%"></div>
+                                            </div>
+                                            <small class="text-muted">${usedMB} MB / ${limitMB} MB (${percent}%)</small>
+                                        `;
+                                    }
+                                }).catch(err => {
+                                    console.log('Storage usage not available:', err);
+                                });
+                            }
                         </script>
                     </form>
 
@@ -581,6 +611,32 @@
                                 <i class="bi bi-file-earmark-pdf"></i> Generate Final Chart
                             </button>
                         </form>
+                        
+                        <!-- Preset and Storage Management -->
+                        <div class="mt-3 pt-3 border-top">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="HUD.PresetManager.showSavePresetDialog().then(() => alert('Preset saved!'))">
+                                    <i class="bi bi-bookmark"></i> Save as Preset
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="HUD.PresetManager.listPresets().then(data => { console.log('Presets:', data.presets); alert('Check console for presets list'); })">
+                                    <i class="bi bi-bookmark-check"></i> Load Preset
+                                </button>
+                                {% if gedcom_file.home_person_id != individual.id %}
+                                <button type="button" class="btn btn-outline-info btn-sm" onclick="var name='{{ individual.full_name|escapejs }}'; var id='{{ individual.id }}'; var gedcom='{{ gedcom_file.id }}'; HUD.PresetManager.setHomePerson(gedcom, id, name).then(() => { alert('Set as home person!'); location.reload(); })">
+                                    <i class="bi bi-house"></i> Set as Home Person
+                                </button>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Storage Usage -->
+                            <div class="mt-3 p-2 bg-light rounded" id="storage-usage">
+                                <small class="text-muted">Loading storage info...</small>
+                            </div>
+                            
+                            <button type="button" class="btn btn-outline-danger btn-sm mt-2" onclick="HUD.PresetManager.clearAllBuffers().then(data => { if(data.cancelled) return; alert('Cleared ' + data.buffers_deleted + ' buffers'); location.reload(); })">
+                                <i class="bi bi-trash"></i> Clear Cached Charts
+                            </button>
+                        </div>
                     </div>
 
 </div>

@@ -57,7 +57,8 @@ OWN_APPS = [
     "apps.charts",
     "apps.users",
     "apps.generator",
-    "apps.selector",  # Add this line
+    "apps.selector",
+    "apps.chart_storage",  # Persistent settings and buffer storage
 ]
 
 

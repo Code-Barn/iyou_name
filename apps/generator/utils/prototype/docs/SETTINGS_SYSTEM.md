@@ -4,6 +4,8 @@
 
 This document catalogs the current settings systems in the codebase, analyzes their inconsistencies, and provides a roadmap for consolidation. It also documents the buffer caching system and cumulative settings approach for efficient navigation between generations.
 
+> **Note**: For detailed design of persistent settings and buffer storage, see [PERSISTENT_SETTINGS_BUFFER_DESIGN.md](./PERSISTENT_SETTINGS_BUFFER_DESIGN.md)
+
 ---
 
 ## Buffer Caching System
@@ -407,21 +409,45 @@ The `Xgen_settings.html` templates are:
    - Smooth sequential generation navigation
    - Settings panel loads dynamically per generation
 
-### Phase 2: Update HUD Templates (IN PROGRESS)
+### Phase 2: Persistent Storage (COMPLETED)
 
-1. **Add new date/name settings to Xgen_settings.html**
-   - Currently only in `display_tree.html`
-   - Should be available at all generation levels
+1. **Database Models** ✅
+   - `UserStorageQuota` - Per-user storage tracking (500MB default)
+   - `UserSettingsPreset` - Named saved presets
+   - `IndividualSettings` - Per gedcom+individual settings
+   - `ChartBuffer` - Long-term buffer storage (model only, not yet active)
 
-2. **Standardize template structure**
-   - Follow consistent pattern across 1-7gen
-   - Include all format options
+2. **API Endpoints** ✅
+   - CRUD for presets
+   - CRUD for individual settings
+   - Home person management
+   - Storage usage/clear
 
-### Phase 3: Documentation
+3. **JavaScript Integration** ✅
+   - `HUD.PresetManager` module
+   - Save/Load preset buttons
+   - Set Home Person button with badge
+   - Storage usage display
 
-1. Update `PROTOTYPE_STANDARD.md` with settings documentation
-2. Add settings reference to each utility module
-3. Create settings migration guide
+4. **Home Person Integration** ✅
+   - Setting home person syncs GedcomFile AND IndividualSettings
+   - Auto-loads saved settings when viewing home person
+   - Badge next to name on browse and HUD pages
+
+### Phase 3: Buffer Persistence (PENDING)
+
+See [PERSISTENT_SETTINGS_BUFFER_DESIGN.md](./PERSISTENT_SETTINGS_BUFFER_DESIGN.md) for detailed design.
+
+1. **PersistentBufferManager** - Uses database + disk storage
+2. **Version Checking** - Invalidate buffers when code changes
+3. **Quota Enforcement** - Check quota before storing
+4. **PDF Downloads** - Use cached buffers for final chart generation
+
+### Phase 4: Documentation ✅
+
+1. ✅ Updated `PROTOTYPE_STANDARD.md` with buffer/flag documentation
+2. ✅ Created `PERSISTENT_SETTINGS_BUFFER_DESIGN.md`
+3. ✅ This document (SETTINGS_SYSTEM.md) updated
 
 ---
 

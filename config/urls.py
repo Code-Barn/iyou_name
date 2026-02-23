@@ -28,6 +28,7 @@ urlpatterns = [
     path("generator/", include("apps.generator.urls")),
     path("users/", include("apps.users.urls")),
     path("selector/", include("apps.selector.urls")),
+    path("storage/", include("apps.chart_storage.urls")),
     path("admin/", admin.site.urls),
     path("__debug__/", include("debug_toolbar.urls")),  # Disabled for testing
 ]

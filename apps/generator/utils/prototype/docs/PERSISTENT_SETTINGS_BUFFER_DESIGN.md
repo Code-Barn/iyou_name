@@ -751,33 +751,73 @@ function clearAllBuffers() {
 
 ## 6. Implementation Phases
 
-### Phase 1: Database & Models (Week 1)
-- [ ] Create database models
-- [ ] Run migrations
-- [ ] Create UserStorageQuota on first login (signal)
+### Phase 1: Database & Models ✅ COMPLETED
+- [x] Create database models (`apps/chart_storage/models.py`)
+- [x] Run migrations
+- [x] Create UserStorageQuota on first login (signal) - NOT YET IMPLEMENTED (future)
 
-### Phase 2: Settings Persistence (Week 1-2)
-- [ ] API endpoints for presets
-- [ ] API endpoints for individual settings
-- [ ] JavaScript integration
-- [ ] UI for save/load presets
-- [ ] Home person designation
+### Phase 2: Settings Persistence ✅ COMPLETED
+- [x] API endpoints for presets (`apps/chart_storage/preset_views.py`)
+- [x] API endpoints for individual settings (`apps/chart_storage/individual_settings_views.py`)
+- [x] JavaScript integration (`HUD.PresetManager` in `hud-organized.js`)
+- [x] UI for save/load presets (buttons in HUD)
+- [x] Home person designation with GedcomFile integration
 
-### Phase 3: Buffer Persistence (Week 2-3)
-- [ ] PersistentBufferManager class
-- [ ] Integrate with existing generator views
-- [ ] Quota enforcement
-- [ ] Version checking
+### Phase 3: Buffer Persistence 🔄 PENDING
+- [ ] PersistentBufferManager class (uses database + disk storage)
+- [ ] Integrate with existing generator views for PDF downloads
+- [ ] Quota enforcement when storing buffers
+- [ ] Version checking (invalidate buffers when code changes)
+- [ ] Storage usage display in UI
+- [ ] User-initiated cache clearing
 
-### Phase 4: UI & Polish (Week 3-4)
-- [ ] Storage usage display
-- [ ] Clear cache button
-- [ ] Export/import settings
-- [ ] Testing & bug fixes
+### Future Enhancements
+- [ ] Export/Import settings as JSON
+- [ ] Automatic cleanup tasks (delete old buffers)
+- [ ] Signal to create UserStorageQuota on first login
+- [ ] Cross-file matching for shared individuals (advanced)
+
+### Phase 4: UI & Polish 🔄 PARTIALLY COMPLETE
+- [x] Storage usage display in HUD
+- [x] Clear cache button in HUD
+- [ ] Export/import settings (future)
+- [ ] Testing & bug fixes (ongoing)
 
 ---
 
-## 7. Constants
+## 7. Implemented API Endpoints
+
+All endpoints require authentication (login).
+
+### Settings Presets
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/storage/presets/` | GET | List all presets |
+| `/storage/presets/create/` | POST | Create new preset |
+| `/storage/presets/<id>/` | GET | Get preset details |
+| `/storage/presets/<id>/update/` | PUT | Update preset |
+| `/storage/presets/<id>/delete/` | DELETE | Delete preset |
+| `/storage/presets/<id>/set-default/` | POST | Set as default preset |
+
+### Individual Settings
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/storage/individual-settings/` | GET | List all individual settings |
+| `/storage/individual-settings/save/` | POST | Save settings for individual |
+| `/storage/individual-settings/<gedcom_hash>/<indi_id>/` | GET | Get settings for individual |
+| `/storage/individual-settings/<gedcom_hash>/<indi_id>/delete/` | DELETE | Delete settings |
+| `/storage/home-person/set/` | POST | Set home person |
+| `/storage/home-person/<gedcom_hash>/` | GET | Get home person |
+
+### Storage Management
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/storage/storage/usage/` | GET | Get storage quota usage |
+| `/storage/storage/clear/` | POST | Clear all buffers |
+
+---
+
+## 8. Constants
 
 ```python
 # In a constants file

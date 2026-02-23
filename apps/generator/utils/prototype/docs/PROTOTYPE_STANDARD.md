@@ -393,3 +393,25 @@ def test_prototype_ngen():
 - 116px spacing between positions
 - Text points ALONG the ray from center (radiating outward)
 - Use single-line names (use_display_text=False) with small font size (8pt)
+
+---
+
+## Changelog
+
+### 2026-02
+
+#### Buffer Caching System ✅
+- Implemented in-memory buffer caching via `SimpleBufferManager`
+- Generators now use `get_chart_buffer()` for overlays instead of direct function calls
+- Sequential navigation (Prev/Next) uses cached buffers when settings unchanged
+
+#### Cumulative Settings ✅
+- Settings stored per-generation in localStorage
+- `getCumulativeSettings(N)` retrieves all settings from gen 1 to N
+- Preview generation uses cumulative settings for consistent cache keys
+
+#### Persistent Settings Storage ✅ (See PERSISTENT_SETTINGS_BUFFER_DESIGN.md)
+- New `chart_storage` Django app with models
+- API endpoints for presets and individual settings
+- JavaScript `HUD.PresetManager` module
+- Home person integration between GedcomFile and IndividualSettings

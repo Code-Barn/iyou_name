@@ -22,6 +22,9 @@ from wand.image import Image
 
 from apps.parser.models import PersonData
 from apps.generator.utils.prototype.individual_printer import print_individual
+from apps.generator.utils.prototype.prototype_image_4generator import (
+    generate_prototype_4gen_preview,
+)
 from apps.generator.utils.settings_validator import (
     get_validated_settings,
     GenerationError,
@@ -30,7 +33,6 @@ from apps.generator.utils.simple_buffer_manager import (
     create_preview_buffer,
     create_pdf_buffer,
     BufferError,
-    get_chart_buffer,
 )
 
 logger = logging.getLogger(__name__)
@@ -42,15 +44,15 @@ class Generation5Constants:
 
     # A11 position (base for all positions in A subclade)
     POSITION_A11_FIRST_NAME_BASE_X = 330
-    POSITION_A11_FIRST_NAME_BASE_Y = 1735
-    POSITION_A11_BIRTH_DATE_BASE_X = 390
+    POSITION_A11_FIRST_NAME_BASE_Y = 1749
+    POSITION_A11_BIRTH_DATE_BASE_X = 392
     POSITION_A11_BIRTH_DATE_BASE_Y = 1735
     POSITION_A11_BIRTH_PLACE_BASE_X = 267
     POSITION_A11_BIRTH_PLACE_BASE_Y = 1869
 
     # A12 position (base for all positions in A subclade)
     POSITION_A12_FIRST_NAME_BASE_X = 760
-    POSITION_A12_FIRST_NAME_BASE_Y = 1735
+    POSITION_A12_FIRST_NAME_BASE_Y = 1749
     POSITION_A12_BIRTH_DATE_BASE_X = 780
     POSITION_A12_BIRTH_DATE_BASE_Y = 1735
     POSITION_A12_BIRTH_PLACE_BASE_X = 739
@@ -58,7 +60,7 @@ class Generation5Constants:
 
     # A21 position (mirrors A12 over x=975)
     POSITION_A21_FIRST_NAME_BASE_X = 1190
-    POSITION_A21_FIRST_NAME_BASE_Y = 1735
+    POSITION_A21_FIRST_NAME_BASE_Y = 1749
     POSITION_A21_BIRTH_DATE_BASE_X = 1560
     POSITION_A21_BIRTH_DATE_BASE_Y = 1735
     POSITION_A21_BIRTH_PLACE_BASE_X = 1683
@@ -66,15 +68,15 @@ class Generation5Constants:
 
     # A22 position (mirrors A11 over x=975)
     POSITION_A22_FIRST_NAME_BASE_X = 1620
-    POSITION_A22_FIRST_NAME_BASE_Y = 1735
+    POSITION_A22_FIRST_NAME_BASE_Y = 1749
     POSITION_A22_BIRTH_DATE_BASE_X = 1170
     POSITION_A22_BIRTH_DATE_BASE_Y = 1735
     POSITION_A22_BIRTH_PLACE_BASE_X = 1211
     POSITION_A22_BIRTH_PLACE_BASE_Y = 1869
 
-    GREAT_GREAT_GRANDPARENT_NAME_FONT_SIZE = 14
-    GREAT_GREAT_GRANDPARENT_DATE_INFO_FONT_SIZE = 10
-    GREAT_GREAT_GRANDPARENT_PLACE_INFO_FONT_SIZE = 8
+    GREAT_GREAT_GRANDPARENT_NAME_FONT_SIZE = 12
+    GREAT_GREAT_GRANDPARENT_DATE_INFO_FONT_SIZE = 7
+    GREAT_GREAT_GRANDPARENT_PLACE_INFO_FONT_SIZE = 7
 
     OVERLAY_SCALE = 0.7778
     COMPOSITE_X = 300
@@ -104,9 +106,6 @@ GENERATION_5_SETTINGS_SCHEMA = {
     "place_show_township": (bool, False),
     "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
-    "place_flag_format": (str, "png"),
-    "place_flag_size": (int, 48),
-    "flag_font": (str, "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf"),
     # Name formatting settings
     "name_use_first_middle_only": (bool, True),
     "name_hide_hyphenated_surname": (bool, True),
@@ -528,12 +527,12 @@ def generate_prototype_5gen_preview(
                     birth_date_offset_x=0,
                     birth_date_offset_y=0,
                     birth_date_rotation=0,
-                    birth_date_paired_offset_x=-100,
-                    death_date_paired_offset_x=100,
-                    paired_dates_base_y=1785,
-                    paired_places_base_y=1919,
-                    birth_place_paired_offset_x=-100,
-                    death_place_paired_offset_x=100,
+                    birth_date_paired_offset_x=-93,
+                    death_date_paired_offset_x=95,
+                    paired_dates_base_y=1760,
+                    paired_places_base_y=1930,
+                    birth_place_paired_offset_x=-113,
+                    death_place_paired_offset_x=113,
                     use_display_text=True,
                     use_gravity_center=False,
                     multiline_line_spacing=0.8,
@@ -574,15 +573,9 @@ def generate_prototype_5gen_preview(
                 draw.pop()
                 draw(content_img)
 
-            # Generate 4gen overlay using BUFFER MANAGER (not direct call)
-            logger.info("[5gen] Getting 4gen overlay from buffer manager")
-            gen4_img_buffer = get_chart_buffer(
-                primary_individual, family_data, user_settings, generation=4
+            gen4_img_buffer = generate_prototype_4gen_preview(
+                primary_individual, family_data, "preview", user_settings
             )
-            if not gen4_img_buffer:
-                raise GenerationError("Failed to get 4gen overlay buffer")
-            logger.info("[5gen] Got 4gen overlay buffer successfully")
-
             _composite_overlay(content_img, gen4_img_buffer, validated_settings)
 
             if template == "preview":
