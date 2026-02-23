@@ -42,6 +42,9 @@ def generate_final_chart(request):
         )
         template = request.POST.get("template") or request.GET.get("template") or "1"
 
+        logger.info(f"[PDF DEBUG] template parameter received: '{template}'")
+        logger.info(f"[PDF DEBUG] POST keys: {list(request.POST.keys())}")
+
         # Initialize hud_settings early to avoid UnboundLocalError
         hud_settings = request.session.get("hud_settings", {})
 
@@ -318,9 +321,13 @@ def generate_final_chart(request):
 
         # Use the centralized template mapping
         TEMPLATE_MAPPING = get_template_mapping()
+        logger.info(
+            f"[PDF DEBUG] TEMPLATE_MAPPING keys: {list(TEMPLATE_MAPPING.keys())}"
+        )
 
         # Get the appropriate generator configuration
         template_config = TEMPLATE_MAPPING.get(template)
+        logger.info(f"[PDF DEBUG] template_config for '{template}': {template_config}")
         if not template_config:
             logger.error("Invalid template parameter: %s", template)
             return JsonResponse(

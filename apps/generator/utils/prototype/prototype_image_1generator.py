@@ -120,6 +120,15 @@ def generate_prototype_1gen_preview(
     )
 
     logger.info(f"Generating prototype 1gen for: {primary_individual.full_name}")
+    logger.info(
+        f"[1gen DEBUG] Received user_settings keys: {list(user_settings.keys())}"
+    )
+    logger.info(
+        f"[1gen DEBUG] primary_background_color in user_settings: {user_settings.get('primary_background_color', 'NOT FOUND')}"
+    )
+    logger.info(
+        f"[1gen DEBUG] validated primary_background_color: {validated_settings.get('primary_background_color')}"
+    )
 
     try:
         template_path = os.path.join(

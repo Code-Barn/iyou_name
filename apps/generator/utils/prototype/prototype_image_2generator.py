@@ -25,7 +25,6 @@ from wand.image import Image
 from apps.parser.models import PersonData
 from apps.generator.utils.prototype.individual_printer import print_individual
 from apps.generator.utils.prototype.prototype_image_1generator import (
-    generate_prototype_1gen_preview,
     _render_flag_overlay,
 )
 from apps.generator.utils.settings_validator import (
@@ -36,6 +35,7 @@ from apps.generator.utils.simple_buffer_manager import (
     create_preview_buffer,
     create_pdf_buffer,
     BufferError,
+    get_chart_buffer,
 )
 
 logger = logging.getLogger(__name__)
@@ -195,6 +195,12 @@ def generate_prototype_2gen_preview(
     )
 
     logger.info(f"Generating prototype 2gen for: {primary_individual.full_name}")
+    logger.info(
+        f"[2gen DEBUG] Received user_settings keys: {list(user_settings.keys())}"
+    )
+    logger.info(
+        f"[2gen DEBUG] primary_background_color in user_settings: {user_settings.get('primary_background_color', 'NOT FOUND')}"
+    )
 
     try:
         template_path = os.path.join(
@@ -306,10 +312,17 @@ def generate_prototype_2gen_preview(
                 draw.pop()
                 draw(content_img)
 
-            # Generate 1gen overlay and composite at 50% scale in center
-            gen1_img_buffer = generate_prototype_1gen_preview(
-                primary_individual, family_data, "preview", user_settings
+            # Generate 1gen overlay using BUFFER MANAGER (not direct call)
+            # This uses the cached 1gen buffer if settings match, or regenerates if needed
+            # Using user_settings directly - buffer manager will handle settings validation
+            logger.info("[2gen] Getting 1gen overlay from buffer manager")
+            gen1_img_buffer = get_chart_buffer(
+                primary_individual, family_data, user_settings, generation=1
             )
+            if not gen1_img_buffer:
+                raise GenerationError("Failed to get 1gen overlay buffer")
+            logger.info("[2gen] Got 1gen overlay buffer successfully")
+
             _composite_overlay(content_img, gen1_img_buffer, validated_settings)
 
             if template == "preview":

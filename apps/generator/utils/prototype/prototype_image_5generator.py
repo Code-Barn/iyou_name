@@ -22,9 +22,6 @@ from wand.image import Image
 
 from apps.parser.models import PersonData
 from apps.generator.utils.prototype.individual_printer import print_individual
-from apps.generator.utils.prototype.prototype_image_4generator import (
-    generate_prototype_4gen_preview,
-)
 from apps.generator.utils.settings_validator import (
     get_validated_settings,
     GenerationError,
@@ -33,6 +30,7 @@ from apps.generator.utils.simple_buffer_manager import (
     create_preview_buffer,
     create_pdf_buffer,
     BufferError,
+    get_chart_buffer,
 )
 
 logger = logging.getLogger(__name__)
@@ -576,9 +574,15 @@ def generate_prototype_5gen_preview(
                 draw.pop()
                 draw(content_img)
 
-            gen4_img_buffer = generate_prototype_4gen_preview(
-                primary_individual, family_data, "preview", user_settings
+            # Generate 4gen overlay using BUFFER MANAGER (not direct call)
+            logger.info("[5gen] Getting 4gen overlay from buffer manager")
+            gen4_img_buffer = get_chart_buffer(
+                primary_individual, family_data, user_settings, generation=4
             )
+            if not gen4_img_buffer:
+                raise GenerationError("Failed to get 4gen overlay buffer")
+            logger.info("[5gen] Got 4gen overlay buffer successfully")
+
             _composite_overlay(content_img, gen4_img_buffer, validated_settings)
 
             if template == "preview":

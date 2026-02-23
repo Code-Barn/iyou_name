@@ -22,13 +22,13 @@ from apps.generator.utils.prototype.prototype_image_5generator import (
 )
 from apps.generator.utils.prototype.prototype_image_6generator import (
     Generation6Constants,
-    generate_prototype_6gen_preview,
 )
 from apps.generator.utils.prototype.individual_printer import print_individual
 from apps.generator.utils.settings_validator import get_validated_settings
 from apps.generator.utils.simple_buffer_manager import (
     create_preview_buffer,
     create_pdf_buffer,
+    get_chart_buffer,
 )
 
 logger = logging.getLogger(__name__)
@@ -596,10 +596,15 @@ def generate_prototype_7gen_preview(
                 draw.pop()
                 draw(content_img)
 
-            # Composite 6gen overlay
-            gen6_img_buffer = generate_prototype_6gen_preview(
-                primary_individual, family_data, "preview", user_settings
+            # Composite 6gen overlay using BUFFER MANAGER (not direct call)
+            logger.info("[7gen] Getting 6gen overlay from buffer manager")
+            gen6_img_buffer = get_chart_buffer(
+                primary_individual, family_data, user_settings, generation=6
             )
+            if not gen6_img_buffer:
+                raise GenerationError("Failed to get 6gen overlay buffer")
+            logger.info("[7gen] Got 6gen overlay buffer successfully")
+
             _composite_overlay(content_img, gen6_img_buffer, validated_settings)
 
             if template == "preview":

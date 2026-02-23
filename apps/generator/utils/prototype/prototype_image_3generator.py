@@ -21,9 +21,6 @@ from wand.image import Image
 
 from apps.parser.models import PersonData
 from apps.generator.utils.prototype.individual_printer import print_individual
-from apps.generator.utils.prototype.prototype_image_2generator import (
-    generate_prototype_2gen_preview,
-)
 from apps.generator.utils.prototype.prototype_image_1generator import (
     _render_flag_overlay,
 )
@@ -35,6 +32,7 @@ from apps.generator.utils.simple_buffer_manager import (
     create_preview_buffer,
     create_pdf_buffer,
     BufferError,
+    get_chart_buffer,
 )
 from apps.generator.utils.name_utils import parse_name_parts_with_settings
 
@@ -284,9 +282,15 @@ def generate_prototype_3gen_preview(
                 draw.pop()
                 draw(content_img)
 
-            gen2_img_buffer = generate_prototype_2gen_preview(
-                primary_individual, family_data, "preview", user_settings
+            # Generate 2gen overlay using BUFFER MANAGER (not direct call)
+            logger.info("[3gen] Getting 2gen overlay from buffer manager")
+            gen2_img_buffer = get_chart_buffer(
+                primary_individual, family_data, user_settings, generation=2
             )
+            if not gen2_img_buffer:
+                raise GenerationError("Failed to get 2gen overlay buffer")
+            logger.info("[3gen] Got 2gen overlay buffer successfully")
+
             _composite_overlay(content_img, gen2_img_buffer, validated_settings)
 
             if template == "preview":

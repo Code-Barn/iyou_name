@@ -255,6 +255,9 @@ HUD.Preview = (function() {
 
     function generatePreview(userSettings) {
         console.log('=== generatePreview called ===');
+        console.log('[JS DEBUG] Current template:', HUD.Main.getCurrentTemplate());
+        console.log('[JS DEBUG] userSettings keys:', Object.keys(userSettings));
+        console.log('[JS DEBUG] primary_background_color in userSettings:', userSettings.primary_background_color);
 
         const currentTemplate = HUD.Main.getCurrentTemplate();
         const previewImg = HUD.Main.getPreviewImg();
@@ -486,6 +489,23 @@ function handleTemplateChange() {
         
         // Update current template
         HUD.Main.setCurrentTemplate(templateValue);
+        
+        // ⭐ CRITICAL: Also update the Generate Final Chart form's template field
+        // so it's correct even if user doesn't click "Apply Settings"
+        let finalChartForm = document.querySelector('form[action*="generate_final_chart"]');
+        if (!finalChartForm) {
+            finalChartForm = document.querySelector('form[action*="generate"]');
+        }
+        if (!finalChartForm) {
+            finalChartForm = document.querySelector('form');
+        }
+        if (finalChartForm) {
+            const templateField = finalChartForm.querySelector('input[name="template"]');
+            if (templateField) {
+                templateField.value = templateValue;
+                console.log(`Updated form template to: ${templateValue}`);
+            }
+        }
         
         // Update display text and buttons
         const genNames = {
@@ -879,6 +899,22 @@ HUD.Utils = (function() {
 
             if (finalChartForm) {
                 console.log('Found form:', finalChartForm);
+                
+                // Update the template field to match current generation
+                const currentGen = HUD.Main.getCurrentTemplate();
+                const templateInput = finalChartForm.querySelector('input[name="template"]');
+                if (templateInput) {
+                    console.log(`Updating template: ${templateInput.value} -> ${currentGen}`);
+                    templateInput.value = currentGen;
+                } else {
+                    // Create template input if it doesn't exist
+                    const newInput = document.createElement('input');
+                    newInput.type = 'hidden';
+                    newInput.name = 'template';
+                    newInput.value = currentGen;
+                    finalChartForm.appendChild(newInput);
+                    console.log(`Created template input: ${currentGen}`);
+                }
 
                 let updatedCount = 0;
                 for (const [key, value] of Object.entries(settingsToUpdate)) {
