@@ -894,10 +894,7 @@ HUD.Utils = (function() {
                 continue; // Skip non-settings fields
             }
 
-            // Skip place checkboxes (already handled above) - but only actual checkboxes, not all place fields
-            if (input.type === 'checkbox' && key.startsWith('place_')) {
-                continue;
-            }
+            // Include all other fields (place_ fields are included since checkboxes were handled above)
 
             // Convert numeric values appropriately
             if (value !== null && value !== '') {
