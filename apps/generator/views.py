@@ -10,15 +10,16 @@ from django.views.decorators.http import require_http_methods
 
 from apps.generator.models import GedcomFile
 from apps.generator.template_mapping import get_template_mapping
-from apps.generator.utils import (
-    image_1generator,
-    image_2generator,
-    image_3generator,
-    image_4generator,
-    image_5generator,
-    image_6generator,
-    image_7generator,
-)
+
+# from apps.generator.utils import (
+#    image_1generator,
+#    image_2generator,
+#    image_3generator,
+#    image_4generator,
+#    image_5generator,
+#    image_6generator,
+#    image_7generator,
+# )
 from apps.parser.models import PersonData
 
 logger = logging.getLogger(__name__)
@@ -67,6 +68,20 @@ def generate_final_chart(request):
                 "composite_1gen_scale",
                 "composite_overlay_x",
                 "composite_overlay_y",
+                # Date format settings
+                "date_year_only",
+                "date_format",
+                "date_retain_leading_zeros",
+                # Name format settings
+                "name_use_first_middle_only",
+                "name_hide_hyphenated_surname",
+                # Place format settings
+                "place_use_country_abbrev",
+                "place_use_state_abbrev",
+                "place_show_county",
+                "place_show_country",
+                "place_hide_usa_with_state",
+                "place_show_township",
             ]:
                 # Convert numeric values
                 if key.endswith(

@@ -13,6 +13,7 @@ Position System:
 
 import logging
 import os
+from io import BytesIO
 
 from django.conf import settings
 from wand.color import Color
@@ -24,6 +25,7 @@ from apps.generator.utils.prototype.individual_printer import print_individual
 from apps.generator.utils.prototype.prototype_image_1generator import (
     _render_flag_overlay,
 )
+from apps.generator.utils.name_utils import parse_name_parts_with_settings
 from apps.generator.utils.settings_validator import (
     get_validated_settings,
     GenerationError,
@@ -34,7 +36,6 @@ from apps.generator.utils.simple_buffer_manager import (
     BufferError,
     get_chart_buffer,
 )
-from apps.generator.utils.name_utils import parse_name_parts_with_settings
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ class Generation3Constants:
     POSITION_A_LAST_NAME_BASE_X = 1725
     POSITION_A_LAST_NAME_BASE_Y = 975
 
-    GRANDPARENT_NAME_FONT_SIZE = 28
+    GRANDPARENT_NAME_FONT_SIZE = 26
     GRANDPARENT_DATE_INFO_FONT_SIZE = 18
     GRANDPARENT_PLACE_INFO_FONT_SIZE = 16
 
@@ -231,8 +232,8 @@ def generate_prototype_3gen_preview(
                     death_date_offset_y=0,
                     death_date_rotation=0,
                     death_date_paired_offset_x=0,
-                    paired_dates_base_y=1650,
-                    paired_places_base_y=1900,
+                    paired_dates_base_y=1630,
+                    paired_places_base_y=1908,
                     birth_place_base_x=532,
                     birth_place_base_y=1900,
                     birth_place_paired_offset_x=0,

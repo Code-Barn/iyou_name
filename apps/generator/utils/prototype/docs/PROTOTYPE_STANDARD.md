@@ -302,6 +302,24 @@ def get_cumulative_settings(user_settings, generation):
 
 The key principle: **Same visual output = Same settings = Same cache key**
 
+### Using get_chart_buffer with User Settings
+
+When generating overlays for higher generations, use `get_chart_buffer` with the full user_settings dict:
+
+```python
+# In 2gen generator - get 1gen overlay buffer
+gen1_img_buffer = get_chart_buffer(
+    primary_individual, family_data, user_settings, generation=1
+)
+```
+
+**Important**: Pass the complete `user_settings` dict. The buffer manager computes a hash of these settings to detect changes. If settings are missing or filtered, the hash will differ and trigger unnecessary regeneration.
+
+The generator receives `user_settings` from JavaScript which contains ALL cumulative settings (from all generations). This allows the buffer manager to:
+1. Detect when 1gen settings change (for 2gen overlay)
+2. Detect when 2gen settings change (for 3gen overlay)
+3. Etc.
+
 ---
 
 ## Flag System

@@ -51,8 +51,8 @@ class Generation2Constants:
     POSITION_1_FIRST_NAME_BASE_Y = 1759
 
     # Middle name: at (1650, 1650), -45° angle
-    POSITION_1_MIDDLE_NAME_BASE_X = 1650
-    POSITION_1_MIDDLE_NAME_BASE_Y = 1650
+    POSITION_1_MIDDLE_NAME_BASE_X = 1625
+    POSITION_1_MIDDLE_NAME_BASE_Y = 1625
     POSITION_1_MIDDLE_NAME_ROTATION = -45
 
     # Last name: centered on right
@@ -70,8 +70,8 @@ class Generation2Constants:
     POSITION_1_DEATH_PLACE_BASE_X = 1890
     POSITION_1_DEATH_PLACE_BASE_Y = 975
 
-    PARENT_NAME_FONT_SIZE = 48
-    PARENT_DATE_INFO_FONT_SIZE = 32
+    PARENT_NAME_FONT_SIZE = 44
+    PARENT_DATE_INFO_FONT_SIZE = 28
     PARENT_PLACE_INFO_FONT_SIZE = 24
 
     OVERLAY_SCALE = 0.50
@@ -90,7 +90,7 @@ GENERATION_2_SETTINGS_SCHEMA = {
     "info_stroke_width": (float, 0.25),
     "father_font_color": (Color, "black"),
     "father_stroke_color": (Color, "black"),
-    "father_font_size": (int, 48),
+    "father_font_size": (int, 44),
     "father_translate_x": (int, 0),
     "father_translate_y": (int, 0),
     "father_rotate": (int, 0),
@@ -107,7 +107,7 @@ GENERATION_2_SETTINGS_SCHEMA = {
     "father_death_place_rotate": (int, -90),
     "mother_font_color": (Color, "black"),
     "mother_stroke_color": (Color, "black"),
-    "mother_font_size": (int, 48),
+    "mother_font_size": (int, 44),
     "mother_translate_x": (int, 0),
     "mother_translate_y": (int, 0),
     "mother_rotate": (int, 180),
@@ -303,8 +303,8 @@ def generate_prototype_2gen_preview(
                             last_name_offset_y=translate_y,
                             birth_date_offset_x=translate_x,
                             death_date_offset_y=translate_y,
-                            flag_base_x=609,
-                            flag_base_y=609,
+                            flag_base_x=760,
+                            flag_base_y=760,
                             flag_rotation=-45,
                             **base_params,
                         )
@@ -431,8 +431,8 @@ def debug_2gen_flag_positions():
     # Constants
     CENTER_X = 975
     CENTER_Y = 975
-    FLAG_OFFSET_X = 609
-    FLAG_OFFSET_Y = 609
+    FLAG_OFFSET_X = 679
+    FLAG_OFFSET_Y = 679
     FLAG_SIZE = 200
 
     print("=" * 60)

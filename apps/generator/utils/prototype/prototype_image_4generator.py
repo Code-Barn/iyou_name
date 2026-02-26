@@ -59,9 +59,9 @@ class Generation4Constants:
     POSITION_A2_BIRTH_PLACE_BASE_X = 1432
     POSITION_A2_BIRTH_PLACE_BASE_Y = 1888
 
-    GREAT_GRANDPARENT_NAME_FONT_SIZE = 18
-    GREAT_GRANDPARENT_DATE_INFO_FONT_SIZE = 12
-    GREAT_GRANDPARENT_PLACE_INFO_FONT_SIZE = 10
+    GREAT_GRANDPARENT_NAME_FONT_SIZE = 16
+    GREAT_GRANDPARENT_DATE_INFO_FONT_SIZE = 10
+    GREAT_GRANDPARENT_PLACE_INFO_FONT_SIZE = 9
 
     OVERLAY_SCALE = 0.7143
     COMPOSITE_X = 300
@@ -345,7 +345,7 @@ def generate_prototype_4gen_preview(
                     birth_date_rotation=0,
                     birth_date_paired_offset_x=-200,
                     death_date_paired_offset_x=200,
-                    paired_dates_base_y=1725,
+                    paired_dates_base_y=1712,
                     paired_places_base_y=1925,
                     birth_place_paired_offset_x=-200,
                     death_place_paired_offset_x=200,

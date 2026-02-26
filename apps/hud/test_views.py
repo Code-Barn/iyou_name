@@ -15,9 +15,9 @@ from django.views.decorators.http import require_http_methods
 
 from apps.generator.models import GedcomFile
 from apps.parser.models import PersonData
-from apps.generator.utils.image_1generator import (
-    generate_1gen_preview,
-)
+#from apps.generator.utils.image_1generator import (
+#    generate_1gen_preview,
+#)
 
 logger = logging.getLogger(__name__)
 

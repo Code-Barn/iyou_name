@@ -53,8 +53,8 @@ GENERATION_1_SETTINGS_SCHEMA = {
     "primary_font_color": (Color, "white"),
     "primary_stroke_color": (Color, "white"),
     "primary_stroke_width": (float, 0.5),
-    "info_stroke_color": (Color, "#888888"),
-    "info_stroke_width": (float, 0.25),
+    "primary_info_stroke_color": (Color, "#888888"),
+    "primary_info_stroke_width": (float, 0.25),
     "primary_birth_color": (Color, "white"),
     "primary_birth_place_color": (Color, "white"),
     "primary_death_color": (Color, "white"),
@@ -117,6 +117,15 @@ def generate_prototype_1gen_preview(
     user_settings = user_settings or {}
     validated_settings = get_validated_settings(
         user_settings, GENERATION_1_SETTINGS_SCHEMA, "1gen"
+    )
+
+    # Map 1gen-specific info stroke settings to generic names for print_individual
+    # This allows 1gen to have its own info stroke settings separate from other generations
+    validated_settings["info_stroke_color"] = validated_settings.get(
+        "primary_info_stroke_color", Color("#888888")
+    )
+    validated_settings["info_stroke_width"] = validated_settings.get(
+        "primary_info_stroke_width", 0.25
     )
 
     logger.info(f"Generating prototype 1gen for: {primary_individual.full_name}")

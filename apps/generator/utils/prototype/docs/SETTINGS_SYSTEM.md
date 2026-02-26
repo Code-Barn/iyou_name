@@ -40,6 +40,114 @@ The buffer is invalidated when:
 
 ---
 
+## Critical: Django View Settings Persistence
+
+**IMPORTANT**: Any new settings added to the UI must also be saved by the Django view (`apps/hud/views.py` in the `save_settings` function). This is a common source of bugs when integrating new settings.
+
+### Why This Matters
+
+The JavaScript saves settings to:
+1. **localStorage** - for client-side persistence and cumulative settings
+2. **Session (via Django POST)** - for server-side access
+
+The Django view (`save_hud_settings`) receives the POST request and saves settings to the session. If a setting is not extracted from `request.POST` in the view, it will NOT be available to the server-side code and may cause issues with buffer regeneration.
+
+### Required Steps for Adding New Settings
+
+1. **Add to Django View**: Extract from `request.POST` and add to `hud_settings` dict
+2. **Add to Generator Schema**: Add to the appropriate `GENERATION_X_SETTINGS_SCHEMA`
+3. **Add to HTML Template**: Add form input in the appropriate settings template
+
+### Example: Adding Stroke Settings
+
+When adding stroke settings to 1gen, the Django view must extract them:
+
+```python
+# In apps/hud/views.py - save_hud_settings function
+primary_stroke_width = request.POST.get("primary_stroke_width")
+info_stroke_width = request.POST.get("info_stroke_width")
+primary_stroke_color = request.POST.get("primary_stroke_color") or "#ffffff"
+info_stroke_color = request.POST.get("info_stroke_color") or "#888888"
+
+# Add to hud_settings dict
+hud_settings = {
+    # ... other settings
+    "primary_stroke_width": float(primary_stroke_width) if primary_stroke_width else 0.5,
+    "info_stroke_width": float(info_stroke_width) if info_stroke_width else 0.25,
+    "primary_stroke_color": primary_stroke_color,
+    "info_stroke_color": info_stroke_color,
+}
+```
+
+### Buffer Regeneration Flow
+
+The buffer system uses the settings hash to detect changes:
+
+1. User changes settings in UI → clicks "Apply"
+2. JavaScript collects all form settings → saves to localStorage → POST to Django
+3. Django view saves ALL settings to session
+4. When navigating to a higher generation:
+   - JavaScript loads cumulative settings from localStorage
+   - Passes ALL settings (including lower generation settings) to generator
+   - Generator calls `get_chart_buffer(generation=N, user_settings)`
+   - Buffer manager computes hash of settings
+   - If hash changed → regenerates buffer with new settings
+
+**The key insight**: The buffer manager receives the complete settings dict. If any setting is missing from the dict, the hash will differ and trigger regeneration. This is why ALL settings must be saved by the Django view.
+
+### ⚠️ WARNING: Use Generation-Specific Setting Names
+
+Settings that are unique to a generation must have unique names to avoid conflicts when cumulative settings are passed between generations.
+
+**Example of the problem:**
+- 1gen defines `info_stroke_color` = "#888888" (default)
+- 2gen defines `info_stroke_color` = "gray" (different default)
+- When 2gen receives cumulative settings, it gets 1gen's value instead of its own default
+
+**Solution: Use generation-specific prefixes**
+
+Instead of:
+- 1gen: `info_stroke_color`
+- 2gen: `info_stroke_color` (CONFLICT!)
+
+Use:
+- 1gen: `primary_info_stroke_color`
+- 2gen: `info_stroke_color` (or `parent_info_stroke_color`)
+
+**Implementation:**
+
+1. **Schema** - Use unique names per generation:
+```python
+# 1gen schema
+GENERATION_1_SETTINGS_SCHEMA = {
+    "primary_info_stroke_color": (Color, "#888888"),
+    "primary_info_stroke_width": (float, 0.25),
+}
+
+# 2gen schema  
+GENERATION_2_SETTINGS_SCHEMA = {
+    "info_stroke_color": (Color, "gray"),  # Different name
+    "info_stroke_width": (float, 0.25),
+}
+```
+
+2. **Generator** - Map generation-specific names to generic names for shared code:
+```python
+# In 1gen generator
+validated_settings["info_stroke_color"] = validated_settings.get(
+    "primary_info_stroke_color", Color("#888888")
+)
+validated_settings["info_stroke_width"] = validated_settings.get(
+    "primary_info_stroke_width", 0.25
+)
+```
+
+3. **View** - Save both names to session (the mapped names are auto-saved via form inputs)
+
+This approach ensures no conflicts when cumulative settings are used.
+
+---
+
 ## Cumulative Settings Approach
 
 ### Problem
@@ -502,4 +610,5 @@ GENERATION_1_SCHEMA = {
 | Name formatting | Via chart_settings | ✅ Good |
 | Settings UI | Split between 2 files | Unify |
 | Schemas | Duplicated per-gen | Use inheritance |
-| Documentation | Updated | ✅ Complete |
+| Documentation | Updated with Django view critical section | ✅ Complete |
+| New Settings Integration | Documented process | ✅ Complete |

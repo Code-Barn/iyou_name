@@ -6,12 +6,8 @@ from .views_simple_buffered import (
     save_hud_settings,
     apply_settings_change,
     get_buffer_stats,
-)
-from .views import (
-    get_1gen_preview,
-    get_hud_family_data,
-    get_settings_panel,
     update_settings_timestamp,
+    get_settings_panel,
     get_file_individuals,
 )
 from .test_views import (
@@ -24,9 +20,6 @@ app_name = "hud"
 urlpatterns = [
     path("display-tree/", display_tree_hud, name="display_tree"),
     path("save-settings/", save_hud_settings, name="save_settings"),
-    path("get-family-data/", get_hud_family_data, name="get_family_data"),
-    path("get-preview/", get_1gen_preview, name="get_preview"),
-    path("get-1gen-preview/", get_1gen_preview, name="get_1gen_preview"),
     path(
         "get-template-preview/<str:template_id>/",
         get_template_preview_simple,
@@ -48,11 +41,6 @@ urlpatterns = [
         name="get_settings_panel",
     ),
     path(
-        "apply-settings-change/",
-        apply_settings_change,
-        name="apply_settings_change",
-    ),
-    path(
         "update-settings-timestamp/",
         update_settings_timestamp,
         name="update_settings_timestamp",
@@ -62,7 +50,7 @@ urlpatterns = [
         get_file_individuals,
         name="get_file_individuals",
     ),
-    # Test endpoints for enhanced generator
+    # Test endpoints
     path(
         "test-enhanced-1gen-preview/",
         test_enhanced_1gen_preview,

@@ -2,10 +2,12 @@
 Simple buffered HUD views using a clean, simplified buffer system.
 """
 
+import importlib
 import json
 import logging
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods, require_POST, require_GET
 
@@ -14,8 +16,9 @@ from apps.parser.models import PersonData
 from apps.generator.utils.simple_buffer_manager import (
     get_chart_buffer,
     apply_settings_change,
-    get_buffer_stats,
+    get_buffer_stats as buffer_stats_func,
 )
+from apps.generator.template_mapping import get_template_mapping
 
 logger = logging.getLogger(__name__)
 
@@ -227,10 +230,44 @@ def get_template_preview_simple(request, template_id):
 def save_hud_settings(request):
     """
     Save HUD settings using the simple buffer system.
+    Handles both JSON and form-urlencoded data.
     """
     try:
-        data = json.loads(request.body)
-        settings = data.get("settings", {})
+        # Try to parse as JSON first
+        try:
+            data = json.loads(request.body)
+            settings = data.get("settings", {})
+        except json.JSONDecodeError:
+            # Fall back to form data
+            settings = {}
+            for key in request.POST:
+                if key not in (
+                    "csrfmiddlewaretoken",
+                    "individual_id",
+                    "template",
+                    "generations",
+                ):
+                    value = request.POST.get(key)
+                    # Convert numeric values
+                    if key.endswith(
+                        (
+                            "_font_size",
+                            "_translate_x",
+                            "_translate_y",
+                            "_rotate",
+                            "_scale",
+                            "_stroke_width",
+                        )
+                    ):
+                        try:
+                            if "." in str(value):
+                                settings[key] = float(value)
+                            else:
+                                settings[key] = int(value)
+                        except (ValueError, TypeError):
+                            settings[key] = value
+                    else:
+                        settings[key] = value
 
         # Store settings in session
         request.session["hud_settings"] = settings
@@ -299,8 +336,116 @@ def save_hud_settings(request):
 def get_buffer_stats(request):
     """Get simple buffer performance statistics."""
     try:
-        stats = get_buffer_stats()
+        stats = buffer_stats_func()
         return JsonResponse(stats)
     except Exception as e:
         logger.error(f"Error getting buffer stats: {e}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+# Functions moved from views.py
+
+
+@csrf_protect
+@require_http_methods(["POST"])
+def update_settings_timestamp(request):
+    """
+    Update the timestamp in the session to force a preview reload.
+    """
+    try:
+        data = json.loads(request.body)
+        timestamp = data.get("timestamp")
+        if timestamp:
+            request.session["hud_settings_timestamp"] = timestamp
+            return JsonResponse({"status": "success"})
+        return JsonResponse(
+            {"status": "error", "message": "No timestamp provided"}, status=400
+        )
+    except Exception as e:
+        logger.error(f"Error updating settings timestamp: {str(e)}")
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+
+def get_settings_panel(request, template_name):
+    """
+    API endpoint for getting the settings panel HTML for a given template.
+    """
+    from django.template.loader import render_to_string
+
+    try:
+        logger.info(f"get_settings_panel called with template_name: {template_name}")
+
+        # Validate template name
+        allowed_templates = [
+            "1gen_settings.html",
+            "2gen_settings.html",
+            "3gen_settings.html",
+            "4gen_settings.html",
+            "5gen_settings.html",
+            "6gen_settings.html",
+            "7gen_settings.html",
+            "default_settings.html",
+        ]
+
+        if template_name not in allowed_templates:
+            logger.warning(f"Invalid template requested: {template_name}")
+            return JsonResponse(
+                {"error": f"Invalid template: {template_name}"}, status=400
+            )
+
+        # Get the template name without .html if needed
+        template_base = template_name.replace(".html", "")
+
+        # Get current settings from session
+        hud_settings = request.session.get("hud_settings", {})
+
+        # Render the appropriate template
+        context = {
+            "template_name": template_base.replace("_settings", "")
+            .replace("_", " ")
+            .title(),
+            "generations": template_base.replace("gen_settings", " Generation Chart"),
+            "hud_settings": hud_settings,
+        }
+
+        html = render_to_string(f"hud/settings/{template_name}", context)
+        return JsonResponse({"html": html})
+
+    except Exception as e:
+        logger.error(f"Error loading settings panel: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+def get_file_individuals(request):
+    """
+    API endpoint for getting individuals from a GEDCOM file.
+    """
+    try:
+        file_id = request.GET.get("file_id")
+
+        if not file_id:
+            file_id = request.session.get("current_gedcom_file_id")
+
+        if not file_id:
+            return JsonResponse({"error": "No file_id provided"}, status=400)
+
+        gedcom_file = GedcomFile.objects.get(id=file_id)
+
+        if not gedcom_file.parsed_data:
+            return JsonResponse({"error": "File not processed"}, status=400)
+
+        individuals = gedcom_file.parsed_data.get("individuals", {})
+
+        # Return as list with id and name
+        individual_list = [
+            {"id": ind_id, "name": data.get("full_name", "Unknown")}
+            for ind_id, data in individuals.items()
+        ]
+
+        return JsonResponse({"individuals": individual_list})
+
+    except GedcomFile.DoesNotExist:
+        return JsonResponse({"error": "File not found"}, status=404)
+    except Exception as e:
+        logger.error(f"Error getting file individuals: {str(e)}")
         return JsonResponse({"error": str(e)}, status=500)

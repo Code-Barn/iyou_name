@@ -1,21 +1,26 @@
 import logging
+import os
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm
+from django.core.files.base import ContentFile
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 
-from apps.core.rate_limiting import auth_rate_limit, user_rate_limit
+from apps.core.rate_limiting import auth_rate_limit, user_rate_limit, upload_rate_limit
 from apps.core.auth_security import (
     check_login_security,
     record_authentication_result,
     get_client_ip,
     get_user_agent,
 )
+from apps.core.file_validation import validate_uploaded_file
 from apps.generator.forms import RegisterForm
 from apps.generator.models import GedcomFile
+from apps.parser.utils import convert_to_utf8, parse_gedcom_data
 
 logger = logging.getLogger(__name__)
 
@@ -212,4 +217,123 @@ def get_user_files(request):
         return JsonResponse(list(user_files), safe=False)
 
     except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_protect
+@require_POST
+@upload_rate_limit
+def sync_gedcom_file(request, file_id):
+    """
+    Sync an existing GEDCOM file with a new version.
+    Preserves:
+    - All IndividualSettings (via gedcom_hash based on filename)
+    - All ChartBuffers (via gedcom_hash)
+    - The GedcomFile ID and user ownership
+
+    Updates:
+    - File content
+    - Parsed data
+    - processing_date
+    - home_person_id (if still valid in new data)
+    """
+    logger.info(
+        f"Sync GEDCOM file requested",
+        extra={
+            "file_id": file_id,
+            "user_id": request.user.id if request.user.is_authenticated else None,
+        },
+    )
+
+    if not request.user.is_authenticated:
+        logger.warning("User not authenticated for sync")
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+
+    if "gedcom_file" not in request.FILES:
+        return JsonResponse({"error": "No file provided"}, status=400)
+
+    gedcom_file_obj = request.FILES["gedcom_file"]
+
+    allowed_types = [".ged", ".gedcom"]
+    file_ext = os.path.splitext(gedcom_file_obj.name)[1].lower()
+    if file_ext not in allowed_types:
+        return JsonResponse(
+            {"error": f"Invalid file type. Allowed types: {', '.join(allowed_types)}"},
+            status=400,
+        )
+
+    try:
+        gedcom_file = GedcomFile.objects.get(id=file_id)
+    except GedcomFile.DoesNotExist:
+        logger.error(f"GEDCOM file not found for sync: {file_id}")
+        return JsonResponse({"error": "File not found"}, status=404)
+
+    if gedcom_file.user != request.user:
+        logger.warning(
+            f"Unauthorized sync attempt for file {gedcom_file.id} by user {request.user.id}"
+        )
+        return JsonResponse({"error": "File not found"}, status=404)
+
+    existing_home_person_id = gedcom_file.home_person_id
+
+    try:
+        gedcom_content_bytes = gedcom_file_obj.read()
+        logger.info(
+            f"Syncing file: {gedcom_file_obj.name} ({len(gedcom_content_bytes)} bytes)"
+        )
+
+        is_valid, error_message = validate_uploaded_file(
+            gedcom_content_bytes, gedcom_file_obj.name
+        )
+        if not is_valid:
+            logger.warning(f"File validation failed for sync: {error_message}")
+            return JsonResponse({"error": f"Invalid file: {error_message}"}, status=400)
+
+        gedcom_content = convert_to_utf8(gedcom_content_bytes)
+        family_data = parse_gedcom_data(gedcom_content)
+
+        if not isinstance(family_data.get("individuals"), dict):
+            return JsonResponse(
+                {"error": "Invalid GEDCOM file structure"},
+                status=400,
+            )
+
+        parsed_data = {
+            "individuals": {
+                ind_id: person.to_dict()
+                for ind_id, person in family_data["individuals"].items()
+            },
+            "families": family_data.get("families", {}),
+            "root_individuals": family_data.get("root_individuals", []),
+        }
+
+        gedcom_file.file.save(
+            gedcom_file_obj.name, ContentFile(gedcom_content_bytes), save=True
+        )
+        gedcom_file.parsed_data = parsed_data
+        gedcom_file.is_processed = True
+        gedcom_file.processing_date = timezone.now()
+        gedcom_file.last_activity = timezone.now()
+
+        if (
+            existing_home_person_id
+            and existing_home_person_id in parsed_data["individuals"]
+        ):
+            gedcom_file.home_person_id = existing_home_person_id
+        else:
+            gedcom_file.home_person_id = (
+                family_data["root_individuals"][0]
+                if family_data["root_individuals"]
+                else None
+            )
+
+        gedcom_file.save()
+        logger.info(
+            f"Successfully synced GEDCOM file: {gedcom_file.file.name} (ID: {gedcom_file.id})"
+        )
+
+        return redirect("users:profile")
+
+    except Exception as e:
+        logger.error(f"Error syncing GEDCOM file {file_id}: {e}")
         return JsonResponse({"error": str(e)}, status=500)

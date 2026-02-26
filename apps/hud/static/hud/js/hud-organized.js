@@ -583,10 +583,10 @@ function handleTemplateChange() {
             if (!response.ok) {
                 throw new Error('Failed to load settings panel');
             }
-            return response.text();
+            return response.json();
         })
-        .then(html => {
-            settingsPanel.innerHTML = html;
+        .then(data => {
+            settingsPanel.innerHTML = data.html;
 
             // Reinitialize sliders for the new settings panel
             HUD.Sliders.initializeAll();
@@ -629,18 +629,51 @@ function handleTemplateChange() {
         }
 
         const currentGen = parseInt(templateValue);
-        const cumulativeSettings = HUD.Storage.getCumulativeSettings(currentGen);
         
-        // Always use cumulative settings when available, fallback to form settings
-        let userSettings;
-        if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
-            console.log(`Using cumulative settings for generation ${templateValue}:`, cumulativeSettings);
-            userSettings = cumulativeSettings;
-        } else {
-            console.log(`No cumulative settings found, using current form settings for generation ${templateValue}`);
-            const form = HUD.Main.getForm();
-            const formData = new FormData(form);
-            userSettings = HUD.Utils.collectUserSettings(formData);
+        // Get current generation's settings from form
+        const form = HUD.Main.getForm();
+        const formData = new FormData(form);
+        let userSettings = HUD.Utils.collectUserSettings(formData);
+
+        // For 2gen, include stored 1gen settings for the buffer overlay
+        if (templateValue === '2') {
+            const stored1GenSettings = HUD.Storage.getStored1GenSettings();
+            if (stored1GenSettings) {
+                // Merge 1gen settings into user_settings (needed for buffer to detect changes)
+                Object.assign(userSettings, stored1GenSettings);
+                console.log('Merged stored 1gen settings into user_settings for 2gen preview:', stored1GenSettings);
+            }
+        } else if (templateValue === '3') {
+            // Add cumulative settings from previous generations (1gen + 2gen)
+            const cumulativeSettings = HUD.Storage.getCumulativeSettings(3);
+            if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
+                Object.assign(userSettings, cumulativeSettings);
+                console.log('Merged cumulative settings (1gen + 2gen) into user_settings for 3gen overlay:', cumulativeSettings);
+            }
+        } else if (templateValue === '4') {
+            const cumulativeSettings = HUD.Storage.getCumulativeSettings(4);
+            if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
+                Object.assign(userSettings, cumulativeSettings);
+                console.log('Merged cumulative settings (1gen + 2gen + 3gen) into user_settings for 4gen overlay:', cumulativeSettings);
+            }
+        } else if (templateValue === '5') {
+            const cumulativeSettings = HUD.Storage.getCumulativeSettings(5);
+            if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
+                Object.assign(userSettings, cumulativeSettings);
+                console.log('Merged cumulative settings (1gen + 2gen + 3gen + 4gen) into user_settings for 5gen overlay:', cumulativeSettings);
+            }
+        } else if (templateValue === '6') {
+            const cumulativeSettings = HUD.Storage.getCumulativeSettings(6);
+            if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
+                Object.assign(userSettings, cumulativeSettings);
+                console.log('Merged cumulative settings (1gen + 2gen + 3gen + 4gen + 5gen) into user_settings for 6gen overlay:', cumulativeSettings);
+            }
+        } else if (templateValue === '7') {
+            const cumulativeSettings = HUD.Storage.getCumulativeSettings(7);
+            if (cumulativeSettings && Object.keys(cumulativeSettings).length > 0) {
+                Object.assign(userSettings, cumulativeSettings);
+                console.log('Merged cumulative settings (1gen + 2gen + 3gen + 4gen + 5gen + 6gen) into user_settings for 7gen overlay:', cumulativeSettings);
+            }
         }
 
         console.log(`Complete ${templateValue}gen request data being sent:`, {
@@ -687,6 +720,7 @@ HUD.Sliders = (function() {
         // Stroke width slider
         setupSlider('default-stroke-width-slider', 'default-stroke-width-value');
         setupSlider('primary-stroke-width-slider', 'primary-stroke-width-value');
+        setupSlider('primary-info-stroke-width-slider', 'primary-info-stroke-width-value');
         setupSlider('info-stroke-width-slider', 'info-stroke-width-value');
 
         // Flag size slider
@@ -860,8 +894,8 @@ HUD.Utils = (function() {
                 continue; // Skip non-settings fields
             }
 
-            // Skip place checkboxes (already handled above)
-            if (key.startsWith('place_')) {
+            // Skip place checkboxes (already handled above) - but only actual checkboxes, not all place fields
+            if (input.type === 'checkbox' && key.startsWith('place_')) {
                 continue;
             }
 
