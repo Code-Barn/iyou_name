@@ -187,3 +187,17 @@
         </div>
     </div>
 </div>
+
+<!-- Flag Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Flag Settings</h6>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Flag Size (px)</label>
+            <input type="range" name="gen6_flag_size" class="form-range" min="48" max="400" value="{{ hud_settings.gen6_flag_size|default:90 }}" id="place-flag-size-slider">
+            <div class="text-center">
+                <span id="place-flag-size-value">{{ hud_settings.gen6_flag_size|default:90 }}</span>px
+            </div>
+        </div>
+    </div>
+</div>

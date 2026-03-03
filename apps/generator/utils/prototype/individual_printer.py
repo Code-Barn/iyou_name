@@ -830,8 +830,9 @@ def print_individual(
             or "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf"
         )
 
-        # Get flag size from parameter, settings, or default
-        flag_size = flag_size or settings.get("place_flag_size", 48)
+        # Get flag size from parameter or use a sensible default
+        # Note: Each generation should pass flag_size explicitly via genX_flag_size
+        flag_size = flag_size or 48
 
         # Combine flag's own rotation with position rotation
         final_flag_rotation = flag_rotation + rotation

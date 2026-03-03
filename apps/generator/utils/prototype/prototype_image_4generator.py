@@ -63,6 +63,11 @@ class Generation4Constants:
     GREAT_GRANDPARENT_DATE_INFO_FONT_SIZE = 10
     GREAT_GRANDPARENT_PLACE_INFO_FONT_SIZE = 9
 
+    FLAG_A1_BASE_X = -362
+    FLAG_A1_BASE_Y = 738
+    FLAG_A2_BASE_X = 362
+    FLAG_A2_BASE_Y = 738
+
     OVERLAY_SCALE = 0.7143
     COMPOSITE_X = 300
     COMPOSITE_Y = 570
@@ -92,8 +97,7 @@ GENERATION_4_SETTINGS_SCHEMA = {
     "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
     "place_flag_format": (str, "png"),
-    "place_flag_size": (int, 48),
-    "gen4_flag_size": (int, 48),  # Generation-specific flag size
+    "gen4_flag_size": (int, 142),  # Generation-specific flag size
     "flag_font": (str, "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf"),
     # Name formatting settings
     "name_use_first_middle_only": (bool, True),
@@ -365,6 +369,16 @@ def generate_prototype_4gen_preview(
                     subclade_rotation,
                 ) in great_grandparents:
                     if individual:
+                        # Use base_x to determine A1 vs A2 position (not rotation)
+                        # A1 uses POSITION_A1_FIRST_NAME_BASE_X = 560
+                        # A2 uses POSITION_A2_FIRST_NAME_BASE_X = 1390
+                        if base_x == Generation4Constants.POSITION_A2_FIRST_NAME_BASE_X:
+                            flag_base_x = Generation4Constants.FLAG_A2_BASE_X
+                            flag_base_y = Generation4Constants.FLAG_A2_BASE_Y
+                        else:
+                            flag_base_x = Generation4Constants.FLAG_A1_BASE_X
+                            flag_base_y = Generation4Constants.FLAG_A1_BASE_Y
+
                         name_settings = {
                             "name_use_first_middle_only": validated_settings.get(
                                 "name_use_first_middle_only", True
@@ -397,6 +411,9 @@ def generate_prototype_4gen_preview(
                             death_date_base_y=birth_date_center_y,
                             death_place_base_x=birth_place_center_x,
                             death_place_base_y=birth_place_center_y,
+                            flag_base_x=flag_base_x,
+                            flag_base_y=flag_base_y,
+                            flag_size=validated_settings.get("gen4_flag_size", 142),
                             **base_params,
                             chart_settings=validated_settings,
                         )
@@ -406,9 +423,7 @@ def generate_prototype_4gen_preview(
 
             # Generate 3gen overlay using BUFFER MANAGER (not direct call)
             # IMPORTANT: Don't pass place_flag_size to lower generations - each uses its own genX_flag_size
-            gen3_settings = {
-                k: v for k, v in user_settings.items() if k != "place_flag_size"
-            }
+            gen3_settings = {k: v for k, v in user_settings.items()}
             logger.info("[4gen] Getting 3gen overlay from buffer manager")
             gen3_img_buffer = get_chart_buffer(
                 primary_individual, family_data, gen3_settings, generation=3

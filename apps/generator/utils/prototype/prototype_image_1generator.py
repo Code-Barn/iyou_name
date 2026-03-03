@@ -89,7 +89,6 @@ GENERATION_1_SETTINGS_SCHEMA = {
     "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
     "place_flag_format": (str, "png"),
-    "place_flag_size": (int, 666),
     "gen1_flag_size": (int, 666),  # Generation-specific flag size
     "place_flag_layer": (str, "bottom"),
     "place_flag_in_overlay": (bool, True),
@@ -326,9 +325,7 @@ def _render_flag_overlay(
     size = (
         flag_size
         if flag_size is not None
-        else validated_settings.get(
-            "gen1_flag_size", validated_settings.get("place_flag_size", 666)
-        )
+        else validated_settings.get("gen1_flag_size", 666)
     )
 
     # Default center

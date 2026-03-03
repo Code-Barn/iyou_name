@@ -205,6 +205,40 @@ class Generation7Constants:
     GREAT_GREAT_GREAT_GREAT_GRANDPARENT_DATE_INFO_FONT_SIZE = 7
     GREAT_GREAT_GREAT_GREAT_GRANDPARENT_PLACE_INFO_FONT_SIZE = 5
 
+    # Flag positions - centered on date pair (y=1823), 16 positions
+    FLAG_A1111_BASE_X = -794
+    FLAG_A1111_BASE_Y = 848
+    FLAG_A1112_BASE_X = -675
+    FLAG_A1112_BASE_Y = 848
+    FLAG_A1121_BASE_X = -585
+    FLAG_A1121_BASE_Y = 848
+    FLAG_A1122_BASE_X = -480
+    FLAG_A1122_BASE_Y = 848
+    FLAG_A1211_BASE_X = -350
+    FLAG_A1211_BASE_Y = 848
+    FLAG_A1212_BASE_X = -243
+    FLAG_A1212_BASE_Y = 848
+    FLAG_A1221_BASE_X = -140
+    FLAG_A1221_BASE_Y = 848
+    FLAG_A1222_BASE_X = -35
+    FLAG_A1222_BASE_Y = 848
+    FLAG_A2111_BASE_X = 35
+    FLAG_A2111_BASE_Y = 848
+    FLAG_A2112_BASE_X = 140
+    FLAG_A2112_BASE_Y = 848
+    FLAG_A2121_BASE_X = 243
+    FLAG_A2121_BASE_Y = 848
+    FLAG_A2122_BASE_X = 350
+    FLAG_A2122_BASE_Y = 848
+    FLAG_A2211_BASE_X = 480
+    FLAG_A2211_BASE_Y = 848
+    FLAG_A2212_BASE_X = 585
+    FLAG_A2212_BASE_Y = 848
+    FLAG_A2221_BASE_X = 675
+    FLAG_A2221_BASE_Y = 848
+    FLAG_A2222_BASE_X = 794
+    FLAG_A2222_BASE_Y = 848
+
     OVERLAY_SCALE = 0.8457
     COMPOSITE_X = 300
     COMPOSITE_Y = 570
@@ -233,10 +267,9 @@ GENERATION_7_SETTINGS_SCHEMA = {
     "place_show_country": (bool, True),
     "place_hide_usa_with_state": (bool, True),
     "place_show_township": (bool, True),
-    "place_show_flag": (bool, False),
+    "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
-    "place_flag_size": (int, 48),
-    "gen7_flag_size": (int, 48),  # Generation-specific flag size
+    "gen7_flag_size": (int, 77),  # Generation-specific flag size
 }
 
 
@@ -630,6 +663,60 @@ def generate_prototype_7gen_preview(
                     sunbeam_rotation,
                 ) in great_great_great_grandparents:
                     if individual:
+                        # Determine flag position based on base_x (16 master positions)
+                        # Using actual a_x_positions values: [131, 241, 355, 468, 578, 692, 805, 907, 1028, 1140, 1249, 1360, 1473, 1585, 1695, 1807]
+                        if base_x == 131:  # A1111
+                            flag_base_x = Generation7Constants.FLAG_A1111_BASE_X
+                            flag_base_y = Generation7Constants.FLAG_A1111_BASE_Y
+                        elif base_x == 241:  # A1112
+                            flag_base_x = Generation7Constants.FLAG_A1112_BASE_X
+                            flag_base_y = Generation7Constants.FLAG_A1112_BASE_Y
+                        elif base_x == 355:  # A1121
+                            flag_base_x = Generation7Constants.FLAG_A1121_BASE_X
+                            flag_base_y = Generation7Constants.FLAG_A1121_BASE_Y
+                        elif base_x == 468:  # A1122
+                            flag_base_x = Generation7Constants.FLAG_A1122_BASE_X
+                            flag_base_y = Generation7Constants.FLAG_A1122_BASE_Y
+                        elif base_x == 578:  # A1211
+                            flag_base_x = Generation7Constants.FLAG_A1211_BASE_X
+                            flag_base_y = Generation7Constants.FLAG_A1211_BASE_Y
+                        elif base_x == 692:  # A1212
+                            flag_base_x = Generation7Constants.FLAG_A1212_BASE_X
+                            flag_base_y = Generation7Constants.FLAG_A1212_BASE_Y
+                        elif base_x == 805:  # A1221
+                            flag_base_x = Generation7Constants.FLAG_A1221_BASE_X
+                            flag_base_y = Generation7Constants.FLAG_A1221_BASE_Y
+                        elif base_x == 907:  # A1222
+                            flag_base_x = Generation7Constants.FLAG_A1222_BASE_X
+                            flag_base_y = Generation7Constants.FLAG_A1222_BASE_Y
+                        elif base_x == 1028:  # A2111
+                            flag_base_x = Generation7Constants.FLAG_A2111_BASE_X
+                            flag_base_y = Generation7Constants.FLAG_A2111_BASE_Y
+                        elif base_x == 1140:  # A2112
+                            flag_base_x = Generation7Constants.FLAG_A2112_BASE_X
+                            flag_base_y = Generation7Constants.FLAG_A2112_BASE_Y
+                        elif base_x == 1249:  # A2121
+                            flag_base_x = Generation7Constants.FLAG_A2121_BASE_X
+                            flag_base_y = Generation7Constants.FLAG_A2121_BASE_Y
+                        elif base_x == 1360:  # A2122
+                            flag_base_x = Generation7Constants.FLAG_A2122_BASE_X
+                            flag_base_y = Generation7Constants.FLAG_A2122_BASE_Y
+                        elif base_x == 1473:  # A2211
+                            flag_base_x = Generation7Constants.FLAG_A2211_BASE_X
+                            flag_base_y = Generation7Constants.FLAG_A2211_BASE_Y
+                        elif base_x == 1585:  # A2212
+                            flag_base_x = Generation7Constants.FLAG_A2212_BASE_X
+                            flag_base_y = Generation7Constants.FLAG_A2212_BASE_Y
+                        elif base_x == 1695:  # A2221
+                            flag_base_x = Generation7Constants.FLAG_A2221_BASE_X
+                            flag_base_y = Generation7Constants.FLAG_A2221_BASE_Y
+                        elif base_x == 1807:  # A2222
+                            flag_base_x = Generation7Constants.FLAG_A2222_BASE_X
+                            flag_base_y = Generation7Constants.FLAG_A2222_BASE_Y
+                        else:
+                            flag_base_x = Generation7Constants.FLAG_A1111_BASE_X
+                            flag_base_y = Generation7Constants.FLAG_A1111_BASE_Y
+
                         print_individual(
                             draw=draw,
                             content_img=content_img,
@@ -651,6 +738,9 @@ def generate_prototype_7gen_preview(
                             death_place_base_x=birth_place_center_x,
                             death_place_base_y=birth_place_center_y,
                             death_place_rotation=sunbeam_rotation,
+                            flag_base_x=flag_base_x,
+                            flag_base_y=flag_base_y,
+                            flag_size=validated_settings.get("gen7_flag_size", 90),
                             **base_params,
                             chart_settings=validated_settings,
                             date_year_only=validated_settings.get(
@@ -663,9 +753,7 @@ def generate_prototype_7gen_preview(
 
             # Composite 6gen overlay using BUFFER MANAGER (not direct call)
             # IMPORTANT: Don't pass place_flag_size to lower generations - each uses its own genX_flag_size
-            gen6_settings = {
-                k: v for k, v in user_settings.items() if k != "place_flag_size"
-            }
+            gen6_settings = {k: v for k, v in user_settings.items()}
             logger.info("[7gen] Getting 6gen overlay from buffer manager")
             gen6_img_buffer = get_chart_buffer(
                 primary_individual, family_data, gen6_settings, generation=6

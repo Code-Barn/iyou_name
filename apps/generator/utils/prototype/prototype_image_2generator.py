@@ -138,7 +138,6 @@ GENERATION_2_SETTINGS_SCHEMA = {
     "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
     "place_flag_format": (str, "png"),
-    "place_flag_size": (int, 333),
     "gen2_flag_size": (int, 333),  # Generation-specific flag size
     "place_flag_layer": (str, "bottom"),
     "place_flag_in_overlay": (bool, False),
@@ -307,6 +306,7 @@ def generate_prototype_2gen_preview(
                             flag_base_x=760,
                             flag_base_y=760,
                             flag_rotation=-45,
+                            flag_size=validated_settings.get("gen2_flag_size", 333),
                             **base_params,
                         )
 
@@ -317,9 +317,7 @@ def generate_prototype_2gen_preview(
             # This uses the cached 1gen buffer if settings match, or regenerates if needed
             # IMPORTANT: Don't pass place_flag_size to 1gen - each generation uses its own genX_flag_size
             # This ensures 1gen overlay renders with 1gen's flag size (666), then gets scaled to 50%
-            gen1_settings = {
-                k: v for k, v in user_settings.items() if k != "place_flag_size"
-            }
+            gen1_settings = {k: v for k, v in user_settings.items()}
             logger.info("[2gen] Getting 1gen overlay from buffer manager")
             gen1_img_buffer = get_chart_buffer(
                 primary_individual, family_data, gen1_settings, generation=1

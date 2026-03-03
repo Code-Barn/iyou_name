@@ -118,6 +118,24 @@ class Generation6Constants:
     GREAT_GREAT_GREAT_GRANDPARENT_DATE_INFO_FONT_SIZE = 7
     GREAT_GREAT_GREAT_GRANDPARENT_PLACE_INFO_FONT_SIZE = 6
 
+    # Flag positions - centered on date pair (y=1798)
+    FLAG_A111_BASE_X = -710
+    FLAG_A111_BASE_Y = 823
+    FLAG_A112_BASE_X = -509
+    FLAG_A112_BASE_Y = 823
+    FLAG_A121_BASE_X = -304
+    FLAG_A121_BASE_Y = 823
+    FLAG_A122_BASE_X = -102
+    FLAG_A122_BASE_Y = 823
+    FLAG_A211_BASE_X = 101
+    FLAG_A211_BASE_Y = 823
+    FLAG_A212_BASE_X = 303
+    FLAG_A212_BASE_Y = 823
+    FLAG_A221_BASE_X = 506
+    FLAG_A221_BASE_Y = 823
+    FLAG_A222_BASE_X = 709
+    FLAG_A222_BASE_Y = 823
+
     OVERLAY_SCALE = 0.8182
     COMPOSITE_X = 300
     COMPOSITE_Y = 570
@@ -148,8 +166,7 @@ GENERATION_6_SETTINGS_SCHEMA = {
     "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
     "place_flag_format": (str, "png"),
-    "place_flag_size": (int, 48),
-    "gen6_flag_size": (int, 48),  # Generation-specific flag size
+    "gen6_flag_size": (int, 90),  # Generation-specific flag size
     "flag_font": (str, "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf"),
     # Name formatting settings
     "name_use_first_middle_only": (bool, True),
@@ -1077,6 +1094,59 @@ def generate_prototype_6gen_preview(
                     subclade_rotation,
                 ) in great_great_great_grandparents:
                     if individual:
+                        # Determine flag position based on base_x (8 master positions)
+                        if (
+                            base_x
+                            == Generation6Constants.POSITION_A111_FIRST_NAME_BASE_X
+                        ):
+                            flag_base_x = Generation6Constants.FLAG_A111_BASE_X
+                            flag_base_y = Generation6Constants.FLAG_A111_BASE_Y
+                        elif (
+                            base_x
+                            == Generation6Constants.POSITION_A112_FIRST_NAME_BASE_X
+                        ):
+                            flag_base_x = Generation6Constants.FLAG_A112_BASE_X
+                            flag_base_y = Generation6Constants.FLAG_A112_BASE_Y
+                        elif (
+                            base_x
+                            == Generation6Constants.POSITION_A121_FIRST_NAME_BASE_X
+                        ):
+                            flag_base_x = Generation6Constants.FLAG_A121_BASE_X
+                            flag_base_y = Generation6Constants.FLAG_A121_BASE_Y
+                        elif (
+                            base_x
+                            == Generation6Constants.POSITION_A122_FIRST_NAME_BASE_X
+                        ):
+                            flag_base_x = Generation6Constants.FLAG_A122_BASE_X
+                            flag_base_y = Generation6Constants.FLAG_A122_BASE_Y
+                        elif (
+                            base_x
+                            == Generation6Constants.POSITION_A211_FIRST_NAME_BASE_X
+                        ):
+                            flag_base_x = Generation6Constants.FLAG_A211_BASE_X
+                            flag_base_y = Generation6Constants.FLAG_A211_BASE_Y
+                        elif (
+                            base_x
+                            == Generation6Constants.POSITION_A212_FIRST_NAME_BASE_X
+                        ):
+                            flag_base_x = Generation6Constants.FLAG_A212_BASE_X
+                            flag_base_y = Generation6Constants.FLAG_A212_BASE_Y
+                        elif (
+                            base_x
+                            == Generation6Constants.POSITION_A221_FIRST_NAME_BASE_X
+                        ):
+                            flag_base_x = Generation6Constants.FLAG_A221_BASE_X
+                            flag_base_y = Generation6Constants.FLAG_A221_BASE_Y
+                        elif (
+                            base_x
+                            == Generation6Constants.POSITION_A222_FIRST_NAME_BASE_X
+                        ):
+                            flag_base_x = Generation6Constants.FLAG_A222_BASE_X
+                            flag_base_y = Generation6Constants.FLAG_A222_BASE_Y
+                        else:
+                            flag_base_x = Generation6Constants.FLAG_A111_BASE_X
+                            flag_base_y = Generation6Constants.FLAG_A111_BASE_Y
+
                         print_individual(
                             draw=draw,
                             content_img=content_img,
@@ -1093,6 +1163,9 @@ def generate_prototype_6gen_preview(
                             death_date_base_y=birth_date_center_y,
                             death_place_base_x=birth_place_center_x,
                             death_place_base_y=birth_place_center_y,
+                            flag_base_x=flag_base_x,
+                            flag_base_y=flag_base_y,
+                            flag_size=validated_settings.get("gen6_flag_size", 90),
                             **base_params,
                             chart_settings=validated_settings,
                             date_year_only=validated_settings.get(
@@ -1105,9 +1178,7 @@ def generate_prototype_6gen_preview(
 
             # Generate 5gen overlay using BUFFER MANAGER (not direct call)
             # IMPORTANT: Don't pass place_flag_size to lower generations - each uses its own genX_flag_size
-            gen5_settings = {
-                k: v for k, v in user_settings.items() if k != "place_flag_size"
-            }
+            gen5_settings = {k: v for k, v in user_settings.items()}
             logger.info("[6gen] Getting 5gen overlay from buffer manager")
             gen5_img_buffer = get_chart_buffer(
                 primary_individual, family_data, gen5_settings, generation=5

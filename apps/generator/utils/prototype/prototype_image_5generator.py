@@ -78,6 +78,16 @@ class Generation5Constants:
     GREAT_GREAT_GRANDPARENT_DATE_INFO_FONT_SIZE = 7
     GREAT_GREAT_GRANDPARENT_PLACE_INFO_FONT_SIZE = 7
 
+    # Flag positions - centered on date pair (y=1760)
+    FLAG_A11_BASE_X = -583
+    FLAG_A11_BASE_Y = 789
+    FLAG_A12_BASE_X = -195
+    FLAG_A12_BASE_Y = 789
+    FLAG_A21_BASE_X = 585
+    FLAG_A21_BASE_Y = 789
+    FLAG_A22_BASE_X = 195
+    FLAG_A22_BASE_Y = 789
+
     OVERLAY_SCALE = 0.7778
     COMPOSITE_X = 300
     COMPOSITE_Y = 570
@@ -106,6 +116,9 @@ GENERATION_5_SETTINGS_SCHEMA = {
     "place_show_township": (bool, False),
     "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
+    "place_flag_format": (str, "png"),
+    "gen5_flag_size": (int, 111),  # Generation-specific flag size
+    "flag_font": (str, "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf"),
     # Name formatting settings
     "name_use_first_middle_only": (bool, True),
     "name_hide_hyphenated_surname": (bool, True),
@@ -550,6 +563,35 @@ def generate_prototype_5gen_preview(
                     subclade_rotation,
                 ) in great_great_grandparents:
                     if individual:
+                        # Determine flag position based on base_x (4 master positions)
+                        if (
+                            base_x
+                            == Generation5Constants.POSITION_A11_FIRST_NAME_BASE_X
+                        ):
+                            flag_base_x = Generation5Constants.FLAG_A11_BASE_X
+                            flag_base_y = Generation5Constants.FLAG_A11_BASE_Y
+                        elif (
+                            base_x
+                            == Generation5Constants.POSITION_A12_FIRST_NAME_BASE_X
+                        ):
+                            flag_base_x = Generation5Constants.FLAG_A12_BASE_X
+                            flag_base_y = Generation5Constants.FLAG_A12_BASE_Y
+                        elif (
+                            base_x
+                            == Generation5Constants.POSITION_A21_FIRST_NAME_BASE_X
+                        ):
+                            flag_base_x = Generation5Constants.FLAG_A21_BASE_X
+                            flag_base_y = Generation5Constants.FLAG_A21_BASE_Y
+                        elif (
+                            base_x
+                            == Generation5Constants.POSITION_A22_FIRST_NAME_BASE_X
+                        ):
+                            flag_base_x = Generation5Constants.FLAG_A22_BASE_X
+                            flag_base_y = Generation5Constants.FLAG_A22_BASE_Y
+                        else:
+                            flag_base_x = Generation5Constants.FLAG_A11_BASE_X
+                            flag_base_y = Generation5Constants.FLAG_A11_BASE_Y
+
                         print_individual(
                             draw=draw,
                             content_img=content_img,
@@ -566,6 +608,9 @@ def generate_prototype_5gen_preview(
                             death_date_base_y=birth_date_center_y,
                             death_place_base_x=birth_place_center_x,
                             death_place_base_y=birth_place_center_y,
+                            flag_base_x=flag_base_x,
+                            flag_base_y=flag_base_y,
+                            flag_size=validated_settings.get("gen5_flag_size", 111),
                             **base_params,
                             chart_settings=validated_settings,
                         )
@@ -573,8 +618,10 @@ def generate_prototype_5gen_preview(
                 draw.pop()
                 draw(content_img)
 
+            # IMPORTANT: Don't pass place_flag_size to lower generations - each uses its own genX_flag_size
+            gen4_settings = {k: v for k, v in user_settings.items()}
             gen4_img_buffer = generate_prototype_4gen_preview(
-                primary_individual, family_data, "preview", user_settings
+                primary_individual, family_data, "preview", gen4_settings
             )
             _composite_overlay(content_img, gen4_img_buffer, validated_settings)
 
