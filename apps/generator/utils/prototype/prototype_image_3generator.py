@@ -98,6 +98,7 @@ GENERATION_3_SETTINGS_SCHEMA = {
     "place_flag_type": (str, "birth"),
     "place_flag_format": (str, "png"),
     "place_flag_size": (int, 200),
+    "gen3_flag_size": (int, 200),  # Generation-specific flag size
     "place_flag_layer": (str, "bottom"),
     "place_flag_in_overlay": (bool, False),
     "flag_font": (str, "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf"),
@@ -284,9 +285,13 @@ def generate_prototype_3gen_preview(
                 draw(content_img)
 
             # Generate 2gen overlay using BUFFER MANAGER (not direct call)
+            # IMPORTANT: Don't pass place_flag_size to lower generations - each uses its own genX_flag_size
+            gen2_settings = {
+                k: v for k, v in user_settings.items() if k != "place_flag_size"
+            }
             logger.info("[3gen] Getting 2gen overlay from buffer manager")
             gen2_img_buffer = get_chart_buffer(
-                primary_individual, family_data, user_settings, generation=2
+                primary_individual, family_data, gen2_settings, generation=2
             )
             if not gen2_img_buffer:
                 raise GenerationError("Failed to get 2gen overlay buffer")

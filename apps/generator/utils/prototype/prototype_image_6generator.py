@@ -149,6 +149,7 @@ GENERATION_6_SETTINGS_SCHEMA = {
     "place_flag_type": (str, "birth"),
     "place_flag_format": (str, "png"),
     "place_flag_size": (int, 48),
+    "gen6_flag_size": (int, 48),  # Generation-specific flag size
     "flag_font": (str, "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf"),
     # Name formatting settings
     "name_use_first_middle_only": (bool, True),
@@ -1103,9 +1104,13 @@ def generate_prototype_6gen_preview(
                 draw(content_img)
 
             # Generate 5gen overlay using BUFFER MANAGER (not direct call)
+            # IMPORTANT: Don't pass place_flag_size to lower generations - each uses its own genX_flag_size
+            gen5_settings = {
+                k: v for k, v in user_settings.items() if k != "place_flag_size"
+            }
             logger.info("[6gen] Getting 5gen overlay from buffer manager")
             gen5_img_buffer = get_chart_buffer(
-                primary_individual, family_data, user_settings, generation=5
+                primary_individual, family_data, gen5_settings, generation=5
             )
             if not gen5_img_buffer:
                 raise GenerationError("Failed to get 5gen overlay buffer")

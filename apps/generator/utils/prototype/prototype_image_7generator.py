@@ -235,6 +235,8 @@ GENERATION_7_SETTINGS_SCHEMA = {
     "place_show_township": (bool, True),
     "place_show_flag": (bool, False),
     "place_flag_type": (str, "birth"),
+    "place_flag_size": (int, 48),
+    "gen7_flag_size": (int, 48),  # Generation-specific flag size
 }
 
 
@@ -660,9 +662,13 @@ def generate_prototype_7gen_preview(
                 draw(content_img)
 
             # Composite 6gen overlay using BUFFER MANAGER (not direct call)
+            # IMPORTANT: Don't pass place_flag_size to lower generations - each uses its own genX_flag_size
+            gen6_settings = {
+                k: v for k, v in user_settings.items() if k != "place_flag_size"
+            }
             logger.info("[7gen] Getting 6gen overlay from buffer manager")
             gen6_img_buffer = get_chart_buffer(
-                primary_individual, family_data, user_settings, generation=6
+                primary_individual, family_data, gen6_settings, generation=6
             )
             if not gen6_img_buffer:
                 raise GenerationError("Failed to get 6gen overlay buffer")
