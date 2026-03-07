@@ -271,7 +271,8 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                 events.append(event_info)
 
                 # Special handling for birth and death events
-                if event.tag == "BIRT":
+                # Only use the FIRST BIRT event (not alternates)
+                if event.tag == "BIRT" and birth_date is None and birth_place is None:
                     birth_date = date_str
                     birth_place = (
                         place_str if isinstance(place_str, str) else str(place_str)
