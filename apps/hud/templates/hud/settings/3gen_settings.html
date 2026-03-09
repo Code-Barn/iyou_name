@@ -192,9 +192,9 @@
     <div class="row g-3">
         <div class="col-md-4">
             <label class="form-label">Default Stroke Width</label>
-            <input type="range" name="default_stroke_width" class="form-range" min="0.5" max="5" step="0.5" value="{{ hud_settings.default_stroke_width|default:1 }}" id="default-stroke-width-slider">
+            <input type="range" name="default_stroke_width" class="form-range" min="0.0" max="5" step="0.5" value="{{ hud_settings.default_stroke_width|default:0 }}" id="default-stroke-width-slider">
             <div class="text-center">
-                <span id="default-stroke-width-value">{{ hud_settings.default_stroke_width|default:1 }}</span>px
+                <span id="default-stroke-width-value">{{ hud_settings.default_stroke_width|default:0 }}</span>px
             </div>
         </div>
 

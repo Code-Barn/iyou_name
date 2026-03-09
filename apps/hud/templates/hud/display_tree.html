@@ -179,8 +179,8 @@
                                 <label class="form-check-label" for="place-use-state-abbrev">Abbreviate State Names (IL, CA)</label>
                             </div>
                             <div class="form-check">
-                                <input type="checkbox" name="place_show_county" class="form-check-input" id="place-show-county" {% if hud_settings.place_show_county|default:False %}checked{% endif %}>
-                                <label class="form-check-label" for="place-show-county">Show County</label>
+                                <input type="checkbox" name="place_hide_us_counties" class="form-check-input" id="place-hide-us-counties" {% if hud_settings.place_hide_us_counties|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="place-hide-us-counties">Hide US Counties (Town, County, State)</label>
                             </div>
                             <div class="form-check">
                                 <input type="checkbox" name="place_show_country" class="form-check-input" id="place-show-country" {% if hud_settings.place_show_country|default:True %}checked{% endif %}>
@@ -191,12 +191,24 @@
                                 <label class="form-check-label" for="place-hide-usa-with-state">Hide "USA" when State is shown</label>
                             </div>
                             <div class="form-check">
+                                <input type="checkbox" name="place_auto_shorten" class="form-check-input" id="place-auto-shorten" {% if hud_settings.place_auto_shorten|default:False %}checked{% endif %}>
+                                <label class="form-check-label" for="place-auto-shorten">Auto-shorten (3+ parts → 2)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_abbreviate_uk_counties" class="form-check-input" id="place-abbreviate-uk-counties" {% if hud_settings.place_abbreviate_uk_counties|default:False %}checked{% endif %}>
+                                <label class="form-check-label" for="place-abbreviate-uk-counties">Abbreviate UK/Ireland Counties</label>
+                            </div>
+                            <div class="form-check">
                                 <input type="checkbox" name="place_show_township" class="form-check-input" id="place-show-township" {% if hud_settings.place_show_township|default:False %}checked{% endif %}>
                                 <label class="form-check-label" for="place-show-township">Show Township</label>
                             </div>
                             <div class="form-check">
                                 <input type="checkbox" name="place_show_flag" class="form-check-input" id="place-show-flag" {% if hud_settings.place_show_flag|default:True %}checked{% endif %}>
                                 <label class="form-check-label" for="place-show-flag">Show Country Flag</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_show_uk_flag" class="form-check-input" id="place-show-uk-flag" {% if hud_settings.place_show_uk_flag|default:False %}checked{% endif %}>
+                                <label class="form-check-label" for="place-show-uk-flag">Show UK Flag (after 1801)</label>
                             </div>
                             <div class="mb-2">
                                 <label class="form-label small" for="place-flag-type">Flag Type</label>

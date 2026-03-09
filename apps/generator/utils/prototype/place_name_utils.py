@@ -20,6 +20,140 @@ COUNTRY_ABBREVIATIONS = {
     "great britain": "GB",
 }
 
+# UK and Irish county abbreviations
+UK_COUNTY_ABBREVIATIONS = {
+    # English counties
+    "bedfordshire": "Beds.",
+    "berkshire": "Berks.",
+    "buckinghamshire": "Bucks.",
+    "cambridgeshire": "Cambs.",
+    "cheshire": "Ches.",
+    "cornwall": "Cornwall",
+    "cumberland": "Cumb.",
+    "derbyshire": "Derbs.",
+    "devon": "Devon",
+    "dorset": "Dors.",
+    "durham": "Dur.",
+    "essex": "Essex",
+    "gloucestershire": "Glos.",
+    "hampshire": "Hants.",
+    "herefordshire": "Heref.",
+    "hertfordshire": "Herts.",
+    "huntingdonshire": "Hunts.",
+    "kent": "Kent",
+    "lancashire": "Lancs.",
+    "leicestershire": "Leics.",
+    "lincolnshire": "Lincs.",
+    "london": "Lon.",
+    "middlesex": "Middx",
+    "norfolk": "Norf.",
+    "northamptonshire": "Northants.",
+    "northumberland": "Northumb.",
+    "nottinghamshire": "Notts.",
+    "oxfordshire": "Oxon.",
+    "rutland": "Rut.",
+    "shropshire": "Salop.",
+    "somerset": "Som.",
+    "staffordshire": "Staffs.",
+    "suffolk": "Suff.",
+    "surrey": "Surr.",
+    "sussex": "Suss.",
+    "warwickshire": "Warks.",
+    "westmorland": "Westm.",
+    "wiltshire": "Wilts.",
+    "worcestershire": "Worcs.",
+    "yorkshire": "Yorks.",
+    # Welsh counties
+    "anglesey": "Angl.",
+    "breconshire": "Brecs.",
+    "caernarfonshire": "Caerns.",
+    "cardiganshire": "Cards.",
+    "carmarthenshire": "Carms.",
+    "denbighshire": "Denbs.",
+    "flintshire": "Flints.",
+    "glamorgan": "Glam.",
+    "merionethshire": "Merion.",
+    "monmouthshire": "Mons.",
+    "montgomeryshire": "Montg.",
+    "pembrokeshire": "Pembs.",
+    "radnorshire": "Rads.",
+    # Scottish counties
+    "aberdeenshire": "Aber.",
+    "angus": "Angus",
+    "argyllshire": "Argyll",
+    "ayrshire": "Ayr",
+    "banffshire": "Banff",
+    "berwickshire": "Berwick",
+    "buteshire": "Bute",
+    "caithness": "Caith.",
+    "clackmannanshire": "Clackm.",
+    "cromarty": "Crom.",
+    "dumfriesshire": "Dumfries",
+    "dunbartonshire": "Dunbar",
+    "east lothian": "E. Loth.",
+    "edinburgh": "Edin.",
+    "elginshire": "Elgin",
+    "fife": "Fife",
+    "forfarshhire": "Forfar",
+    "haddingtonshire": "Hadd.",
+    "inverness-shire": "Inver.",
+    "linlithgowshire": "Linlith.",
+    "kincardineshire": "Kincar.",
+    "kinross-shire": "Kinross",
+    "kirkcudbrightshire": "Kirkcud.",
+    "lanarkshire": "Lanark",
+    "midlothian": "Midloth.",
+    "moray": "Moray",
+    "nairn": "Nairn",
+    "orkney": "Orkney",
+    "peeblesshire": "Peebles",
+    "perthshire": "Perth",
+    "renfrewshire": "Renfrew",
+    "ross-shire": "Ross",
+    "ross and cromarty": "Ross and Crom.",
+    "roxburghshire": "Roxb.",
+    "selkirkshire": "Selk.",
+    "stirlingshire": "Stirl.",
+    "sutherland": "Suther.",
+    "west lothian": "W. Loth.",
+    "wigtownshire": "Wigtown",
+    "zetland": "Zetland",
+    "shetland": "Zetland",
+    # Irish counties
+    "antrim": "Antrim",
+    "armagh": "Armagh",
+    "carlow": "Carlow",
+    "cavan": "Cavan",
+    "clare": "Clare",
+    "cork": "Cork",
+    "donegal": "Donegal",
+    "down": "Down",
+    "dublin": "Dublin",
+    "fermanagh": "Ferm.",
+    "galway": "Galway",
+    "kerry": "Kerry",
+    "kildare": "Kildare",
+    "kilkenny": "Kilk.",
+    "laois": "Laois",
+    "leitrim": "Leitrim",
+    "limerick": "Lim.",
+    "londonderry": "Derry",
+    "longford": "Long.",
+    "louth": "Louth",
+    "mayo": "Mayo",
+    "meath": "Meath",
+    "monaghan": "Monag.",
+    "offaly": "Offaly",
+    "roscommon": "Rosc.",
+    "sligo": "Sligo",
+    "tipperary": "Tipp.",
+    "tyrone": "Tyrone",
+    "waterford": "Waterf.",
+    "westmeath": "Westmeath",
+    "wexford": "Wexford",
+    "wicklow": "Wicklow",
+}
+
 # Country name to flag emoji mapping
 COUNTRY_FLAGS = {
     "usa": "🇺🇸",
@@ -29,12 +163,15 @@ COUNTRY_FLAGS = {
     "u.s.": "🇺🇸",
     "u.s.a.": "🇺🇸",
     "uk": "🇬🇧",
+    "u.k.": "🇬🇧",
     "united kingdom": "🇬🇧",
     "great britain": "🇬🇧",
     "gb": "🇬🇧",
     "england": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
     "scotland": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
     "wales": "🏴󠁧󠁢󠁷󠁬󠁳󠁿",
+    "n. ireland": "🇺🇸",
+    "northern ireland": "🇺🇸",
     "canada": "🇨🇦",
     "australia": "🇦🇺",
     "germany": "🇩🇪",
@@ -188,6 +325,122 @@ STATE_ABBREVIATIONS_REVERSE = {v.lower(): v for v in STATE_ABBREVIATIONS.values(
 # Merge into main dict for lookup
 STATE_ABBREVIATIONS = {**STATE_ABBREVIATIONS, **STATE_ABBREVIATIONS_REVERSE}
 
+# Set of all US state names (lowercase) for quick lookup
+US_STATES = {s.lower() for s in US_STATE_ABBREVIATIONS.keys()}
+
+# Known country identifiers
+KNOWN_COUNTRIES = {
+    "usa",
+    "us",
+    "u.s.",
+    "u.s.a.",
+    "united states",
+    "united states of america",
+    "uk",
+    "u.k.",
+    "gb",
+    "great britain",
+    "united kingdom",
+    "canada",
+    "australia",
+    "germany",
+    "france",
+    "italy",
+    "spain",
+    "mexico",
+    "ireland",
+    "scotland",
+    "wales",
+    "england",
+    "n. ireland",
+    "northern ireland",
+    "netherlands",
+    "belgium",
+    "switzerland",
+    "austria",
+    "poland",
+    "portugal",
+    "brazil",
+    "argentina",
+    "japan",
+    "china",
+    "india",
+    "russia",
+    "south africa",
+    "new zealand",
+}
+
+# UK constituent countries (for flag purposes)
+UK_COUNTRIES = {"england", "scotland", "wales", "n. ireland", "northern ireland"}
+
+
+def detect_country(place: str) -> dict:
+    """
+    Detect the country of a place name.
+
+    In most cases, the final field is the country. For UK places, if "UK" appears
+    but there's England/Scotland/Wales/Northern Ireland before it, use that as
+    the "country" for flag purposes.
+
+    Args:
+        place: Comma-separated place name
+
+    Returns:
+        Dictionary with keys:
+            - country: The detected country name (or UK constituent for UK places)
+            - is_us: True if place is in the US
+            - is_uk: True if place is in the UK
+            - raw_country: The raw last part if it's a country identifier
+    """
+    if not place:
+        return {"country": "", "is_us": False, "is_uk": False, "raw_country": ""}
+
+    parts = [p.strip() for p in place.split(",")]
+    if not parts:
+        return {"country": "", "is_us": False, "is_uk": False, "raw_country": ""}
+
+    last_part = parts[-1].lower().strip()
+    raw_country = parts[-1] if last_part in KNOWN_COUNTRIES else ""
+
+    is_us = False
+    is_uk = False
+    country = raw_country
+
+    # Check if it's a US place
+    if last_part in {
+        "usa",
+        "us",
+        "u.s.",
+        "u.s.a.",
+        "united states",
+        "united states of america",
+    }:
+        is_us = True
+    elif last_part in US_STATES:
+        is_us = True
+
+    # Check if it's a UK place
+    if last_part in {"uk", "u.k.", "gb", "great britain", "united kingdom"}:
+        is_uk = True
+        # Check if there's a UK constituent country before UK
+        if len(parts) >= 2:
+            second_last = parts[-2].lower().strip()
+            if second_last in UK_COUNTRIES:
+                country = parts[-2]  # Use England/Scotland/Wales/N. Ireland
+            else:
+                # UK without constituent - use the raw country (UK)
+                country = parts[-1]
+    elif last_part in UK_COUNTRIES:
+        is_uk = True
+        country = parts[-1]
+
+    return {
+        "country": country,
+        "is_us": is_us,
+        "is_uk": is_uk,
+        "raw_country": raw_country,
+    }
+
 
 def parse_place(place: str) -> dict:
     """
@@ -197,7 +450,7 @@ def parse_place(place: str) -> dict:
     The parts before the state are treated as town + county.
 
     Returns:
-        Dictionary with keys: city, county, township, state, country, parts_count
+        Dictionary with keys: city, county, township, state, country, parts_count, is_us, is_uk
     """
     if not place:
         return {
@@ -208,7 +461,12 @@ def parse_place(place: str) -> dict:
             "country": "",
             "other": "",
             "parts_count": 0,
+            "is_us": False,
+            "is_uk": False,
         }
+
+    # Detect country first
+    country_info = detect_country(place)
 
     parts = [p.strip() for p in place.split(",")]
     parts_count = len(parts)
@@ -221,6 +479,8 @@ def parse_place(place: str) -> dict:
         "country": "",
         "other": "",
         "parts_count": parts_count,
+        "is_us": country_info["is_us"],
+        "is_uk": country_info["is_uk"],
     }
 
     if parts_count == 0:
@@ -298,13 +558,22 @@ def parse_place(place: str) -> dict:
             parts_count = len(parts)
 
         # Check for explicit county marker
+        # Don't treat UK constituent countries as counties
+        uk_countries_lower = {
+            "england",
+            "scotland",
+            "wales",
+            "n. ireland",
+            "northern ireland",
+        }
         if is_explicit_county(parts[-1]):
             result["county"] = parts[-1]
             parts = parts[:-1]
-        elif parts_count >= 2:
+        elif parts_count >= 2 and parts[-1].lower().strip() not in uk_countries_lower:
             # US pattern with 2 parts remaining: town, county
             # The SECOND part (parts[-1]) is the county, FIRST is town
             # This applies to: town, county, state (3 parts) or town, county, state, country (4 parts)
+            # Don't treat UK countries as counties
             result["county"] = parts[-1]
             parts = parts[:-1]
 
@@ -313,7 +582,18 @@ def parse_place(place: str) -> dict:
             result["city"] = ", ".join(parts) if len(parts) > 1 else parts[0]
     elif parts_count == 1:
         # Single part remaining - could be city or county
-        if is_explicit_county(parts[0]):
+        # Don't treat UK constituent countries as counties
+        uk_countries_lower = {
+            "england",
+            "scotland",
+            "wales",
+            "n. ireland",
+            "northern ireland",
+        }
+        if (
+            is_explicit_county(parts[0])
+            and parts[0].lower().strip() not in uk_countries_lower
+        ):
             result["county"] = parts[0]
         elif is_explicit_township(parts[0]):
             result["township"] = parts[0]
@@ -361,11 +641,13 @@ def format_place(
     place: str,
     use_country_abbrev: bool = False,
     use_state_abbrev: bool = False,
-    show_county: bool = True,
+    hide_us_counties: bool = True,
     show_township: bool = True,
     show_country: bool = True,
     hide_usa_with_state: bool = True,
     country_first: bool = False,
+    auto_shorten: bool = False,
+    abbreviate_uk_counties: bool = False,
 ) -> str:
     """
     Format a place name based on settings.
@@ -374,11 +656,15 @@ def format_place(
         place: Original place string (comma-separated)
         use_country_abbrev: Abbreviate country name (USA, UK, etc.)
         use_state_abbrev: Abbreviate state/province to 2-letter code
-        show_county: Include county in output (only if detected as county)
+        hide_us_counties: Hide US county names when part of Town,County,State pattern
         show_township: Include township in output (only if detected as township)
         show_country: Include country in output
         hide_usa_with_state: Hide "USA" when a US state is present
         country_first: Put country before other parts
+        auto_shorten: When show_country is False and result would have 3+ parts,
+                      reduce to last 2 parts (removes first part). Useful for
+                      places like "Town, Region, County, Country" → "Region, County"
+        abbreviate_uk_counties: Abbreviate UK/Ireland county names (e.g., Yorkshire → Yorks.)
 
     Returns:
         Formatted place string
@@ -412,6 +698,12 @@ def format_place(
     if use_state_abbrev and parsed["state"]:
         parsed["state"] = abbreviate_state(parsed["state"])
 
+    # Determine if we should hide the county
+    # Only hide US counties when: is US place AND has both city and county
+    should_hide_county = (
+        hide_us_counties and parsed["is_us"] and parsed["county"] and parsed["city"]
+    )
+
     # Filter out county/township parts based on settings (handles unusual GEDCOM formats)
     # This catches cases where county/township aren't properly parsed into their fields
     original_parts = [p.strip() for p in place.split(",")]
@@ -430,7 +722,7 @@ def format_place(
         )
 
         # Include part unless it's a county/township we're hiding
-        if is_county and not show_county:
+        if is_county and should_hide_county:
             continue
         if is_township and not show_township:
             continue
@@ -440,16 +732,48 @@ def format_place(
     # Then rebuild output parts based on settings
     parts = []
 
-    # Clean up county suffix for display (only if showing)
+    # Rebuild parsed from filtered parts (for "other" field)
+    # Then rebuild output parts based on settings
+    parts = []
+
+    # Clean up county suffix for display (only if showing - i.e., not hiding)
+    # Country-specific formatting:
+    # - US: append "Co." after county name (e.g., "Marion County" → "Marion Co.")
+    # - Ireland: prepend "Co." before county name (e.g., "County Cork" → "Co. Cork")
+    # - UK/France/others: show as-is (no Co. modification)
     display_county = ""
-    if show_county and parsed["county"]:
+    if not should_hide_county and parsed["county"]:
         county = parsed["county"]
         county_lower = county.lower()
-        if county_lower.endswith(" county"):
-            display_county = county[:-7].strip()
-        elif county_lower.endswith(", county"):
-            display_county = county[:-9].strip()
+
+        # Check if it's Ireland (place ends in Ireland, or has Irish county pattern)
+        is_ireland = (
+            parsed["country"].lower() == "ireland" if parsed["country"] else False
+        )
+        is_us = parsed["is_us"]
+
+        if is_ireland:
+            # Irish counties: "County Cork" → "Co. Cork", "Co. Cork" stays "Co. Cork"
+            if county_lower.startswith("county "):
+                display_county = "Co. " + county[7:].strip()
+            elif county_lower.startswith("county,"):
+                display_county = "Co." + county[6:].strip()
+            elif "co." in county_lower or "co " in county_lower:
+                display_county = county  # Already has Co.
+            else:
+                display_county = "Co. " + county
+        elif is_us:
+            # US counties: "Marion County" → "Marion Co."
+            if county_lower.endswith(" county"):
+                display_county = county[:-7].strip() + " Co."
+            elif county_lower.endswith(", county"):
+                display_county = county[:-9].strip() + " Co."
+            elif "co." in county_lower or " co " in county_lower:
+                display_county = county  # Already has Co.
+            else:
+                display_county = county + " Co."
         else:
+            # UK, France, others: show as-is without Co. modification
             display_county = county
 
     # Clean up township suffix for display (only if showing)
@@ -470,7 +794,7 @@ def format_place(
 
     # Always order: town, county, state, country (for US places) or town, state, country (for non-US)
     # County goes after state so it can be hidden
-    if show_county:
+    if not should_hide_county:
         # Order: town, township, county, state, country
         if country_first and should_show_country and parsed["country"]:
             parts.append(parsed["country"])
@@ -510,17 +834,82 @@ def format_place(
     if parsed["other"]:
         parts.append(parsed["other"])
 
-    # Remove duplicate parts (case-insensitive) - handles GEDCOM data issues
-    seen = set()
-    unique_parts = []
-    for part in parts:
-        part_normalized = part.lower().strip()
-        if part_normalized not in seen:
-            seen.add(part_normalized)
-            unique_parts.append(part)
-    parts = unique_parts
+    result = ", ".join(parts)
 
-    return ", ".join(parts)
+    # Auto-shorten: when enabled and result has 3+ parts,
+    # reduce to first 2 parts (removes middle parts and country)
+    # Works with or without country shown
+    # E.g.: US: "Town, County, State, Country" → "Town, State"
+    #       UK: "Town, County, Region, Country" → "Town, Country"
+    #       France: "Town, Department, Region, Country" → "Town, Department"
+    if auto_shorten:
+        result_parts = [p.strip() for p in result.split(",")]
+
+        # Detect country from parsed info
+        is_france = (
+            parsed.get("country", "").lower() == "france"
+            if parsed.get("country")
+            else False
+        )
+
+        # UK identifiers for filtering
+        uk_identifiers = {
+            "uk",
+            "u.k.",
+            "gb",
+            "great britain",
+            "united kingdom",
+            "england",
+            "scotland",
+            "wales",
+            "n. ireland",
+            "northern ireland",
+        }
+
+        if not show_country:
+            # Remove UK-related identifiers entirely
+            result_parts = [
+                p for p in result_parts if p.lower().strip() not in uk_identifiers
+            ]
+        else:
+            # When showing country, prefer constituent country over UK
+            has_constituent = any(
+                p.lower().strip()
+                in {"england", "scotland", "wales", "n. ireland", "northern ireland"}
+                for p in result_parts
+            )
+            if has_constituent:
+                result_parts = [
+                    p
+                    for p in result_parts
+                    if p.lower().strip()
+                    not in {"uk", "u.k.", "gb", "great britain", "united kingdom"}
+                ]
+
+        # Now shorten to first 2 parts
+        if len(result_parts) >= 3:
+            # For France (when show_country=False): keep first 2 parts (town, department)
+            # For others or when show_country=True: keep first and last (town, region/state)
+            if is_france and not show_country:
+                result = result_parts[0] + ", " + result_parts[1]
+            else:
+                result = result_parts[0] + ", " + result_parts[-1]
+        elif len(result_parts) >= 1:
+            result = ", ".join(result_parts)
+
+    # Abbreviate UK/Ireland county names if enabled
+    if abbreviate_uk_counties:
+        result_parts = [p.strip() for p in result.split(",")]
+        abbreviated_parts = []
+        for part in result_parts:
+            part_lower = part.lower()
+            if part_lower in UK_COUNTY_ABBREVIATIONS:
+                abbreviated_parts.append(UK_COUNTY_ABBREVIATIONS[part_lower])
+            else:
+                abbreviated_parts.append(part)
+        result = ", ".join(abbreviated_parts)
+
+    return result
 
 
 def get_place_short(
@@ -557,11 +946,13 @@ def format_place_from_settings(place: str, settings: dict, flag: str = "") -> st
         settings: Dictionary with settings like:
             - place_use_country_abbrev: bool
             - place_use_state_abbrev: bool
-            - place_show_county: bool
+            - place_hide_us_counties: bool (formerly place_show_county inverted)
             - place_show_township: bool
             - place_show_country: bool
             - place_hide_usa_with_state: bool
             - place_country_first: bool
+            - place_auto_shorten: bool
+            - place_abbreviate_uk_counties: bool
         flag: Optional flag emoji to append to place
 
     Returns:
@@ -574,11 +965,13 @@ def format_place_from_settings(place: str, settings: dict, flag: str = "") -> st
         place,
         use_country_abbrev=settings.get("place_use_country_abbrev", False),
         use_state_abbrev=settings.get("place_use_state_abbrev", False),
-        show_county=settings.get("place_show_county", True),
+        hide_us_counties=settings.get("place_hide_us_counties", True),
         show_township=settings.get("place_show_township", True),
         show_country=settings.get("place_show_country", True),
         hide_usa_with_state=settings.get("place_hide_usa_with_state", True),
         country_first=settings.get("place_country_first", False),
+        auto_shorten=settings.get("place_auto_shorten", False),
+        abbreviate_uk_counties=settings.get("place_abbreviate_uk_counties", False),
     )
 
     if flag:
@@ -636,3 +1029,116 @@ def get_flag_image_path(place: str) -> str:
         return ""
 
     return f"charts/images/flags/{country_code}.png"
+
+
+# Date constants for UK and Ireland flag logic
+UK_FOUNDING_DATE = "1801-01-01"  # United Kingdom of Great Britain and Ireland formed
+IRELAND_INDEPENDENCE_DATE = "1922-12-06"  # Irish Free State established
+
+
+def get_flag_from_place_with_settings(
+    place: str,
+    birth_date: str = None,
+    death_date: str = None,
+    show_uk_flag: bool = False,
+    show_ireland_flag: bool = False,
+) -> str:
+    """
+    Get flag emoji for a place, respecting UK/Ireland flag date settings.
+
+    For UK places:
+    - Default: Show constituent country flag (England, Scotland, Wales)
+    - If show_uk_flag=True: Show UK Union Jack, but only if birth/death is after 1801-01-01
+
+    For Ireland places:
+    - Default: Show Ireland flag
+    - If show_ireland_flag=False: Show Ireland flag (default behavior)
+    - If show_ireland_flag=True: Still shows Ireland flag, but only if date is between 1801-01-01 and 1922-12-06
+      (when Ireland was part of the UK)
+
+    Args:
+        place: Place string
+        birth_date: Birth date in format YYYY-MM-DD (optional)
+        death_date: Death date in format YYYY-MM-DD (optional)
+        show_uk_flag: If True, show UK flag instead of constituent country flag
+        show_ireland_flag: If True, apply date restrictions for Ireland flag
+
+    Returns:
+        Flag emoji
+    """
+    if not place:
+        return ""
+
+    parsed = parse_place(place)
+    country = parsed.get("country", "")
+
+    if not country:
+        return ""
+
+    country_lower = country.lower().strip()
+
+    # Helper to parse date
+    def parse_date(date_str):
+        if not date_str:
+            return None
+        try:
+            from datetime import datetime
+
+            return datetime.strptime(date_str[:10], "%Y-%m-%d")
+        except (ValueError, TypeError):
+            return None
+
+    def is_date_after(target_date_str, check_date):
+        if not check_date:
+            return False
+        target = parse_date(target_date_str)
+        check = parse_date(check_date)
+        if not target or not check:
+            return False
+        return check >= target
+
+    def is_date_between(start_date_str, end_date_str, check_date):
+        if not check_date:
+            return False
+        start = parse_date(start_date_str)
+        end = parse_date(end_date_str)
+        check = parse_date(check_date)
+        if not start or not end or not check:
+            return False
+        return start <= check <= end
+
+    # Handle UK places
+    if parsed.get("is_uk"):
+        # Default: show constituent country flag (England, Scotland, Wales, N. Ireland)
+        if not show_uk_flag:
+            return COUNTRY_FLAGS.get(country_lower, "")
+
+        # If show_uk_flag is enabled, only show UK flag if date is after 1801
+        # Check both birth and death dates - if either is after 1801, show UK flag
+        if is_date_after(UK_FOUNDING_DATE, birth_date) or is_date_after(
+            UK_FOUNDING_DATE, death_date
+        ):
+            return COUNTRY_FLAGS.get("uk", "🇬🇧")
+
+        # Otherwise return empty (no flag)
+        return ""
+
+    # Handle Ireland places
+    if country_lower == "ireland":
+        if not show_ireland_flag:
+            # Default: always show Ireland flag
+            return COUNTRY_FLAGS.get("ireland", "🇮🇪")
+
+        # If show_ireland_flag is enabled, only show Ireland flag if date is between 1801 and 1922
+        # (when Ireland was part of the UK)
+        date_in_range = is_date_between(
+            UK_FOUNDING_DATE, IRELAND_INDEPENDENCE_DATE, birth_date
+        ) or is_date_between(UK_FOUNDING_DATE, IRELAND_INDEPENDENCE_DATE, death_date)
+        if date_in_range:
+            return COUNTRY_FLAGS.get("ireland", "🇮🇪")
+
+        # Outside date range - return empty (could show UK flag or nothing)
+        return ""
+
+    # Default: return country flag
+    return COUNTRY_FLAGS.get(country_lower, "")

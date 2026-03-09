@@ -78,10 +78,13 @@ def generate_final_chart(request):
                 # Place format settings
                 "place_use_country_abbrev",
                 "place_use_state_abbrev",
-                "place_show_county",
+                "place_hide_us_counties",
                 "place_show_country",
                 "place_hide_usa_with_state",
                 "place_show_township",
+                "place_auto_shorten",
+                "place_abbreviate_uk_counties",
+                "place_show_uk_flag",
             ]:
                 # Convert numeric values
                 if key.endswith(
@@ -161,10 +164,12 @@ def generate_final_chart(request):
                 "name_hide_hyphenated_surname",
                 "place_use_country_abbrev",
                 "place_use_state_abbrev",
-                "place_show_county",
+                "place_hide_us_counties",
                 "place_show_country",
                 "place_hide_usa_with_state",
                 "place_show_township",
+                "place_auto_shorten",
+                "place_abbreviate_uk_counties",
                 "place_show_flag",
                 "place_flag_type",
             ]
@@ -255,12 +260,19 @@ def generate_final_chart(request):
                 "place_use_state_abbrev": hud_settings.get(
                     "place_use_state_abbrev", False
                 ),
-                "place_show_county": hud_settings.get("place_show_county", True),
+                "place_hide_us_counties": hud_settings.get(
+                    "place_hide_us_counties", True
+                ),
                 "place_show_country": hud_settings.get("place_show_country", True),
                 "place_hide_usa_with_state": hud_settings.get(
                     "place_hide_usa_with_state", True
                 ),
                 "place_show_township": hud_settings.get("place_show_township", True),
+                "place_auto_shorten": hud_settings.get("place_auto_shorten", False),
+                "place_abbreviate_uk_counties": hud_settings.get(
+                    "place_abbreviate_uk_counties", False
+                ),
+                "place_show_uk_flag": hud_settings.get("place_show_uk_flag", False),
                 "place_show_flag": hud_settings.get("place_show_flag", False),
                 "place_flag_type": hud_settings.get("place_flag_type", "birth"),
             }

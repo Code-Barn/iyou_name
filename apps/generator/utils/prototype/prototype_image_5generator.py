@@ -99,9 +99,9 @@ GENERATION_5_SETTINGS_SCHEMA = {
     "font_family": (str, "Arial"),
     "great_great_grandparent_stroke_color": (Color, "black"),
     "great_great_grandparent_font_color": (Color, "black"),
-    "great_great_grandparent_stroke_width": (float, 0.5),
+    "great_great_grandparent_stroke_width": (float, 0.0),
     "info_stroke_color": (Color, "gray"),
-    "info_stroke_width": (float, 0.25),
+    "info_stroke_width": (float, 0.0),
     "overlay_scale": (float, 0.7778),
     "overlay_position_x": (int, 0),
     "overlay_position_y": (int, 0),
@@ -110,10 +110,12 @@ GENERATION_5_SETTINGS_SCHEMA = {
     # Place name formatting settings
     "place_use_country_abbrev": (bool, True),
     "place_use_state_abbrev": (bool, True),
-    "place_show_county": (bool, False),
+    "place_hide_us_counties": (bool, True),
     "place_show_country": (bool, True),
     "place_hide_usa_with_state": (bool, True),
     "place_show_township": (bool, False),
+    "place_auto_shorten": (bool, False),
+    "place_abbreviate_uk_counties": (bool, False),
     "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
     "place_flag_format": (str, "png"),
@@ -201,7 +203,7 @@ def generate_prototype_5gen_preview(
                 draw.font = validated_settings["font_family"]
                 draw.stroke_antialias = True
                 draw.stroke_width = validated_settings.get(
-                    "great_great_grandparent_stroke_width", 0.5
+                    "great_great_grandparent_stroke_width", 0.0
                 )
                 draw.stroke_color = validated_settings.get(
                     "great_great_grandparent_stroke_color", Color("black")
