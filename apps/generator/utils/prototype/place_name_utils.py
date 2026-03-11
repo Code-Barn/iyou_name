@@ -175,6 +175,10 @@ COUNTRY_FLAGS = {
     "canada": "🇨🇦",
     "australia": "🇦🇺",
     "germany": "🇩🇪",
+    "deutschland": "🇩🇪",
+    "preussen": "🇩🇪",
+    "preußen": "🇩🇪",
+    "prussia": "🇩🇪",
     "france": "🇫🇷",
     "italy": "🇮🇹",
     "spain": "🇪🇸",
@@ -186,6 +190,7 @@ COUNTRY_FLAGS = {
     "austria": "🇦🇹",
     "poland": "🇵🇱",
     "sweden": "🇸🇪",
+    "sverige": "🇸🇪",
     "norway": "🇳🇴",
     "denmark": "🇩🇰",
     "finland": "🇫🇮",
@@ -219,6 +224,10 @@ COUNTRY_CODES = {
     "canada": "ca",
     "australia": "au",
     "germany": "de",
+    "deutschland": "de",
+    "preussen": "de",
+    "preußen": "de",
+    "prussia": "de",
     "france": "fr",
     "italy": "it",
     "spain": "es",
@@ -230,6 +239,7 @@ COUNTRY_CODES = {
     "austria": "at",
     "poland": "pl",
     "sweden": "se",
+    "sverige": "se",
     "norway": "no",
     "denmark": "dk",
     "finland": "fi",
@@ -328,8 +338,9 @@ STATE_ABBREVIATIONS = {**STATE_ABBREVIATIONS, **STATE_ABBREVIATIONS_REVERSE}
 # Set of all US state names (lowercase) for quick lookup
 US_STATES = {s.lower() for s in US_STATE_ABBREVIATIONS.keys()}
 
-# Known country identifiers
+# Known country identifiers (includes English names + multilingual variants for parsing)
 KNOWN_COUNTRIES = {
+    # English canonical names
     "usa",
     "us",
     "u.s.",
@@ -344,6 +355,10 @@ KNOWN_COUNTRIES = {
     "canada",
     "australia",
     "germany",
+    "deutschland",
+    "preussen",
+    "preußen",
+    "prussia",
     "france",
     "italy",
     "spain",
@@ -368,6 +383,336 @@ KNOWN_COUNTRIES = {
     "russia",
     "south africa",
     "new zealand",
+    "sweden",
+    "sverige",
+    "norway",
+    "denmark",
+    "finland",
+    # German variants
+    "niedersachsen",
+    "bayern",
+    "schleswig-holstein",
+    "brandenburg",
+    # French variants
+    "allemagne",
+    "espagne",
+    "pologne",
+    "suisse",
+    "belgique",
+    "hollande",
+    "pays-bas",
+    "suède",
+    "norvège",
+    "danemark",
+    "finlande",
+    # Spanish variants
+    "alemania",
+    "españa",
+    "méxico",
+    "méjico",
+    "italia",
+    "polonia",
+    "suiza",
+    "bélgica",
+    "austria",
+    "suecia",
+    "noruega",
+    "dinamarca",
+    "finlandia",
+    "brasil",
+    # Italian variants
+    "germania",
+    "messico",
+    "svizzera",
+    "belgio",
+    "austria",
+    "svezia",
+    "norvegia",
+    "danimarca",
+    "finlandia",
+    "portogallo",
+    "brasile",
+    # Dutch variants
+    "duitsland",
+    "nederland",
+    "zwitserland",
+    "belgië",
+    "oostenrijk",
+    "zweden",
+    "noorwegen",
+    "denemarken",
+    # Polish variants
+    "niemcy",
+    "włochy",
+    "hiszpania",
+    "szwajcaria",
+    "holandia",
+    "szwecja",
+    "norwegia",
+    "dania",
+    # Russian variants
+    "германия",
+    "франция",
+    "италия",
+    "испания",
+    "польша",
+    "швейцария",
+    "бельгия",
+    "нидерланды",
+    "австрия",
+    "швеция",
+    "норвегия",
+    "дания",
+    "финляндия",
+    "португалия",
+    "бразилия",
+    "аргентина",
+    # Portuguese variants
+    "alemanha",
+    "itália",
+    "espanha",
+    "polônia",
+    "suíça",
+    "países baixos",
+    "suécia",
+    "dinamarca",
+    "finlândia",
+    # Hungarian variants
+    "magyarország",
+    "németország",
+    "franciaország",
+    "olaszország",
+    "spanyolország",
+    "lengyelország",
+    "svájc",
+    "ausztria",
+    "svédország",
+    "norvégia",
+    "dánia",
+    "finnország",
+    # Historical
+    "west germany",
+    "east germany",
+    "yugoslavia",
+    "czechoslovakia",
+    "soviet union",
+    "ussr",
+}
+
+# Multilingual country name variants -> ISO 3166-1 alpha-2 code
+# This maps foreign language names to standardized codes for flag lookup
+# Covers common genealogical variants (European focus + major immigrant origins)
+COUNTRY_NAME_VARIANTS = {
+    # German
+    "deutschland": "de",
+    "niedersachsen": "de",
+    "bayern": "de",
+    "schleswig-holstein": "de",
+    "brandenburg": "de",
+    # French
+    "allemagne": "de",
+    "france": "fr",
+    "espagne": "es",
+    "italie": "it",
+    "pologne": "pl",
+    "suisse": "ch",
+    "belgique": "be",
+    "hollande": "nl",  # Netherlands
+    "pays-bas": "nl",
+    "autriche": "at",
+    "suède": "se",
+    "norvège": "no",
+    "danemark": "dk",
+    "finlande": "fi",
+    "portugal": "pt",
+    "brésil": "br",
+    "argentine": "ar",
+    # Spanish
+    "alemania": "de",
+    "españa": "es",
+    "méxico": "mx",
+    "méjico": "mx",
+    "italia": "it",
+    "polonia": "pl",
+    "suiza": "ch",
+    "bélgica": "be",
+    "austria": "at",
+    "suecia": "se",
+    "noruega": "no",
+    "dinamarca": "dk",
+    "finlandia": "fi",
+    "brasil": "br",
+    "argentina": "ar",
+    # Italian
+    "germania": "de",
+    "spagna": "es",
+    "messico": "mx",
+    "polonia": "pl",
+    "svizzera": "ch",
+    "belgio": "be",
+    "austria": "at",
+    "svezia": "se",
+    "norvegia": "no",
+    "danimarca": "dk",
+    "finlandia": "fi",
+    "portogallo": "pt",
+    "brasile": "br",
+    "argentina": "ar",
+    # Dutch
+    "duitsland": "de",
+    "nederland": "nl",
+    "zwitserland": "ch",
+    "belgië": "be",
+    "oostenrijk": "at",
+    "zweden": "se",
+    "noorwegen": "no",
+    "denemarken": "dk",
+    "finland": "fi",
+    # Polish
+    "niemcy": "de",
+    "francja": "fr",
+    "włochy": "it",
+    "hiszpania": "es",
+    "polska": "pl",
+    "szwajcaria": "ch",
+    "belgia": "be",
+    "holandia": "nl",
+    "austria": "at",
+    "szwecja": "se",
+    "norwegia": "no",
+    "dania": "dk",
+    "finlandia": "fi",
+    "portugalia": "pt",
+    "brazylia": "br",
+    "argentyna": "ar",
+    # Russian / Cyrillic
+    "германия": "de",
+    "франция": "fr",
+    "италия": "it",
+    "испания": "es",
+    "польша": "pl",
+    "швейцария": "ch",
+    "бельгия": "be",
+    "нидерланды": "nl",
+    "австрия": "at",
+    "швеция": "se",
+    "норвегия": "no",
+    "дания": "dk",
+    "финляндия": "fi",
+    "португалия": "pt",
+    "бразилия": "br",
+    "аргентина": "ar",
+    # Portuguese
+    "alemanha": "de",
+    "itália": "it",
+    "espanha": "es",
+    "polônia": "pl",
+    "suíça": "ch",
+    "bélgica": "be",
+    "países baixos": "nl",
+    "áustria": "at",
+    "suécia": "se",
+    "noruega": "no",
+    "dinamarca": "dk",
+    "finlândia": "fi",
+    "brasil": "br",
+    "argentina": "ar",
+    # Hungarian
+    "magyarország": "hu",
+    "nemetorszag": "de",  # ASCII approximation
+    "németország": "de",
+    "franciaorszag": "fr",
+    "franciaország": "fr",
+    "olaszorszag": "it",
+    "olaszország": "it",
+    "spanyolorszag": "es",
+    "spanyolország": "es",
+    "lengyelorszag": "pl",
+    "lengyelország": "pl",
+    "svajc": "ch",
+    "svájc": "ch",
+    "belgium": "be",
+    "hollandia": "nl",
+    "ausztria": "at",
+    "svédorszag": "se",
+    "svédország": "se",
+    "norvégia": "no",
+    "dánia": "dk",
+    "finnorszag": "fi",
+    "finnország": "fi",
+    "portugália": "pt",
+    "brazília": "br",
+    "argentína": "ar",
+    # Romanian
+    "germania": "fr",
+    "franţa": "fr",
+    "italia": "it",
+    "spania": "es",
+    "polonia": "pl",
+    "elveţia": "ch",
+    "belgia": "be",
+    "olanda": "nl",
+    "austria": "at",
+    "suedia": "se",
+    "norvegia": "no",
+    "finlanda": "fi",
+    # Czech / Slovak
+    "německo": "de",
+    "francIE": "fr",
+    "italsko": "it",
+    "španělsko": "es",
+    "polsko": "pl",
+    "švýcarsko": "ch",
+    "belgie": "be",
+    "nizozemsko": "nl",
+    "rakousko": "at",
+    "švédsko": "se",
+    "norsko": "no",
+    "dánsko": "dk",
+    "finsko": "fi",
+    # Greek
+    "γερμανία": "de",
+    "γαλλία": "fr",
+    "ιταλία": "it",
+    "ισπανία": "es",
+    "πολωνία": "pl",
+    "ελβετία": "ch",
+    "βέλγιο": "be",
+    "ολλανδία": "nl",
+    "αυστρία": "at",
+    "σουηδία": "se",
+    "νορβηγία": "no",
+    "δανία": "dk",
+    "φινλανδία": "fi",
+    # Turkish
+    "almanya": "de",
+    "fransa": "fr",
+    "ispanya": "es",
+    "italya": "it",
+    "polonya": "pl",
+    "isviçre": "ch",
+    "belçika": "be",
+    "hollanda": "nl",
+    "avusturya": "at",
+    "isveç": "se",
+    "norveç": "no",
+    "danimarka": "dk",
+    "finlandiya": "fi",
+    # Scandinavian (other)
+    "tyskland": "de",  # Swedish
+    "tyskland": "de",  # Norwegian
+    "tyskland": "de",  # Danish
+    "norge": "no",  # Norwegian
+    # Historical / Deprecated
+    "prussia": "de",
+    "preussen": "de",
+    "preußen": "de",
+    "west germany": "de",
+    "east germany": "de",
+    "yugoslavia": "rs",  # Now Serbia mostly
+    "czechoslovakia": "cz",
+    "soviet union": "ru",
+    "ussr": "ru",
 }
 
 # UK constituent countries (for flag purposes)
@@ -508,28 +853,8 @@ def parse_place(place: str) -> dict:
             or "ward" in part_lower
         )
 
-    known_countries = set(COUNTRY_ABBREVIATIONS.keys()) | {
-        "usa",
-        "us",
-        "u.s.",
-        "u.s.a.",
-        "uk",
-        "gb",
-        "great britain",
-        "united states",
-        "united states of america",
-        "canada",
-        "australia",
-        "germany",
-        "france",
-        "italy",
-        "spain",
-        "mexico",
-        "ireland",
-        "scotland",
-        "wales",
-        "england",
-    }
+    # Use global KNOWN_COUNTRIES for country detection
+    known_countries = KNOWN_COUNTRIES
 
     # Find country
     last_lower = parts[-1].lower().strip()
@@ -1000,7 +1325,44 @@ def get_flag_from_place(place: str) -> str:
         return ""
 
     country_lower = country.lower().strip()
-    return COUNTRY_FLAGS.get(country_lower, "")
+
+    # Try direct lookup first, then fall back to variant mapping
+    if country_lower in COUNTRY_FLAGS:
+        return COUNTRY_FLAGS[country_lower]
+
+    # Check multilingual variants
+    variant_code = COUNTRY_NAME_VARIANTS.get(country_lower)
+    if variant_code and variant_code in COUNTRY_FLAGS:
+        return COUNTRY_FLAGS[variant_code]
+
+    return ""
+
+
+def _get_country_code(country_name: str) -> str:
+    """
+    Normalize a country name to ISO 3166-1 alpha-2 code.
+
+    Args:
+        country_name: Country name in any language
+
+    Returns:
+        ISO 2-letter code (e.g., 'de', 'fr') or empty string if not found
+    """
+    if not country_name:
+        return ""
+
+    country_lower = country_name.lower().strip()
+
+    # First check: direct match in COUNTRY_CODES
+    if country_lower in COUNTRY_CODES:
+        return COUNTRY_CODES[country_lower]
+
+    # Second check: multilingual variant mapping
+    variant_code = COUNTRY_NAME_VARIANTS.get(country_lower)
+    if variant_code:
+        return variant_code
+
+    return ""
 
 
 def get_flag_image_path(place: str) -> str:
@@ -1022,8 +1384,8 @@ def get_flag_image_path(place: str) -> str:
     if not country:
         return ""
 
-    country_lower = country.lower().strip()
-    country_code = COUNTRY_CODES.get(country_lower)
+    # Use helper to normalize country name to ISO code (supports multilingual variants)
+    country_code = _get_country_code(country)
 
     if not country_code:
         return ""

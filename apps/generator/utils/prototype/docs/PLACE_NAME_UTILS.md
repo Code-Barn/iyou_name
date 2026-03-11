@@ -41,14 +41,27 @@ COUNTRY_FLAGS = {
 }
 ```
 
+### COUNTRY_CODES
+
+Maps country names to ISO 3166-1 alpha-2 codes for flag images:
+
+```python
+COUNTRY_CODES = {
+    "usa": "us",
+    "uk": "gb",
+    "england": "gb-eng",
+    "scotland": "gb-sct",
+    # ... and more
+}
+```
+
 ### US_STATE_ABBREVIATIONS
 
 Maps full US state names to two-letter abbreviations:
 
 ```python
 US_STATE_ABBREVIATIONS = {
-    "alabama": "AL",
-    "california": "CA",
+    "alifornia": "CA",
     "illinois": "IL",
     # ... all 50 states + DC
 }
@@ -69,9 +82,45 @@ CANADA_PROVINCE_ABBREVIATIONS = {
 
 ### STATE_ABBREVIATIONS
 
-Combined lookup table for both US states and Canadian provinces (includes reverse lookup for abbreviations like "IL" -> "IL").
+Combined lookup table for both US states and Canadian provinces (includes reverse lookup for abbreviations like "il" -> "IL").
+
+### UK_COUNTY_ABBREVIATIONS
+
+Extensive mapping for UK and Irish county abbreviations (e.g., "Yorkshire" -> "Yorks.", "London" -> "Lon.").
+
+### KNOWN_COUNTRIES
+
+Set of known country identifiers for place parsing.
+
+### UK_COUNTRIES
+
+Set of UK constituent countries (England, Scotland, Wales, N. Ireland).
 
 ## Functions
+
+### detect_country(place: str) -> dict
+
+Detects the country of a place name with support for UK constituent countries.
+
+**Parameters:**
+- `place` (str): Place string (e.g., "Chicago, Illinois, USA" or "London, England, UK")
+
+**Returns:**
+- `dict`: {
+    'country': str,        # Detected country name (or UK constituent)
+    'is_us': bool,        # True if place is in the US
+    'is_uk': bool,        # True if place is in the UK
+    'raw_country': str    # Raw last part if it's a country identifier
+}
+
+**Examples:**
+```python
+detect_country("Chicago, Illinois, USA")
+# Returns: {'country': 'USA', 'is_us': True, 'is_uk': False, 'raw_country': 'USA'}
+
+detect_country("Edinburgh, Scotland, UK")
+# Returns: {'country': 'Scotland', 'is_us': False, 'is_uk': True, 'raw_country': 'UK'}
+```
 
 ### parse_place(place: str) -> dict
 
@@ -88,8 +137,14 @@ Parses a comma-separated place name into components.
     'state': str,
     'country': str,
     'other': str,
-    'parts_count': int
+    'parts_count': int,
+    'is_us': bool,
+    'is_uk': bool
 }
+
+**Helper Functions (internal):**
+- `is_explicit_county(part)` - Checks for "County", "Co." markers
+- `is_explicit_township(part)` - Checks for "Township", "Twp", "Ward" markers
 
 **Examples:**
 ```python
@@ -102,7 +157,9 @@ parse_place("Chicago, Cook County, Illinois, USA")
 #     'state': 'Illinois',
 #     'country': 'USA',
 #     'other': '',
-#     'parts_count': 4
+#     'parts_count': 4,
+#     'is_us': True,
+#     'is_uk': False
 # }
 ```
 
@@ -134,14 +191,21 @@ Formats a place name based on various settings.
 - `place` (str): Original place string
 - `use_country_abbrev` (bool): Abbreviate country (default: False)
 - `use_state_abbrev` (bool): Abbreviate state to 2-letter code (default: False)
-- `show_county` (bool): Include county in output (default: True)
+- `hide_us_counties` (bool): Hide US county names (default: True)
 - `show_township` (bool): Include township in output (default: True)
 - `show_country` (bool): Include country in output (default: True)
 - `hide_usa_with_state` (bool): Hide "USA" when US state is present (default: True)
 - `country_first` (bool): Put country before other parts (default: False)
+- `auto_shorten` (bool): Reduce 3+ parts to 2 parts (default: False)
+- `abbreviate_uk_counties` (bool): Abbreviate UK/Ireland counties (default: False)
 
 **Returns:**
 - `str`: Formatted place string
+
+**County Display Logic:**
+- US counties: "Marion County" → "Marion Co."
+- Irish counties: "County Cork" → "Co. Cork"
+- UK counties: displayed as-is
 
 **Examples:**
 ```python
@@ -149,20 +213,24 @@ Formats a place name based on various settings.
 place = "Chicago, Cook County, Illinois, USA"
 
 # Show everything
-format_place(place, show_county=True, show_township=True)
+format_place(place, hide_us_counties=False, show_township=True)
 # -> "Chicago, Cook County, Illinois, USA"
 
 # Hide county, abbreviate state
-format_place(place, show_county=False, use_state_abbrev=True)
+format_place(place, hide_us_counties=True, use_state_abbrev=True)
 # -> "Chicago, IL, USA"
 
 # Hide USA when state shown
 format_place(place, hide_usa_with_state=True)
 # -> "Chicago, Cook County, Illinois"
 
-# Country first (non-US places)
-format_place("London, England, UK", country_first=True)
-# -> "UK, London, England"
+# Auto-shorten 3+ parts to 2
+format_place(place, auto_shorten=True)
+# -> "Illinois, USA"
+
+# Abbreviate UK counties
+format_place("Yorkshire, England, UK", abbreviate_uk_counties=True)
+# -> "Yorks., England, UK"
 ```
 
 ### get_place_short(place: str, max_parts: int = 2) -> str
@@ -191,17 +259,17 @@ Formats a place name using settings from the generator.
 - `settings` (dict): Settings dictionary with keys:
   - `place_use_country_abbrev`: bool
   - `place_use_state_abbrev`: bool
-  - `place_show_county`: bool
+  - `place_hide_us_counties`: bool
   - `place_show_township`: bool
   - `place_show_country`: bool
   - `place_hide_usa_with_state`: bool
   - `place_country_first`: bool
-- `flag` (str): Optional flag emoji to append
+  - `place_auto_shorten`: bool
+  - `place_abbreviate_uk_counties`: bool
+- `flag` (str): Optional flag emoji to append (deprecated)
 
 **Returns:**
 - `str`: Formatted place string
-
-**Note:** The `flag` parameter is deprecated - flags should be positioned separately using the `print_individual()` function parameters.
 
 ### get_flag_from_place(place: str) -> str
 
@@ -221,6 +289,39 @@ get_flag_from_place("Chicago, Illinois, USA")
 get_flag_from_place("London, England")
 # -> "🏴󠁧󠁢󠁥󠁮󠁧󠁿"
 ```
+
+### get_flag_image_path(place: str) -> str
+
+Gets the relative path to a flag image file.
+
+**Parameters:**
+- `place` (str): Place string
+
+**Returns:**
+- `str`: Relative path (e.g., "charts/images/flags/us.png") or empty string
+
+### get_flag_from_place_with_settings(place: str, birth_date: str, death_date: str, show_uk_flag: bool, show_ireland_flag: bool) -> str
+
+Gets flag emoji with date-aware logic for UK and Ireland.
+
+**Parameters:**
+- `place` (str): Place string
+- `birth_date` (str): Birth date in YYYY-MM-DD format (optional)
+- `death_date` (str): Death date in YYYY-MM-DD format (optional)
+- `show_uk_flag` (bool): Show UK flag instead of constituent country flag
+- `show_ireland_flag` (bool): Apply date restrictions for Ireland flag
+
+**Date Logic:**
+- UK places: If `show_uk_flag=True`, only show UK flag if date is after 1801-01-01 (UK formation)
+- Ireland places: If `show_ireland_flag=True`, only show Ireland flag if date is between 1801-01-01 and 1922-12-06 (when Ireland was part of the UK)
+
+**Returns:**
+- `str`: Flag emoji or empty string
+
+**Internal Helpers:**
+- `parse_date(date_str)` - Parse YYYY-MM-DD string to datetime
+- `is_date_after(target_date_str, check_date)` - Check if date is after target
+- `is_date_between(start_date_str, end_date_str, check_date)` - Check if date is in range
 
 ## Usage in Generators
 
@@ -258,20 +359,25 @@ print_individual(
 )
 ```
 
-## Settings Integration
+## Settings Integration (HUD)
 
-The HUD form provides checkboxes for place formatting:
+The HUD form (`display_tree.html`) provides checkboxes for place formatting:
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `place_show_county` | False | Show county names |
-| `place_show_township` | True | Show township names |
-| `place_show_country` | True | Show country names |
+| `place_use_country_abbrev` | True | Abbreviate countries (USA, UK) |
 | `place_use_state_abbrev` | True | Abbreviate states (IL vs Illinois) |
-| `place_use_country_abbrev` | True | Abbreviate countries (USA vs United States) |
+| `place_hide_us_counties` | True | Hide US county names |
+| `place_show_township` | False | Show township names |
+| `place_show_country` | True | Show country names |
 | `place_hide_usa_with_state` | True | Hide "USA" when state is shown |
-| `place_show_flag` | False | Show country flag emoji |
+| `place_auto_shorten` | False | Reduce 3+ parts to 2 |
+| `place_abbreviate_uk_counties` | False | Abbreviate UK/Ireland counties |
+| `place_show_flag` | True | Show country flag |
+| `place_show_uk_flag` | False | Show UK flag (after 1801) instead of constituent |
 | `place_flag_type` | "birth" | Which place to get flag from (birth/death) |
+| `place_flag_format` | "png" | Flag format (png/emoji) |
+| `flag_font` | varies | Font for emoji flags (platform-specific) |
 
 ## Known Issues Fixed
 
@@ -280,3 +386,5 @@ The HUD form provides checkboxes for place formatting:
 2. **State abbreviation check**: The `hide_usa_with_state` logic was checking against full state names but the state had already been abbreviated. Fixed by checking against `STATE_ABBREVIATIONS` which includes both full names and abbreviations.
 
 3. **Position-based county detection**: For US places with 3-4 parts ending in state/USA, the 2nd part is always the county. Updated parsing logic to detect unlabeled counties based on position.
+
+4. **UK flag date logic**: Added `get_flag_from_place_with_settings()` to handle date-aware UK and Ireland flag display based on historical events.
