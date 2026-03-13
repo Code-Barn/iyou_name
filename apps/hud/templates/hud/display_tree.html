@@ -199,6 +199,18 @@
                                 <label class="form-check-label" for="place-abbreviate-uk-counties">Abbreviate UK/Ireland Counties</label>
                             </div>
                             <div class="form-check">
+                                <input type="checkbox" name="place_abbreviate_sweden_counties" class="form-check-input" id="place-abbreviate-sweden-counties" {% if hud_settings.place_abbreviate_sweden_counties|default:False %}checked{% endif %}>
+                                <label class="form-check-label" for="place-abbreviate-sweden-counties">Abbreviate Swedish Counties (Jönköping → F)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_abbreviate_france_departments" class="form-check-input" id="place-abbreviate-france-departments" {% if hud_settings.place_abbreviate_france_departments|default:False %}checked{% endif %}>
+                                <label class="form-check-label" for="place-abbreviate-france-departments">Abbreviate French Departments (Calvados → 14)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_abbreviate_place_parts" class="form-check-input" id="place-abbreviate-place-parts" {% if hud_settings.place_abbreviate_place_parts|default:False %}checked{% endif %}>
+                                <label class="form-check-label" for="place-abbreviate-place-parts">Abbreviate Place Parts (Street → St, Mountain → Mtn)</label>
+                            </div>
+                            <div class="form-check">
                                 <input type="checkbox" name="place_show_township" class="form-check-input" id="place-show-township" {% if hud_settings.place_show_township|default:False %}checked{% endif %}>
                                 <label class="form-check-label" for="place-show-township">Show Township</label>
                             </div>

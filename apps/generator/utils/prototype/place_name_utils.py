@@ -493,7 +493,7 @@ STATE_ABBREVIATIONS = {**STATE_ABBREVIATIONS, **STATE_ABBREVIATIONS_REVERSE}
 US_STATES = {s.lower() for s in US_STATE_ABBREVIATIONS.keys()}
 
 # Common place name part abbreviations
-# These are applied to street suffixes and geographical terms
+# These are applied to street suffixes and geographical terms in place names
 PLACE_PART_ABBREVIATIONS = {
     # Mountains and terrain
     "mountain": "Mtn",
@@ -542,7 +542,7 @@ PLACE_PART_ABBREVIATIONS = {
     "aly": "Aly",
     # Water and geography
     "river": "Riv",
-    "riv": "riv",
+    "riv": "Riv",
     "island": "Is",
     "is": "Is",
     "lake": "Lk",
@@ -551,6 +551,7 @@ PLACE_PART_ABBREVIATIONS = {
     "ocean": "Ocean",
     "bay": "Bay",
     "harbor": "Harbor",
+    "harbour": "Harbor",
     "port": "Port",
     "creek": "Crk",
     "crk": "Crk",
@@ -575,7 +576,7 @@ PLACE_PART_ABBREVIATIONS = {
     "spg": "Spg",
     "falls": "Fls",
     "fls": "Fls",
-    " gorge": "Gorge",
+    "gorge": "Gorge",
     "valley": "Vly",
     "vly": "Vly",
     "hollow": "Hlw",
@@ -589,6 +590,28 @@ PLACE_PART_ABBREVIATIONS = {
     "hl": "Hl",
     "hills": "Hls",
     "hls": "Hls",
+    # Administrative divisions (for genealogical/historical places)
+    "county": "Co",
+    "co": "Co",
+    "township": "Twp",
+    "twp": "Twp",
+    "borough": "Boro",
+    "boro": "Boro",
+    "province": "Prov",
+    "prov": "Prov",
+    "territory": "Terr",
+    "terr": "Terr",
+    "district": "Dist",
+    "dist": "Dist",
+    "parish": "Par",
+    "par": "Par",
+    # Additional common terms
+    "city": "City",
+    "town": "Town",
+    "village": "Vlg",
+    "vlg": "Vlg",
+    "farm": "Farm",
+    "gard": "Gard",
 }
 
 # Known country identifiers (includes English names + multilingual variants for parsing)
