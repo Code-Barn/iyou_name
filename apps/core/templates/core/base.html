@@ -356,22 +356,23 @@
             }
             
             /* HUD template specific fixes - PRECISE TARGETING */
-            /* Live Preview section heading in card header - keep original light mode color (blue) */
-            .card-header h5.mb-0:contains("Live Preview"),
-            html.dark .card-header h5.mb-0:contains("Live Preview") {
-                color: #0d6efd !important;  /* Keep original blue color */
+            /* Live Preview section heading - keep original blue background and white text in dark mode */
+            html.dark .card-header.bg-primary {
+                background-color: #0d6efd !important;
+                border-color: #0d6efd !important;
+                color: white !important;
             }
             
-            /* Chart Settings heading in card body - match Reset to Defaults button text color (lighter gray) */
-            .card-body h6:contains("Chart Settings"),
-            html.dark .card-body h6:contains("Chart Settings") {
-                color: #212529 !important;  /* Match button text color */
+            /* Chart Settings heading - keep original grey background and white text in dark mode (matches Reset button) */
+            html.dark .card-header.bg-secondary {
+                background-color: #6c757d !important;
+                border-color: #6c757d !important;
+                color: white !important;
             }
             
-            /* Revert Interactive Family Tree Preview to original color */
-            .card-header h2:contains("Interactive Family Tree Preview"),
-            html.dark .card-header h2:contains("Interactive Family Tree Preview") {
-                color: inherit !important;  /* Revert to original */
+            /* Interactive Family Tree Preview h2 - keep original color */
+            html.dark .col-12 > h2.mb-4 {
+                color: inherit !important;
             }
             
             /* Reset to Defaults button - white in dark mode */
