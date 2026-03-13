@@ -22,13 +22,354 @@
             rel="stylesheet"
             href="{% static 'vendor/bootstrap/icons/bootstrap-icons.css' %}"
         />
+        
+        <!-- CSRF Token for requests -->
+        <meta name="csrf-token" content="{{ csrf_token }}">
+        
+        <!-- CSS Variables for theming -->
+        <style>
+            :root {
+                --primary-color: #0d6efd;
+                --primary-hover: #0b5ed7;
+                --primary-focus: #0a58ca;
+                --text-color: #212529;
+                --bg-color: #f8f9fa;
+                --bg-secondary: #ffffff;
+                --border-color: #dee2e6;
+                --success-color: #198754;
+                --error-color: #dc3545;
+                --warning-color: #ffc107;
+                --info-color: #0dcaf0;
+            }
+            html.dark {
+                --primary-color: #6ea8fe;
+                --primary-hover: #0d6efd;
+                --primary-focus: #0b5ed7;
+                --text-color: #f8f9fa;
+                --bg-color: #212529;
+                --bg-secondary: #343a40;
+                --border-color: #495057;
+                --success-color: #198754;
+                --error-color: #dc3545;
+                --warning-color: #ffc107;
+                --info-color: #6ea8fe;
+            }
+            body {
+                background-color: var(--bg-color);
+                color: var(--text-color);
+            }
+            
+            /* Light mode specific styling - restore white header/footer */
+            :root:not(.dark) nav {
+                background-color: white !important;
+                border-bottom: 1px solid #dee2e6 !important;
+            }
+            :root:not(.dark) footer {
+                background-color: white !important;
+                border-top: 1px solid #dee2e6 !important;
+            }
+            
+            /* Dark mode overrides for Bootstrap */
+            html.dark .bg-light { background-color: var(--bg-secondary) !important; }
+            html.dark .bg-white { background-color: var(--bg-secondary) !important; }
+            html.dark .text-dark { color: var(--text-color) !important; }
+            html.dark .text-body { color: var(--text-color) !important; }
+            html.dark .text-muted { color: #adb5bd !important; }
+            html.dark .border { border-color: var(--border-color) !important; }
+            html.dark nav { background-color: var(--bg-secondary) !important; }
+            html.dark footer { background-color: var(--bg-secondary) !important; }
+            
+            /* Theme toggle button always visible */
+            html.dark #theme-toggle { color: #ffc107 !important; }
+            
+            /* Header text dark mode - make navbar text white */
+            html.dark .navbar-text {
+                color: white !important;
+            }
+            html.dark .navbar-brand {
+                color: white !important;
+            }
+            html.dark .navbar-nav .nav-link {
+                color: white !important;
+            }
+            html.dark .navbar-toggler-icon {
+                background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3e%3cpath stroke='rgba(255, 255, 255, 1)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+            }
+            
+            /* Main content area dark mode */
+            html.dark .container {
+                color: var(--text-color) !important;
+            }
+            html.dark .card {
+                background-color: var(--bg-secondary) !important;
+                border-color: var(--border-color) !important;
+                color: var(--text-color) !important;
+            }
+            html.dark .table {
+                color: var(--text-color) !important;
+                border-color: var(--border-color) !important;
+            }
+            html.dark .table th,
+            html.dark .table td {
+                border-color: var(--border-color) !important;
+            }
+            html.dark .btn-primary {
+                background-color: var(--primary-color) !important;
+                border-color: var(--primary-color) !important;
+            }
+            html.dark .btn-secondary {
+                background-color: var(--bg-secondary) !important;
+                border-color: var(--border-color) !important;
+                color: var(--text-color) !important;
+            }
+            html.dark .form-control {
+                background-color: var(--bg-secondary) !important;
+                border-color: var(--border-color) !important;
+                color: var(--text-color) !important;
+            }
+            html.dark .form-label {
+                color: var(--text-color) !important;
+            }
+            html.dark a {
+                color: var(--primary-color) !important;
+            }
+            html.dark a:hover {
+                color: var(--primary-hover) !important;
+            }
+            
+            /* Form elements dark mode */
+            html.dark select, html.dark input, html.dark textarea {
+                background-color: var(--bg-secondary) !important;
+                color: var(--text-color) !important;
+                border-color: var(--border-color) !important;
+            }
+            
+            /* Ensure proper text color inheritance */
+            html.dark body, 
+            html.dark p, 
+            html.dark div, 
+            html.dark span, 
+            html.dark li, 
+            html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6 {
+                color: var(--text-color) !important;
+            }
+            
+            /* Fix specific component issues */
+            html.dark .alert {
+                background-color: var(--bg-secondary) !important;
+                border-color: var(--border-color) !important;
+                color: var(--text-color) !important;
+            }
+            html.dark .alert-info {
+                background-color: #1a4a6a !important;
+                border-color: #0d6efd !important;
+                color: white !important;
+            }
+            html.dark .alert-success {
+                background-color: #194a3f !important;
+                border-color: #198754 !important;
+                color: white !important;
+            }
+            html.dark .badge {
+                background-color: var(--primary-color) !important;
+                color: white !important;
+            }
+            html.dark .badge.bg-success {
+                background-color: #198754 !important;
+            }
+            html.dark .list-group-item {
+                background-color: var(--bg-secondary) !important;
+                border-color: var(--border-color) !important;
+                color: var(--text-color) !important;
+            }
+            html.dark .list-group-item-action:hover {
+                background-color: var(--primary-color) !important;
+                color: white !important;
+            }
+            html.dark .btn-primary {
+                color: white !important;
+            }
+            html.dark .btn-secondary {
+                color: white !important;
+            }
+            html.dark .card-header {
+                background-color: var(--bg-secondary) !important;
+                border-color: var(--border-color) !important;
+                color: var(--text-color) !important;
+            }
+            
+            /* Profile page specific fixes - MORE SPECIFIC */
+            html.dark .table {
+                color: var(--text-color) !important;
+                background-color: var(--bg-secondary) !important;
+            }
+            html.dark .table > :not(caption) > * > * {
+                background-color: var(--bg-secondary) !important;
+                border-bottom-color: var(--border-color) !important;
+            }
+            html.dark .table-striped > tbody > tr:nth-of-type(odd) {
+                background-color: var(--bg-secondary) !important;
+            }
+            html.dark .table-striped > tbody > tr:nth-of-type(even) {
+                background-color: #2b3035 !important;
+            }
+            html.dark .table th,
+            html.dark .table td {
+                border-color: var(--border-color) !important;
+            }
+            html.dark .table thead th {
+                background-color: #2b3035 !important;
+                color: white !important;
+                border-color: var(--border-color) !important;
+            }
+            
+            /* Button fixes with better specificity */
+            html.dark button.btn-info {
+                background-color: #0dcaf0 !important;
+                border-color: #0dcaf0 !important;
+                color: white !important;
+            }
+            html.dark button.btn-warning {
+                background-color: #ffc107 !important;
+                border-color: #ffc107 !important;
+                color: black !important;
+            }
+            html.dark button.btn-danger {
+                background-color: #dc3545 !important;
+                border-color: #dc3545 !important;
+                color: white !important;
+            }
+            html.dark .btn-success {
+                background-color: #198754 !important;
+                border-color: #198754 !important;
+                color: white !important;
+            }
+            
+            /* Profile page specific button fixes */
+            /* Browse button - same color in both modes */
+            button.btn-info,
+            html.dark button.btn-info {
+                background-color: #0dcaf0 !important;
+                border-color: #0dcaf0 !important;
+                color: white !important;
+            }
+            
+            /* Upload New GEDCOM button - retain light mode color in dark mode */
+            .btn-primary,
+            html.dark .btn-primary {
+                background-color: #0d6efd !important;
+                border-color: #0d6efd !important;
+                color: white !important;
+            }
+            
+            /* Remove hover behavior from Select Home Person button */
+            .btn-success,
+            html.dark .btn-success {
+                background-color: #198754 !important;
+                border-color: #198754 !important;
+                color: white !important;
+                transition: none !important;
+            }
+            
+            .btn-success:hover,
+            html.dark .btn-success:hover {
+                background-color: #198754 !important;
+                border-color: #198754 !important;
+                color: white !important;
+                opacity: 1 !important;
+                filter: none !important;
+            }
+            
+            /* Modal fixes */
+            html.dark .modal-content {
+                background-color: #212529 !important;
+                border-color: var(--border-color) !important;
+                color: var(--text-color) !important;
+            }
+            html.dark .modal-header {
+                background-color: #212529 !important;
+                border-color: var(--border-color) !important;
+                color: white !important;
+            }
+            html.dark .modal-footer {
+                background-color: #212529 !important;
+                border-color: var(--border-color) !important;
+            }
+            
+            /* Text and badge fixes */
+            html.dark .text-success {
+                color: #198754 !important;
+            }
+            html.dark .text-muted {
+                color: #adb5bd !important;
+            }
+            html.dark .form-text {
+                color: #adb5bd !important;
+            }
+            html.dark .badge.bg-success {
+                background-color: #198754 !important;
+                color: white !important;
+            }
+            html.dark .badge.bg-secondary {
+                background-color: #6c757d !important;
+                color: white !important;
+            }
+            
+            /* Home person name fix - make it readable */
+            html.dark .badge.bg-transparent.text-success {
+                background-color: transparent !important;
+                color: #198754 !important;
+                text-decoration: underline !important;
+            }
+            
+            /* Table cell text - ensure file names and dates are readable */
+            html.dark .table td {
+                color: var(--text-color) !important;
+                font-weight: 500 !important;
+            }
+            html.dark .table th {
+                color: white !important;
+                font-weight: 600 !important;
+            }
+            
+            /* Specific for profile table cells */
+            html.dark .table-responsive .table td {
+                color: var(--text-color) !important;
+                opacity: 1 !important;
+            }
+            
+            /* Ensure all text in dark mode has proper contrast */
+            html.dark,
+            html.dark * {
+                color: var(--text-color) !important;
+            }
+            
+            /* Except for elements that should have specific colors */
+            html.dark .text-success,
+            html.dark .text-muted,
+            html.dark .form-text,
+            html.dark .navbar-text,
+            html.dark .navbar-nav .nav-link,
+            html.dark .text-primary,
+            html.dark a {
+                color: inherit !important;
+            }
+        </style>
+        
+        <!-- Apply dark mode class immediately to prevent flash -->
+        <script>
+            // Check if dark mode should be applied
+            if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        </script>
     </head>
     <body>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center" href="{% url 'upload:home' %}">
-                    <img src="{% static 'core/images/tinynamelogo.png' %}" alt="Logo" />
-                    <img src="{% static 'core/images/namechartharp.png' %}" alt="Namechart Harp" class="ms-2" height="60" />
+                    <img id="navbar-logo" src="{% static 'core/images/tinynamelogo.png' %}" alt="Logo" />
+                    <img id="navbar-harp" src="{% static 'core/images/namechartharp.png' %}" alt="Namechart Harp" class="ms-2" height="60" />
                 </a>
                 <span class="navbar-text mx-auto fw-bold fst-italic">
                     "Explore Your Ancestry!"
@@ -46,6 +387,18 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <button
+                                id="theme-toggle"
+                                type="button"
+                                class="nav-link"
+                                style="background: none; border: none; padding: 0; margin: 0; cursor: pointer; line-height: 1.5;"
+                                aria-label="Toggle dark mode"
+                            >
+                                <i id="theme-toggle-dark-icon" class="bi bi-moon-fill d-none"></i>
+                                <i id="theme-toggle-light-icon" class="bi bi-sun-fill d-none"></i>
+                            </button>
+                        </li>
                         <li class="nav-item">
                             <a
                                 class="nav-link"
@@ -104,11 +457,11 @@
             <div class="container">
                 <div class="row align-items-center">
                     <div class="col-md-6 text-center text-md-start">
-                        <img src="{% static 'core/images/tinynamelogo.png' %}" alt="Namechart Logo" height="60" class="mb-3">
+                        <img id="footer-logo" src="" alt="Namechart Logo" height="60" class="mb-3">
                         <p class="mb-0">&copy; 2024 Namecharts.org. All rights reserved.</p>
                     </div>
                     <div class="col-md-6 text-center text-md-end">
-                        <img src="{% static 'core/images/createdinDeKalb.png' %}" alt="Created in DeKalb" height="125" class="mt-2">
+                        <img id="footer-dekalb-logo" src="" alt="Created in DeKalb" height="125" class="mt-2">
                     </div>
                 </div>
             </div>
@@ -132,5 +485,83 @@
 
         <!-- Add Bootstrap JS -->
         <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+        <!-- Theme toggle and logo setup script -->
+        <script>
+        (function() {
+            // Set up logos based on current theme
+            var isDark = document.documentElement.classList.contains('dark');
+            
+            // Navbar logo
+            var navbarLogo = document.getElementById('navbar-logo');
+            if (navbarLogo) navbarLogo.src = isDark ? '{% static "core/images/tinynamelogo_DM.png" %}' : '{% static "core/images/tinynamelogo.png" %}';
+            
+            // Footer logos
+            var footerLogo = document.getElementById('footer-logo');
+            var footerDekalbLogo = document.getElementById('footer-dekalb-logo');
+            if (footerLogo) footerLogo.src = isDark ? '{% static "core/images/tinynamelogo_DM.png" %}' : '{% static "core/images/tinynamelogo.png" %}';
+            if (footerDekalbLogo) footerDekalbLogo.src = isDark ? '{% static "core/images/createdinDeKalb_DM.png" %}' : '{% static "core/images/createdinDeKalb.png" %}';
+            
+            var darkIcon = document.getElementById('theme-toggle-dark-icon');
+            var lightIcon = document.getElementById('theme-toggle-light-icon');
+            if (isDark) {
+                if (darkIcon) darkIcon.classList.remove('d-none');
+            } else {
+                if (lightIcon) lightIcon.classList.remove('d-none');
+            }
+        })();
+        
+        function setupThemeToggle() {
+            var btn = document.getElementById('theme-toggle');
+            if (btn && !btn._themeToggleSetup) {
+                btn._themeToggleSetup = true;
+                btn.addEventListener('click', function() {
+                    var isDark = document.documentElement.classList.contains('dark');
+                    var darkIcon = document.getElementById('theme-toggle-dark-icon');
+                    var lightIcon = document.getElementById('theme-toggle-light-icon');
+                    
+                    if (isDark) {
+                        document.documentElement.classList.remove('dark');
+                        localStorage.setItem('color-theme', 'light');
+                        if (darkIcon) darkIcon.classList.add('d-none');
+                        if (lightIcon) lightIcon.classList.remove('d-none');
+                        
+                        // Update navbar logo
+                        var navbarLogo = document.getElementById('navbar-logo');
+                        if (navbarLogo) navbarLogo.src = '{% static "core/images/tinynamelogo.png" %}';
+                        
+                        // Update footer logos
+                        var footerLogo = document.getElementById('footer-logo');
+                        var footerDekalbLogo = document.getElementById('footer-dekalb-logo');
+                        if (footerLogo) footerLogo.src = '{% static "core/images/tinynamelogo.png" %}';
+                        if (footerDekalbLogo) footerDekalbLogo.src = '{% static "core/images/createdinDeKalb.png" %}';
+                    } else {
+                        document.documentElement.classList.add('dark');
+                        localStorage.setItem('color-theme', 'dark');
+                        if (darkIcon) darkIcon.classList.remove('d-none');
+                        if (lightIcon) lightIcon.classList.add('d-none');
+                        
+                        // Update navbar logo
+                        var navbarLogo = document.getElementById('navbar-logo');
+                        if (navbarLogo) navbarLogo.src = '{% static "core/images/tinynamelogo_DM.png" %}';
+                        
+                        // Update footer logos
+                        var footerLogo = document.getElementById('footer-logo');
+                        var footerDekalbLogo = document.getElementById('footer-dekalb-logo');
+                        if (footerLogo) footerLogo.src = '{% static "core/images/tinynamelogo_DM.png" %}';
+                        if (footerDekalbLogo) footerDekalbLogo.src = '{% static "core/images/createdinDeKalb_DM.png" %}';
+                    }
+                });
+            }
+        }
+        
+        // Try immediately
+        setupThemeToggle();
+        
+        // Also try on DOMContentLoaded and periodically
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupThemeToggle);
+        }
+        setInterval(setupThemeToggle, 500);
+        </script>
     </body>
 </html>
