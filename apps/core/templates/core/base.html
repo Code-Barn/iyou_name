@@ -354,6 +354,46 @@
             html.dark a {
                 color: inherit !important;
             }
+            
+            /* HUD template specific fixes - PRECISE TARGETING */
+            /* Live Preview section heading in card header - keep original light mode color (blue) */
+            .card-header h5.mb-0:contains("Live Preview"),
+            html.dark .card-header h5.mb-0:contains("Live Preview") {
+                color: #0d6efd !important;  /* Keep original blue color */
+            }
+            
+            /* Chart Settings heading in card body - match Reset to Defaults button text color (lighter gray) */
+            .card-body h6:contains("Chart Settings"),
+            html.dark .card-body h6:contains("Chart Settings") {
+                color: #212529 !important;  /* Match button text color */
+            }
+            
+            /* Revert Interactive Family Tree Preview to original color */
+            .card-header h2:contains("Interactive Family Tree Preview"),
+            html.dark .card-header h2:contains("Interactive Family Tree Preview") {
+                color: inherit !important;  /* Revert to original */
+            }
+            
+            /* Reset to Defaults button - white in dark mode */
+            html.dark .btn-light {
+                background-color: white !important;
+                border-color: #dee2e6 !important;
+                color: #212529 !important;
+            }
+            
+            /* Back to Selection button - keep current dark mode color */
+            html.dark .btn-secondary {
+                background-color: #6c757d !important;
+                border-color: #6c757d !important;
+                color: white !important;
+            }
+            
+            /* Light mode Back to Selection button fix */
+            :root:not(.dark) .btn-secondary {
+                background-color: #6c757d !important;
+                border-color: #6c757d !important;
+                color: white !important;
+            }
         </style>
         
         <!-- Apply dark mode class immediately to prevent flash -->
