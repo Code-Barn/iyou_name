@@ -323,6 +323,160 @@ CANADA_PROVINCE_ABBREVIATIONS = {
     "saskatchewan": "SK",
 }
 
+# Swedish county (län) abbreviations - Länsbokstäver
+# Official vehicle registration codes used until 1973, still used for genealogical abbreviations
+SWEDISH_COUNTY_CODES = {
+    "stockholm": "AB",
+    "stockholms län": "AB",
+    "uppsala": "C",
+    "uppsala län": "C",
+    "södermanland": "D",
+    "södermanlands län": "D",
+    "östergötland": "E",
+    "östergötlands län": "E",
+    "jönköping": "F",
+    "jönköpings län": "F",
+    "kronoberg": "G",
+    "kronobergs län": "G",
+    "kalmar": "H",
+    "kalmar län": "H",
+    "blekinge": "K",
+    "blekinge län": "K",
+    "skåne": "M",
+    "skåne län": "M",
+    "halland": "N",
+    "hallands län": "N",
+    "västra götaland": "O",
+    "västra götalands län": "O",
+    "gävleborg": "X",
+    "gävleborgs län": "X",
+    "västernorrland": "Y",
+    "västernorrlands län": "Y",
+    "jämtland": "Z",
+    "jämtlands län": "Z",
+    "västerbotten": "AC",
+    "västerbottens län": "AC",
+    "norrbotten": "BD",
+    "norrbottens län": "BD",
+    "gotland": "I",
+    "gotlands län": "I",
+    "värmland": "S",
+    "värmlands län": "S",
+    "örebro": "T",
+    "örebro län": "T",
+    "västmanland": "U",
+    "västmanlands län": "U",
+    "dalarna": "W",
+    "dalarnas län": "W",
+}
+
+# French department codes (departements) - INSEE codes
+# Two-digit codes used for postal codes and administrative filing
+FRENCH_DEPARTMENT_CODES = {
+    "ain": "01",
+    "aisne": "02",
+    "allier": "03",
+    "alpes-de-haute-provence": "04",
+    "hautes-alpes": "05",
+    "alpes-maritimes": "06",
+    "ardèche": "07",
+    "ardennes": "08",
+    "ariège": "09",
+    "aube": "10",
+    "aude": "11",
+    "aveyron": "12",
+    "bouches-du-Rhône": "13",
+    "calvados": "14",
+    "cantal": "15",
+    "charente": "16",
+    "charente-maritime": "17",
+    "cher": "18",
+    "corrèze": "19",
+    "corse": "20",
+    "corse-du-sud": "2A",
+    "haute-corse": "2B",
+    "côte-d'Or": "21",
+    "côtes-d'Armor": "22",
+    "creuse": "23",
+    "dordogne": "24",
+    "doubs": "25",
+    "drôme": "26",
+    "eure": "27",
+    "eure-et-loir": "28",
+    "finistère": "29",
+    "gard": "30",
+    "haute-garonne": "31",
+    "gers": "32",
+    "gironde": "33",
+    "hérault": "34",
+    "ille-et-vilaine": "35",
+    "indre": "36",
+    "indre-et-loire": "37",
+    "isère": "38",
+    "jura": "39",
+    "landes": "40",
+    "loir-et-cher": "41",
+    "loire": "42",
+    "haute-loire": "43",
+    "loire-atlantique": "44",
+    "loiret": "45",
+    "lot": "46",
+    "lot-et-garonne": "47",
+    "lozère": "48",
+    "maine-et-loire": "49",
+    "manche": "50",
+    "marne": "51",
+    "haute-marne": "52",
+    "mayenne": "53",
+    "meurthe-et-moselle": "54",
+    "meuse": "55",
+    "morbihan": "56",
+    "moselle": "57",
+    "nièvre": "58",
+    "nord": "59",
+    "oise": "60",
+    "orne": "61",
+    "pas-de-calais": "62",
+    "puy-de-dôme": "63",
+    "pyrénées-atlantiques": "64",
+    "hautes-pyrenees": "65",
+    "pyrénées-orientales": "66",
+    "bas-rhin": "67",
+    "haut-rhin": "68",
+    "rhône": "69",
+    "haute-saône": "70",
+    "saône-et-loire": "71",
+    "sarthe": "72",
+    "savoie": "73",
+    "haute-savoie": "74",
+    "paris": "75",
+    "seine-maritime": "76",
+    "seine-et-marne": "77",
+    "yvelines": "78",
+    "deux-sèvres": "79",
+    "somme": "80",
+    "tarn": "81",
+    "tarn-et-garonne": "82",
+    "var": "83",
+    "vaucluse": "84",
+    "vendée": "85",
+    "vienne": "86",
+    "haute-vienne": "87",
+    "vosges": "88",
+    "yonne": "89",
+    "territoire de belfort": "90",
+    "essonne": "91",
+    "hauts-de-seine": "92",
+    "seine-saint-denis": "93",
+    "val-de-marne": "94",
+    "val-d'oise": "95",
+    # Corsica variants
+    "corse": "20",
+    # Historical departments
+    "loire-inférieure": "44",
+    "seine-inférieure": "76",
+}
+
 # Combine all state/province abbreviations (full name -> abbreviation)
 STATE_ABBREVIATIONS = {
     **US_STATE_ABBREVIATIONS,
@@ -337,6 +491,105 @@ STATE_ABBREVIATIONS = {**STATE_ABBREVIATIONS, **STATE_ABBREVIATIONS_REVERSE}
 
 # Set of all US state names (lowercase) for quick lookup
 US_STATES = {s.lower() for s in US_STATE_ABBREVIATIONS.keys()}
+
+# Common place name part abbreviations
+# These are applied to street suffixes and geographical terms
+PLACE_PART_ABBREVIATIONS = {
+    # Mountains and terrain
+    "mountain": "Mtn",
+    "mtn": "Mtn",
+    "mount": "Mt",
+    "mt": "Mt",
+    "mountains": "Mtns",
+    # Saints and religious
+    "saint": "St",
+    "sainte": "Ste",
+    "st": "St",
+    "ste": "Ste",
+    # Streets and roads
+    "avenue": "Ave",
+    "ave": "Ave",
+    "street": "St",
+    "boulevard": "Blvd",
+    "blvd": "Blvd",
+    "road": "Rd",
+    "rd": "Rd",
+    "lane": "Ln",
+    "ln": "Ln",
+    "drive": "Dr",
+    "dr": "Dr",
+    "court": "Ct",
+    "ct": "Ct",
+    "place": "Pl",
+    "pl": "Pl",
+    "terrace": "Ter",
+    "ter": "Ter",
+    "circle": "Cir",
+    "cir": "Cir",
+    "parkway": "Pkwy",
+    "pkwy": "Pkwy",
+    "highway": "Hwy",
+    "hwy": "Hwy",
+    "freeway": "Fwy",
+    "fwy": "Fwy",
+    "expressway": "Expy",
+    "expy": "Expy",
+    "trail": "Trl",
+    "trl": "Trl",
+    "way": "Wy",
+    "wy": "Wy",
+    "alley": "Aly",
+    "aly": "Aly",
+    # Water and geography
+    "river": "Riv",
+    "riv": "riv",
+    "island": "Is",
+    "is": "Is",
+    "lake": "Lk",
+    "lk": "Lk",
+    "sea": "Sea",
+    "ocean": "Ocean",
+    "bay": "Bay",
+    "harbor": "Harbor",
+    "port": "Port",
+    "creek": "Crk",
+    "crk": "Crk",
+    "stream": "Strm",
+    "brook": "Brk",
+    "brk": "Brk",
+    # Fortifications and settlements
+    "fort": "Ft",
+    "ft": "Ft",
+    "heights": "Hts",
+    "hts": "Hts",
+    "junction": "Jct",
+    "jct": "Jct",
+    "center": "Ctr",
+    "ctr": "Ctr",
+    "centre": "Ctr",
+    "station": "Sta",
+    "sta": "Sta",
+    "springs": "Spgs",
+    "spgs": "Spgs",
+    "spring": "Spg",
+    "spg": "Spg",
+    "falls": "Fls",
+    "fls": "Fls",
+    " gorge": "Gorge",
+    "valley": "Vly",
+    "vly": "Vly",
+    "hollow": "Hlw",
+    "hlw": "Hlw",
+    "prairie": "Pr",
+    "plains": "Plns",
+    "plns": "Plns",
+    "meadow": "Mdw",
+    "mdw": "Mdw",
+    "hill": "Hl",
+    "hl": "Hl",
+    "hills": "Hls",
+    "hls": "Hls",
+}
 
 # Known country identifiers (includes English names + multilingual variants for parsing)
 KNOWN_COUNTRIES = {
@@ -386,8 +639,19 @@ KNOWN_COUNTRIES = {
     "sweden",
     "sverige",
     "norway",
+    "norge",
     "denmark",
+    "danmark",
     "finland",
+    "suède",
+    "norge",
+    "danemark",
+    "finlande",
+    "france",
+    "francia",
+    "frankrijk",
+    "frankreich",
+    "francía",
     # German variants
     "niedersachsen",
     "bayern",
@@ -735,20 +999,38 @@ def detect_country(place: str) -> dict:
             - country: The detected country name (or UK constituent for UK places)
             - is_us: True if place is in the US
             - is_uk: True if place is in the UK
+            - is_sweden: True if place is in Sweden
+            - is_france: True if place is in France
             - raw_country: The raw last part if it's a country identifier
     """
     if not place:
-        return {"country": "", "is_us": False, "is_uk": False, "raw_country": ""}
+        return {
+            "country": "",
+            "is_us": False,
+            "is_uk": False,
+            "is_sweden": False,
+            "is_france": False,
+            "raw_country": "",
+        }
 
     parts = [p.strip() for p in place.split(",")]
     if not parts:
-        return {"country": "", "is_us": False, "is_uk": False, "raw_country": ""}
+        return {
+            "country": "",
+            "is_us": False,
+            "is_uk": False,
+            "is_sweden": False,
+            "is_france": False,
+            "raw_country": "",
+        }
 
     last_part = parts[-1].lower().strip()
     raw_country = parts[-1] if last_part in KNOWN_COUNTRIES else ""
 
     is_us = False
     is_uk = False
+    is_sweden = False
+    is_france = False
     country = raw_country
 
     # Check if it's a US place
@@ -779,10 +1061,20 @@ def detect_country(place: str) -> dict:
         is_uk = True
         country = parts[-1]
 
+    # Check if it's Sweden
+    if last_part in {"sweden", "sverige"}:
+        is_sweden = True
+
+    # Check if it's France
+    if last_part in {"france", "francia", "frankrijk", "frankreich", "francía"}:
+        is_france = True
+
     return {
         "country": country,
         "is_us": is_us,
         "is_uk": is_uk,
+        "is_sweden": is_sweden,
+        "is_france": is_france,
         "raw_country": raw_country,
     }
 
@@ -808,6 +1100,8 @@ def parse_place(place: str) -> dict:
             "parts_count": 0,
             "is_us": False,
             "is_uk": False,
+            "is_sweden": False,
+            "is_france": False,
         }
 
     # Detect country first
@@ -826,6 +1120,8 @@ def parse_place(place: str) -> dict:
         "parts_count": parts_count,
         "is_us": country_info["is_us"],
         "is_uk": country_info["is_uk"],
+        "is_sweden": country_info["is_sweden"],
+        "is_france": country_info["is_france"],
     }
 
     if parts_count == 0:
@@ -872,6 +1168,58 @@ def parse_place(place: str) -> dict:
             result["state"] = parts[-1]
             parts = parts[:-1]
             parts_count = len(parts)
+
+    # Detect Swedish counties (län) and French departments
+    # Check remaining parts for Swedish/French county/department patterns
+    # Swedish: usually "Town, County, Country" (e.g., "Säby, Jönköping, Sweden")
+    # French: usually "Town, Department, Region, Country" (e.g., "Appeville, Eure, Haute-Normandie, France")
+    # OR "Town, Department, Country" (e.g., "Marseille, Bouches-du-Rhône, France")
+
+    # Helper for case-insensitive French department lookup
+    def find_french_department(part: str) -> str | None:
+        part_lower = part.lower().strip()
+        if part_lower in FRENCH_DEPARTMENT_CODES:
+            return part
+        # Also try with title-case handling for hyphenated names like Bouches-du-Rhône
+        part_title = part.strip()
+        if part_title in FRENCH_DEPARTMENT_CODES:
+            return part_title
+        # Try with first letter capitalized (handles most French department names)
+        part_cap = part_title.capitalize()
+        if part_cap in FRENCH_DEPARTMENT_CODES:
+            return part_cap
+        # Try case-insensitive search for complex names
+        for key in FRENCH_DEPARTMENT_CODES:
+            if key.lower() == part_lower:
+                return key
+        return None
+
+    if parts_count >= 1:
+        # For Swedish: check last part for "län" or known county
+        last_lower = parts[-1].lower().strip()
+        if "län" in last_lower or last_lower in SWEDISH_COUNTY_CODES:
+            result["state"] = parts[-1]
+            parts = parts[:-1]
+            parts_count = len(parts)
+        # For French: check all parts for department (typically the 2nd to last before region)
+        # Common patterns: "Town, Department, Region, Country" or "Town, Department, Country"
+        elif parts_count >= 2:
+            # Check second-to-last part (could be department)
+            dept = find_french_department(parts[-2])
+            if dept:
+                result["state"] = dept
+                # Also mark the region as "other" to be filtered out
+                if parts_count >= 3:
+                    result["other"] = parts[-1]
+                parts = parts[:-2] if parts_count >= 3 else parts[:-1]
+                parts_count = len(parts)
+            # If no department found in second-to-last, check last part
+            else:
+                dept = find_french_department(parts[-1])
+                if dept:
+                    result["state"] = dept
+                    parts = parts[:-1]
+                    parts_count = len(parts)
 
     # Now we have remaining parts - these are town/county
     # For American style: first part is town, second is county (if 2 parts after removing state/country)
@@ -962,6 +1310,98 @@ def abbreviate_state(state: str) -> str:
     return STATE_ABBREVIATIONS.get(state_lower, state)
 
 
+def abbreviate_swedish_county(county: str) -> str:
+    """
+    Abbreviate Swedish county (län) name to its code.
+
+    Args:
+        county: Full county name (e.g., "Jönköpings län", "Jönköping")
+
+    Returns:
+        Abbreviated county code (e.g., "F") or original if not recognized
+    """
+    if not county:
+        return county
+
+    county_lower = county.lower().strip()
+    # Try direct match first
+    if county_lower in SWEDISH_COUNTY_CODES:
+        return SWEDISH_COUNTY_CODES[county_lower]
+
+    # Try without " län" suffix
+    if county_lower.endswith(" län"):
+        county_without_lan = county_lower[:-4]
+        if county_without_lan in SWEDISH_COUNTY_CODES:
+            return SWEDISH_COUNTY_CODES[county_without_lan]
+
+    return county
+
+
+def abbreviate_french_department(department: str) -> str:
+    """
+    Abbreviate French department name to its INSEE code.
+
+    Args:
+        department: Full department name (e.g., "Calvados", "Eure")
+
+    Returns:
+        Abbreviated department code (e.g., "14", "27") or original if not recognized
+    """
+    if not department:
+        return department
+
+    department_lower = department.lower().strip()
+    # Try exact match first
+    if department_lower in FRENCH_DEPARTMENT_CODES:
+        return FRENCH_DEPARTMENT_CODES[department_lower]
+    # Try case-insensitive search
+    for key, value in FRENCH_DEPARTMENT_CODES.items():
+        if key.lower() == department_lower:
+            return value
+    return department
+
+
+def abbreviate_place_name_parts(place: str) -> str:
+    """
+    Abbreviate common place name parts (street suffixes, geographical terms).
+
+    Args:
+        place: Place string to abbreviate
+
+    Returns:
+        Place string with common parts abbreviated
+    """
+    if not place:
+        return place
+
+    # Split by comma and process each part
+    parts = place.split(",")
+    abbreviated_parts = []
+
+    for part in parts:
+        part_stripped = part.strip()
+        part_lower = part_stripped.lower()
+
+        # Check for exact matches at word boundaries
+        # First check for full word matches (surrounded by spaces or at start/end)
+        for full_word, abbrev in PLACE_PART_ABBREVIATIONS.items():
+            # Use word boundary matching
+            import re
+
+            # Match whole word only (case-insensitive)
+            pattern = r"\b" + re.escape(full_word) + r"\b"
+            if re.search(pattern, part_lower):
+                # Replace with proper case abbreviation
+                part_stripped = re.sub(
+                    pattern, lambda m: abbrev, part_stripped, flags=re.IGNORECASE
+                )
+                break  # Only apply first match to avoid double-replacement
+
+        abbreviated_parts.append(part_stripped)
+
+    return ", ".join(abbreviated_parts)
+
+
 def format_place(
     place: str,
     use_country_abbrev: bool = False,
@@ -973,6 +1413,9 @@ def format_place(
     country_first: bool = False,
     auto_shorten: bool = False,
     abbreviate_uk_counties: bool = False,
+    abbreviate_sweden_counties: bool = False,
+    abbreviate_france_departments: bool = False,
+    abbreviate_place_parts: bool = False,
 ) -> str:
     """
     Format a place name based on settings.
@@ -990,12 +1433,19 @@ def format_place(
                       reduce to last 2 parts (removes first part). Useful for
                       places like "Town, Region, County, Country" → "Region, County"
         abbreviate_uk_counties: Abbreviate UK/Ireland county names (e.g., Yorkshire → Yorks.)
+        abbreviate_sweden_counties: Abbreviate Swedish counties to codes (e.g., Jönköpings län → F)
+        abbreviate_france_departments: Abbreviate French departments to codes (e.g., Calvados → 14)
+        abbreviate_place_parts: Abbreviate common place parts (e.g., Street → St, Mountain → Mtn)
 
     Returns:
         Formatted place string
     """
     if not place:
         return place
+
+    # Apply place part abbreviations first (before other processing)
+    if abbreviate_place_parts:
+        place = abbreviate_place_name_parts(place)
 
     parsed = parse_place(place)
 
@@ -1022,6 +1472,26 @@ def format_place(
 
     if use_state_abbrev and parsed["state"]:
         parsed["state"] = abbreviate_state(parsed["state"])
+
+    # Apply Swedish county abbreviations
+    if abbreviate_sweden_counties and parsed["state"] and parsed["is_sweden"]:
+        parsed["state"] = abbreviate_swedish_county(parsed["state"])
+        # Hide Sweden when county code is shown
+        if parsed["country"] and parsed["country"].lower() in {"sweden", "sverige"}:
+            parsed["country"] = ""
+
+    # Apply French department abbreviations
+    if abbreviate_france_departments and parsed["state"] and parsed["is_france"]:
+        parsed["state"] = abbreviate_french_department(parsed["state"])
+        # Hide France when department code is shown
+        if parsed["country"] and parsed["country"].lower() in {
+            "france",
+            "francia",
+            "frankrijk",
+            "frankreich",
+            "francía",
+        }:
+            parsed["country"] = ""
 
     # Determine if we should hide the county
     # Only hide US counties when: is US place AND has both city and county
@@ -1159,7 +1629,17 @@ def format_place(
     if parsed["other"]:
         parts.append(parsed["other"])
 
-    result = ", ".join(parts)
+    # Filter out "other" (regions) when French/Swedish abbreviations are enabled
+    # French regions (e.g., Haute-Normandie, Basse-Normandie) should be hidden
+    # when the department code is shown
+    if (abbreviate_france_departments and parsed.get("is_france")) or (
+        abbreviate_sweden_counties and parsed.get("is_sweden")
+    ):
+        # Remove the "other" part (region) from the output
+        filtered_parts = [p for p in parts if p != parsed.get("other", "")]
+        result = ", ".join(filtered_parts)
+    else:
+        result = ", ".join(parts)
 
     # Auto-shorten: when enabled and result has 3+ parts,
     # reduce to first 2 parts (removes middle parts and country)
@@ -1278,6 +1758,9 @@ def format_place_from_settings(place: str, settings: dict, flag: str = "") -> st
             - place_country_first: bool
             - place_auto_shorten: bool
             - place_abbreviate_uk_counties: bool
+            - place_abbreviate_sweden_counties: bool
+            - place_abbreviate_france_departments: bool
+            - place_abbreviate_place_parts: bool
         flag: Optional flag emoji to append to place
 
     Returns:
@@ -1297,6 +1780,13 @@ def format_place_from_settings(place: str, settings: dict, flag: str = "") -> st
         country_first=settings.get("place_country_first", False),
         auto_shorten=settings.get("place_auto_shorten", False),
         abbreviate_uk_counties=settings.get("place_abbreviate_uk_counties", False),
+        abbreviate_sweden_counties=settings.get(
+            "place_abbreviate_sweden_counties", False
+        ),
+        abbreviate_france_departments=settings.get(
+            "place_abbreviate_france_departments", False
+        ),
+        abbreviate_place_parts=settings.get("place_abbreviate_place_parts", False),
     )
 
     if flag:

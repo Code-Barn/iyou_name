@@ -270,6 +270,9 @@ GENERATION_7_SETTINGS_SCHEMA = {
     "place_abbreviate_uk_counties": (bool, False),
     "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
+    "place_abbreviate_sweden_counties": (bool, False),
+    "place_abbreviate_france_departments": (bool, False),
+    "place_abbreviate_place_parts": (bool, False),
     "gen7_flag_size": (int, 77),  # Generation-specific flag size
 }
 

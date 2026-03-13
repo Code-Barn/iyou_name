@@ -85,6 +85,9 @@ def generate_final_chart(request):
                 "place_auto_shorten",
                 "place_abbreviate_uk_counties",
                 "place_show_uk_flag",
+                "place_abbreviate_sweden_counties",
+                "place_abbreviate_france_departments",
+                "place_abbreviate_place_parts",
             ]:
                 # Convert numeric values
                 if key.endswith(
@@ -172,6 +175,8 @@ def generate_final_chart(request):
                 "place_abbreviate_uk_counties",
                 "place_show_flag",
                 "place_flag_type",
+                "place_abbreviate_sweden_counties",
+                "place_abbreviate_france_departments",
             ]
         )
 
@@ -275,6 +280,15 @@ def generate_final_chart(request):
                 "place_show_uk_flag": hud_settings.get("place_show_uk_flag", False),
                 "place_show_flag": hud_settings.get("place_show_flag", False),
                 "place_flag_type": hud_settings.get("place_flag_type", "birth"),
+                "place_abbreviate_sweden_counties": hud_settings.get(
+                    "place_abbreviate_sweden_counties", False
+                ),
+                "place_abbreviate_france_departments": hud_settings.get(
+                    "place_abbreviate_france_departments", False
+                ),
+                "place_abbreviate_place_parts": hud_settings.get(
+                    "place_abbreviate_place_parts", False
+                ),
             }
         else:
             logger.debug("Using POST settings for final chart generation")

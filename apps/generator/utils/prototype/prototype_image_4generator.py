@@ -99,6 +99,9 @@ GENERATION_4_SETTINGS_SCHEMA = {
     "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
     "place_flag_format": (str, "png"),
+    "place_abbreviate_sweden_counties": (bool, False),
+    "place_abbreviate_france_departments": (bool, False),
+    "place_abbreviate_place_parts": (bool, False),
     "gen4_flag_size": (int, 142),  # Generation-specific flag size
     "flag_font": (str, "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf"),
     # Name formatting settings

@@ -99,6 +99,9 @@ GENERATION_3_SETTINGS_SCHEMA = {
     "place_show_flag": (bool, True),
     "place_flag_type": (str, "birth"),
     "place_flag_format": (str, "png"),
+    "place_abbreviate_sweden_counties": (bool, False),
+    "place_abbreviate_france_departments": (bool, False),
+    "place_abbreviate_place_parts": (bool, False),
     "gen3_flag_size": (int, 200),  # Generation-specific flag size
     "place_flag_layer": (str, "bottom"),
     "place_flag_in_overlay": (bool, False),
