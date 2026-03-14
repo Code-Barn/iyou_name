@@ -1890,17 +1890,9 @@ def format_place(
                         if state_lower not in UK_CITIES:
                             if state_lower in UK_COUNTY_ABBREVIATIONS:
                                 state = UK_COUNTY_ABBREVIATIONS[state_lower]
-            # If still no state, fall back to constituent country (England, Scotland, Wales)
-            if not state:
-                country = parsed.get("country", "")
-                if country.lower() not in {
-                    "uk",
-                    "u.k.",
-                    "gb",
-                    "great britain",
-                    "united kingdom",
-                }:
-                    state = country
+            # If still no state for UK, don't fall back to constituent country
+            # Just return empty - the flag will be shown instead
+            # (Same behavior as Ireland - if no county/city, show only flag)
 
         # For Ireland: if no state/county, check if it's just Ireland (return nothing - flag is shown)
         if not state and parsed.get("country", "").lower() == "ireland":
@@ -1918,17 +1910,23 @@ def format_place(
                     state = "Co. " + state
             else:
                 # Try city field (e.g., "Cork, Ireland" - city is "Cork")
+                # BUT only add "Co." prefix if it's actually a known Irish county
                 city = parsed.get("city", "")
                 if city:
-                    state = city
-                    # Apply UK county abbreviation FIRST (if enabled)
-                    if abbreviate_uk_counties:
-                        state_lower = state.lower().strip()
-                        if state_lower in UK_COUNTY_ABBREVIATIONS:
-                            state = UK_COUNTY_ABBREVIATIONS[state_lower]
-                    # Then add "Co." prefix when city could be a county
-                    if state and not state.lower().startswith("co."):
-                        state = "Co. " + state
+                    city_lower = city.lower().strip()
+                    # Only use city as county if it's a known Irish county
+                    if city_lower in UK_COUNTY_ABBREVIATIONS:
+                        state = city
+                        # Apply UK county abbreviation FIRST (if enabled)
+                        if abbreviate_uk_counties:
+                            state_lower = state.lower().strip()
+                            if state_lower in UK_COUNTY_ABBREVIATIONS:
+                                state = UK_COUNTY_ABBREVIATIONS[state_lower]
+                        # Add Co. prefix for Irish counties
+                        if state and not state.lower().startswith("co."):
+                            state = "Co. " + state
+                    # If city is NOT a known county (e.g., Clonmeen, a town), don't show it
+                    # Just return empty - the flag will be shown instead
                 # If there's no city either (just "Ireland"), return nothing - flag is shown
 
         # Apply Swedish county abbreviation
