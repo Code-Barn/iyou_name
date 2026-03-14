@@ -272,7 +272,12 @@ GENERATION_7_SETTINGS_SCHEMA = {
     "place_flag_type": (str, "birth"),
     "place_abbreviate_sweden_counties": (bool, False),
     "place_abbreviate_france_departments": (bool, False),
+    "place_abbreviate_germany_states": (bool, False),
     "place_abbreviate_place_parts": (bool, False),
+    "place_year_only": (
+        bool,
+        False,
+    ),  # Show only state (like year only for dates) - gen 6/7 only
     "gen7_flag_size": (int, 77),  # Generation-specific flag size
 }
 

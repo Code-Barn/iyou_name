@@ -171,6 +171,11 @@ GENERATION_6_SETTINGS_SCHEMA = {
     "place_abbreviate_sweden_counties": (bool, False),
     "place_abbreviate_france_departments": (bool, False),
     "place_abbreviate_place_parts": (bool, False),
+    "place_abbreviate_germany_states": (bool, False),
+    "place_year_only": (
+        bool,
+        False,
+    ),  # Show only state (like year only for dates) - gen 6/7 only
     "gen6_flag_size": (int, 90),  # Generation-specific flag size
     "flag_font": (str, "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf"),
     # Name formatting settings

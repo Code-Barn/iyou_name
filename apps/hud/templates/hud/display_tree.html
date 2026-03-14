@@ -207,8 +207,16 @@
                                 <label class="form-check-label" for="place-abbreviate-france-departments">Abbreviate French Departments (Calvados → 14)</label>
                             </div>
                             <div class="form-check">
+                                <input type="checkbox" name="place_abbreviate_germany_states" class="form-check-input" id="place-abbreviate-germany-states" {% if hud_settings.place_abbreviate_germany_states|default:False %}checked{% endif %}>
+                                <label class="form-check-label" for="place-abbreviate-germany-states">Abbreviate German States (Niedersachsen → NI)</label>
+                            </div>
+                            <div class="form-check">
                                 <input type="checkbox" name="place_abbreviate_place_parts" class="form-check-input" id="place-abbreviate-place-parts" {% if hud_settings.place_abbreviate_place_parts|default:False %}checked{% endif %}>
-                                <label class="form-check-label" for="place-abbreviate-place-parts">Abbreviate Place Parts (Street → St, Mountain → Mtn)</label>
+                                <label class="form-check-label" for="place-abbreviate-place-parts">Abbreviate Place Parts (Street → St, County → Co)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_year_only" class="form-check-input" id="place-year-only" {% if hud_settings.place_year_only|default:False %}checked{% endif %}>
+                                <label class="form-check-label" for="place-year-only">Show State/Province Only (like Year Only for dates) - Gen 6-7</label>
                             </div>
                             <div class="form-check">
                                 <input type="checkbox" name="place_show_township" class="form-check-input" id="place-show-township" {% if hud_settings.place_show_township|default:False %}checked{% endif %}>

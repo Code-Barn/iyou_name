@@ -143,6 +143,7 @@ GENERATION_2_SETTINGS_SCHEMA = {
     "place_abbreviate_sweden_counties": (bool, False),
     "place_abbreviate_france_departments": (bool, False),
     "place_abbreviate_place_parts": (bool, False),
+    "place_abbreviate_germany_states": (bool, False),
     "gen2_flag_size": (int, 333),  # Generation-specific flag size
     "place_flag_layer": (str, "bottom"),
     "place_flag_in_overlay": (bool, False),

@@ -517,6 +517,58 @@ FRENCH_DEPARTMENT_CODES = {
     "seine-inférieure": "76",
 }
 
+# German state (Bundesland) abbreviations - ISO 3166-2:DE codes
+# Used for genealogical and administrative purposes
+GERMAN_STATE_CODES = {
+    # Current states (Bundesländer)
+    "niedersachsen": "NI",
+    "lower saxony": "NI",
+    "bayern": "BY",
+    "bavaria": "BY",
+    "baden-württemberg": "BW",
+    "baden-wurttemberg": "BW",
+    "hessen": "HE",
+    "hesse": "HE",
+    "nordrhein-westfalen": "NW",
+    "north rhine-westphalia": "NW",
+    "rheinland-pfalz": "RP",
+    "rhineland-palatinate": "RP",
+    "sachsen": "SN",
+    "saxony": "SN",
+    "schleswig-holstein": "SH",
+    "thüringen": "TH",
+    "thuringia": "TH",
+    "thuringen": "TH",
+    "brandenburg": "BB",
+    "berlin": "BE",
+    "hamburg": "HH",
+    "bremen": "HB",
+    "saarland": "SL",
+    "sachsen-anhalt": "ST",
+    "saxony-anhalt": "ST",
+    "mecklenburg-vorpommern": "MV",
+    "mecklenburg-western pomerania": "MV",
+    # Additional variants (German endonyms)
+    "deutschland": "DE",
+    "germany": "DE",
+    # Historical provinces (for pre-1871, pre-1945 research)
+    "pommern": "PO",
+    "pomerania": "PO",
+    "schlesien": "SL",
+    "silesia": "SL",
+    "ostpreußen": "OP",
+    "east prussia": "OP",
+    "westpreußen": "WP",
+    "west prussia": "WP",
+    "posen": "PO",
+    "sachsen (province)": "SN",
+    "hannover": "NI",
+    "braunschweig": "BR",
+    "oldenburg": "OL",
+    "anhalt": "AH",
+    "thüringen (historical)": "TH",
+}
+
 # Combine all state/province abbreviations (full name -> abbreviation)
 STATE_ABBREVIATIONS = {
     **US_STATE_ABBREVIATIONS,
@@ -1072,6 +1124,7 @@ def detect_country(place: str) -> dict:
             "is_uk": False,
             "is_sweden": False,
             "is_france": False,
+            "is_germany": False,
             "raw_country": "",
         }
 
@@ -1083,6 +1136,7 @@ def detect_country(place: str) -> dict:
             "is_uk": False,
             "is_sweden": False,
             "is_france": False,
+            "is_germany": False,
             "raw_country": "",
         }
 
@@ -1093,6 +1147,7 @@ def detect_country(place: str) -> dict:
     is_uk = False
     is_sweden = False
     is_france = False
+    is_germany = False
     country = raw_country
 
     # Check if it's a US place
@@ -1131,12 +1186,17 @@ def detect_country(place: str) -> dict:
     if last_part in {"france", "francia", "frankrijk", "frankreich", "francía"}:
         is_france = True
 
+    # Check if it's Germany
+    if last_part in {"germany", "deutschland", "preussen", "preußen", "prussia"}:
+        is_germany = True
+
     return {
         "country": country,
         "is_us": is_us,
         "is_uk": is_uk,
         "is_sweden": is_sweden,
         "is_france": is_france,
+        "is_germany": is_germany,
         "raw_country": raw_country,
     }
 
@@ -1184,6 +1244,7 @@ def parse_place(place: str) -> dict:
         "is_uk": country_info["is_uk"],
         "is_sweden": country_info["is_sweden"],
         "is_france": country_info["is_france"],
+        "is_germany": country_info["is_germany"],
     }
 
     if parts_count == 0:
@@ -1231,11 +1292,12 @@ def parse_place(place: str) -> dict:
             parts = parts[:-1]
             parts_count = len(parts)
 
-    # Detect Swedish counties (län) and French departments
-    # Check remaining parts for Swedish/French county/department patterns
+    # Detect Swedish counties (län), French departments, and German states
+    # Check remaining parts for Swedish/French/German county/department/state patterns
     # Swedish: usually "Town, County, Country" (e.g., "Säby, Jönköping, Sweden")
     # French: usually "Town, Department, Region, Country" (e.g., "Appeville, Eure, Haute-Normandie, France")
     # OR "Town, Department, Country" (e.g., "Marseille, Bouches-du-Rhône, France")
+    # German: usually "Town, District, State, Country" (e.g., "Hämelschenburg, Hameln-Pyrmont, Niedersachsen, Germany")
 
     # Helper for case-insensitive French department lookup
     def find_french_department(part: str) -> str | None:
@@ -1256,10 +1318,27 @@ def parse_place(place: str) -> dict:
                 return key
         return None
 
+    # Helper for case-insensitive German state lookup
+    def find_german_state(part: str) -> str | None:
+        part_lower = part.lower().strip()
+        if part_lower in GERMAN_STATE_CODES:
+            return part
+        # Try case-insensitive search
+        for key in GERMAN_STATE_CODES:
+            if key.lower() == part_lower:
+                return key
+        return None
+
     if parts_count >= 1:
         # For Swedish: check last part for "län" or known county
         last_lower = parts[-1].lower().strip()
         if "län" in last_lower or last_lower in SWEDISH_COUNTY_CODES:
+            result["state"] = parts[-1]
+            parts = parts[:-1]
+            parts_count = len(parts)
+        # For German: check for known state names (e.g., Niedersachsen, Bayern)
+        # German pattern: Town, District, State, Country OR Town, State, Country
+        elif find_german_state(parts[-1]):
             result["state"] = parts[-1]
             parts = parts[:-1]
             parts_count = len(parts)
@@ -1423,6 +1502,30 @@ def abbreviate_french_department(department: str) -> str:
     return department
 
 
+def abbreviate_german_state(state: str) -> str:
+    """
+    Abbreviate German state (Bundesland) name to its code.
+
+    Args:
+        state: Full state name (e.g., "Niedersachsen", "Bayern", "Baden-Württemberg")
+
+    Returns:
+        Abbreviated state code (e.g., "NI", "BY", "BW") or original if not recognized
+    """
+    if not state:
+        return state
+
+    state_lower = state.lower().strip()
+    # Try exact match first
+    if state_lower in GERMAN_STATE_CODES:
+        return GERMAN_STATE_CODES[state_lower]
+    # Try case-insensitive search
+    for key, value in GERMAN_STATE_CODES.items():
+        if key.lower() == state_lower:
+            return value
+    return state
+
+
 def abbreviate_place_name_parts(place: str) -> str:
     """
     Abbreviate common place name parts (street suffixes, geographical terms).
@@ -1477,7 +1580,9 @@ def format_place(
     abbreviate_uk_counties: bool = False,
     abbreviate_sweden_counties: bool = False,
     abbreviate_france_departments: bool = False,
+    abbreviate_germany_states: bool = False,
     abbreviate_place_parts: bool = False,
+    place_year_only: bool = False,
 ) -> str:
     """
     Format a place name based on settings.
@@ -1497,12 +1602,50 @@ def format_place(
         abbreviate_uk_counties: Abbreviate UK/Ireland county names (e.g., Yorkshire → Yorks.)
         abbreviate_sweden_counties: Abbreviate Swedish counties to codes (e.g., Jönköpings län → F)
         abbreviate_france_departments: Abbreviate French departments to codes (e.g., Calvados → 14)
+        abbreviate_germany_states: Abbreviate German states to codes (e.g., Niedersachsen → NI)
         abbreviate_place_parts: Abbreviate common place parts (e.g., Street → St, Mountain → Mtn)
+        place_year_only: When enabled, show only the state/province level (e.g., "PA", "NI", "F")
+                        Similar to date_year_only for dates. Intended for compact displays.
 
     Returns:
         Formatted place string
     """
     if not place:
+        return place
+
+    # Apply place_year_only first - return just the state part
+    # This is the most aggressive shortening, like showing only the year for dates
+    if place_year_only:
+        # First apply all abbreviation options to get the abbreviated state
+        temp_place = place
+        if abbreviate_place_parts:
+            temp_place = abbreviate_place_name_parts(temp_place)
+
+        parsed = parse_place(temp_place)
+
+        # Apply all the country-specific abbreviations to get the abbreviated state
+        state = parsed.get("state", "")
+
+        # Apply Swedish county abbreviation
+        if state and parsed.get("is_sweden"):
+            state = abbreviate_swedish_county(state)
+        # Apply French department abbreviation
+        if state and parsed.get("is_france"):
+            state = abbreviate_french_department(state)
+        # Apply German state abbreviation
+        if state and parsed.get("is_germany"):
+            state = abbreviate_german_state(state)
+        # Apply US state abbreviation
+        if state and (parsed.get("is_us") or use_state_abbrev):
+            state = abbreviate_state(state)
+
+        if state:
+            return state
+
+        # If no state found, return the last part (could be country or region)
+        parts = [p.strip() for p in place.split(",")]
+        if parts:
+            return parts[-1]
         return place
 
     # Apply place part abbreviations first (before other processing)
@@ -1552,6 +1695,19 @@ def format_place(
             "frankrijk",
             "frankreich",
             "francía",
+        }:
+            parsed["country"] = ""
+
+    # Apply German state abbreviations
+    if abbreviate_germany_states and parsed["state"] and parsed.get("is_germany"):
+        parsed["state"] = abbreviate_german_state(parsed["state"])
+        # Hide Germany when state code is shown
+        if parsed["country"] and parsed["country"].lower() in {
+            "germany",
+            "deutschland",
+            "preussen",
+            "preußen",
+            "prussia",
         }:
             parsed["country"] = ""
 
@@ -1691,11 +1847,13 @@ def format_place(
     if parsed["other"]:
         parts.append(parsed["other"])
 
-    # Filter out "other" (regions) when French/Swedish abbreviations are enabled
+    # Filter out "other" (regions) when French/Swedish/German abbreviations are enabled
     # French regions (e.g., Haute-Normandie, Basse-Normandie) should be hidden
     # when the department code is shown
-    if (abbreviate_france_departments and parsed.get("is_france")) or (
-        abbreviate_sweden_counties and parsed.get("is_sweden")
+    if (
+        (abbreviate_france_departments and parsed.get("is_france"))
+        or (abbreviate_sweden_counties and parsed.get("is_sweden"))
+        or (abbreviate_germany_states and parsed.get("is_germany"))
     ):
         # Remove the "other" part (region) from the output
         filtered_parts = [p for p in parts if p != parsed.get("other", "")]
@@ -1822,7 +1980,9 @@ def format_place_from_settings(place: str, settings: dict, flag: str = "") -> st
             - place_abbreviate_uk_counties: bool
             - place_abbreviate_sweden_counties: bool
             - place_abbreviate_france_departments: bool
+            - place_abbreviate_germany_states: bool
             - place_abbreviate_place_parts: bool
+            - place_year_only: bool (show only state/province, like year only for dates)
         flag: Optional flag emoji to append to place
 
     Returns:
@@ -1848,7 +2008,11 @@ def format_place_from_settings(place: str, settings: dict, flag: str = "") -> st
         abbreviate_france_departments=settings.get(
             "place_abbreviate_france_departments", False
         ),
+        abbreviate_germany_states=settings.get(
+            "place_abbreviate_germany_states", False
+        ),
         abbreviate_place_parts=settings.get("place_abbreviate_place_parts", False),
+        place_year_only=settings.get("place_year_only", False),
     )
 
     if flag:
