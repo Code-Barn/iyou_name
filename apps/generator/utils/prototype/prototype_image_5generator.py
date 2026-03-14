@@ -100,6 +100,24 @@ GENERATION_5_SETTINGS_SCHEMA = {
     "great_great_grandparent_stroke_color": (Color, "black"),
     "great_great_grandparent_font_color": (Color, "black"),
     "great_great_grandparent_stroke_width": (float, 0.0),
+    # 2X Great-Grandparent settings (alternative naming)
+    "twox_greatgrandparent_name_font_size": (int, 12),
+    "twox_greatgrandparent_date_info_font_size": (int, 7),
+    "twox_greatgrandparent_place_info_font_size": (int, 7),
+    "twox_greatgrandparent_edge_distance": (int, 25),
+    "twox_greatgrandparent_date_distance": (int, 10),
+    "twox_greatgrandparent_place_distance": (int, 6),
+    "twox_greatgrandparent_translate_x": (int, 0),
+    "twox_greatgrandparent_birth_translate_y": (int, 0),
+    "twox_greatgrandparent_name_rotate": (int, 0),
+    "twox_greatgrandparent_font_color": (Color, "black"),
+    "twox_greatgrandparent_birth_color": (Color, "black"),
+    "twox_greatgrandparent_death_color": (Color, "black"),
+    "twox_greatgrandparent_birth_place_color": (Color, "black"),
+    "twox_greatgrandparent_death_place_color": (Color, "black"),
+    "twox_greatgrandparent_stroke_color": (Color, "black"),
+    "twox_greatgrandparent_stroke_width": (float, 0.0),
+    # Composite settings
     "info_stroke_color": (Color, "gray"),
     "info_stroke_width": (float, 0.0),
     "overlay_scale": (float, 0.7778),
@@ -540,12 +558,27 @@ def generate_prototype_5gen_preview(
                 base_params = dict(
                     center_x=Generation5Constants.IMAGE_CENTER_X,
                     center_y=Generation5Constants.IMAGE_CENTER_Y,
-                    name_font_size=Generation5Constants.GREAT_GREAT_GRANDPARENT_NAME_FONT_SIZE,
-                    date_font_size=Generation5Constants.GREAT_GREAT_GRANDPARENT_DATE_INFO_FONT_SIZE,
-                    place_font_size=Generation5Constants.GREAT_GREAT_GRANDPARENT_PLACE_INFO_FONT_SIZE,
-                    birth_date_offset_x=0,
-                    birth_date_offset_y=0,
-                    birth_date_rotation=0,
+                    name_font_size=validated_settings.get(
+                        "twox_greatgrandparent_name_font_size",
+                        Generation5Constants.GREAT_GREAT_GRANDPARENT_NAME_FONT_SIZE,
+                    ),
+                    date_font_size=validated_settings.get(
+                        "twox_greatgrandparent_date_info_font_size",
+                        Generation5Constants.GREAT_GREAT_GRANDPARENT_DATE_INFO_FONT_SIZE,
+                    ),
+                    place_font_size=validated_settings.get(
+                        "twox_greatgrandparent_place_info_font_size",
+                        Generation5Constants.GREAT_GREAT_GRANDPARENT_PLACE_INFO_FONT_SIZE,
+                    ),
+                    birth_date_offset_x=validated_settings.get(
+                        "twox_greatgrandparent_translate_x", 0
+                    ),
+                    birth_date_offset_y=validated_settings.get(
+                        "twox_greatgrandparent_birth_translate_y", 0
+                    ),
+                    birth_date_rotation=validated_settings.get(
+                        "twox_greatgrandparent_name_rotate", 0
+                    ),
                     birth_date_paired_offset_x=-93,
                     death_date_paired_offset_x=95,
                     paired_dates_base_y=1760,

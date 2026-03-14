@@ -757,6 +757,19 @@ HUD.Sliders = (function() {
         setupSlider('parent-date-info-font-size-slider', 'parent-date-info-font-size-value');
         setupSlider('parent-place-info-font-size-slider', 'parent-place-info-font-size-value');
 
+        // 2X Great-Grandparent font size sliders
+        setupSlider('twox-greatgrandparent-name-font-size-slider', 'twox-greatgrandparent-name-font-size-value');
+        setupSlider('twox-greatgrandparent-date-info-font-size-slider', 'twox-greatgrandparent-date-info-font-size-value');
+        setupSlider('twox-greatgrandparent-place-info-font-size-slider', 'twox-greatgrandparent-place-info-font-size-value');
+
+        // 2X Great-Grandparent position sliders
+        setupSlider('twox-greatgrandparent-edge-distance-slider', 'twox-greatgrandparent-edge-distance-value');
+        setupSlider('twox-greatgrandparent-date-distance-slider', 'twox-greatgrandparent-date-distance-value');
+        setupSlider('twox-greatgrandparent-place-distance-slider', 'twox-greatgrandparent-place-distance-value');
+        setupSlider('twox-greatgrandparent-translate-x-slider', 'twox-greatgrandparent-translate-x-value');
+        setupSlider('twox-greatgrandparent-birth-translate-y-slider', 'twox-greatgrandparent-birth-translate-y-value');
+        setupSlider('twox-greatgrandparent-name-rotate-slider', 'twox-greatgrandparent-name-rotate-value');
+
         // Composite settings sliders
         setupSlider('composite-1gen-scale-slider', 'composite-1gen-scale-value');
         setupSlider('composite-overlay-x-slider', 'composite-overlay-x-value');

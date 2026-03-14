@@ -63,23 +63,23 @@
         </div>
         <div class="col-md-4">
             <label class="form-label">2X Great-Grandparent Name Font Size (px)</label>
-            <input type="range" name="twox_greatgrandparent_name_font_size" class="form-range" min="12" max="48" value="{{ hud_settings.twox_greatgrandparent_name_font_size|default:24 }}" id="twox-greatgrandparent-name-font-size-slider">
+            <input type="range" name="twox_greatgrandparent_name_font_size" class="form-range" min="6" max="48" value="{{ hud_settings.twox_greatgrandparent_name_font_size|default:12 }}" id="twox-greatgrandparent-name-font-size-slider">
             <div class="text-center">
-                <span id="twox-greatgrandparent-name-font-size-value">{{ hud_settings.twox_greatgrandparent_name_font_size|default:24 }}</span>px
+                <span id="twox-greatgrandparent-name-font-size-value">{{ hud_settings.twox_greatgrandparent_name_font_size|default:12 }}</span>px
             </div>
         </div>
         <div class="col-md-4">
             <label class="form-label">2X Great-Grandparent Date Font Size (px)</label>
-            <input type="range" name="twox_greatgrandparent_date_info_font_size" class="form-range" min="10" max="28" value="{{ hud_settings.twox_greatgrandparent_date_info_font_size|default:16 }}" id="twox-greatgrandparent-date-info-font-size-slider">
+            <input type="range" name="twox_greatgrandparent_date_info_font_size" class="form-range" min="5" max="28" value="{{ hud_settings.twox_greatgrandparent_date_info_font_size|default:7 }}" id="twox-greatgrandparent-date-info-font-size-slider">
             <div class="text-center">
-                <span id="twox-greatgrandparent-date-info-font-size-value">{{ hud_settings.twox_greatgrandparent_date_info_font_size|default:16 }}</span>px
+                <span id="twox-greatgrandparent-date-info-font-size-value">{{ hud_settings.twox_greatgrandparent_date_info_font_size|default:7 }}</span>px
             </div>
         </div>
         <div class="col-md-4">
             <label class="form-label">2X Great-Grandparent Place Font Size (px)</label>
-            <input type="range" name="twox_greatgrandparent_place_info_font_size" class="form-range" min="8" max:24 value="{{ hud_settings.twox_greatgrandparent_place_info_font_size|default:12 }}" id="twox-greatgrandparent-place-info-font-size-slider">
+            <input type="range" name="twox_greatgrandparent_place_info_font_size" class="form-range" min="4" max="24" value="{{ hud_settings.twox_greatgrandparent_place_info_font_size|default:7 }}" id="twox-greatgrandparent-place-info-font-size-slider">
             <div class="text-center">
-                <span id="twox-greatgrandparent-place-info-font-size-value">{{ hud_settings.twox_greatgrandparent_place_info_font_size|default:12 }}</span>px
+                <span id="twox-greatgrandparent-place-info-font-size-value">{{ hud_settings.twox_greatgrandparent_place_info_font_size|default:7 }}</span>px
             </div>
         </div>
     </div>
@@ -141,34 +141,6 @@
             <input type="range" name="twox_greatgrandparent_name_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.twox_greatgrandparent_name_rotate|default:0 }}" id="twox-greatgrandparent-name-rotate-slider">
             <div class="text-center">
                 <span id="twox-greatgrandparent-name-rotate-value">{{ hud_settings.twox_greatgrandparent_name_rotate|default:0 }}</span>°
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Composite Settings -->
-<div class="mb-3">
-    <h6 class="text-muted mb-3">4Gen Overlay Settings</h6>
-    <div class="row g-3">
-        <div class="col-md-4">
-            <label class="form-label">4Gen Overlay Scale</label>
-            <input type="range" name="composite_4gen_scale" class="form-range" min="15" max="50" step="5" value="{{ hud_settings.composite_4gen_scale|default:25 }}" id="composite-4gen-scale-slider">
-            <div class="text-center">
-                <span id="composite-4gen-scale-value">{{ hud_settings.composite_4gen_scale|default:25 }}</span>%
-            </div>
-        </div>
-        <div class="col-md-4">
-            <label class="form-label">Overlay Position X</label>
-            <input type="range" name="composite_overlay_x" class="form-range" min="250" max="900" value="{{ hud_settings.composite_overlay_x|default:575 }}" id="composite-overlay-x-slider">
-            <div class="text-center">
-                <span id="composite-overlay-x-value">{{ hud_settings.composite_overlay_x|default:575 }}</span>px
-            </div>
-        </div>
-        <div class="col-md-4">
-            <label class="form-label">Overlay Position Y</label>
-            <input type="range" name="composite_overlay_y" class="form-range" min="250" max="900" value="{{ hud_settings.composite_overlay_y|default:575 }}" id="composite-overlay-y-slider">
-            <div class="text-center">
-                <span id="composite-overlay-y-value">{{ hud_settings.composite_overlay_y|default:575 }}</span>px
             </div>
         </div>
     </div>
