@@ -515,6 +515,26 @@ FRENCH_DEPARTMENT_CODES = {
     # Historical departments
     "loire-inférieure": "44",
     "seine-inférieure": "76",
+    # Additional historical/regional French names
+    "seine": "75",  # Paris area (historical)
+    "seine-et-marne": "77",
+    "seine-et-oise": "78",  # Historical
+    "seine-maritime": "76",  # Current name for Seine-Inférieure
+    "oise": "60",
+    "somme": "80",
+    "pas-de-calais": "62",
+    "nord": "59",
+    "pas de calais": "62",
+    "bouches-du-rhone": "13",
+    "bouches du rhone": "13",
+    "cotes-du-nord": "22",  # Now Côtes-d'Armor
+    "cotes du nord": "22",
+    "maine": "53",  # Historical
+    "mayenne": "53",
+    "sarthe": "72",
+    "orne": "61",
+    "eure": "27",
+    "eure-et-loir": "28",
 }
 
 # German state (Bundesland) abbreviations - ISO 3166-2:DE codes
@@ -1626,12 +1646,64 @@ def format_place(
         # Apply all the country-specific abbreviations to get the abbreviated state
         state = parsed.get("state", "")
 
+        # For UK/Ireland: if no state but has county, use the county
+        if not state and parsed.get("county"):
+            state = parsed.get("county")
+            # Apply UK county abbreviation if enabled
+            if abbreviate_uk_counties:
+                state_lower = state.lower().strip()
+                if state_lower in UK_COUNTY_ABBREVIATIONS:
+                    state = UK_COUNTY_ABBREVIATIONS[state_lower]
+
+        # For UK: if still no state, use the city field (which contains the county)
+        if not state and parsed.get("is_uk") and parsed.get("country"):
+            country = parsed.get("country", "")
+            # Only return the constituent country, not "UK"
+            if country.lower() not in {
+                "uk",
+                "u.k.",
+                "gb",
+                "great britain",
+                "united kingdom",
+            }:
+                state = country
+            else:
+                # Try to get the county from city field (e.g., "Yorkshire, England" has city = "Yorkshire, England")
+                city = parsed.get("city", "")
+                if city:
+                    # Extract first part before comma (e.g., "Yorkshire" from "Yorkshire, England")
+                    city_parts = [p.strip() for p in city.split(",")]
+                    if city_parts:
+                        state = city_parts[
+                            0
+                        ]  # Use the county name (Yorkshire, Middlesex, etc.)
+
+        # For Ireland: if no state/county, check if it's just Ireland
+        if not state and parsed.get("country", "").lower() == "ireland":
+            # For Ireland, try to get the county from the parsed data
+            if parsed.get("county"):
+                state = parsed.get("county")
+                if abbreviate_uk_counties:
+                    state_lower = state.lower().strip()
+                    if state_lower in UK_COUNTY_ABBREVIATIONS:
+                        state = UK_COUNTY_ABBREVIATIONS[state_lower]
+            else:
+                # Try city field (e.g., "Cork, Ireland" - city is "Cork")
+                city = parsed.get("city", "")
+                if city:
+                    state = city  # Just return the city/county name
+                else:
+                    state = "Ireland"
+
         # Apply Swedish county abbreviation
         if state and parsed.get("is_sweden"):
             state = abbreviate_swedish_county(state)
-        # Apply French department abbreviation
+        # Apply French department abbreviation (also check county field for French)
         if state and parsed.get("is_france"):
             state = abbreviate_french_department(state)
+        # If no state found but have county for France, try that too
+        if not state and parsed.get("is_france") and parsed.get("county"):
+            state = abbreviate_french_department(parsed.get("county") or "")
         # Apply German state abbreviation
         if state and parsed.get("is_germany"):
             state = abbreviate_german_state(state)
@@ -2037,6 +2109,25 @@ def get_flag_from_place(place: str) -> str:
     parsed = parse_place(place)
     country = parsed.get("country", "")
 
+    # If no explicit country, try to detect US based on state abbreviation or name in any part
+    if not country:
+        parts = [p.strip() for p in place.split(",")]
+        # Get set of all US state abbreviations (values in the dict)
+        us_abbrevs = {v.lower() for v in US_STATE_ABBREVIATIONS.values()}
+
+        # Check each part for US state abbreviation or full name
+        for part in parts:
+            part_lower = part.lower()
+            # Check if it's a US state name (key in the dictionary)
+            if part_lower in US_STATE_ABBREVIATIONS:
+                return "🇺🇸"
+            # Check if it's a US state full name (in US_STATES set)
+            if part_lower in US_STATES:
+                return "🇺🇸"
+            # Check if it's a US state abbreviation (value in the dictionary)
+            if part_lower in us_abbrevs:
+                return "🇺🇸"
+
     if not country:
         return ""
 
@@ -2096,6 +2187,25 @@ def get_flag_image_path(place: str) -> str:
 
     parsed = parse_place(place)
     country = parsed.get("country", "")
+
+    # If no explicit country, try to detect US based on state abbreviation or name
+    if not country:
+        parts = [p.strip() for p in place.split(",")]
+        # Get set of all US state abbreviations (values in the dict)
+        us_abbrevs = {v.lower() for v in US_STATE_ABBREVIATIONS.values()}
+
+        # Check each part for US state abbreviation or full name
+        for part in parts:
+            part_lower = part.lower()
+            # Check if it's a US state name (key in the dictionary)
+            if part_lower in US_STATE_ABBREVIATIONS:
+                return "charts/images/flags/us.png"
+            # Check if it's a US state full name (in US_STATES set)
+            if part_lower in US_STATES:
+                return "charts/images/flags/us.png"
+            # Check if it's a US state abbreviation (value in the dictionary)
+            if part_lower in us_abbrevs:
+                return "charts/images/flags/us.png"
 
     if not country:
         return ""
