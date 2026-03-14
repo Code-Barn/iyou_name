@@ -1906,8 +1906,17 @@ def format_place(
                         state = UK_COUNTY_ABBREVIATIONS[state_lower]
                 # Then add "Co." prefix when there's a county (regardless of abbreviate setting)
                 # This is because Irish counties are essential for identifying the location
-                if state and not state.lower().startswith("co."):
-                    state = "Co. " + state
+                # Handle "County Cork" -> "Co. Cork" (strip "County" first)
+                # Also handle "Co. Cork" -> "Co. Cork" (don't add duplicate)
+                if state:
+                    state_lower = state.lower().strip()
+                    if state_lower.startswith("county "):
+                        state = state[7:].strip()  # Strip "County " prefix
+                    elif state_lower.startswith("county,"):
+                        state = state[7:].strip()  # Strip "County," prefix
+                    # Now add "Co." if not already present
+                    if not state.lower().startswith("co."):
+                        state = "Co. " + state
             else:
                 # Try city field (e.g., "Cork, Ireland" - city is "Cork")
                 # BUT only add "Co." prefix if it's actually a known Irish county
@@ -1917,6 +1926,12 @@ def format_place(
                     # Only use city as county if it's a known Irish county
                     if city_lower in UK_COUNTY_ABBREVIATIONS:
                         state = city
+                        # Handle "County Cork" -> "Co. Cork" (strip "County" first)
+                        state_lower = state.lower().strip()
+                        if state_lower.startswith("county "):
+                            state = state[7:].strip()
+                        elif state_lower.startswith("county,"):
+                            state = state[7:].strip()
                         # Apply UK county abbreviation FIRST (if enabled)
                         if abbreviate_uk_counties:
                             state_lower = state.lower().strip()
