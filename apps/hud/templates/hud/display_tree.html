@@ -183,7 +183,7 @@
                                 <label class="form-check-label" for="place-hide-us-counties">Hide US Counties (Town, County, State)</label>
                             </div>
                             <div class="form-check">
-                                <input type="checkbox" name="place_show_country" class="form-check-input" id="place-show-country" {% if hud_settings.place_show_country|default:True %}checked{% endif %}>
+                                <input type="checkbox" name="place_show_country" class="form-check-input" id="place-show-country" {% if hud_settings.place_show_country|default:False %}checked{% endif %}>
                                 <label class="form-check-label" for="place-show-country">Show Country</label>
                             </div>
                             <div class="form-check">
@@ -191,31 +191,31 @@
                                 <label class="form-check-label" for="place-hide-usa-with-state">Hide "USA" when State is shown</label>
                             </div>
                             <div class="form-check">
-                                <input type="checkbox" name="place_auto_shorten" class="form-check-input" id="place-auto-shorten" {% if hud_settings.place_auto_shorten|default:False %}checked{% endif %}>
+                                <input type="checkbox" name="place_auto_shorten" class="form-check-input" id="place-auto-shorten" {% if hud_settings.place_auto_shorten|default:True %}checked{% endif %}>
                                 <label class="form-check-label" for="place-auto-shorten">Auto-shorten (3+ parts → 2)</label>
                             </div>
                             <div class="form-check">
-                                <input type="checkbox" name="place_abbreviate_uk_counties" class="form-check-input" id="place-abbreviate-uk-counties" {% if hud_settings.place_abbreviate_uk_counties|default:False %}checked{% endif %}>
+                                <input type="checkbox" name="place_abbreviate_uk_counties" class="form-check-input" id="place-abbreviate-uk-counties" {% if hud_settings.place_abbreviate_uk_counties|default:True %}checked{% endif %}>
                                 <label class="form-check-label" for="place-abbreviate-uk-counties">Abbreviate UK/Ireland Counties</label>
                             </div>
                             <div class="form-check">
-                                <input type="checkbox" name="place_abbreviate_sweden_counties" class="form-check-input" id="place-abbreviate-sweden-counties" {% if hud_settings.place_abbreviate_sweden_counties|default:False %}checked{% endif %}>
+                                <input type="checkbox" name="place_abbreviate_sweden_counties" class="form-check-input" id="place-abbreviate-sweden-counties" {% if hud_settings.place_abbreviate_sweden_counties|default:True %}checked{% endif %}>
                                 <label class="form-check-label" for="place-abbreviate-sweden-counties">Abbreviate Swedish Counties (Jönköping → F)</label>
                             </div>
                             <div class="form-check">
-                                <input type="checkbox" name="place_abbreviate_france_departments" class="form-check-input" id="place-abbreviate-france-departments" {% if hud_settings.place_abbreviate_france_departments|default:False %}checked{% endif %}>
+                                <input type="checkbox" name="place_abbreviate_france_departments" class="form-check-input" id="place-abbreviate-france-departments" {% if hud_settings.place_abbreviate_france_departments|default:True %}checked{% endif %}>
                                 <label class="form-check-label" for="place-abbreviate-france-departments">Abbreviate French Departments (Calvados → 14)</label>
                             </div>
                             <div class="form-check">
-                                <input type="checkbox" name="place_abbreviate_germany_states" class="form-check-input" id="place-abbreviate-germany-states" {% if hud_settings.place_abbreviate_germany_states|default:False %}checked{% endif %}>
+                                <input type="checkbox" name="place_abbreviate_germany_states" class="form-check-input" id="place-abbreviate-germany-states" {% if hud_settings.place_abbreviate_germany_states|default:True %}checked{% endif %}>
                                 <label class="form-check-label" for="place-abbreviate-germany-states">Abbreviate German States (Niedersachsen → NI)</label>
                             </div>
                             <div class="form-check">
-                                <input type="checkbox" name="place_abbreviate_place_parts" class="form-check-input" id="place-abbreviate-place-parts" {% if hud_settings.place_abbreviate_place_parts|default:False %}checked{% endif %}>
+                                <input type="checkbox" name="place_abbreviate_place_parts" class="form-check-input" id="place-abbreviate-place-parts" {% if hud_settings.place_abbreviate_place_parts|default:True %}checked{% endif %}>
                                 <label class="form-check-label" for="place-abbreviate-place-parts">Abbreviate Place Parts (Street → St, County → Co)</label>
                             </div>
                             <div class="form-check">
-                                <input type="checkbox" name="place_year_only" class="form-check-input" id="place-year-only" {% if hud_settings.place_year_only|default:False %}checked{% endif %}>
+                                <input type="checkbox" name="place_year_only" class="form-check-input" id="place-year-only" {% if hud_settings.place_year_only|default:True %}checked{% endif %}>
                                 <label class="form-check-label" for="place-year-only">Show State/Province Only (like Year Only for dates) - Gen 6-7</label>
                             </div>
                             <div class="form-check">
@@ -638,6 +638,35 @@
                             <input type="hidden" name="primary_death_place_translate_x" value="{{ hud_settings.primary_death_place_translate_x|default:0 }}">
                             <input type="hidden" name="primary_death_place_translate_y" value="{{ hud_settings.primary_death_place_translate_y|default:0 }}">
                             <input type="hidden" name="primary_death_place_rotate" value="{{ hud_settings.primary_death_place_rotate|default:-90 }}">
+
+                            <!-- Place Name Formatting Settings -->
+                            <input type="hidden" name="place_use_country_abbrev" value="{{ hud_settings.place_use_country_abbrev|default:'on' }}">
+                            <input type="hidden" name="place_use_state_abbrev" value="{{ hud_settings.place_use_state_abbrev|default:'on' }}">
+                            <input type="hidden" name="place_hide_us_counties" value="{{ hud_settings.place_hide_us_counties|default:'on' }}">
+                            <input type="hidden" name="place_show_country" value="{{ hud_settings.place_show_country|default:'on' }}">
+                            <input type="hidden" name="place_hide_usa_with_state" value="{{ hud_settings.place_hide_usa_with_state|default:'on' }}">
+                            <input type="hidden" name="place_auto_shorten" value="{{ hud_settings.place_auto_shorten|default:'' }}">
+                            <input type="hidden" name="place_abbreviate_uk_counties" value="{{ hud_settings.place_abbreviate_uk_counties|default:'' }}">
+                            <input type="hidden" name="place_abbreviate_sweden_counties" value="{{ hud_settings.place_abbreviate_sweden_counties|default:'' }}">
+                            <input type="hidden" name="place_abbreviate_france_departments" value="{{ hud_settings.place_abbreviate_france_departments|default:'' }}">
+                            <input type="hidden" name="place_abbreviate_germany_states" value="{{ hud_settings.place_abbreviate_germany_states|default:'' }}">
+                            <input type="hidden" name="place_abbreviate_place_parts" value="{{ hud_settings.place_abbreviate_place_parts|default:'' }}">
+                            <input type="hidden" name="place_year_only" value="{{ hud_settings.place_year_only|default:'' }}">
+                            <input type="hidden" name="place_show_township" value="{{ hud_settings.place_show_township|default:'' }}">
+                            <input type="hidden" name="place_show_flag" value="{{ hud_settings.place_show_flag|default:'on' }}">
+                            <input type="hidden" name="place_show_uk_flag" value="{{ hud_settings.place_show_uk_flag|default:'' }}">
+                            <input type="hidden" name="place_flag_type" value="{{ hud_settings.place_flag_type|default:'birth' }}">
+                            <input type="hidden" name="place_flag_format" value="{{ hud_settings.place_flag_format|default:'png' }}">
+                            <input type="hidden" name="flag_font" value="{{ hud_settings.flag_font|default:'/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf' }}">
+
+                            <!-- Date Format Settings -->
+                            <input type="hidden" name="date_format" value="{{ hud_settings.date_format|default:'da_mon_year' }}">
+                            <input type="hidden" name="date_year_only" value="{{ hud_settings.date_year_only|default:'on' }}">
+                            <input type="hidden" name="date_retain_leading_zeros" value="{{ hud_settings.date_retain_leading_zeros|default:'' }}">
+
+                            <!-- Name Format Settings -->
+                            <input type="hidden" name="name_use_first_middle_only" value="{{ hud_settings.name_use_first_middle_only|default:'on' }}">
+                            <input type="hidden" name="name_hide_hyphenated_surname" value="{{ hud_settings.name_hide_hyphenated_surname|default:'on' }}">
 
                             <button type="submit" class="btn btn-success w-100">
                                 <i class="bi bi-file-earmark-pdf"></i> Generate Final Chart

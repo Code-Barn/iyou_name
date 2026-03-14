@@ -12,6 +12,10 @@
             href="{% static 'core/favicon.ico' %}"
             type="image/x-icon"
         />
+        <link
+            rel="apple-touch-icon"
+            href="{% static 'core/images/icon.png' %}"
+        />
         <!-- Add Bootstrap CSS -->
         <link
             href="{% static 'vendor/bootstrap/bootstrap.min.css' %}"
@@ -22,10 +26,10 @@
             rel="stylesheet"
             href="{% static 'vendor/bootstrap/icons/bootstrap-icons.css' %}"
         />
-        
+
         <!-- CSRF Token for requests -->
         <meta name="csrf-token" content="{{ csrf_token }}">
-        
+
         <!-- CSS Variables for theming -->
         <style>
             :root {
@@ -58,7 +62,7 @@
                 background-color: var(--bg-color);
                 color: var(--text-color);
             }
-            
+
             /* Light mode specific styling - restore white header/footer */
             :root:not(.dark) nav {
                 background-color: white !important;
@@ -68,7 +72,7 @@
                 background-color: white !important;
                 border-top: 1px solid #dee2e6 !important;
             }
-            
+
             /* Dark mode overrides for Bootstrap */
             html.dark .bg-light { background-color: var(--bg-secondary) !important; }
             html.dark .bg-white { background-color: var(--bg-secondary) !important; }
@@ -78,10 +82,10 @@
             html.dark .border { border-color: var(--border-color) !important; }
             html.dark nav { background-color: var(--bg-secondary) !important; }
             html.dark footer { background-color: var(--bg-secondary) !important; }
-            
+
             /* Theme toggle button always visible */
             html.dark #theme-toggle { color: #ffc107 !important; }
-            
+
             /* Header text dark mode - make navbar text white */
             html.dark .navbar-text {
                 color: white !important;
@@ -95,7 +99,7 @@
             html.dark .navbar-toggler-icon {
                 background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3e%3cpath stroke='rgba(255, 255, 255, 1)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
             }
-            
+
             /* Main content area dark mode */
             html.dark .container {
                 color: var(--text-color) !important;
@@ -136,24 +140,24 @@
             html.dark a:hover {
                 color: var(--primary-hover) !important;
             }
-            
+
             /* Form elements dark mode */
             html.dark select, html.dark input, html.dark textarea {
                 background-color: var(--bg-secondary) !important;
                 color: var(--text-color) !important;
                 border-color: var(--border-color) !important;
             }
-            
+
             /* Ensure proper text color inheritance */
-            html.dark body, 
-            html.dark p, 
-            html.dark div, 
-            html.dark span, 
-            html.dark li, 
+            html.dark body,
+            html.dark p,
+            html.dark div,
+            html.dark span,
+            html.dark li,
             html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6 {
                 color: var(--text-color) !important;
             }
-            
+
             /* Fix specific component issues */
             html.dark .alert {
                 background-color: var(--bg-secondary) !important;
@@ -197,7 +201,7 @@
                 border-color: var(--border-color) !important;
                 color: var(--text-color) !important;
             }
-            
+
             /* Profile page specific fixes - MORE SPECIFIC */
             html.dark .table {
                 color: var(--text-color) !important;
@@ -222,7 +226,7 @@
                 color: white !important;
                 border-color: var(--border-color) !important;
             }
-            
+
             /* Button fixes with better specificity */
             html.dark button.btn-info {
                 background-color: #0dcaf0 !important;
@@ -244,7 +248,7 @@
                 border-color: #198754 !important;
                 color: white !important;
             }
-            
+
             /* Profile page specific button fixes */
             /* Browse button - same color in both modes */
             button.btn-info,
@@ -253,7 +257,7 @@
                 border-color: #0dcaf0 !important;
                 color: white !important;
             }
-            
+
             /* Upload New GEDCOM button - retain light mode color in dark mode */
             .btn-primary,
             html.dark .btn-primary {
@@ -261,7 +265,7 @@
                 border-color: #0d6efd !important;
                 color: white !important;
             }
-            
+
             /* Remove hover behavior from Select Home Person button */
             .btn-success,
             html.dark .btn-success {
@@ -270,7 +274,7 @@
                 color: white !important;
                 transition: none !important;
             }
-            
+
             .btn-success:hover,
             html.dark .btn-success:hover {
                 background-color: #198754 !important;
@@ -279,7 +283,7 @@
                 opacity: 1 !important;
                 filter: none !important;
             }
-            
+
             /* Modal fixes */
             html.dark .modal-content {
                 background-color: #212529 !important;
@@ -295,7 +299,7 @@
                 background-color: #212529 !important;
                 border-color: var(--border-color) !important;
             }
-            
+
             /* Text and badge fixes */
             html.dark .text-success {
                 color: #198754 !important;
@@ -314,14 +318,14 @@
                 background-color: #6c757d !important;
                 color: white !important;
             }
-            
+
             /* Home person name fix - make it readable */
             html.dark .badge.bg-transparent.text-success {
                 background-color: transparent !important;
                 color: #198754 !important;
                 text-decoration: underline !important;
             }
-            
+
             /* Table cell text - ensure file names and dates are readable */
             html.dark .table td {
                 color: var(--text-color) !important;
@@ -331,19 +335,19 @@
                 color: white !important;
                 font-weight: 600 !important;
             }
-            
+
             /* Specific for profile table cells */
             html.dark .table-responsive .table td {
                 color: var(--text-color) !important;
                 opacity: 1 !important;
             }
-            
+
             /* Ensure all text in dark mode has proper contrast */
             html.dark,
             html.dark * {
                 color: var(--text-color) !important;
             }
-            
+
             /* Except for elements that should have specific colors */
             html.dark .text-success,
             html.dark .text-muted,
@@ -354,7 +358,7 @@
             html.dark a {
                 color: inherit !important;
             }
-            
+
             /* HUD template specific fixes - PRECISE TARGETING */
             /* Live Preview section heading - keep original blue background and white text in dark mode */
             html.dark .card-header.bg-primary {
@@ -362,33 +366,33 @@
                 border-color: #0d6efd !important;
                 color: white !important;
             }
-            
+
             /* Chart Settings heading - keep original grey background and white text in dark mode (matches Reset button) */
             html.dark .card-header.bg-secondary {
                 background-color: #6c757d !important;
                 border-color: #6c757d !important;
                 color: white !important;
             }
-            
+
             /* Interactive Family Tree Preview h2 - keep original color */
             html.dark .col-12 > h2.mb-4 {
                 color: inherit !important;
             }
-            
+
             /* Reset to Defaults button - white in dark mode */
             html.dark .btn-light {
                 background-color: white !important;
                 border-color: #dee2e6 !important;
                 color: #212529 !important;
             }
-            
+
             /* Back to Selection button - keep current dark mode color */
             html.dark .btn-secondary {
                 background-color: #6c757d !important;
                 border-color: #6c757d !important;
                 color: white !important;
             }
-            
+
             /* Light mode Back to Selection button fix */
             :root:not(.dark) .btn-secondary {
                 background-color: #6c757d !important;
@@ -396,7 +400,7 @@
                 color: white !important;
             }
         </style>
-        
+
         <!-- Apply dark mode class immediately to prevent flash -->
         <script>
             // Check if dark mode should be applied
@@ -531,17 +535,17 @@
         (function() {
             // Set up logos based on current theme
             var isDark = document.documentElement.classList.contains('dark');
-            
+
             // Navbar logo
             var navbarLogo = document.getElementById('navbar-logo');
             if (navbarLogo) navbarLogo.src = isDark ? '{% static "core/images/tinynamelogo_DM.png" %}' : '{% static "core/images/tinynamelogo.png" %}';
-            
+
             // Footer logos
             var footerLogo = document.getElementById('footer-logo');
             var footerDekalbLogo = document.getElementById('footer-dekalb-logo');
             if (footerLogo) footerLogo.src = isDark ? '{% static "core/images/tinynamelogo_DM.png" %}' : '{% static "core/images/tinynamelogo.png" %}';
             if (footerDekalbLogo) footerDekalbLogo.src = isDark ? '{% static "core/images/createdinDeKalb_DM.png" %}' : '{% static "core/images/createdinDeKalb.png" %}';
-            
+
             var darkIcon = document.getElementById('theme-toggle-dark-icon');
             var lightIcon = document.getElementById('theme-toggle-light-icon');
             if (isDark) {
@@ -550,7 +554,7 @@
                 if (lightIcon) lightIcon.classList.remove('d-none');
             }
         })();
-        
+
         function setupThemeToggle() {
             var btn = document.getElementById('theme-toggle');
             if (btn && !btn._themeToggleSetup) {
@@ -559,17 +563,17 @@
                     var isDark = document.documentElement.classList.contains('dark');
                     var darkIcon = document.getElementById('theme-toggle-dark-icon');
                     var lightIcon = document.getElementById('theme-toggle-light-icon');
-                    
+
                     if (isDark) {
                         document.documentElement.classList.remove('dark');
                         localStorage.setItem('color-theme', 'light');
                         if (darkIcon) darkIcon.classList.add('d-none');
                         if (lightIcon) lightIcon.classList.remove('d-none');
-                        
+
                         // Update navbar logo
                         var navbarLogo = document.getElementById('navbar-logo');
                         if (navbarLogo) navbarLogo.src = '{% static "core/images/tinynamelogo.png" %}';
-                        
+
                         // Update footer logos
                         var footerLogo = document.getElementById('footer-logo');
                         var footerDekalbLogo = document.getElementById('footer-dekalb-logo');
@@ -580,11 +584,11 @@
                         localStorage.setItem('color-theme', 'dark');
                         if (darkIcon) darkIcon.classList.remove('d-none');
                         if (lightIcon) lightIcon.classList.add('d-none');
-                        
+
                         // Update navbar logo
                         var navbarLogo = document.getElementById('navbar-logo');
                         if (navbarLogo) navbarLogo.src = '{% static "core/images/tinynamelogo_DM.png" %}';
-                        
+
                         // Update footer logos
                         var footerLogo = document.getElementById('footer-logo');
                         var footerDekalbLogo = document.getElementById('footer-dekalb-logo');
@@ -594,10 +598,10 @@
                 });
             }
         }
-        
+
         // Try immediately
         setupThemeToggle();
-        
+
         // Also try on DOMContentLoaded and periodically
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', setupThemeToggle);

@@ -70,18 +70,44 @@ def display_tree_hud(request):
             "gedcom_file_id": gedcom_file_id,
         }
 
-        # Get HUD settings from session or use defaults
-        hud_settings = request.session.get(
-            "hud_settings",
-            {
-                "show_photos": True,
-                "show_dates": True,
-                "show_locations": True,
-                "compact_mode": False,
-                "theme": "light",
-                "template": "1",
-            },
-        )
+        # Get HUD settings from session and merge with defaults
+        default_settings = {
+            "show_photos": True,
+            "show_dates": True,
+            "show_locations": True,
+            "compact_mode": False,
+            "theme": "light",
+            "template": "1",
+            # Place Name Formatting defaults (checked by default)
+            "place_use_country_abbrev": True,
+            "place_use_state_abbrev": True,
+            "place_hide_us_counties": True,
+            "place_show_country": False,
+            "place_hide_usa_with_state": True,
+            "place_show_flag": True,
+            # Place Name Formatting defaults (unchecked by default)
+            "place_auto_shorten": False,
+            "place_abbreviate_uk_counties": False,
+            "place_abbreviate_sweden_counties": False,
+            "place_abbreviate_france_departments": False,
+            "place_abbreviate_germany_states": False,
+            "place_abbreviate_place_parts": False,
+            "place_year_only": False,
+            "place_show_township": False,
+            "place_show_uk_flag": False,
+            "place_flag_type": "birth",
+            "place_flag_format": "png",
+            "flag_font": "/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf",
+            # Date Format defaults
+            "date_format": "da_mon_year",
+            "date_year_only": True,
+            "date_retain_leading_zeros": False,
+            # Name Format defaults
+            "name_use_first_middle_only": True,
+            "name_hide_hyphenated_surname": True,
+        }
+        session_settings = request.session.get("hud_settings", {})
+        hud_settings = {**default_settings, **session_settings}
 
         # Determine which settings template to use based on current template
         current_template = hud_settings.get("template", "1")
