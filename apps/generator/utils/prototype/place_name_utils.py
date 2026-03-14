@@ -44,8 +44,8 @@ UK_COUNTY_ABBREVIATIONS = {
     "lancashire": "Lancs.",
     "leicestershire": "Leics.",
     "lincolnshire": "Lincs.",
-    "london": "Lon.",
-    "middlesex": "Middx",
+    "london": "London",
+    "middlesex": "Middx.",
     "norfolk": "Norf.",
     "northamptonshire": "Northants.",
     "northumberland": "Northumb.",
@@ -153,6 +153,182 @@ UK_COUNTY_ABBREVIATIONS = {
     "wexford": "Wexford",
     "wicklow": "Wicklow",
 }
+
+# Set of known UK counties/administrative regions for parsing
+# Used to distinguish county names from city names in UK places
+UK_COUNTIES = {
+    # English ceremonial counties
+    "bedfordshire",
+    "berkshire",
+    "buckinghamshire",
+    "cambridgeshire",
+    "cheshire",
+    "cornwall",
+    "cumberland",
+    "derbyshire",
+    "devon",
+    "dorset",
+    "durham",
+    "essex",
+    "gloucestershire",
+    "hampshire",
+    "herefordshire",
+    "hertfordshire",
+    "huntingdonshire",
+    "kent",
+    "lancashire",
+    "leicestershire",
+    "lincolnshire",
+    "london",
+    "middlesex",
+    "norfolk",
+    "northamptonshire",
+    "northumberland",
+    "nottinghamshire",
+    "oxfordshire",
+    "rutland",
+    "shropshire",
+    "somerset",
+    "staffordshire",
+    "suffolk",
+    "surrey",
+    "sussex",
+    "warwickshire",
+    "westmorland",
+    "wiltshire",
+    "worcestershire",
+    "yorkshire",
+    # Welsh counties
+    "anglesey",
+    "breconshire",
+    "caernarfonshire",
+    "cardiganshire",
+    "carmarthenshire",
+    "denbighshire",
+    "flintshire",
+    "glamorgan",
+    "merionethshire",
+    "monmouthshire",
+    "montgomeryshire",
+    "pembrokeshire",
+    "radnorshire",
+    # Scottish counties
+    "aberdeenshire",
+    "angus",
+    "argyllshire",
+    "ayrshire",
+    "banffshire",
+    "berwickshire",
+    "buteshire",
+    "caithness",
+    "clackmannanshire",
+    "cromarty",
+    "dumfriesshire",
+    "dunbartonshire",
+    "east lothian",
+    "edinburgh",
+    "elginshire",
+    "fife",
+    "forfarshhire",
+    "haddingtonshire",
+    "inverness-shire",
+    "kincardineshire",
+    "kinross-shire",
+    "kirkcudbrightshire",
+    "lanarkshire",
+    "midlothian",
+    "moray",
+    "na h-eileanan siar",
+    "orkney",
+    "peeblesshire",
+    "perthshire",
+    "renfrewshire",
+    "ross-shire",
+    "roxburghshire",
+    "selkirkshire",
+    "stirlingshire",
+    "sutherland",
+    "west lothian",
+    "wigtownshire",
+    "zetland",
+    "shetland",
+    # Historic/metropolitan counties
+    "greater london",
+    "greater manchester",
+    "merseyside",
+    "south yorkshire",
+    "tyne and wear",
+    "west midlands",
+    "west yorkshire",
+    # Northern Ireland
+    "antrim",
+    "armagh",
+    "down",
+    "fermanagh",
+    "londonderry",
+    "tyrone",
+}
+
+# Known UK cities that shouldn't be abbreviated
+# Even if they match county names, these should display as cities
+# Includes major cities and some council areas/regions that shouldn't be abbreviated
+UK_CITIES = {
+    # England
+    "london",
+    "birmingham",
+    "manchester",
+    "leeds",
+    "glasgow",
+    "liverpool",
+    "newcastle",
+    "bristol",
+    "sheffield",
+    "nottingham",
+    "leicester",
+    "coventry",
+    "york",
+    "bath",
+    "oxford",
+    "cambridge",
+    "canterbury",
+    "exeter",
+    "plymouth",
+    "derby",
+    "southampton",
+    "blackpool",
+    "brighton",
+    "hull",
+    "windsor",
+    # Scotland - cities
+    "edinburgh",
+    "glasgow",
+    "aberdeen",
+    "dundee",
+    "stirling",
+    "inverness",
+    # Scotland - council areas (not traditional counties, treated as regions)
+    "midlothian",
+    "west lothian",
+    "east lothian",
+    "fife",
+    "perth and kinross",
+    "argyll and bute",
+    "highland",
+    "orkney",
+    "shetland",
+    "western isles",
+    "na h-eileanan siar",
+    # Wales
+    "cardiff",
+    "swansea",
+    "newport",
+    "bangor",
+    # Northern Ireland
+    "belfast",
+    "derry",
+    "londonderry",
+}
+
 
 # Country name to flag emoji mapping
 COUNTRY_FLAGS = {
@@ -1420,7 +1596,25 @@ def parse_place(place: str) -> dict:
 
         # What remains is city/town
         if len(parts) >= 1:
-            result["city"] = ", ".join(parts) if len(parts) > 1 else parts[0]
+            # Check if this is a UK county when country is England/Scotland/Wales
+            # This handles cases like "Yorkshire, England" where Yorkshire should be county not city
+            if (
+                result["is_uk"]
+                and result["country"]
+                and result["country"].lower()
+                in {"england", "scotland", "wales", "northern ireland", "n. ireland"}
+            ):
+                # Check each remaining part for UK county
+                for i, part in enumerate(parts):
+                    part_lower = part.lower().strip()
+                    if part_lower in UK_COUNTIES:
+                        # This part is a county
+                        result["county"] = part
+                        parts = parts[:i] + parts[i + 1 :]
+                        break
+            result["city"] = (
+                ", ".join(parts) if len(parts) > 1 else parts[0] if parts else ""
+            )
     elif parts_count == 1:
         # Single part remaining - could be city or county
         # Don't treat UK constituent countries as counties
@@ -1431,7 +1625,16 @@ def parse_place(place: str) -> dict:
             "n. ireland",
             "northern ireland",
         }
-        if (
+        # Check if this is a UK county when country is England/Scotland/Wales
+        is_uk_county = (
+            result["is_uk"]
+            and result["country"]
+            and result["country"].lower() in uk_countries_lower
+            and parts[0].lower().strip() in UK_COUNTIES
+        )
+        if is_uk_county:
+            result["county"] = parts[0]
+        elif (
             is_explicit_county(parts[0])
             and parts[0].lower().strip() not in uk_countries_lower
         ):
@@ -1661,33 +1864,43 @@ def format_place(
         #     state = parsed.get("county")
         #     ...
 
-        # For UK: if still no state, use the city field (which contains the county)
+        # For UK: if still no state, use the county field (or city if still has county)
+        # Priority: county > city (county) > constituent country (England/Scotland/Wales)
         if not state and parsed.get("is_uk") and parsed.get("country"):
-            country = parsed.get("country", "")
-            # Only return the constituent country, not "UK"
-            if country.lower() not in {
-                "uk",
-                "u.k.",
-                "gb",
-                "great britain",
-                "united kingdom",
-            }:
-                state = country
-            else:
-                # Try to get the county from city field (e.g., "Yorkshire, England" has city = "Yorkshire, England")
+            # First try county field (for places like "Yorkshire, England")
+            county = parsed.get("county", "")
+            if county:
+                state = county
+                # Apply UK county abbreviation if enabled, but NOT for known cities
+                if abbreviate_uk_counties:
+                    state_lower = state.lower().strip()
+                    # Don't abbreviate known cities (e.g., London, Edinburgh)
+                    if state_lower not in UK_CITIES:
+                        if state_lower in UK_COUNTY_ABBREVIATIONS:
+                            state = UK_COUNTY_ABBREVIATIONS[state_lower]
+            # Fall back to city field if no county
+            elif parsed.get("city"):
                 city = parsed.get("city", "")
-                if city:
-                    # Extract first part before comma (e.g., "Yorkshire" from "Yorkshire, England")
-                    city_parts = [p.strip() for p in city.split(",")]
-                    if city_parts:
-                        state = city_parts[
-                            0
-                        ]  # Use the county name (Yorkshire, Middlesex, etc.)
-                        # Apply UK county abbreviation if enabled
-                        if abbreviate_uk_counties:
-                            state_lower = state.lower().strip()
+                city_parts = [p.strip() for p in city.split(",")]
+                if city_parts:
+                    state = city_parts[0]
+                    # Apply UK county abbreviation if enabled, but NOT for known cities
+                    if abbreviate_uk_counties:
+                        state_lower = state.lower().strip()
+                        if state_lower not in UK_CITIES:
                             if state_lower in UK_COUNTY_ABBREVIATIONS:
                                 state = UK_COUNTY_ABBREVIATIONS[state_lower]
+            # If still no state, fall back to constituent country (England, Scotland, Wales)
+            if not state:
+                country = parsed.get("country", "")
+                if country.lower() not in {
+                    "uk",
+                    "u.k.",
+                    "gb",
+                    "great britain",
+                    "united kingdom",
+                }:
+                    state = country
 
         # For Ireland: if no state/county, check if it's just Ireland (return nothing - flag is shown)
         if not state and parsed.get("country", "").lower() == "ireland":
