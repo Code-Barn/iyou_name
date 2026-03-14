@@ -706,6 +706,9 @@ PLACE_PART_ABBREVIATIONS = {
     # These are for non-US places where counties aren't automatically abbreviated
     "township": "Twp",
     "twp": "Twp",
+    "townland": "Td",
+    "townlands": "Td",
+    "td": "Td",
     "borough": "Boro",
     "boro": "Boro",
     "province": "Prov",
@@ -1283,12 +1286,16 @@ def parse_place(place: str) -> dict:
     def is_explicit_township(part: str) -> bool:
         part_lower = part.lower()
         # Check for various township markers - be lenient since GEDCOM varies
-        # Includes: township, twp, twp., ward (treated similarly)
+        # Includes: township, twp, twp., ward, townland, townlands
         return (
             "township" in part_lower
             or part_lower.endswith(" twp")
             or part_lower.endswith(" twp.")
             or ", twp" in part_lower
+            or "townland" in part_lower
+            or part_lower.endswith(" td")
+            or part_lower.endswith(" td.")
+            or ", td" in part_lower
             or "ward" in part_lower
         )
 
@@ -1647,13 +1654,12 @@ def format_place(
         state = parsed.get("state", "")
 
         # For UK/Ireland: if no state but has county, use the county
-        if not state and parsed.get("county"):
-            state = parsed.get("county")
-            # Apply UK county abbreviation if enabled
-            if abbreviate_uk_counties:
-                state_lower = state.lower().strip()
-                if state_lower in UK_COUNTY_ABBREVIATIONS:
-                    state = UK_COUNTY_ABBREVIATIONS[state_lower]
+        # Note: We handle this in the more specific UK/Ireland sections below
+        # so we'll skip the generic handling here to avoid duplication
+        # (the code below handles Ireland with "Co." prefix)
+        # if not state and parsed.get("county"):
+        #     state = parsed.get("county")
+        #     ...
 
         # For UK: if still no state, use the city field (which contains the county)
         if not state and parsed.get("is_uk") and parsed.get("country"):
@@ -1677,23 +1683,40 @@ def format_place(
                         state = city_parts[
                             0
                         ]  # Use the county name (Yorkshire, Middlesex, etc.)
+                        # Apply UK county abbreviation if enabled
+                        if abbreviate_uk_counties:
+                            state_lower = state.lower().strip()
+                            if state_lower in UK_COUNTY_ABBREVIATIONS:
+                                state = UK_COUNTY_ABBREVIATIONS[state_lower]
 
-        # For Ireland: if no state/county, check if it's just Ireland
+        # For Ireland: if no state/county, check if it's just Ireland (return nothing - flag is shown)
         if not state and parsed.get("country", "").lower() == "ireland":
             # For Ireland, try to get the county from the parsed data
             if parsed.get("county"):
-                state = parsed.get("county")
+                state = parsed.get("county", "")
+                # Apply UK county abbreviation FIRST (if enabled)
                 if abbreviate_uk_counties:
                     state_lower = state.lower().strip()
                     if state_lower in UK_COUNTY_ABBREVIATIONS:
                         state = UK_COUNTY_ABBREVIATIONS[state_lower]
+                # Then add "Co." prefix when there's a county (regardless of abbreviate setting)
+                # This is because Irish counties are essential for identifying the location
+                if state and not state.lower().startswith("co."):
+                    state = "Co. " + state
             else:
                 # Try city field (e.g., "Cork, Ireland" - city is "Cork")
                 city = parsed.get("city", "")
                 if city:
-                    state = city  # Just return the city/county name
-                else:
-                    state = "Ireland"
+                    state = city
+                    # Apply UK county abbreviation FIRST (if enabled)
+                    if abbreviate_uk_counties:
+                        state_lower = state.lower().strip()
+                        if state_lower in UK_COUNTY_ABBREVIATIONS:
+                            state = UK_COUNTY_ABBREVIATIONS[state_lower]
+                    # Then add "Co." prefix when city could be a county
+                    if state and not state.lower().startswith("co."):
+                        state = "Co. " + state
+                # If there's no city either (just "Ireland"), return nothing - flag is shown
 
         # Apply Swedish county abbreviation
         if state and parsed.get("is_sweden"):
@@ -1713,6 +1736,11 @@ def format_place(
 
         if state:
             return state
+
+        # For place_year_only: if no state/county found, return nothing
+        # This handles cases like just "Ireland" or just "England" where we rely on flags
+        if place_year_only:
+            return ""
 
         # If no state found, return the last part (could be country or region)
         parts = [p.strip() for p in place.split(",")]
@@ -1803,7 +1831,11 @@ def format_place(
             or part_lower.endswith(" co.")
         )
         is_township = (
-            "township" in part_lower or "twp" in part_lower or "ward" in part_lower
+            "township" in part_lower
+            or "twp" in part_lower
+            or "ward" in part_lower
+            or "townland" in part_lower
+            or "td" in part_lower
         )
 
         # Include part unless it's a county/township we're hiding
@@ -1812,6 +1844,32 @@ def format_place(
         if is_township and not show_township:
             continue
         filtered_parts.append(part)
+
+    # Also filter parsed["city"] for townland/township when show_township=False
+    # This handles cases where townland is parsed into the city field
+    if not show_township and parsed["city"]:
+        city_lower = parsed["city"].lower()
+        if any(
+            kw in city_lower for kw in ["townland", "township", "twp", "ward", " td "]
+        ):
+            # Check if there's a comma-separated format we can use
+            city_parts = [p.strip() for p in parsed["city"].split(",")]
+            filtered_city_parts = []
+            for cp in city_parts:
+                cp_lower = cp.lower()
+                is_townland_part = (
+                    "townland" in cp_lower
+                    or "township" in cp_lower
+                    or "twp" in cp_lower
+                    or "ward" in cp_lower
+                    or cp_lower.strip() == "td"
+                )
+                if not is_townland_part:
+                    filtered_city_parts.append(cp)
+            if filtered_city_parts:
+                parsed["city"] = ", ".join(filtered_city_parts)
+            else:
+                parsed["city"] = ""
 
     # Rebuild parsed from filtered parts (for "other" field)
     # Then rebuild output parts based on settings
