@@ -717,6 +717,9 @@ HUD.Sliders = (function() {
         setupSlider('primary-date-info-font-size-slider', 'primary-date-info-font-size-value');
         setupSlider('primary-place-info-font-size-slider', 'primary-place-info-font-size-value');
 
+        // Name formatting sliders
+        setupSlider('name-line-spacing-slider', 'name-line-spacing-value');
+
         // Stroke width slider
         setupSlider('default-stroke-width-slider', 'default-stroke-width-value');
         setupSlider('primary-stroke-width-slider', 'primary-stroke-width-value');
@@ -895,9 +898,10 @@ HUD.Utils = (function() {
         // First, handle checkboxes explicitly - include all checkbox settings
         const checkboxes = document.querySelectorAll('#hud-settings-form input[type="checkbox"]');
         checkboxes.forEach(checkbox => {
-            // For place-related checkboxes, always include them with their boolean state
-            if (checkbox.name && checkbox.name.startsWith('place_')) {
+            // Include checkboxes that start with 'place_' OR are specific named checkboxes
+            if (checkbox.name && (checkbox.name.startsWith('place_') || checkbox.name === 'use_outside_stroke')) {
                 userSettings[checkbox.name] = checkbox.checked;
+                console.log(`Checkbox ${checkbox.name}: ${checkbox.checked}`);
             }
         });
 
@@ -922,6 +926,7 @@ HUD.Utils = (function() {
         }
 
         console.log('Collected all form settings:', userSettings);
+        console.log('use_outside_stroke value:', userSettings.use_outside_stroke);
         return userSettings;
     }
 

@@ -391,19 +391,23 @@ window.ZoomManager = {
     
     /**
      * Auto-adjust zoom for mobile screens
+     * Disabled by default - image should fit using CSS instead of scaling
      */
     autoAdjustMobileZoom: function() {
-        // Only affects scale mode
+        // Disabled: Let the image fit using CSS max-width/max-height instead
+        // This keeps the image at 100% scale on mobile
+        return;
+        
+        // Keeping this code in case we need it later
+        /*
         if (this.zoomMode === 'scale') {
             if (window.innerWidth <= 576) {
-                // Very small screens - zoom out to fit
                 const currentZoom = this.getCurrentZoom();
                 if (currentZoom > 75) {
                     console.log('Auto-adjusting zoom for mobile screen');
                     this.setZoom(75);
                 }
             } else if (window.innerWidth <= 768) {
-                // Small screens - slight zoom out if needed
                 const currentZoom = this.getCurrentZoom();
                 if (currentZoom > 90) {
                     console.log('Auto-adjusting zoom for tablet screen');
@@ -411,6 +415,7 @@ window.ZoomManager = {
                 }
             }
         }
+        */
     },
     
     /**

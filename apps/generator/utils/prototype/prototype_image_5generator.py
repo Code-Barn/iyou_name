@@ -44,7 +44,7 @@ class Generation5Constants:
 
     # A11 position (base for all positions in A subclade)
     POSITION_A11_FIRST_NAME_BASE_X = 330
-    POSITION_A11_FIRST_NAME_BASE_Y = 1749
+    POSITION_A11_FIRST_NAME_BASE_Y = 1741
     POSITION_A11_BIRTH_DATE_BASE_X = 392
     POSITION_A11_BIRTH_DATE_BASE_Y = 1735
     POSITION_A11_BIRTH_PLACE_BASE_X = 267
@@ -52,7 +52,7 @@ class Generation5Constants:
 
     # A12 position (base for all positions in A subclade)
     POSITION_A12_FIRST_NAME_BASE_X = 760
-    POSITION_A12_FIRST_NAME_BASE_Y = 1749
+    POSITION_A12_FIRST_NAME_BASE_Y = 1741
     POSITION_A12_BIRTH_DATE_BASE_X = 780
     POSITION_A12_BIRTH_DATE_BASE_Y = 1735
     POSITION_A12_BIRTH_PLACE_BASE_X = 739
@@ -60,7 +60,7 @@ class Generation5Constants:
 
     # A21 position (mirrors A12 over x=975)
     POSITION_A21_FIRST_NAME_BASE_X = 1190
-    POSITION_A21_FIRST_NAME_BASE_Y = 1749
+    POSITION_A21_FIRST_NAME_BASE_Y = 1741
     POSITION_A21_BIRTH_DATE_BASE_X = 1170
     POSITION_A21_BIRTH_DATE_BASE_Y = 1735
     POSITION_A21_BIRTH_PLACE_BASE_X = 1211
@@ -68,7 +68,7 @@ class Generation5Constants:
 
     # A22 position (mirrors A11 over x=975)
     POSITION_A22_FIRST_NAME_BASE_X = 1620
-    POSITION_A22_FIRST_NAME_BASE_Y = 1749
+    POSITION_A22_FIRST_NAME_BASE_Y = 1741
     POSITION_A22_BIRTH_DATE_BASE_X = 1560
     POSITION_A22_BIRTH_DATE_BASE_Y = 1735
     POSITION_A22_BIRTH_PLACE_BASE_X = 1683
@@ -97,9 +97,7 @@ class Generation5Constants:
 
 GENERATION_5_SETTINGS_SCHEMA = {
     "font_family": (str, "Arial"),
-    "great_great_grandparent_stroke_color": (Color, "black"),
     "great_great_grandparent_font_color": (Color, "black"),
-    "great_great_grandparent_stroke_width": (float, 0.0),
     # 2X Great-Grandparent settings (alternative naming)
     "twox_greatgrandparent_name_font_size": (int, 12),
     "twox_greatgrandparent_date_info_font_size": (int, 7),
@@ -115,11 +113,11 @@ GENERATION_5_SETTINGS_SCHEMA = {
     "twox_greatgrandparent_death_color": (Color, "black"),
     "twox_greatgrandparent_birth_place_color": (Color, "black"),
     "twox_greatgrandparent_death_place_color": (Color, "black"),
-    "twox_greatgrandparent_stroke_color": (Color, "black"),
-    "twox_greatgrandparent_stroke_width": (float, 0.0),
+    # Chart-wide outside stroke settings
+    "use_outside_stroke": (bool, False),
+    "gen5_stroke_color": (Color, "white"),
+    "gen5_stroke_width": (int, 7),
     # Composite settings
-    "info_stroke_color": (Color, "gray"),
-    "info_stroke_width": (float, 0.0),
     "overlay_scale": (float, 0.7778),
     "overlay_position_x": (int, 0),
     "overlay_position_y": (int, 0),
@@ -146,6 +144,8 @@ GENERATION_5_SETTINGS_SCHEMA = {
     # Name formatting settings
     "name_use_first_middle_only": (bool, True),
     "name_hide_hyphenated_surname": (bool, True),
+    "name_line_spacing": (float, 0.9),
+    "gen5_name_line_spacing": (float, 0.9),
 }
 
 
@@ -195,8 +195,15 @@ def generate_prototype_5gen_preview(
     D Subclade (maternal grandmother's line): rotation=90 (left side)
     """
     user_settings = user_settings or {}
+    outside_val = user_settings.get("use_outside_stroke")
+    logger.info(
+        f"[5gen] raw use_outside_stroke: {repr(outside_val)}, type: {type(outside_val)}"
+    )
     validated_settings = get_validated_settings(
         user_settings, GENERATION_5_SETTINGS_SCHEMA, "5gen"
+    )
+    logger.info(
+        f"[5gen] validated_settings use_outside_stroke: {validated_settings.get('use_outside_stroke')}"
     )
 
     logger.info(f"Generating prototype 5gen for: {primary_individual.full_name}")
@@ -224,12 +231,8 @@ def generate_prototype_5gen_preview(
 
                 draw.font = validated_settings["font_family"]
                 draw.stroke_antialias = True
-                draw.stroke_width = validated_settings.get(
-                    "great_great_grandparent_stroke_width", 0.0
-                )
-                draw.stroke_color = validated_settings.get(
-                    "great_great_grandparent_stroke_color", Color("black")
-                )
+                draw.stroke_width = 0
+                draw.stroke_color = Color("white")
 
                 individuals = family_data.get("individuals", {}) if family_data else {}
 
@@ -587,7 +590,7 @@ def generate_prototype_5gen_preview(
                     death_place_paired_offset_x=113,
                     use_display_text=True,
                     use_gravity_center=False,
-                    multiline_line_spacing=0.8,
+                    multiline_line_spacing=0.9,
                     multiline_alignment="center",
                 )
 
@@ -652,7 +655,20 @@ def generate_prototype_5gen_preview(
                             flag_size=validated_settings.get("gen5_flag_size", 111),
                             **base_params,
                             chart_settings=validated_settings,
+                            outside_stroke=validated_settings.get(
+                                "use_outside_stroke", False
+                            ),
+                            outside_stroke_width=validated_settings.get(
+                                "gen5_stroke_width", 7
+                            ),
+                            outside_stroke_color=validated_settings.get(
+                                "gen5_stroke_color", Color("white")
+                            ),
                         )
+
+                logger.info(
+                    f"[5gen] use_outside_stroke: {validated_settings.get('use_outside_stroke', False)}"
+                )
 
                 draw.pop()
                 draw(content_img)

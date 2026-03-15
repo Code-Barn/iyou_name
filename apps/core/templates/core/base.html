@@ -379,6 +379,22 @@
                 color: inherit !important;
             }
 
+            /* Responsive navbar images - prevent horizontal overflow on mobile */
+            @media (max-width: 576px) {
+                #navbar-harp {
+                    height: 40px !important;
+                    max-width: 80px !important;
+                    width: auto !important;
+                }
+                .navbar-brand {
+                    flex-shrink: 1;
+                }
+                /* Prevent horizontal scroll on mobile */
+                html, body {
+                    overflow-x: hidden;
+                }
+            }
+
             /* Reset to Defaults button - white in dark mode */
             html.dark .btn-light {
                 background-color: white !important;

@@ -28,8 +28,6 @@ GENERATION_X_SETTINGS_SCHEMA = {
     # Primary Individual Settings (inherited from 1gen)
     "primary_background_color": (Color, "#FFFFFF"),
     "primary_font_color": (Color, "black"),
-    "primary_stroke_color": (Color, "black"),
-    "primary_stroke_width": (float, 0.5),
     "primary_name_font_size": (int, 84),
     "primary_date_info_font_size": (int, 60),
     "primary_place_info_font_size": (int, 28),
@@ -51,6 +49,13 @@ GENERATION_X_SETTINGS_SCHEMA = {
     
     # Generation-Specific Settings
     # [Individual settings for each person in this generation]
+    # Note: DO NOT add {person_type}_stroke_color or {person_type}_stroke_width
+    # Use the outside stroke system instead (see Section 8)
+    
+    # Outside Stroke Settings (see Section 8 for defaults)
+    "use_outside_stroke": (bool, False),
+    "genX_stroke_color": (Color, "white"),
+    "genX_stroke_width": (int, DEFAULT),
     
     # Overlay Composition Settings
     "overlay_scale": (float, 0.X),  # Varies by generation
@@ -136,6 +141,121 @@ Each person position MUST have these settings:
 "{person_type}_death_translate_y": (int, 0),
 "{person_type}_death_rotate": (int, 0),
 ```
+
+### 8. Outside Stroke Standard (Text Outline for Dark Backgrounds)
+
+All generations 1-7 use a unified outside stroke system for text visibility on dark flag backgrounds.
+
+#### 8.1 Concept
+
+The outside stroke renders text twice:
+1. **First pass**: Draws text with stroke color and stroke width (the "outside" outline)
+2. **Second pass**: Draws text with NO stroke (0 width) on top, creating clean text with contrasting outline
+
+This approach replaces the old "inside stroke" method which drew stroke behind filled text in a single pass.
+
+#### 8.2 Generation-Specific Settings
+
+Each generation has its own prefixed stroke settings:
+
+| Generation | Setting Name | Default Width | Range (min-max) | Default Color |
+|------------|--------------|---------------|-----------------|---------------|
+| 1gen | `gen1_stroke_width` | 43px | 0-86 | black |
+| 2gen | `gen2_stroke_width` | 22px | 0-44 | white |
+| 3gen | `gen3_stroke_width` | 13px | 0-26 | white |
+| 4gen | `gen4_stroke_width` | 9px | 0-18 | white |
+| 5gen | `gen5_stroke_width` | 7px | 0-14 | white |
+| 6gen | `gen6_stroke_width` | 6px | 0-12 | white |
+| 7gen | `gen7_stroke_width` | 5px | 0-10 | white |
+
+**Note**: Width defaults scale with generation - larger values for lower-numbered generations (which appear larger in the final composite) and smaller values for higher-numbered generations.
+
+#### 8.3 Required Schema Settings
+
+```python
+# Outside stroke settings (per-generation)
+"use_outside_stroke": (bool, False),  # Master toggle - enable/disable for this gen
+"genX_stroke_color": (Color, "white"),  # Generation-specific stroke color
+"genX_stroke_width": (int, DEFAULT),  # Generation-specific stroke width
+```
+
+#### 8.4 Implementation in Generator
+
+```python
+# 1. Set drawing to use 0 stroke (no "inside" stroke)
+draw.stroke_width = 0
+draw.stroke_color = Color("white")
+
+# 2. Call print_individual with outside stroke parameters
+print_individual(
+    draw=draw,
+    content_img=content_img,
+    individual=individual,
+    settings=validated_settings,
+    chart_settings=validated_settings,
+    # ... other params ...
+    outside_stroke=validated_settings.get("use_outside_stroke", False),
+    outside_stroke_width=validated_settings.get("genX_stroke_width", DEFAULT),
+    outside_stroke_color=validated_settings.get("genX_stroke_color", Color("white")),
+)
+```
+
+#### 8.5 Template Implementation
+
+Each generation's settings template (e.g., `1gen_settings.html`) MUST include:
+
+```html
+<!-- Stroke Settings (Outside Stroke) -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Stroke Settings (Outside Stroke)</h6>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Outside Stroke Width</label>
+            <input type="range" name="genX_stroke_width" 
+                   class="form-range" min="0" max="MAX" step="1" 
+                   value="{{ hud_settings.genX_stroke_width|default:DEFAULT }}">
+            <div class="text-center">
+                <span id="default-stroke-width-value">{{ hud_settings.genX_stroke_width|default:DEFAULT }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Outside Stroke Color</label>
+            <input type="color" name="genX_stroke_color" 
+                   class="form-control form-control-color" 
+                   value="{{ hud_settings.genX_stroke_color|default:'#COLOR' }}">
+        </div>
+    </div>
+</div>
+```
+
+#### 8.6 Chart-Wide Toggle
+
+The `display_tree.html` template includes a chart-wide checkbox to enable/disable outside stroke for all generations:
+
+```html
+<div class="form-check">
+    <input type="checkbox" name="use_outside_stroke" 
+           class="form-check-input" id="use-outside-stroke"
+           {% if hud_settings.use_outside_stroke %}checked{% endif %}>
+    <label class="form-check-label" for="use-outside-stroke">
+        Enable Outside Stroke (for dark backgrounds)
+    </label>
+</div>
+```
+
+#### 8.7 Deprecated Settings (Remove)
+
+When migrating to outside stroke, REMOVE these old settings:
+- `{person_type}_stroke_color` (e.g., `parent_stroke_color`, `grandparent_stroke_color`)
+- `{person_type}_stroke_width` (e.g., `parent_stroke_width`, `grandparent_stroke_width`)
+- `info_stroke_color`
+- `info_stroke_width`
+- `primary_stroke_color`
+- `primary_stroke_width`
+- `primary_info_stroke_color`
+- `primary_info_stroke_width`
+
+These were the old "inside stroke" settings that have been replaced by the unified outside stroke system.
 
 ## Frontend JavaScript Standard
 
@@ -228,6 +348,7 @@ buffer = get_chart_buffer(
 4. **Text Rendering**: Negative coordinates handled properly with translate pattern
 5. **Buffer Caching**: Settings changes properly invalidate cache
 6. **JavaScript Integration**: All templates 1-7 use consistent POST pattern
+7. **Outside Stroke**: All generations 1-7 use unified outside stroke with generation-specific settings
 
 ### ⚠️ Previously Identified Issues (RESOLVED)
 
@@ -299,6 +420,7 @@ When applying this standard to new generations:
 5. **Text Rendering**: Use translate pattern for all coordinates
 6. **Buffer Integration**: Use `get_chart_buffer()` for caching
 7. **Static File Management**: Ensure no duplicate files exist
+8. **Outside Stroke**: Add generation-specific stroke settings (see Section 8)
 
 ### ✅ Validation Tests
 

@@ -63,6 +63,10 @@ UK_COUNTY_ABBREVIATIONS = {
     "wiltshire": "Wilts.",
     "worcestershire": "Worcs.",
     "yorkshire": "Yorks.",
+    "north yorkshire": "N. Yorks.",
+    "east riding of yorkshire": "E. Riding Yorks.",
+    "west riding of yorkshire": "W. Riding Yorks.",
+    "south yorkshire": "S. Yorks.",
     # Welsh counties
     "anglesey": "Angl.",
     "breconshire": "Brecs.",
@@ -789,11 +793,27 @@ PLACE_PART_ABBREVIATIONS = {
     "mount": "Mt",
     "mt": "Mt",
     "mountains": "Mtns",
-    # Saints and religious
+    # Saints and religious (including French variants)
     "saint": "St",
     "sainte": "Ste",
     "st": "St",
     "ste": "Ste",
+    # French saint abbreviations (common in genealogical records)
+    "st.": "St",
+    "ste.": "Ste",
+    "st-": "St-",
+    "ste-": "Ste-",
+    "s.": "St",
+    "s.te": "Ste",
+    "s.te.": "Ste",
+    "ss.": "SS",
+    # French geographic suffixes
+    "sur": "sur",
+    "sous": "sous",
+    "en": "en",
+    "le": "le",
+    "la": "la",
+    "l'": "l'",
     # Streets and roads
     "avenue": "Ave",
     "ave": "Ave",
@@ -1462,7 +1482,8 @@ def parse_place(place: str) -> dict:
     def is_explicit_township(part: str) -> bool:
         part_lower = part.lower()
         # Check for various township markers - be lenient since GEDCOM varies
-        # Includes: township, twp, twp., ward, townland, townlands
+        # Includes: township, twp, twp., ward (standalone word), townland, townlands
+        # IMPORTANT: Only match "ward" as a standalone word/suffix, not as part of city names like "Seward"
         return (
             "township" in part_lower
             or part_lower.endswith(" twp")
@@ -1472,7 +1493,9 @@ def parse_place(place: str) -> dict:
             or part_lower.endswith(" td")
             or part_lower.endswith(" td.")
             or ", td" in part_lower
-            or "ward" in part_lower
+            # Match "ward" only at word boundaries (e.g., "3rd Ward", "East Ward")
+            or part_lower.endswith(" ward")
+            or ", ward" in part_lower
         )
 
     # Use global KNOWN_COUNTRIES for country detection
@@ -1708,18 +1731,116 @@ def abbreviate_swedish_county(county: str) -> str:
     return county
 
 
-def abbreviate_french_department(department: str) -> str:
+def abbreviate_french_department(department: str, city: str = "") -> str:
     """
     Abbreviate French department name to its INSEE code.
 
     Args:
         department: Full department name (e.g., "Calvados", "Eure")
+        city: Optional city name for context-specific resolution (e.g., Saint-Denis)
 
     Returns:
         Abbreviated department code (e.g., "14", "27") or original if not recognized
     """
     if not department:
         return department
+
+    department_lower = department.lower().strip()
+    city_lower = city.lower().strip() if city else ""
+
+    # Saint-Denis special handling (suburb in 93, not to be confused with Paris street)
+    saint_denis_variants = {
+        "saint-denis",
+        "saint denis",
+        "st-denis",
+        "st denis",
+        "franciade",
+        "saint-denis-en-france",
+        "saint-denis-de-l'estree",
+        "la plaine saint-denis",
+        "la plaine-saint-denis",
+        "catolacus",
+    }
+
+    if city_lower in saint_denis_variants:
+        if department_lower in {"seine", "75", "seine-et-oise"}:
+            return "93"
+        if department_lower == "seine-saint-denis":
+            return "93"
+
+    # Handle Seine department splits (1968 reform)
+    # Communes that moved from Seine (75) to new departments
+    seine_to_92 = {  # Hauts-de-Seine
+        "boulogne-billancourt",
+        "boulogne-sur-seine",
+        "issy-les-moulineaux",
+        "issy",
+        "levallois-perret",
+        "levallois",
+        "courbevoie",
+        "neuilly-sur-seine",
+        "neuilly",
+        "puteaux",
+        "suresnes",
+        "colombes",
+        "asnieres-sur-seine",
+        "asnieres",
+        " Antony",
+        "clamart",
+        "meudon",
+        "vanves",
+        "issy-les-moulineaux",
+        "chaville",
+        "saint-cloud",
+        "bourg-la-reine",
+        "sceaux",
+        "chatenoy-malabry",
+        " Antony",
+    }
+    seine_to_93 = {  # Seine-Saint-Denis
+        "saint-denis",
+        "aubervilliers",
+        "aubervillers",
+        "pantin",
+        "le pre-saint-gervais",
+        "les lilas",
+        "bagnolet",
+        "montreuil",
+        "rosny-sous-bois",
+        "bondy",
+        "drancy",
+        "drancy",
+        "le blanc-mesnil",
+        "bourget",
+    }
+    seine_to_94 = {  # Val-de-Marne
+        "ivry-sur-seine",
+        "ivry",
+        "vitry-sur-seine",
+        "vitry",
+        "creteil",
+        "lhay-les-roses",
+        "l'hay-les-roses",
+        "chevilly-larue",
+        "orly",
+        "villeneuve-saint-georges",
+        "vincennes",
+        "saint-maurice",
+        "chars",
+        "nogent-sur-marne",
+        "champigny-sur-marne",
+        "saint-maur-des-fosses",
+    }
+
+    if city_lower in seine_to_92:
+        if department_lower in {"seine", "75", "seine-et-oise", "92"}:
+            return "92"
+    if city_lower in seine_to_93:
+        if department_lower in {"seine", "75", "seine-et-oise", "93"}:
+            return "93"
+    if city_lower in seine_to_94:
+        if department_lower in {"seine", "75", "seine-et-oise", "94"}:
+            return "94"
 
     department_lower = department.lower().strip()
     # Try exact match first
@@ -1948,11 +2069,13 @@ def format_place(
         if state and parsed.get("is_sweden"):
             state = abbreviate_swedish_county(state)
         # Apply French department abbreviation (also check county field for French)
+        # Pass city for context-specific resolution (e.g., Saint-Denis + Seine -> 93)
+        city = parsed.get("city", "")
         if state and parsed.get("is_france"):
-            state = abbreviate_french_department(state)
+            state = abbreviate_french_department(state, city)
         # If no state found but have county for France, try that too
         if not state and parsed.get("is_france") and parsed.get("county"):
-            state = abbreviate_french_department(parsed.get("county") or "")
+            state = abbreviate_french_department(parsed.get("county") or "", city)
         # Apply German state abbreviation
         if state and parsed.get("is_germany"):
             state = abbreviate_german_state(state)
@@ -2012,8 +2135,48 @@ def format_place(
             parsed["country"] = ""
 
     # Apply French department abbreviations
-    if abbreviate_france_departments and parsed["state"] and parsed["is_france"]:
-        parsed["state"] = abbreviate_french_department(parsed["state"])
+    # Pass city for context-specific resolution (e.g., Saint-Denis + Seine -> 93)
+    if abbreviate_france_departments and parsed["is_france"]:
+        # First try state field
+        if parsed["state"]:
+            new_state = abbreviate_french_department(
+                parsed["state"], parsed.get("city", "")
+            )
+            if new_state != parsed["state"]:
+                parsed["state"] = new_state
+        # If no state but have county (e.g., "75" parsed as county), try that too
+        elif parsed.get("county"):
+            new_state = abbreviate_french_department(
+                parsed.get("county", ""), parsed.get("city", "")
+            )
+            if new_state != parsed.get("county", ""):
+                parsed["state"] = new_state
+                parsed["county"] = ""  # Clear county since we moved it to state
+
+        # Truncate hyphenated French city names when department code is shown
+        # e.g., "Appeville-Annebault, 27" -> "Appeville, 27"
+        # The department number already uniquely identifies the location
+        # But preserve names with special prefixes like "Saint-X", "Le X", "L'X"
+        if parsed["state"] and parsed["state"].isdigit():
+            city = parsed.get("city", "")
+            if city and "-" in city:
+                city_lower = city.lower()
+                # Don't truncate names with special prefixes - keep them full
+                protected_prefixes = (
+                    "saint-",
+                    "st-",  # St-Denis, St-Jean
+                    "ste-",
+                    "sainte-",  # Saint names
+                    "l'",  # L'Île
+                    "le-",
+                    "la-",  # Le Mans, La Rochelle
+                )
+                if any(city_lower.startswith(p) for p in protected_prefixes):
+                    pass  # Keep full name
+                else:
+                    first_part = city.split("-")[0].strip()
+                    if first_part:
+                        parsed["city"] = first_part
         # Hide France when department code is shown
         if parsed["country"] and parsed["country"].lower() in {
             "france",

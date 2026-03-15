@@ -275,6 +275,10 @@
                                 <input type="checkbox" name="date_retain_leading_zeros" class="form-check-input" id="date-retain-leading-zeros" {% if hud_settings.date_retain_leading_zeros|default:False %}checked{% endif %}>
                                 <label class="form-check-label" for="date-retain-leading-zeros">Retain Leading Zeros (e.g., 03 Aug or 08/03)</label>
                             </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="use_outside_stroke" class="form-check-input" id="use-outside-stroke" {% if hud_settings.use_outside_stroke|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="use-outside-stroke">Add white outline to text (for dark flag backgrounds) - Gen 5-7</label>
+                            </div>
                         </div>
 
                         <!-- Chart-Wide Name Formatting -->

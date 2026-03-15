@@ -151,6 +151,9 @@ def print_individual(
     multiline_alignment="center",
     chart_settings=None,
     date_year_only=False,
+    outside_stroke=False,
+    outside_stroke_width=5,
+    outside_stroke_color=None,
 ):
     """
     Print an individual's name and birth/death info at a given position.
@@ -175,7 +178,245 @@ def print_individual(
         use_gravity_center: Use gravity="center" for name
         chart_settings: Settings dict for date and name formatting (from settings_validator)
         date_year_only: If True, print only year for dates (for compact display)
+        outside_stroke: If True, render text twice - first with white fill for border, then normal
     """
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    # Determine stroke color for outside stroke
+    stroke_color = outside_stroke_color if outside_stroke_color else Color("white")
+
+    # Read line spacing from settings - check generation-specific first, then fall back to generic
+    # This ensures each generation uses its own setting without inheriting from other gens
+    if settings:
+        # Check for generation-specific prefixed setting first
+        if "gen5_name_line_spacing" in settings:
+            multiline_line_spacing = settings["gen5_name_line_spacing"]
+            logger.info(
+                f"[print_individual] Using gen5_name_line_spacing: {multiline_line_spacing}"
+            )
+        elif "gen6_name_line_spacing" in settings:
+            multiline_line_spacing = settings["gen6_name_line_spacing"]
+            logger.info(
+                f"[print_individual] Using gen6_name_line_spacing: {multiline_line_spacing}"
+            )
+        elif "gen7_name_line_spacing" in settings:
+            multiline_line_spacing = settings["gen7_name_line_spacing"]
+            logger.info(
+                f"[print_individual] Using gen7_name_line_spacing: {multiline_line_spacing}"
+            )
+        elif "name_line_spacing" in settings:
+            multiline_line_spacing = settings["name_line_spacing"]
+            logger.info(
+                f"[print_individual] Using name_line_spacing from settings: {multiline_line_spacing}"
+            )
+        elif "multiline_line_spacing" in settings:
+            multiline_line_spacing = settings["multiline_line_spacing"]
+
+    # Handle outside stroke by running twice
+    if outside_stroke:
+        logger.info(
+            f"[print_individual] outside_stroke=True, width={outside_stroke_width}, color={stroke_color}"
+        )
+        # First pass: draw with contrasting fill + contrasting stroke to create border
+        _settings_border = settings.copy() if settings else {}
+        _settings_border["primary_font_color"] = stroke_color
+        _settings_border["primary_birth_color"] = stroke_color
+        _settings_border["primary_death_color"] = stroke_color
+        _settings_border["primary_birth_place_color"] = stroke_color
+        _settings_border["primary_death_place_color"] = stroke_color
+        _settings_border["primary_stroke_color"] = stroke_color
+        _settings_border["primary_stroke_width"] = outside_stroke_width
+        _settings_border["primary_birth_stroke_color"] = stroke_color
+        _settings_border["primary_death_stroke_color"] = stroke_color
+        _settings_border["primary_birth_place_stroke_color"] = stroke_color
+        _settings_border["primary_death_place_stroke_color"] = stroke_color
+        # Generation-specific stroke settings
+        _settings_border["great_grandparent_stroke_color"] = stroke_color
+        _settings_border["great_grandparent_stroke_width"] = outside_stroke_width
+        _settings_border["great_great_grandparent_stroke_color"] = stroke_color
+        _settings_border["great_great_grandparent_stroke_width"] = outside_stroke_width
+        _settings_border["great_great_great_grandparent_stroke_color"] = Color("white")
+        _settings_border["great_great_great_grandparent_stroke_width"] = (
+            outside_stroke_width
+        )
+        _settings_border["great_great_great_great_grandparent_stroke_color"] = (
+            stroke_color
+        )
+        _settings_border["great_great_great_great_grandparent_stroke_width"] = (
+            outside_stroke_width
+        )
+        _settings_border["info_stroke_color"] = stroke_color
+        _settings_border["info_stroke_width"] = outside_stroke_width
+
+        # Recursive call with border settings
+        print_individual(
+            draw,
+            content_img,
+            individual,
+            _settings_border,
+            center_x=center_x,
+            center_y=center_y,
+            rotation=rotation,
+            name_font_size=name_font_size,
+            date_font_size=date_font_size,
+            place_font_size=place_font_size,
+            birth_date_font_size=birth_date_font_size,
+            death_date_font_size=death_date_font_size,
+            birth_place_font_size=birth_place_font_size,
+            death_place_font_size=death_place_font_size,
+            paired_dates_base_y=paired_dates_base_y,
+            birth_date_paired_offset_x=birth_date_paired_offset_x,
+            death_date_paired_offset_x=death_date_paired_offset_x,
+            paired_places_base_y=paired_places_base_y,
+            birth_place_paired_offset_x=birth_place_paired_offset_x,
+            death_place_paired_offset_x=death_place_paired_offset_x,
+            full_name=full_name,
+            first_name_base_x=first_name_base_x,
+            first_name_base_y=first_name_base_y,
+            first_name_offset_x=first_name_offset_x,
+            first_name_offset_y=first_name_offset_y,
+            first_name_rotation=first_name_rotation,
+            middle_name_base_x=middle_name_base_x,
+            middle_name_base_y=middle_name_base_y,
+            middle_name_offset_x=middle_name_offset_x,
+            middle_name_offset_y=middle_name_offset_y,
+            middle_name_rotation=middle_name_rotation,
+            last_name_base_x=last_name_base_x,
+            last_name_base_y=last_name_base_y,
+            last_name_offset_x=last_name_offset_x,
+            last_name_offset_y=last_name_offset_y,
+            last_name_rotation=last_name_rotation,
+            birth_date_base_x=birth_date_base_x,
+            birth_date_base_y=birth_date_base_y,
+            birth_date_offset_x=birth_date_offset_x,
+            birth_date_offset_y=birth_date_offset_y,
+            birth_date_rotation=birth_date_rotation,
+            birth_place_base_x=birth_place_base_x,
+            birth_place_base_y=birth_place_base_y,
+            birth_place_offset_x=birth_place_offset_x,
+            birth_place_offset_y=birth_place_offset_y,
+            birth_place_rotation=birth_place_rotation,
+            death_date_base_x=death_date_base_x,
+            death_date_base_y=death_date_base_y,
+            death_date_offset_x=death_date_offset_x,
+            death_date_offset_y=death_date_offset_y,
+            death_date_rotation=death_date_rotation,
+            death_place_base_x=death_place_base_x,
+            death_place_base_y=death_place_base_y,
+            death_place_offset_x=death_place_offset_x,
+            death_place_offset_y=death_place_offset_y,
+            death_place_rotation=death_place_rotation,
+            birth_flag=birth_flag,
+            death_flag=death_flag,
+            flag_base_x=flag_base_x,
+            flag_base_y=flag_base_y,
+            flag_offset_x=flag_offset_x,
+            flag_offset_y=flag_offset_y,
+            flag_rotation=flag_rotation,
+            flag_size=flag_size,
+            flag_font_size=flag_font_size,
+            flag_font=flag_font,
+            use_display_text=use_display_text,
+            use_gravity_center=use_gravity_center,
+            multiline_line_spacing=multiline_line_spacing,
+            multiline_alignment=multiline_alignment,
+            chart_settings=chart_settings,
+            date_year_only=date_year_only,
+            outside_stroke=False,  # Prevent infinite recursion
+            outside_stroke_color=outside_stroke_color,
+        )
+        # Second pass: draw with normal settings but NO stroke (0 width)
+        _settings_no_stroke = settings.copy() if settings else {}
+        _settings_no_stroke["primary_stroke_width"] = 0
+        _settings_no_stroke["primary_birth_stroke_width"] = 0
+        _settings_no_stroke["primary_death_stroke_width"] = 0
+        _settings_no_stroke["primary_birth_place_stroke_width"] = 0
+        _settings_no_stroke["primary_death_place_stroke_width"] = 0
+        _settings_no_stroke["great_grandparent_stroke_width"] = 0
+        _settings_no_stroke["great_great_grandparent_stroke_width"] = 0
+        _settings_no_stroke["great_great_great_grandparent_stroke_width"] = 0
+        _settings_no_stroke["great_great_great_great_grandparent_stroke_width"] = 0
+        _settings_no_stroke["info_stroke_width"] = 0
+        return print_individual(
+            draw,
+            content_img,
+            individual,
+            _settings_no_stroke,
+            center_x=center_x,
+            center_y=center_y,
+            rotation=rotation,
+            name_font_size=name_font_size,
+            date_font_size=date_font_size,
+            place_font_size=place_font_size,
+            birth_date_font_size=birth_date_font_size,
+            death_date_font_size=death_date_font_size,
+            birth_place_font_size=birth_place_font_size,
+            death_place_font_size=death_place_font_size,
+            paired_dates_base_y=paired_dates_base_y,
+            birth_date_paired_offset_x=birth_date_paired_offset_x,
+            death_date_paired_offset_x=death_date_paired_offset_x,
+            paired_places_base_y=paired_places_base_y,
+            birth_place_paired_offset_x=birth_place_paired_offset_x,
+            death_place_paired_offset_x=death_place_paired_offset_x,
+            full_name=full_name,
+            first_name_base_x=first_name_base_x,
+            first_name_base_y=first_name_base_y,
+            first_name_offset_x=first_name_offset_x,
+            first_name_offset_y=first_name_offset_y,
+            first_name_rotation=first_name_rotation,
+            middle_name_base_x=middle_name_base_x,
+            middle_name_base_y=middle_name_base_y,
+            middle_name_offset_x=middle_name_offset_x,
+            middle_name_offset_y=middle_name_offset_y,
+            middle_name_rotation=middle_name_rotation,
+            last_name_base_x=last_name_base_x,
+            last_name_base_y=last_name_base_y,
+            last_name_offset_x=last_name_offset_x,
+            last_name_offset_y=last_name_offset_y,
+            last_name_rotation=last_name_rotation,
+            birth_date_base_x=birth_date_base_x,
+            birth_date_base_y=birth_date_base_y,
+            birth_date_offset_x=birth_date_offset_x,
+            birth_date_offset_y=birth_date_offset_y,
+            birth_date_rotation=birth_date_rotation,
+            birth_place_base_x=birth_place_base_x,
+            birth_place_base_y=birth_place_base_y,
+            birth_place_offset_x=birth_place_offset_x,
+            birth_place_offset_y=birth_place_offset_y,
+            birth_place_rotation=birth_place_rotation,
+            death_date_base_x=death_date_base_x,
+            death_date_base_y=death_date_base_y,
+            death_date_offset_x=death_date_offset_x,
+            death_date_offset_y=death_date_offset_y,
+            death_date_rotation=death_date_rotation,
+            death_place_base_x=death_place_base_x,
+            death_place_base_y=death_place_base_y,
+            death_place_offset_x=death_place_offset_x,
+            death_place_offset_y=death_place_offset_y,
+            death_place_rotation=death_place_rotation,
+            birth_flag=birth_flag,
+            death_flag=death_flag,
+            flag_base_x=flag_base_x,
+            flag_base_y=flag_base_y,
+            flag_offset_x=flag_offset_x,
+            flag_offset_y=flag_offset_y,
+            flag_rotation=flag_rotation,
+            flag_size=flag_size,
+            flag_font_size=flag_font_size,
+            flag_font=flag_font,
+            use_display_text=use_display_text,
+            use_gravity_center=use_gravity_center,
+            multiline_line_spacing=multiline_line_spacing,
+            multiline_alignment=multiline_alignment,
+            chart_settings=chart_settings,
+            date_year_only=date_year_only,
+            outside_stroke=False,
+            outside_stroke_width=outside_stroke_width,
+            outside_stroke_color=outside_stroke_color,
+        )
+
     # Get settings with optional chart settings
     chart_settings = chart_settings or {}
 

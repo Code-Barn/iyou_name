@@ -70,10 +70,6 @@
                     <label class="form-label">Great-Grandparent Deathplace Color</label>
                     <input type="color" name="greatgrandparent_death_place_color" class="form-control form-control-color" value="{{ hud_settings.greatgrandparent_death_place_color|default:'#000000' }}">
                 </div>
-                <div class="flex-grow-1">
-                    <label class="form-label">Great-Grandparent Stroke Color</label>
-                    <input type="color" name="greatgrandparent_stroke_color" class="form-control form-control-color" value="{{ hud_settings.greatgrandparent_stroke_color|default:'#000000' }}">
-                </div>
             </div>
         </div>
     </div>
@@ -492,14 +488,18 @@
 
 <!-- Stroke Settings -->
 <div class="mb-3">
-    <h6 class="text-muted mb-3">Stroke Settings</h6>
+    <h6 class="text-muted mb-3">Stroke Settings (Outside Stroke)</h6>
     <div class="row g-3">
         <div class="col-md-4">
-            <label class="form-label">Default Stroke Width</label>
-            <input type="range" name="default_stroke_width" class="form-range" min="0.0" max="5" step="0.5" value="{{ hud_settings.default_stroke_width|default:0.0 }}" id="default-stroke-width-slider">
+            <label class="form-label">Outside Stroke Width</label>
+            <input type="range" name="gen4_stroke_width" class="form-range" min="0" max="18" step="1" value="{{ hud_settings.gen4_stroke_width|default:9 }}" id="default-stroke-width-slider">
             <div class="text-center">
-                <span id="default-stroke-width-value">{{ hud_settings.default_stroke_width|default:0.0 }}</span>px
+                <span id="default-stroke-width-value">{{ hud_settings.gen4_stroke_width|default:9 }}</span>px
             </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Outside Stroke Color</label>
+            <input type="color" name="gen4_stroke_color" class="form-control form-control-color" value="{{ hud_settings.gen4_stroke_color|default:'#ffffff' }}">
         </div>
     </div>
 </div>

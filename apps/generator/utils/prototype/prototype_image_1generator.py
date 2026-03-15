@@ -51,17 +51,13 @@ GENERATION_1_SETTINGS_SCHEMA = {
     "font_family": (str, "Arial"),
     "primary_background_color": (Color, "#000000"),
     "primary_font_color": (Color, "white"),
-    "primary_stroke_color": (Color, "white"),
-    "primary_stroke_width": (float, 0.5),
-    "primary_info_stroke_color": (Color, "#888888"),
-    "primary_info_stroke_width": (float, 0.25),
     "primary_birth_color": (Color, "white"),
     "primary_birth_place_color": (Color, "white"),
     "primary_death_color": (Color, "white"),
     "primary_death_place_color": (Color, "white"),
-    "primary_name_font_size": (int, 84),
+    "primary_name_font_size": (int, 74),
     "primary_date_info_font_size": (int, 52),
-    "primary_place_info_font_size": (int, 36),
+    "primary_place_info_font_size": (int, 48),
     "primary_translate_x": (int, 0),
     "primary_translate_y": (int, 0),
     "primary_name_rotate": (int, -45),
@@ -103,6 +99,11 @@ GENERATION_1_SETTINGS_SCHEMA = {
     # Name formatting settings
     "name_use_first_middle_only": (bool, True),
     "name_hide_hyphenated_surname": (bool, True),
+    "name_line_spacing": (float, 1.2),
+    # Outside stroke settings
+    "use_outside_stroke": (bool, False),
+    "gen1_stroke_color": (Color, "black"),
+    "gen1_stroke_width": (int, 43),
 }
 
 
@@ -124,15 +125,6 @@ def generate_prototype_1gen_preview(
     user_settings = user_settings or {}
     validated_settings = get_validated_settings(
         user_settings, GENERATION_1_SETTINGS_SCHEMA, "1gen"
-    )
-
-    # Map 1gen-specific info stroke settings to generic names for print_individual
-    # This allows 1gen to have its own info stroke settings separate from other generations
-    validated_settings["info_stroke_color"] = validated_settings.get(
-        "primary_info_stroke_color", Color("#888888")
-    )
-    validated_settings["info_stroke_width"] = validated_settings.get(
-        "primary_info_stroke_width", 0.25
     )
 
     logger.info(f"Generating prototype 1gen for: {primary_individual.full_name}")
@@ -195,8 +187,8 @@ def generate_prototype_1gen_preview(
                 text_draw.font = validated_settings["font_family"]
                 text_draw.font_size = validated_settings["primary_name_font_size"]
                 text_draw.stroke_antialias = True
-                text_draw.stroke_color = validated_settings["primary_stroke_color"]
-                text_draw.stroke_width = validated_settings["primary_stroke_width"]
+                text_draw.stroke_width = 0
+                text_draw.stroke_color = Color("white")
                 text_draw.fill_color = validated_settings["primary_font_color"]
 
                 text_draw.translate(
@@ -249,6 +241,13 @@ def generate_prototype_1gen_preview(
                     ],
                     use_display_text=True,
                     use_gravity_center=True,
+                    outside_stroke=validated_settings.get("use_outside_stroke", False),
+                    outside_stroke_width=validated_settings.get(
+                        "gen1_stroke_width", 43
+                    ),
+                    outside_stroke_color=validated_settings.get(
+                        "gen1_stroke_color", Color("black")
+                    ),
                 )
 
                 text_draw(content_img)

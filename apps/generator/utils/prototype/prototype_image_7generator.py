@@ -279,6 +279,13 @@ GENERATION_7_SETTINGS_SCHEMA = {
         False,
     ),  # Show only state (like year only for dates) - gen 6/7 only
     "gen7_flag_size": (int, 77),  # Generation-specific flag size
+    # Name formatting
+    "name_line_spacing": (float, 0.9),
+    "gen7_name_line_spacing": (float, 0.9),
+    # Chart-wide settings (from 1gen)
+    "use_outside_stroke": (bool, False),
+    "gen7_stroke_color": (Color, "white"),
+    "gen7_stroke_width": (int, 5),
 }
 
 
@@ -394,7 +401,7 @@ def generate_prototype_7gen_preview(
                     death_place_paired_offset_x=40,
                     use_display_text=True,  # Multiline for full names
                     use_gravity_center=False,
-                    multiline_line_spacing=0.8,
+                    multiline_line_spacing=0.9,
                     multiline_alignment="center",
                 )
 
@@ -754,6 +761,15 @@ def generate_prototype_7gen_preview(
                             chart_settings=validated_settings,
                             date_year_only=validated_settings.get(
                                 "date_year_only", False
+                            ),
+                            outside_stroke=validated_settings.get(
+                                "use_outside_stroke", False
+                            ),
+                            outside_stroke_width=validated_settings.get(
+                                "gen7_stroke_width", 5
+                            ),
+                            outside_stroke_color=validated_settings.get(
+                                "gen7_stroke_color", Color("white")
                             ),
                         )
 

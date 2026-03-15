@@ -52,7 +52,7 @@ class Generation6Constants:
 
     # A111 position (outermost-left - father's father's father's father)
     POSITION_A111_FIRST_NAME_BASE_X = 205
-    POSITION_A111_FIRST_NAME_BASE_Y = 1795
+    POSITION_A111_FIRST_NAME_BASE_Y = 1790
     POSITION_A111_BIRTH_DATE_BASE_X = 265
     POSITION_A111_BIRTH_DATE_BASE_Y = 1815
     POSITION_A111_BIRTH_PLACE_BASE_X = 138
@@ -60,7 +60,7 @@ class Generation6Constants:
 
     # A112 position (next-left - father's father's father's mother)
     POSITION_A112_FIRST_NAME_BASE_X = 430
-    POSITION_A112_FIRST_NAME_BASE_Y = 1795
+    POSITION_A112_FIRST_NAME_BASE_Y = 1790
     POSITION_A112_BIRTH_DATE_BASE_X = 466
     POSITION_A112_BIRTH_DATE_BASE_Y = 1815
     POSITION_A112_BIRTH_PLACE_BASE_X = 378
@@ -68,7 +68,7 @@ class Generation6Constants:
 
     # A121 position (middle-left - father's father's mother's father)
     POSITION_A121_FIRST_NAME_BASE_X = 645
-    POSITION_A121_FIRST_NAME_BASE_Y = 1795
+    POSITION_A121_FIRST_NAME_BASE_Y = 1790
     POSITION_A121_BIRTH_DATE_BASE_X = 671
     POSITION_A121_BIRTH_DATE_BASE_Y = 1815
     POSITION_A121_BIRTH_PLACE_BASE_X = 617
@@ -76,7 +76,7 @@ class Generation6Constants:
 
     # A122 position (middle-right - father's father's mother's mother)
     POSITION_A122_FIRST_NAME_BASE_X = 864
-    POSITION_A122_FIRST_NAME_BASE_Y = 1795
+    POSITION_A122_FIRST_NAME_BASE_Y = 1790
     POSITION_A122_BIRTH_DATE_BASE_X = 873
     POSITION_A122_BIRTH_DATE_BASE_Y = 1815
     POSITION_A122_BIRTH_PLACE_BASE_X = 856
@@ -84,7 +84,7 @@ class Generation6Constants:
 
     # A211 position (mirrored from A122 across x=975)
     POSITION_A211_FIRST_NAME_BASE_X = 1084
-    POSITION_A211_FIRST_NAME_BASE_Y = 1795
+    POSITION_A211_FIRST_NAME_BASE_Y = 1790
     POSITION_A211_BIRTH_DATE_BASE_X = 1076
     POSITION_A211_BIRTH_DATE_BASE_Y = 1815
     POSITION_A211_BIRTH_PLACE_BASE_X = 1095
@@ -92,7 +92,7 @@ class Generation6Constants:
 
     # A212 position (mirrored from A121 across x=975)
     POSITION_A212_FIRST_NAME_BASE_X = 1307
-    POSITION_A212_FIRST_NAME_BASE_Y = 1795
+    POSITION_A212_FIRST_NAME_BASE_Y = 1790
     POSITION_A212_BIRTH_DATE_BASE_X = 1280
     POSITION_A212_BIRTH_DATE_BASE_Y = 1815
     POSITION_A212_BIRTH_PLACE_BASE_X = 1333
@@ -100,7 +100,7 @@ class Generation6Constants:
 
     # A221 position (mirrored from A112 across x=975)
     POSITION_A221_FIRST_NAME_BASE_X = 1528
-    POSITION_A221_FIRST_NAME_BASE_Y = 1795
+    POSITION_A221_FIRST_NAME_BASE_Y = 1790
     POSITION_A221_BIRTH_DATE_BASE_X = 1481
     POSITION_A221_BIRTH_DATE_BASE_Y = 1815
     POSITION_A221_BIRTH_PLACE_BASE_X = 1573
@@ -108,7 +108,7 @@ class Generation6Constants:
 
     # A222 position (mirrored from A111 across x=975)
     POSITION_A222_FIRST_NAME_BASE_X = 1740
-    POSITION_A222_FIRST_NAME_BASE_Y = 1795
+    POSITION_A222_FIRST_NAME_BASE_Y = 1790
     POSITION_A222_BIRTH_DATE_BASE_X = 1684
     POSITION_A222_BIRTH_DATE_BASE_Y = 1815
     POSITION_A222_BIRTH_PLACE_BASE_X = 1811
@@ -181,6 +181,12 @@ GENERATION_6_SETTINGS_SCHEMA = {
     # Name formatting settings
     "name_use_first_middle_only": (bool, True),
     "name_hide_hyphenated_surname": (bool, True),
+    "name_line_spacing": (float, 0.9),
+    "gen6_name_line_spacing": (float, 0.9),
+    # Chart-wide settings (from 1gen)
+    "use_outside_stroke": (bool, False),
+    "gen6_stroke_color": (Color, "white"),
+    "gen6_stroke_width": (int, 6),
 }
 
 
@@ -1089,7 +1095,7 @@ def generate_prototype_6gen_preview(
                     death_place_paired_offset_x=60,
                     use_display_text=True,
                     use_gravity_center=False,
-                    multiline_line_spacing=0.8,
+                    multiline_line_spacing=0.9,
                     multiline_alignment="center",
                 )
 
@@ -1180,6 +1186,15 @@ def generate_prototype_6gen_preview(
                             chart_settings=validated_settings,
                             date_year_only=validated_settings.get(
                                 "date_year_only", False
+                            ),
+                            outside_stroke=validated_settings.get(
+                                "use_outside_stroke", False
+                            ),
+                            outside_stroke_width=validated_settings.get(
+                                "gen6_stroke_width", 6
+                            ),
+                            outside_stroke_color=validated_settings.get(
+                                "gen6_stroke_color", Color("white")
                             ),
                         )
 

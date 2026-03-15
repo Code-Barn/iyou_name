@@ -83,13 +83,8 @@ class Generation2Constants:
 
 GENERATION_2_SETTINGS_SCHEMA = {
     "font_family": (str, "Arial"),
-    "parent_stroke_color": (Color, "black"),
     "parent_font_color": (Color, "black"),
-    "parent_stroke_width": (float, 0.0),
-    "info_stroke_color": (Color, "gray"),
-    "info_stroke_width": (float, 0.0),
     "father_font_color": (Color, "black"),
-    "father_stroke_color": (Color, "black"),
     "father_font_size": (int, 44),
     "father_translate_x": (int, 0),
     "father_translate_y": (int, 0),
@@ -106,7 +101,6 @@ GENERATION_2_SETTINGS_SCHEMA = {
     "father_death_place_translate_y": (int, 0),
     "father_death_place_rotate": (int, -90),
     "mother_font_color": (Color, "black"),
-    "mother_stroke_color": (Color, "black"),
     "mother_font_size": (int, 44),
     "mother_translate_x": (int, 0),
     "mother_translate_y": (int, 0),
@@ -122,6 +116,10 @@ GENERATION_2_SETTINGS_SCHEMA = {
     "mother_death_place_translate_x": (int, 0),
     "mother_death_place_translate_y": (int, 0),
     "mother_death_place_rotate": (int, -90),
+    # Outside stroke settings
+    "use_outside_stroke": (bool, False),
+    "gen2_stroke_color": (Color, "white"),
+    "gen2_stroke_width": (int, 22),
     "overlay_scale": (float, 0.50),
     "overlay_position_x": (int, 0),
     "overlay_position_y": (int, 0),
@@ -226,8 +224,8 @@ def generate_prototype_2gen_preview(
 
                 draw.font = validated_settings["font_family"]
                 draw.stroke_antialias = True
-                draw.stroke_width = validated_settings["parent_stroke_width"]
-                draw.stroke_color = validated_settings["parent_stroke_color"]
+                draw.stroke_width = 0
+                draw.stroke_color = Color("white")
 
                 # No initial translate - use absolute positions
 
@@ -314,6 +312,15 @@ def generate_prototype_2gen_preview(
                             flag_rotation=-45,
                             flag_size=validated_settings.get("gen2_flag_size", 333),
                             **base_params,
+                            outside_stroke=validated_settings.get(
+                                "use_outside_stroke", False
+                            ),
+                            outside_stroke_width=validated_settings.get(
+                                "gen2_stroke_width", 22
+                            ),
+                            outside_stroke_color=validated_settings.get(
+                                "gen2_stroke_color", Color("white")
+                            ),
                         )
 
                 draw.pop()

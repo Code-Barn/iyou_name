@@ -27,10 +27,6 @@
                 <label class="form-label">3X Great-Grandparent Deathplace Color</label>
                 <input type="color" name="threex_greatgrandparent_death_place_color" class="form-control form-control-color" value="{{ hud_settings.threex_greatgrandparent_death_place_color|default:'#000000' }}">
             </div>
-            <div class="flex-grow-1">
-                <label class="form-label">3X Great-Grandparent Stroke Color</label>
-                <input type="color" name="threex_greatgrandparent_stroke_color" class="form-control form-control-color" value="{{ hud_settings.threex_greatgrandparent_stroke_color|default:'#000000' }}">
-            </div>
         </div>
     </div>
 </div>
@@ -174,16 +170,34 @@
     </div>
 </div>
 
-<!-- Stroke Settings -->
+<!-- Name Formatting Settings -->
 <div class="mb-3">
-    <h6 class="text-muted mb-3">Stroke Settings</h6>
+    <h6 class="text-muted mb-3">Name Formatting</h6>
     <div class="row g-3">
         <div class="col-md-4">
-            <label class="form-label">Default Stroke Width</label>
-            <input type="range" name="default_stroke_width" class="form-range" min="0.0" max="5" step="0.5" value="{{ hud_settings.default_stroke_width|default:0.0 }}" id="default-stroke-width-slider">
+            <label class="form-label">Name Line Spacing</label>
+            <input type="range" name="gen6_name_line_spacing" class="form-range" min="0.5" max="1.5" step="0.1" value="{{ hud_settings.gen6_name_line_spacing|default:0.9 }}" id="name-line-spacing-slider">
             <div class="text-center">
-                <span id="default-stroke-width-value">{{ hud_settings.default_stroke_width|default:0.0 }}</span>px
+                <span id="name-line-spacing-value">{{ hud_settings.gen6_name_line_spacing|default:0.9 }}</span>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stroke Settings (Outside Stroke) -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Stroke Settings (Outside Stroke)</h6>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Outside Stroke Width</label>
+            <input type="range" name="gen6_stroke_width" class="form-range" min="0" max="12" step="1" value="{{ hud_settings.gen6_stroke_width|default:6 }}" id="default-stroke-width-slider">
+            <div class="text-center">
+                <span id="default-stroke-width-value">{{ hud_settings.gen6_stroke_width|default:6 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Outside Stroke Color</label>
+            <input type="color" name="gen6_stroke_color" class="form-control form-control-color" value="{{ hud_settings.gen6_stroke_color|default:'#ffffff' }}">
         </div>
     </div>
 </div>

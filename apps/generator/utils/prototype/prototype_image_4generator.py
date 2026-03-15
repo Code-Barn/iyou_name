@@ -77,11 +77,9 @@ class Generation4Constants:
 
 GENERATION_4_SETTINGS_SCHEMA = {
     "font_family": (str, "Arial"),
-    "great_grandparent_stroke_color": (Color, "black"),
     "great_grandparent_font_color": (Color, "black"),
-    "great_grandparent_stroke_width": (float, 0.0),
-    "info_stroke_color": (Color, "gray"),
-    "info_stroke_width": (float, 0.0),
+    "gen4_stroke_color": (Color, "white"),
+    "gen4_stroke_width": (int, 9),
     "overlay_scale": (float, 0.7143),
     "overlay_position_x": (int, 0),
     "overlay_position_y": (int, 0),
@@ -108,6 +106,8 @@ GENERATION_4_SETTINGS_SCHEMA = {
     # Name formatting settings
     "name_use_first_middle_only": (bool, True),
     "name_hide_hyphenated_surname": (bool, True),
+    # Chart-wide settings (from 1gen)
+    "use_outside_stroke": (bool, False),
 }
 
 
@@ -189,12 +189,8 @@ def generate_prototype_4gen_preview(
 
                 draw.font = validated_settings["font_family"]
                 draw.stroke_antialias = True
-                draw.stroke_width = validated_settings.get(
-                    "great_grandparent_stroke_width", 0.0
-                )
-                draw.stroke_color = validated_settings.get(
-                    "great_grandparent_stroke_color", Color("black")
-                )
+                draw.stroke_width = 0
+                draw.stroke_color = Color("white")
 
                 individuals = family_data.get("individuals", {}) if family_data else {}
 
@@ -422,6 +418,15 @@ def generate_prototype_4gen_preview(
                             flag_size=validated_settings.get("gen4_flag_size", 142),
                             **base_params,
                             chart_settings=validated_settings,
+                            outside_stroke=validated_settings.get(
+                                "use_outside_stroke", False
+                            ),
+                            outside_stroke_width=validated_settings.get(
+                                "gen4_stroke_width", 9
+                            ),
+                            outside_stroke_color=validated_settings.get(
+                                "gen4_stroke_color", Color("white")
+                            ),
                         )
 
                 draw.pop()

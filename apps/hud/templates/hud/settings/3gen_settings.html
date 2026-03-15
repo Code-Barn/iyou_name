@@ -186,18 +186,21 @@
     </div>
 </div>
 
-<!-- Stroke Settings -->
+<!-- Stroke Settings (Outside Stroke) -->
 <div class="mb-3">
-    <h6 class="text-muted mb-3">Stroke Settings</h6>
+    <h6 class="text-muted mb-3">Stroke Settings (Outside Stroke)</h6>
     <div class="row g-3">
         <div class="col-md-4">
-            <label class="form-label">Default Stroke Width</label>
-            <input type="range" name="default_stroke_width" class="form-range" min="0.0" max="5" step="0.5" value="{{ hud_settings.default_stroke_width|default:0 }}" id="default-stroke-width-slider">
+            <label class="form-label">Outside Stroke Width</label>
+            <input type="range" name="gen3_stroke_width" class="form-range" min="0" max="26" step="1" value="{{ hud_settings.gen3_stroke_width|default:13 }}" id="default-stroke-width-slider">
             <div class="text-center">
-                <span id="default-stroke-width-value">{{ hud_settings.default_stroke_width|default:0 }}</span>px
+                <span id="default-stroke-width-value">{{ hud_settings.gen3_stroke_width|default:13 }}</span>px
             </div>
         </div>
-
+        <div class="col-md-4">
+            <label class="form-label">Outside Stroke Color</label>
+            <input type="color" name="gen3_stroke_color" class="form-control form-control-color" value="{{ hud_settings.gen3_stroke_color|default:'#ffffff' }}">
+        </div>
     </div>
 </div>
 
