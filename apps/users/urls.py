@@ -1,7 +1,16 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from .views import delete_gedcom_file, profile, register, sync_gedcom_file, user_login
+from .views import (
+    delete_gedcom_file,
+    get_shared_with_users,
+    profile,
+    register,
+    remove_gedcom_share,
+    share_gedcom_file,
+    sync_gedcom_file,
+    user_login,
+)
 
 app_name = "users"
 
@@ -14,6 +23,17 @@ urlpatterns = [
     ),
     path("delete-file/<int:file_id>/", delete_gedcom_file, name="delete_gedcom_file"),
     path("sync-file/<int:file_id>/", sync_gedcom_file, name="sync_gedcom_file"),
+    path("share-file/<int:file_id>/", share_gedcom_file, name="share_gedcom_file"),
+    path(
+        "remove-share/<int:file_id>/<int:user_id>/",
+        remove_gedcom_share,
+        name="remove_gedcom_share",
+    ),
+    path(
+        "shared-with/<int:file_id>/",
+        get_shared_with_users,
+        name="get_shared_with_users",
+    ),
     path(
         "auth/password_change/",
         auth_views.PasswordChangeView.as_view(

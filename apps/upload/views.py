@@ -12,11 +12,21 @@ from django.views.decorators.csrf import csrf_protect
 
 from apps.core.rate_limiting import upload_rate_limit, auth_rate_limit
 from apps.core.file_validation import validate_uploaded_file
-from apps.generator.models import GedcomFile
+from apps.generator.models import GedcomFile, GedcomShare
 from apps.generator.template_mapping import get_template_mapping
 from apps.parser.utils import convert_to_utf8, parse_gedcom_data
 
 logger = logging.getLogger(__name__)
+
+
+def can_access_gedcom_file(user, gedcom_file):
+    """Check if user can access the GEDCOM file (owner or shared with)."""
+    if gedcom_file.user == user:
+        return True
+    return GedcomShare.objects.filter(
+        gedcom_file=gedcom_file, shared_with=user
+    ).exists()
+
 
 # Template mapping moved to HUD
 
@@ -189,6 +199,17 @@ def select_gedcom_file(request, file_id):
     """
     try:
         gedcom_file = GedcomFile.objects.get(id=file_id)
+
+        # Check access permission
+        if request.user.is_authenticated:
+            if not can_access_gedcom_file(request.user, gedcom_file):
+                logger.warning(f"Unauthorized access attempt for file {file_id}")
+                return HttpResponse("File not found", status=404)
+        else:
+            # Anonymous users can only access files without owner
+            if gedcom_file.user is not None:
+                return HttpResponse("File not found", status=404)
+
         request.session["current_gedcom_file_id"] = gedcom_file.id
         logger.info(
             f"User selected GEDCOM file: {gedcom_file.file.name} (ID: {file_id})"
@@ -208,6 +229,17 @@ def set_current_gedcom_file(request, file_id):
     """
     try:
         gedcom_file = GedcomFile.objects.get(id=file_id)
+
+        # Check access permission
+        if request.user.is_authenticated:
+            if not can_access_gedcom_file(request.user, gedcom_file):
+                logger.warning(f"Unauthorized access attempt for file {file_id}")
+                return HttpResponse("File not found", status=404)
+        else:
+            # Anonymous users can only access files without owner
+            if gedcom_file.user is not None:
+                return HttpResponse("File not found", status=404)
+
         request.session["current_gedcom_file_id"] = gedcom_file.id
         logger.info(f"Set current GEDCOM file: {gedcom_file.file.name} (ID: {file_id})")
         return redirect("selector:select_individual", file_id=gedcom_file.id)

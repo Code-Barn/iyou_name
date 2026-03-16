@@ -5,12 +5,21 @@ import logging
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
-from apps.generator.models import GedcomFile
+from apps.generator.models import GedcomFile, GedcomShare
 from apps.parser.models import PersonData
 from apps.chart_storage.models import IndividualPhoto
 
 # Configure logger
 logger = logging.getLogger(__name__)
+
+
+def can_access_gedcom_file(user, gedcom_file):
+    """Check if user can access the GEDCOM file (owner or shared with)."""
+    if gedcom_file.user == user:
+        return True
+    return GedcomShare.objects.filter(
+        gedcom_file=gedcom_file, shared_with=user
+    ).exists()
 
 
 def get_spouse_sort_key(spouse, individual, individuals_dict):
@@ -79,10 +88,15 @@ def browse_individuals(request):
     try:
         gedcom_file = GedcomFile.objects.get(id=gedcom_file_id)
 
-        # Check if the file belongs to the current user or is anonymous
-        if gedcom_file.user and gedcom_file.user != request.user:
-            logger.error("User trying to access another user's file")
-            return redirect("upload:home")
+        # Check if the file belongs to the current user or is shared
+        if request.user.is_authenticated:
+            if not can_access_gedcom_file(request.user, gedcom_file):
+                logger.error("User trying to access another user's file")
+                return redirect("upload:home")
+        else:
+            if gedcom_file.user is not None:
+                logger.error("Anonymous user trying to access owned file")
+                return redirect("upload:home")
 
         logger.debug(f"Retrieved GEDCOM file: {gedcom_file_id}")
         logger.debug(f"parsed_data exists: {gedcom_file.parsed_data is not None}")
@@ -214,6 +228,23 @@ def individual_detail(request, ind_id):
 
     try:
         gedcom_file = GedcomFile.objects.get(id=gedcom_file_id)
+
+        # Check if the file belongs to the current user or is shared
+        if request.user.is_authenticated:
+            if not can_access_gedcom_file(request.user, gedcom_file):
+                return render(
+                    request,
+                    "browse/error.html",
+                    {"error": "Not authorized to access this file"},
+                )
+        else:
+            if gedcom_file.user is not None:
+                return render(
+                    request,
+                    "browse/error.html",
+                    {"error": "Not authorized to access this file"},
+                )
+
         logger.debug(f"Retrieved GEDCOM file: {gedcom_file_id}")
         logger.debug(f"parsed_data exists: {gedcom_file.parsed_data is not None}")
         if gedcom_file.parsed_data:
@@ -350,7 +381,9 @@ def individual_detail(request, ind_id):
                     child = individuals_dict[child_id]
                     children.append(child)
 
-                    # Determine relationship type based on child's adoptive_parents/foster_parents
+                    # Determine relationship type based on child's adoptive_parents/foster_parents/step_parents
+                    # Also check if child has adopted flag
+                    is_adopted = hasattr(child, "adopted") and child.adopted
                     rel_type = "biological"
                     if hasattr(child, "adoptive_parents") and child.adoptive_parents:
                         if individual.id in child.adoptive_parents:
@@ -362,6 +395,17 @@ def individual_detail(request, ind_id):
                     ):
                         if individual.id in child.foster_parents:
                             rel_type = "foster"
+                    if (
+                        rel_type == "biological"
+                        and hasattr(child, "step_parents")
+                        and child.step_parents
+                    ):
+                        if individual.id in child.step_parents:
+                            # If child has adopted flag, treat as adopted even if in step_parents
+                            if is_adopted:
+                                rel_type = "adopted"
+                            else:
+                                rel_type = "step"
                     children_relationship[child_id] = rel_type
 
         # Calculate spouse-children relationships (for children listed under each spouse)
@@ -377,9 +421,10 @@ def individual_detail(request, ind_id):
                 if child_id in individuals_dict:
                     child = individuals_dict[child_id]
                     # Determine child's relationship to this spouse
-                    rel_type = "biological"
                     is_adopted_by_spouse = False
                     is_foster_by_spouse = False
+                    is_step_by_spouse = False
+                    is_adopted = hasattr(child, "adopted") and child.adopted
 
                     if hasattr(child, "adoptive_parents") and child.adoptive_parents:
                         if spouse.id in child.adoptive_parents:
@@ -387,12 +432,20 @@ def individual_detail(request, ind_id):
                     if hasattr(child, "foster_parents") and child.foster_parents:
                         if spouse.id in child.foster_parents:
                             is_foster_by_spouse = True
+                    if hasattr(child, "step_parents") and child.step_parents:
+                        if spouse.id in child.step_parents:
+                            # If child has adopted flag, treat as adopted
+                            if is_adopted:
+                                is_adopted_by_spouse = True
+                            else:
+                                is_step_by_spouse = True
 
-                    # If spouse is adoptive/foster parent, show the "other" biological parent info
-                    if is_adopted_by_spouse or is_foster_by_spouse:
+                    # If spouse is adoptive/foster/step parent, show simplified indicator (no bio parent info)
+                    if is_adopted_by_spouse or is_foster_by_spouse or is_step_by_spouse:
                         rel_type = "other"
                     else:
                         # Check if spouse is biological parent
+                        rel_type = "biological"
                         if spouse.sex == "M":
                             if child.father != spouse.id:
                                 rel_type = "other"

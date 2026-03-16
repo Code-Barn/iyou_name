@@ -27,6 +27,7 @@ class PersonData:
     step_siblings: Optional[List[str]] = (
         None  # List of step-sibling IDs (no biological relation)
     )
+    adopted: bool = False  # Flag to indicate if person has an ADOP event
     spouses_children: Optional[Dict[str, List[str]]] = (
         None  # Dictionary to store children for each spouse
     )

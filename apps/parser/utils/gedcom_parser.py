@@ -121,6 +121,7 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
             title = None
             occupation = None
             events = []
+            has_adop_event = False
 
             # Extract name information safely, prioritizing birth names
             # GEDCOM supports multiple NAME records with TYPE to indicate name type
@@ -302,6 +303,9 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                         burial_place = (
                             place_str if isinstance(place_str, str) else str(place_str)
                         )
+                elif event.tag == "ADOP":
+                    # Mark that this individual has an adoption event
+                    has_adop_event = True
 
             # Create PersonData object with safe defaults
             # Debug: Check for family tags in GEDCOM 7.0
@@ -348,6 +352,7 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                 occupation=occupation,
                 birth_flag=None,
                 death_flag=None,
+                adopted=has_adop_event,
             )
 
             family_data["individuals"][ind] = individual
@@ -361,8 +366,6 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
         # Debug: Count how many family records exist
         all_family_records = list(parser.records0("FAM"))
         print(f"Found {len(all_family_records)} family records in GEDCOM file")
-        for fam_rec in all_family_records:
-            print(f"Family record ID: {fam_rec.xref_id}")
 
         for record in parser.records0("FAM"):
             fam_id = (
@@ -438,6 +441,8 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                         child_id.replace("@", "") if child_id else ""
                     )
                     # Link child to parents using IDs
+                    # Note: Father/mother will be corrected in the PEDI pass below
+                    # to properly handle step/adopted relationships
                     if (
                         child_id
                         and child_id.replace("@", "") in family_data["individuals"]
@@ -446,6 +451,7 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                             child_id.replace("@", "")
                         ]
                         # Only set father and mother if they are not already set
+                        # We'll correct these later based on PEDI tags
                         if family["husband"] and not child_individual.father:
                             child_individual.father = family["husband"].replace("@", "")
                         if family["wife"] and not child_individual.mother:
@@ -578,79 +584,15 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
             if not individual.father and not individual.mother:
                 family_data["root_individuals"].append(ind)
 
-        # Identify siblings for each individual
-        for ind, individual in family_data["individuals"].items():
-            full_siblings = []  # Same both parents
-            half_siblings = []  # Same one parent only
+        # Identify siblings for each individual - will be done AFTER PEDI correction below
 
-            # Get all families where this individual is a child
-            individual_families = []
-            for fam_id, family in family_data["families"].items():
-                if ind in family.get("children", []):
-                    individual_families.append((fam_id, family))
-
-            # For each family this person belongs to
-            for fam_id, fam in individual_families:
-                father_id = fam.get("husband")
-                mother_id = fam.get("wife")
-
-                # First: add siblings from the SAME family (definitely full siblings)
-                for child_id in fam.get("children", []):
-                    if child_id == ind:
-                        continue
-                    if child_id not in full_siblings:
-                        full_siblings.append(child_id)
-
-                # Then: look at other families to find half-siblings
-                for other_fam_id, other_fam in family_data["families"].items():
-                    if other_fam_id == fam_id:
-                        continue
-
-                    other_father = other_fam.get("husband")
-                    other_mother = other_fam.get("wife")
-
-                    # Get children of the other family
-                    other_children = other_fam.get("children", [])
-
-                    for child_id in other_children:
-                        if child_id == ind:
-                            continue
-
-                        # Check if this child is already identified as full sibling
-                        if child_id in full_siblings:
-                            continue
-
-                        # Get the other child's parents
-                        child_obj = family_data["individuals"].get(child_id)
-                        if not child_obj:
-                            continue
-
-                        child_father = child_obj.father
-                        child_mother = child_obj.mother
-
-                        # Count shared parents
-                        shared_parents = 0
-                        if father_id and child_father and father_id == child_father:
-                            shared_parents += 1
-                        if mother_id and child_mother and mother_id == child_mother:
-                            shared_parents += 1
-
-                        if shared_parents == 1:
-                            # Half siblings - same one parent
-                            if child_id not in half_siblings:
-                                half_siblings.append(child_id)
-
-            individual.siblings = full_siblings
-            individual.half_siblings = half_siblings
-            # step_siblings requires step-parent data which is complex to determine
-            # Leave as empty for now - can be enhanced later with PEDI tags
-            individual.step_siblings = []
-
-        # Identify adoptive, foster parents using PEDI tags
+        # Identify adoptive, foster, step parents using PEDI tags
         # Use direct string parsing as ged4py doesn't expose PEDI reliably
         pedi_map = {}  # {individual_id: {family_id: pedi_type}}
 
         lines = gedcom_content.split("\n")
+
+        # First pass: parse from INDI records (PEDI tags)
         current_indi = None
         current_famc = None
 
@@ -677,6 +619,100 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                     print(
                         f"[PEDI DEBUG] Set {current_indi}.{current_famc} = {pedi_type}"
                     )
+            elif line.startswith("2 _FREL ") and current_famc and current_indi:
+                # Ancestry.com custom tag for father relationship type
+                # _FREL = Father Relationship
+                rel_type = line.replace("2 _FREL ", "").strip().lower()
+                if current_indi in pedi_map:
+                    # _FREL step = step father, _FREL adopted = adopted, etc.
+                    existing = pedi_map[current_indi].get(current_famc)
+                    if existing is None:
+                        # Only set if not already set by PEDI
+                        if rel_type == "step":
+                            pedi_map[current_indi][current_famc] = "step"
+                        elif rel_type == "adopted":
+                            pedi_map[current_indi][current_famc] = "adopted"
+                        elif rel_type == "foster":
+                            pedi_map[current_indi][current_famc] = "foster"
+                        elif rel_type in ("birth", "natural"):
+                            pedi_map[current_indi][current_famc] = "birth"
+                    print(
+                        f"[_FREL DEBUG] Set {current_indi}.{current_famc} = {rel_type}"
+                    )
+            elif line.startswith("2 _MREL ") and current_famc and current_indi:
+                # Ancestry.com custom tag for mother relationship type
+                # _MREL = Mother Relationship
+                rel_type = line.replace("2 _MREL ", "").strip().lower()
+                if current_indi in pedi_map:
+                    existing = pedi_map[current_indi].get(current_famc)
+                    if existing is None:
+                        if rel_type == "step":
+                            pedi_map[current_indi][current_famc] = "step"
+                        elif rel_type == "adopted":
+                            pedi_map[current_indi][current_famc] = "adopted"
+                        elif rel_type == "foster":
+                            pedi_map[current_indi][current_famc] = "foster"
+                        elif rel_type in ("birth", "natural"):
+                            pedi_map[current_indi][current_famc] = "birth"
+                    print(
+                        f"[_MREL DEBUG] Set {current_indi}.{current_famc} = {rel_type}"
+                    )
+
+        # Second pass: parse _FREL and _MREL from FAM records
+        # These are Ancestry.com custom tags on the CHIL line
+        current_fam = None
+        for i, line in enumerate(lines):
+            line = line.strip()
+            if line.startswith("0 ") and " FAM" in line:
+                # New family record
+                parts = line.split()
+                if len(parts) >= 2:
+                    current_fam = parts[1].replace("@", "")
+            elif current_fam and line.startswith("1 CHIL @"):
+                # Child in family - check for _FREL or _MREL on following lines
+                child_id = line.split("@")[1] if "@" in line else None
+                if child_id:
+                    # Look ahead for _FREL or _MREL
+                    for j in range(i + 1, min(len(lines), i + 5)):
+                        next_line = lines[j].strip()
+                        if next_line.startswith("2 _FREL "):
+                            rel_type = next_line.replace("2 _FREL ", "").strip().lower()
+                            if child_id not in pedi_map:
+                                pedi_map[child_id] = {}
+                            # Only set if not already set
+                            if current_fam not in pedi_map.get(child_id, {}):
+                                if rel_type == "step":
+                                    pedi_map[child_id][current_fam] = "step"
+                                elif rel_type == "adopted":
+                                    pedi_map[child_id][current_fam] = "adopted"
+                                elif rel_type == "foster":
+                                    pedi_map[child_id][current_fam] = "foster"
+                                elif rel_type in ("birth", "natural"):
+                                    pedi_map[child_id][current_fam] = "birth"
+                            print(
+                                f"[_FREL FAM DEBUG] Set {child_id}.{current_fam} = {rel_type}"
+                            )
+                            break
+                        elif next_line.startswith("2 _MREL "):
+                            rel_type = next_line.replace("2 _MREL ", "").strip().lower()
+                            if child_id not in pedi_map:
+                                pedi_map[child_id] = {}
+                            if current_fam not in pedi_map.get(child_id, {}):
+                                if rel_type == "step":
+                                    pedi_map[child_id][current_fam] = "step"
+                                elif rel_type == "adopted":
+                                    pedi_map[child_id][current_fam] = "adopted"
+                                elif rel_type == "foster":
+                                    pedi_map[child_id][current_fam] = "foster"
+                                elif rel_type in ("birth", "natural"):
+                                    pedi_map[child_id][current_fam] = "birth"
+                            print(
+                                f"[_MREL FAM DEBUG] Set {child_id}.{current_fam} = {rel_type}"
+                            )
+                            break
+                        elif next_line.startswith("1 ") or next_line.startswith("0 "):
+                            # Moved to next tag, stop looking
+                            break
 
         print(f"[PEDI DEBUG] PEDI map: {pedi_map}")
 
@@ -684,6 +720,26 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
         for ind, individual in family_data["individuals"].items():
             adoptive_parents = []
             foster_parents = []
+            step_parents = []
+
+            # Find biological families for this specific individual
+            # Families NOT in pedi_map are implicitly biological (no PEDI tag = birth)
+            bio_families = []
+            for fam_id in family_data["families"]:
+                pedi_for_fam = pedi_map.get(ind, {}).get(fam_id)
+                if pedi_for_fam is None or pedi_for_fam in ("birth", "", "natural"):
+                    bio_families.append(fam_id)
+
+            # Collect all biological parents from all biological families
+            biological_parent_ids = set()
+            for fam_id in bio_families:
+                family = family_data["families"][fam_id]
+                husband_id = (family.get("husband") or "").replace("@", "")
+                wife_id = (family.get("wife") or "").replace("@", "")
+                if husband_id:
+                    biological_parent_ids.add(husband_id)
+                if wife_id:
+                    biological_parent_ids.add(wife_id)
 
             if ind in pedi_map:
                 for fam_id, pedi_type in pedi_map[ind].items():
@@ -693,19 +749,148 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                         wife_id = (family.get("wife") or "").replace("@", "")
 
                         if pedi_type == "adopted":
-                            if husband_id:
+                            if husband_id and husband_id not in biological_parent_ids:
                                 adoptive_parents.append(husband_id)
-                            if wife_id:
+                            if wife_id and wife_id not in biological_parent_ids:
                                 adoptive_parents.append(wife_id)
                         elif pedi_type == "foster":
-                            if husband_id:
+                            if husband_id and husband_id not in biological_parent_ids:
                                 foster_parents.append(husband_id)
-                            if wife_id:
+                            if wife_id and wife_id not in biological_parent_ids:
                                 foster_parents.append(wife_id)
+                        elif pedi_type == "step":
+                            if husband_id and husband_id not in biological_parent_ids:
+                                step_parents.append(husband_id)
+                            if wife_id and wife_id not in biological_parent_ids:
+                                step_parents.append(wife_id)
+            else:
+                # No PEDI tags found - check if individual has ADOP event
+                # If so, treat non-biological parents as adoptive (not step)
+                if hasattr(individual, "adopted") and individual.adopted:
+                    # Individual has adoption event - find non-biological parents
+                    for fam_id, family in family_data["families"].items():
+                        if ind not in family.get("children", []):
+                            continue
+                        pedi_for_fam = pedi_map.get(ind, {}).get(fam_id)
+                        if pedi_for_fam and pedi_for_fam in ("birth", "", "natural"):
+                            continue  # Skip biological families
+                        husband_id = (family.get("husband") or "").replace("@", "")
+                        wife_id = (family.get("wife") or "").replace("@", "")
+                        if husband_id and husband_id not in biological_parent_ids:
+                            if husband_id not in adoptive_parents:
+                                adoptive_parents.append(husband_id)
+                        if wife_id and wife_id not in biological_parent_ids:
+                            if wife_id not in adoptive_parents:
+                                adoptive_parents.append(wife_id)
+
+            # Fix father/mother assignments: only keep biological parents
+            # Find biological families for this specific individual
+            # Only look at families where this individual is a child
+            child_in_families = []
+            for fam_id, family in family_data["families"].items():
+                if ind in family.get("children", []):
+                    child_in_families.append(fam_id)
+
+            bio_families = []
+            for fam_id in child_in_families:
+                pedi_for_fam = pedi_map.get(ind, {}).get(fam_id)
+                if pedi_for_fam is None or pedi_for_fam in ("birth", "", "natural"):
+                    bio_families.append(fam_id)
+
+            if individual.father:
+                father_in_bio_family = False
+                for fam_id in bio_families:
+                    family = family_data["families"][fam_id]
+                    husband_id = (family.get("husband") or "").replace("@", "")
+                    if husband_id == individual.father:
+                        father_in_bio_family = True
+                        break
+
+                if not father_in_bio_family:
+                    # Father is step/adopted - find biological father
+                    new_father = None
+                    for fam_id in bio_families:
+                        family = family_data["families"][fam_id]
+                        husband_id = (family.get("husband") or "").replace("@", "")
+                        if husband_id:
+                            new_father = husband_id
+                            break
+
+                    if new_father:
+                        print(
+                            f"[PEDI] Replacing step/adopted father {individual.father} with {new_father} for {individual.full_name}"
+                        )
+                        # Add the old father to adoptive_parents if adopted, else step_parents
+                        if individual.father:
+                            if hasattr(individual, "adopted") and individual.adopted:
+                                if individual.father not in adoptive_parents:
+                                    adoptive_parents.append(individual.father)
+                            else:
+                                if individual.father not in step_parents:
+                                    step_parents.append(individual.father)
+                        individual.father = new_father
+                    else:
+                        print(
+                            f"[PEDI] Removing step/adopted father {individual.father} from {individual.full_name}"
+                        )
+                        if individual.father:
+                            if hasattr(individual, "adopted") and individual.adopted:
+                                if individual.father not in adoptive_parents:
+                                    adoptive_parents.append(individual.father)
+                            else:
+                                if individual.father not in step_parents:
+                                    step_parents.append(individual.father)
+                        individual.father = None
+
+            # Same for mother - check if current mother is in a biological family
+            if individual.mother:
+                mother_in_bio_family = False
+                for fam_id in bio_families:
+                    family = family_data["families"][fam_id]
+                    wife_id = (family.get("wife") or "").replace("@", "")
+                    if wife_id == individual.mother:
+                        mother_in_bio_family = True
+                        break
+
+                if not mother_in_bio_family:
+                    # Mother is step/adopted - find biological mother
+                    new_mother = None
+                    for fam_id in bio_families:
+                        family = family_data["families"][fam_id]
+                        wife_id = (family.get("wife") or "").replace("@", "")
+                        if wife_id:
+                            new_mother = wife_id
+                            break
+
+                    if new_mother:
+                        print(
+                            f"[PEDI] Replacing step/adopted mother {individual.mother} with {new_mother} for {individual.full_name}"
+                        )
+                        # Add the old mother to adoptive_parents if adopted, else step_parents
+                        if individual.mother:
+                            if hasattr(individual, "adopted") and individual.adopted:
+                                if individual.mother not in adoptive_parents:
+                                    adoptive_parents.append(individual.mother)
+                            else:
+                                if individual.mother not in step_parents:
+                                    step_parents.append(individual.mother)
+                        individual.mother = new_mother
+                    else:
+                        print(
+                            f"[PEDI] Removing step/adopted mother {individual.mother} from {individual.full_name}"
+                        )
+                        if individual.mother:
+                            if hasattr(individual, "adopted") and individual.adopted:
+                                if individual.mother not in adoptive_parents:
+                                    adoptive_parents.append(individual.mother)
+                            else:
+                                if individual.mother not in step_parents:
+                                    step_parents.append(individual.mother)
+                        individual.mother = None
 
             individual.adoptive_parents = adoptive_parents
             individual.foster_parents = foster_parents
-            individual.step_parents = []  # Phase 2
+            individual.step_parents = step_parents
 
             # Debug output for adoptive/foster parents
             if adoptive_parents:
@@ -716,6 +901,59 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                 print(
                     f"[PEDI] {individual.full_name} has foster parents: {foster_parents}"
                 )
+
+        # Identify siblings for each individual using BIOLOGICAL parents (after PEDI correction)
+        # Full siblings = same biological parents
+        # Half siblings = share exactly one biological parent
+        for ind, individual in family_data["individuals"].items():
+            full_siblings = []
+            half_siblings = []
+
+            # Get biological parents from individual object (after PEDI correction)
+            bio_father = individual.father
+            bio_mother = individual.mother
+
+            # Find full siblings = share both biological parents
+            for other_ind, other_individual in family_data["individuals"].items():
+                if other_ind == ind:
+                    continue
+
+                other_bio_father = other_individual.father
+                other_bio_mother = other_individual.mother
+
+                # Count shared biological parents
+                shared_parents = 0
+                if bio_father and other_bio_father and bio_father == other_bio_father:
+                    shared_parents += 1
+                if bio_mother and other_bio_mother and bio_mother == other_bio_mother:
+                    shared_parents += 1
+
+                if shared_parents == 2:
+                    full_siblings.append(other_ind)
+
+            # Find half siblings = share exactly one biological parent
+            for other_ind, other_individual in family_data["individuals"].items():
+                if other_ind == ind:
+                    continue
+                if other_ind in full_siblings:
+                    continue
+
+                other_bio_father = other_individual.father
+                other_bio_mother = other_individual.mother
+
+                # Count shared biological parents
+                shared_parents = 0
+                if bio_father and other_bio_father and bio_father == other_bio_father:
+                    shared_parents += 1
+                if bio_mother and other_bio_mother and bio_mother == other_bio_mother:
+                    shared_parents += 1
+
+                if shared_parents == 1:
+                    half_siblings.append(other_ind)
+
+            individual.siblings = full_siblings
+            individual.half_siblings = half_siblings
+            individual.step_siblings = []
 
         # Debug: Print all individuals and their relationships
         print("\n=== Debug: Individuals and Relationships ===")

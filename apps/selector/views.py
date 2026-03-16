@@ -3,8 +3,17 @@ from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 
-from apps.generator.models import GedcomFile
+from apps.generator.models import GedcomFile, GedcomShare
 from apps.parser.models import PersonData
+
+
+def can_access_gedcom_file(user, gedcom_file):
+    """Check if user can access the GEDCOM file (owner or shared with)."""
+    if gedcom_file.user == user:
+        return True
+    return GedcomShare.objects.filter(
+        gedcom_file=gedcom_file, shared_with=user
+    ).exists()
 
 
 def select_individual(request, file_id):
@@ -16,8 +25,12 @@ def select_individual(request, file_id):
         gedcom_file = GedcomFile.objects.get(id=file_id)
 
         # Check if user has access to this file
-        if gedcom_file.user and gedcom_file.user != request.user:
-            return HttpResponse(b"Unauthorized", status=403)
+        if request.user.is_authenticated:
+            if not can_access_gedcom_file(request.user, gedcom_file):
+                return HttpResponse(b"Unauthorized", status=403)
+        else:
+            if gedcom_file.user is not None:
+                return HttpResponse(b"Unauthorized", status=403)
 
         if not gedcom_file.parsed_data:
             return render(
@@ -76,8 +89,12 @@ def confirm_selection(request, file_id):
             gedcom_file = GedcomFile.objects.get(id=file_id)
 
             # Check if user has access to this file
-            if gedcom_file.user and gedcom_file.user != request.user:
-                return HttpResponse(b"Unauthorized", status=403)
+            if request.user.is_authenticated:
+                if not can_access_gedcom_file(request.user, gedcom_file):
+                    return HttpResponse(b"Unauthorized", status=403)
+            else:
+                if gedcom_file.user is not None:
+                    return HttpResponse(b"Unauthorized", status=403)
 
             if action == "set_home":
                 # Get individual name for storage
@@ -90,9 +107,13 @@ def confirm_selection(request, file_id):
 
                 gedcom_hash = hashlib.sha256(gedcom_file.file.name.encode()).hexdigest()
 
-                # Set home person in GedcomFile (for navigation)
-                gedcom_file.home_person_id = individual_id
-                gedcom_file.save()
+                # Check if user is owner of the file
+                is_owner = gedcom_file.user == request.user
+
+                # Set home person in GedcomFile only for owner
+                if is_owner:
+                    gedcom_file.home_person_id = individual_id
+                    gedcom_file.save()
 
                 # Also sync to chart_storage IndividualSettings
                 if request.user and request.user.is_authenticated:

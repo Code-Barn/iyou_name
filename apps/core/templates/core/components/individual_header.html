@@ -1,7 +1,61 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0">Individual Details</h2>
     <div class="position-relative">
-        <input type="text" id="searchInput" class="form-control form-control-sm" style="width: 200px;" placeholder="Search by name...">
-        <div id="searchResults" class="position-absolute bg-white border rounded mt-1" style="width: 200px; display: none; z-index: 1000;"></div>
+        <input type="text" id="personSearch" class="form-control" style="width: 300px;" placeholder="Search by name, place, or date..." autocomplete="off">
+        <div id="searchResults" class="list-group position-absolute w-100 shadow" style="max-height: 300px; overflow-y: auto; z-index: 1000; display: none;"></div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('personSearch');
+    const searchResults = document.getElementById('searchResults');
+    if (!searchInput || !searchResults || typeof individualsData === 'undefined') return;
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        if (query.length < 2) {
+            searchResults.style.display = 'none';
+            return;
+        }
+
+        const matches = individualsData.filter(ind => {
+            const name = (ind.full_name || '').toLowerCase();
+            const birthPlace = (ind.birth_place || '').toLowerCase();
+            const deathPlace = (ind.death_place || '').toLowerCase();
+            const birthDate = (ind.birth_date || '').toLowerCase();
+            const deathDate = (ind.death_date || '').toLowerCase();
+            const queryLower = query.toLowerCase();
+
+            return name.includes(queryLower) || 
+                   birthPlace.includes(queryLower) || 
+                   deathPlace.includes(queryLower) ||
+                   birthDate.includes(queryLower) ||
+                   deathDate.includes(queryLower);
+        }).slice(0, 10);
+
+        if (matches.length === 0) {
+            searchResults.innerHTML = '<div class="list-group-item text-muted">No results found</div>';
+        } else {
+            searchResults.innerHTML = matches.map(ind => {
+                let subtitle = [];
+                if (ind.birth_date) subtitle.push('b. ' + ind.birth_date);
+                if (ind.birth_place) subtitle.push('in ' + ind.birth_place);
+                if (ind.death_date) subtitle.push('d. ' + ind.death_date);
+                if (ind.death_place) subtitle.push('in ' + ind.death_place);
+                return '<a href="/browse/person/' + ind.id + '/" class="list-group-item list-group-item-action">' +
+                    '<strong>' + ind.full_name + '</strong>' +
+                    (subtitle.length ? '<br><small class="text-muted">' + subtitle.join(' ') + '</small>' : '') +
+                    '</a>';
+            }).join('');
+        }
+        searchResults.style.display = 'block';
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+            searchResults.style.display = 'none';
+        }
+    });
+});
+</script>

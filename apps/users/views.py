@@ -21,7 +21,7 @@ from apps.core.auth_security import (
 from apps.core.file_validation import validate_uploaded_file
 from apps.generator.forms import RegisterForm
 from apps.chart_storage.models import IndividualPhoto
-from apps.generator.models import GedcomFile
+from apps.generator.models import GedcomFile, GedcomShare
 from apps.parser.utils import convert_to_utf8, parse_gedcom_data
 
 logger = logging.getLogger(__name__)
@@ -40,14 +40,17 @@ def profile(request):
             "-uploaded_at"
         )
 
+        # Get files shared with the user
+        shared_files = GedcomShare.objects.filter(
+            shared_with=request.user
+        ).select_related("gedcom_file", "gedcom_file__user")
+
         # Get current session file
         current_file_id = request.session.get("current_gedcom_file_id")
         current_file = None
         if current_file_id:
             try:
-                current_file = GedcomFile.objects.get(
-                    id=current_file_id, user=request.user
-                )
+                current_file = GedcomFile.objects.get(id=current_file_id)
             except GedcomFile.DoesNotExist:
                 current_file_id = None
                 request.session["current_gedcom_file_id"] = None
@@ -58,6 +61,7 @@ def profile(request):
             {
                 "user": request.user,
                 "gedcom_files": gedcom_files,
+                "shared_files": shared_files,
                 "current_file": current_file,
             },
         )
@@ -357,3 +361,110 @@ def sync_gedcom_file(request, file_id):
     except Exception as e:
         logger.error(f"Error syncing GEDCOM file {file_id}: {e}")
         return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_protect
+@require_POST
+def share_gedcom_file(request, file_id):
+    """
+    Share a GEDCOM file with another user by username.
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+
+    username = request.POST.get("username", "").strip()
+    can_edit = request.POST.get("can_edit", "false").lower() == "true"
+
+    if not username:
+        return JsonResponse({"error": "Username required"}, status=400)
+
+    try:
+        gedcom_file = GedcomFile.objects.get(id=file_id)
+    except GedcomFile.DoesNotExist:
+        return JsonResponse({"error": "File not found"}, status=404)
+
+    if gedcom_file.user != request.user:
+        return JsonResponse({"error": "Not authorized"}, status=403)
+
+    from django.contrib.auth.models import User
+
+    try:
+        shared_with_user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return JsonResponse({"error": "User not found"}, status=404)
+
+    if shared_with_user == request.user:
+        return JsonResponse({"error": "Cannot share with yourself"}, status=400)
+
+    share, created = GedcomShare.objects.update_or_create(
+        gedcom_file=gedcom_file,
+        shared_with=shared_with_user,
+        defaults={
+            "can_edit": can_edit,
+            "shared_by": request.user,
+        },
+    )
+
+    logger.info(
+        f"User {request.user.username} shared file {gedcom_file.file.name} with {username}"
+    )
+    return redirect("users:profile")
+
+
+@require_POST
+def remove_gedcom_share(request, file_id, user_id):
+    """
+    Remove a user's access to a shared GEDCOM file.
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+
+    try:
+        gedcom_file = GedcomFile.objects.get(id=file_id)
+    except GedcomFile.DoesNotExist:
+        return JsonResponse({"error": "File not found"}, status=404)
+
+    if gedcom_file.user != request.user:
+        return JsonResponse({"error": "Not authorized"}, status=403)
+
+    try:
+        share = GedcomShare.objects.get(gedcom_file=gedcom_file, shared_with_id=user_id)
+        share.delete()
+        logger.info(
+            f"User {request.user.username} removed share for file {gedcom_file.file.name}"
+        )
+    except GedcomShare.DoesNotExist:
+        pass
+
+    return redirect("users:profile")
+
+
+def get_shared_with_users(request, file_id):
+    """
+    API endpoint to get list of users a file is shared with.
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+
+    try:
+        gedcom_file = GedcomFile.objects.get(id=file_id)
+    except GedcomFile.DoesNotExist:
+        return JsonResponse({"error": "File not found"}, status=404)
+
+    if gedcom_file.user != request.user:
+        return JsonResponse({"error": "Not authorized"}, status=403)
+
+    shares = GedcomShare.objects.filter(gedcom_file=gedcom_file).select_related(
+        "shared_with"
+    )
+    data = [
+        {
+            "id": share.id,
+            "username": share.shared_with.username,
+            "can_edit": share.can_edit,
+            "shared_at": share.shared_at.isoformat(),
+        }
+        for share in shares
+    ]
+
+    return JsonResponse({"shares": data})

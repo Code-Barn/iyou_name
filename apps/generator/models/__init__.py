@@ -1,1 +1,1 @@
-from .gedcom_file import GedcomFile
+from .gedcom_file import GedcomFile, GedcomShare

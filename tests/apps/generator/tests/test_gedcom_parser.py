@@ -175,7 +175,7 @@ class GedcomParserTests(TestCase):
         self.assertIn("I3", individual.foster_parents)
 
     def test_step_parents(self):
-        """Test that step-parents are correctly identified"""
+        """Test that step-parents are correctly identified when only step family exists"""
         gedcom_with_step_parents = """0 HEAD
 1 SOUR Test
 1 GEDC
@@ -186,7 +186,7 @@ class GedcomParserTests(TestCase):
 1 NAME Child /Doe/
 1 SEX M
 1 FAMC @F1@
-1 FAMC @F2@
+2 PEDI step
 0 @I2@ INDI
 1 NAME John /Doe/
 1 SEX M
@@ -200,14 +200,48 @@ class GedcomParserTests(TestCase):
 1 HUSB @I2@
 1 WIFE @I3@
 1 CHIL @I1@
+"""
+        result = parse_gedcom_data(gedcom_with_step_parents)
+        individual = result["individuals"]["I1"]
+        self.assertIn("I2", individual.step_parents)
+
+    def test_biological_father_with_step_family(self):
+        """Test that biological father is kept when step family also exists"""
+        gedcom = """0 HEAD
+1 SOUR Test
+1 GEDC
+2 VERS 5.5
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME Zadyn /Doe/
+1 SEX M
+1 FAMC @F1@
+2 PEDI step
+1 FAMC @F2@
+0 @I2@ INDI
+1 NAME David /StepFather/
+1 SEX M
+0 @I3@ INDI
+1 NAME Pauletta /Mother/
+1 SEX F
+0 @I4@ INDI
+1 NAME Cory /BioFather/
+1 SEX M
+0 @F1@ FAM
+1 HUSB @I2@
+1 WIFE @I3@
+1 CHIL @I1@
 0 @F2@ FAM
 1 HUSB @I4@
 1 WIFE @I3@
 1 CHIL @I1@
 """
-        result = parse_gedcom_data(gedcom_with_step_parents)
+        result = parse_gedcom_data(gedcom)
         individual = result["individuals"]["I1"]
-        self.assertIn("I4", individual.step_parents)
+        self.assertEqual(individual.father, "I4")
+        self.assertIn("I2", individual.step_parents)
+        self.assertNotIn("I4", individual.step_parents)
 
     def test_parse_families(self):
         """Test that family relationships are parsed correctly"""

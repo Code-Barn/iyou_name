@@ -54,6 +54,9 @@
                                 <button type="button" class="btn btn-warning btn-sm me-2" data-bs-toggle="modal" data-bs-target="#syncModal{{ file.id }}">
                                     Sync
                                 </button>
+                                <button type="button" class="btn btn-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#shareModal{{ file.id }}">
+                                    Share
+                                </button>
                                 <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ file.id }}">
                                     Delete
                                 </button>
@@ -109,6 +112,41 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- Share Modal -->
+                                <div class="modal fade" id="shareModal{{ file.id }}" tabindex="-1" aria-labelledby="shareModalLabel{{ file.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="shareModalLabel{{ file.id }}">Share "{{ file.file.name|filename }}"</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form method="post" action="{% url 'users:share_gedcom_file' file.id %}" id="shareForm{{ file.id }}">
+                                                {% csrf_token %}
+                                                <div class="modal-body">
+                                                    <p>Share this file with another user by username.</p>
+                                                    <div class="mb-3">
+                                                        <label for="shareUsername{{ file.id }}" class="form-label">Username</label>
+                                                        <input type="text" class="form-control" id="shareUsername{{ file.id }}" name="username" required>
+                                                    </div>
+                                                    <div class="mb-3 form-check">
+                                                        <input type="checkbox" class="form-check-input" id="shareCanEdit{{ file.id }}" name="can_edit" value="true">
+                                                        <label class="form-check-label" for="shareCanEdit{{ file.id }}">Allow sync (edit)</label>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Currently shared with:</label>
+                                                        <div id="sharedWithList{{ file.id }}" class="list-group">
+                                                            <div class="text-muted">Loading...</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                    <button type="submit" class="btn btn-primary">Share</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -126,7 +164,99 @@
             </div>
         </div>
     </div>
+
+    <!-- Shared Files Section -->
+    {% if shared_files %}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Shared With Me</h5>
+            <p class="text-muted">These files are shared by other users. You can browse and set your own home person.</p>
+            
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>File Name</th>
+                            <th>Owner</th>
+                            <th>Home Person</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for share in shared_files %}
+                        <tr>
+                            <td>{{ share.gedcom_file.file.name|filename }}</td>
+                            <td>
+                                <span class="badge bg-info">{{ share.gedcom_file.user.username }}</span>
+                            </td>
+                            <td>
+                                {% if share.gedcom_file.home_person_id %}
+                                <form method="post" action="{% url 'browse:browse_individuals' %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="file_id" value="{{ share.gedcom_file.id }}">
+                                    <input type="hidden" name="redirect_to_individual" value="{{ share.gedcom_file.home_person_id }}">
+                                    <button type="submit" class="badge bg-success border-0 bg-transparent text-success text-decoration-none p-0" style="background: none; cursor: pointer; font-size: inherit;">
+                                        {{ share.gedcom_file.get_home_person_name }}
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="badge bg-secondary">Not selected</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" action="{% url 'browse:browse_individuals' %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="file_id" value="{{ share.gedcom_file.id }}">
+                                    <button type="submit" class="btn btn-info btn-sm me-2">
+                                        Browse
+                                    </button>
+                                </form>
+                                <a href="{% url 'selector:select_individual' share.gedcom_file.id %}" class="btn btn-success btn-sm me-2">
+                                    Select Home Person
+                                </a>
+                                <span class="badge bg-secondary" title="Sync and delete are only available to the owner">
+                                    <i class="bi bi-lock"></i> Owner only
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load shared users when share modals are opened
+    {% for file in gedcom_files %}
+    const shareModal{{ file.id }} = document.getElementById('shareModal{{ file.id }}');
+    if (shareModal{{ file.id }}) {
+        shareModal{{ file.id }}.addEventListener('show.bs.modal', function() {
+            fetch('{% url "users:get_shared_with_users" file.id %}')
+                .then(response => response.json())
+                .then(data => {
+                    const list = document.getElementById('sharedWithList{{ file.id }}');
+                    if (data.shares && data.shares.length > 0) {
+                        list.innerHTML = data.shares.map(share => 
+                            '<div class="list-group-item d-flex justify-content-between align-items-center">' +
+                                '<span>' + share.username + (share.can_edit ? ' <span class="badge bg-warning">can sync</span>' : '') + '</span>' +
+                                '<a href="{% url "users:remove_gedcom_share" file.id 0 %}'.replace('0', share.id) + '" class="btn btn-danger btn-sm">Remove</a>' +
+                            '</div>'
+                        ).join('');
+                    } else {
+                        list.innerHTML = '<div class="text-muted">Not shared with anyone yet</div>';
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('sharedWithList{{ file.id }}').innerHTML = '<div class="text-danger">Error loading shares</div>';
+                });
+        });
+    }
+    {% endfor %}
+});
+</script>
 
 {% endblock %}

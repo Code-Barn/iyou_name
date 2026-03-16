@@ -1,4 +1,5 @@
 {% extends 'core/base.html' %}
+{% load custom_filters %}
 {% block content %}
 <div class="container mt-5">
     {% include 'core/components/individual_header.html' %}
@@ -174,6 +175,10 @@
             });
         }
     }
+    </script>
+
+    <script>
+    const individualsData = {{ individuals_json|safe }};
     </script>
 
     
