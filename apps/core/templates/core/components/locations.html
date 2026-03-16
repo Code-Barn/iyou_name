@@ -1,3 +1,4 @@
+{% load custom_filters %}
 <div class="mt-4">
     <h5>Locations</h5>
     <ul class="list-group">
@@ -9,6 +10,11 @@
         {% if individual.death_place %}
         <li class="list-group-item">
             <strong>Death Place:</strong> <span class="fs-5">{{ individual.death_place }}</span>
+        </li>
+        {% endif %}
+        {% if individual.burial_place %}
+        <li class="list-group-item">
+            <strong>Burial Place:</strong> <span class="fs-5">{{ individual.burial_place }}</span>
         </li>
         {% endif %}
     </ul>

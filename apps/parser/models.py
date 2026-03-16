@@ -14,6 +14,7 @@ class PersonData:
     birth_place: Optional[str] = None
     death_date: Optional[str] = None
     death_place: Optional[str] = None
+    burial_place: Optional[str] = None
     father: Optional[str] = None  # Reference to father's ID
     mother: Optional[str] = None  # Reference to mother's ID
     spouse: Optional[List[str]] = None  # List of spouse IDs
@@ -23,7 +24,9 @@ class PersonData:
     adoptive_parents: Optional[List[str]] = None  # List of adoptive parent IDs
     foster_parents: Optional[List[str]] = None  # List of foster parent IDs
     step_parents: Optional[List[str]] = None  # List of step-parent IDs
-    step_siblings: Optional[List[str]] = None  # List of step-sibling IDs (no biological relation)
+    step_siblings: Optional[List[str]] = (
+        None  # List of step-sibling IDs (no biological relation)
+    )
     spouses_children: Optional[Dict[str, List[str]]] = (
         None  # Dictionary to store children for each spouse
     )
@@ -54,6 +57,13 @@ class PersonData:
             parts.append(f"d. {self.death_date}")
         if self.death_place:
             parts.append(f"in {self.death_place}")
+        return " ".join(parts) if parts else ""
+
+    def get_burial_info(self) -> str:
+        """Return formatted burial information"""
+        parts = []
+        if self.burial_place:
+            parts.append(f"buried in {self.burial_place}")
         return " ".join(parts) if parts else ""
 
     def to_dict(self):

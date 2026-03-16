@@ -38,13 +38,143 @@
                 </div>
             </div>
 
-            {% include 'core/components/basic_info.html' %}
-            {% include 'core/components/locations.html' %}
+            <div class="row mt-4">
+                <div class="col-md-8">
+                    {% include 'core/components/basic_info.html' %}
+                    {% include 'core/components/locations.html' %}
+                </div>
+                <div class="col-md-4">
+                    {% if individual_photo %}
+                    <div class="mb-2">
+                        <img src="{{ individual_photo.photo.url }}" alt="Photo of {{ individual.full_name }}" class="img-fluid" style="max-height: 550px; object-fit: contain;">
+                        {% if user.is_authenticated %}
+                        <a href="#" onclick="deletePhoto('{{ gedcom_hash }}', '{{ individual.id }}'); return false;" class="text-muted small text-decoration-none" title="Delete photo">
+                            <i class="bi bi-x-lg"></i> remove
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    {% if user.is_authenticated and gedcom_hash %}
+                    <div class="card mb-3">
+                        <div class="card-body text-center">
+                            <p class="text-muted mb-2">No photo</p>
+                            <label for="photoUpload" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-camera"></i> Upload
+                            </label>
+                            <input type="file" id="photoUpload" accept="image/*" style="display: none;" onchange="uploadPhoto(this)">
+                            <button type="button" class="btn btn-outline-secondary btn-sm ms-1" onclick="document.getElementById('photoUrlInput').classList.toggle('d-none');">
+                                <i class="bi bi-link"></i> URL
+                            </button>
+                            <input type="text" id="photoUrlInput" class="form-control form-control-sm mt-2 d-none" placeholder="https://example.com/photo.jpg" onkeydown="if(event.key==='Enter'){uploadPhotoByUrl(this);return false;}">
+                            <input type="hidden" id="gedcomHash" value="{{ gedcom_hash }}">
+                            <input type="hidden" id="individualId" value="{{ individual.id }}">
+                            <input type="hidden" id="individualName" value="{{ individual.full_name }}">
+                            <input type="hidden" id="fileName" value="{{ file_name }}">
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
             {% include 'core/components/family_info.html' %}
             {% include 'core/components/back_button.html' %}
         </div>
     </div>
     </div>
+
+    <script>
+    function uploadPhoto(input) {
+        if (input.files && input.files[0]) {
+            var formData = new FormData();
+            formData.append('photo', input.files[0]);
+            formData.append('gedcom_hash', document.getElementById('gedcomHash').value);
+            formData.append('individual_id', document.getElementById('individualId').value);
+            formData.append('individual_name', document.getElementById('individualName').value);
+            formData.append('gedcom_name', document.getElementById('fileName').value);
+
+            fetch('{% url "chart_storage:upload_photo" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to upload photo');
+            });
+        }
+    }
+
+    function uploadPhotoByUrl(input) {
+        var url = input.value.trim();
+        if (!url) return;
+        
+        if (!url.match(/^https?:\/\/.+/i)) {
+            alert('Please enter a valid URL starting with http:// or https://');
+            return;
+        }
+
+        var formData = new FormData();
+        formData.append('photo_url', url);
+        formData.append('gedcom_hash', document.getElementById('gedcomHash').value);
+        formData.append('individual_id', document.getElementById('individualId').value);
+        formData.append('individual_name', document.getElementById('individualName').value);
+        formData.append('gedcom_name', document.getElementById('fileName').value);
+
+        fetch('{% url "chart_storage:upload_photo" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Error: ' + data.error);
+            } else {
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to upload photo');
+        });
+    }
+
+    function deletePhoto(gedcomHash, individualId) {
+        if (confirm('Are you sure you want to delete this photo?')) {
+            fetch('/storage/photos/' + gedcomHash + '/' + individualId + '/delete/', {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to delete photo');
+            });
+        }
+    }
+    </script>
 
     
     {% endblock %}

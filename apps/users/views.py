@@ -1,3 +1,4 @@
+import hashlib
 import logging
 import os
 
@@ -19,6 +20,7 @@ from apps.core.auth_security import (
 )
 from apps.core.file_validation import validate_uploaded_file
 from apps.generator.forms import RegisterForm
+from apps.chart_storage.models import IndividualPhoto
 from apps.generator.models import GedcomFile
 from apps.parser.utils import convert_to_utf8, parse_gedcom_data
 
@@ -276,6 +278,13 @@ def sync_gedcom_file(request, file_id):
 
     existing_home_person_id = gedcom_file.home_person_id
 
+    # Get old gedcom_hash before updating (short version for photo storage)
+    old_gedcom_hash = (
+        hashlib.sha256(gedcom_file.file.name.encode()).hexdigest()[:16]
+        if gedcom_file.file
+        else None
+    )
+
     try:
         gedcom_content_bytes = gedcom_file_obj.read()
         logger.info(
@@ -328,6 +337,17 @@ def sync_gedcom_file(request, file_id):
             )
 
         gedcom_file.save()
+
+        # Update photo gedcom_hash if it changed
+        if old_gedcom_hash and gedcom_file.file:
+            new_gedcom_hash = hashlib.sha256(
+                gedcom_file.file.name.encode()
+            ).hexdigest()[:16]
+            if old_gedcom_hash != new_gedcom_hash:
+                IndividualPhoto.objects.filter(
+                    user=request.user, gedcom_hash=old_gedcom_hash
+                ).update(gedcom_hash=new_gedcom_hash)
+
         logger.info(
             f"Successfully synced GEDCOM file: {gedcom_file.file.name} (ID: {gedcom_file.id})"
         )

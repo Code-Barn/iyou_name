@@ -1,9 +1,10 @@
+{% load custom_filters %}
 <div class="mt-4">
     <h5>Basic Information</h5>
     <ul class="list-group">
         {% if individual.birth_date %}
         <li class="list-group-item">
-            <strong>Birth Date:</strong> <span class="fs-5">{{ individual.birth_date }}</span>
+            <strong>Birth Date:</strong> <span class="fs-5">{{ individual.birth_date|format_date }}</span>
         </li>
         {% endif %}
         {% if individual.birth_place %}
@@ -13,7 +14,7 @@
         {% endif %}
         {% if individual.death_date %}
         <li class="list-group-item">
-            <strong>Death Date:</strong> <span class="fs-5">{{ individual.death_date }}</span>
+            <strong>Death Date:</strong> <span class="fs-5">{{ individual.death_date|format_date }}</span>
         </li>
         {% endif %}
         {% if individual.death_place %}

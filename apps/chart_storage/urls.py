@@ -16,6 +16,11 @@ from apps.chart_storage.individual_settings_views import (
     set_home_person,
     get_home_person,
 )
+from apps.chart_storage.photo_views import (
+    get_photo,
+    upload_photo,
+    delete_photo,
+)
 from apps.chart_storage.storage_views import (
     get_storage_usage,
     clear_all_buffers,
@@ -63,4 +68,16 @@ urlpatterns = [
     path("storage/usage/", get_storage_usage, name="get_storage_usage"),
     path("storage/clear/", clear_all_buffers, name="clear_all_buffers"),
     path("storage/buffers/", get_buffer_list, name="get_buffer_list"),
+    # Individual Photos
+    path("photos/upload/", upload_photo, name="upload_photo"),
+    path(
+        "photos/<str:gedcom_hash>/<str:individual_id>/",
+        get_photo,
+        name="get_photo",
+    ),
+    path(
+        "photos/<str:gedcom_hash>/<str:individual_id>/delete/",
+        delete_photo,
+        name="delete_photo",
+    ),
 ]

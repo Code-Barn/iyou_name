@@ -116,6 +116,7 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
             birth_place = None
             death_date = None
             death_place = None
+            burial_place = None
             sex = None
             title = None
             occupation = None
@@ -290,6 +291,17 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                         death_place = (
                             place_str if isinstance(place_str, str) else str(place_str)
                         )
+                elif event.tag == "BURI":
+                    # Parse burial place
+                    if (
+                        not burial_place
+                        and place_str
+                        and place_str != "None"
+                        and place_str != ""
+                    ):
+                        burial_place = (
+                            place_str if isinstance(place_str, str) else str(place_str)
+                        )
 
             # Create PersonData object with safe defaults
             # Debug: Check for family tags in GEDCOM 7.0
@@ -325,6 +337,7 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                 birth_place=birth_place,
                 death_date=death_date,
                 death_place=death_place,
+                burial_place=burial_place,
                 father=None,
                 mother=None,
                 spouse=[],

@@ -167,3 +167,49 @@ class ChartBuffer(models.Model):
 
     def __str__(self):
         return f"{self.generation}gen for {self.individual_id}"
+
+
+import os
+import uuid
+
+
+def user_photo_upload_path(instance, filename):
+    """Generate user-specific upload path for individual photos."""
+    ext = os.path.splitext(filename)[1].lower()
+    unique_filename = f"photo{uuid.uuid4().hex[:8]}{ext}"
+    short_hash = instance.gedcom_hash[:16]
+    return f"photos/{instance.user.id}/{short_hash}/{instance.individual_id}/{unique_filename}"
+
+
+class IndividualPhoto(models.Model):
+    """
+    Profile photo for a specific individual within a gedcom file.
+
+    Key: {gedcom_hash}:{individual_id}
+    - gedcom_hash: SHA256 of gedcom filename (not contents)
+    - individual_id: The gedcom-level ID (e.g., @I1@)
+    """
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="individual_photos"
+    )
+    gedcom_hash = models.CharField(max_length=64)
+    gedcom_name = models.CharField(max_length=255)
+    individual_id = models.CharField(max_length=100)
+    individual_name = models.CharField(max_length=255)
+    photo = models.ImageField(upload_to=user_photo_upload_path, max_length=255)
+    file_size = models.PositiveIntegerField()
+    width = models.PositiveIntegerField(default=0)
+    height = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Individual Photos"
+        unique_together = ["user", "gedcom_hash", "individual_id"]
+        indexes = [
+            models.Index(fields=["user", "gedcom_hash"]),
+        ]
+
+    def __str__(self):
+        return f"Photo: {self.individual_name} ({self.gedcom_name})"

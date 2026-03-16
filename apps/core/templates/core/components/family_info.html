@@ -10,14 +10,23 @@
             <ul class="list-group mt-2">
                 {% if father %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
+                    {% with father_photo=photos|get_item:father.id %}
+                    {% if father_photo %}
+                    <img src="{{ father_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                    <div class="flex-grow-1">
                         <strong>Father:</strong> <span class="fs-5">{{ father.full_name }}</span>
                         {% if individual.adoptive_parents and father.id in individual.adoptive_parents %}<span class="text-info">(adoptive)</span>{% endif %}
                         {% if individual.foster_parents and father.id in individual.foster_parents %}<span class="text-warning">(foster)</span>{% endif %}
                         {% if father.birth_date or father.birth_place %}
                         <div class="mt-1">
                             <small class="text-muted">
-                                {% if father.birth_date %}b. {{ father.birth_date }}{% endif %}
+                                {% if father.birth_date %}b. {{ father.birth_date|format_date }}{% endif %}
                                 {% if father.birth_place %}{% if father.birth_date %}, {% endif %}{{ father.birth_place }}{% endif %}
                             </small>
                         </div>
@@ -25,7 +34,7 @@
                         {% if father.death_date or father.death_place %}
                         <div class="mt-1">
                             <small class="text-muted">
-                                {% if father.death_date %}d. {{ father.death_date }}{% endif %}
+                                {% if father.death_date %}d. {{ father.death_date|format_date }}{% endif %}
                                 {% if father.death_place %}{% if father.death_date %}, {% endif %}{{ father.death_place }}{% endif %}
                             </small>
                         </div>
@@ -36,14 +45,23 @@
                 {% endif %}
                 {% if mother %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
+                    {% with mother_photo=photos|get_item:mother.id %}
+                    {% if mother_photo %}
+                    <img src="{{ mother_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                    <div class="flex-grow-1">
                         <strong>Mother:</strong> <span class="fs-5">{{ mother.full_name }}</span>
                         {% if individual.adoptive_parents and mother.id in individual.adoptive_parents %}<span class="text-info">(adoptive)</span>{% endif %}
                         {% if individual.foster_parents and mother.id in individual.foster_parents %}<span class="text-warning">(foster)</span>{% endif %}
                         {% if mother.birth_date or mother.birth_place %}
                         <div class="mt-1">
                             <small class="text-muted">
-                                {% if mother.birth_date %}b. {{ mother.birth_date }}{% endif %}
+                                {% if mother.birth_date %}b. {{ mother.birth_date|format_date }}{% endif %}
                                 {% if mother.birth_place %}{% if mother.birth_date %}, {% endif %}{{ mother.birth_place }}{% endif %}
                             </small>
                         </div>
@@ -51,7 +69,7 @@
                         {% if mother.death_date or mother.death_place %}
                         <div class="mt-1">
                             <small class="text-muted">
-                                {% if mother.death_date %}d. {{ mother.death_date }}{% endif %}
+                                {% if mother.death_date %}d. {{ mother.death_date|format_date }}{% endif %}
                                 {% if mother.death_place %}{% if mother.death_date %}, {% endif %}{{ mother.death_place }}{% endif %}
                             </small>
                         </div>
@@ -73,13 +91,30 @@
                     <ul class="list-group mt-2">
                         {% for sibling in siblings %}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
+                            {% with sibling_photo=photos|get_item:sibling.id %}
+                            {% if sibling_photo %}
+                            <img src="{{ sibling_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                            {% else %}
+                            <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            {% endif %}
+                            {% endwith %}
+                            <div class="flex-grow-1">
                                 <span class="fs-5">{{ sibling.full_name }}</span>
                                 {% if sibling.birth_date or sibling.birth_place %}
                                 <div class="mt-1">
                                     <small class="text-muted">
-                                        {% if sibling.birth_date %}b. {{ sibling.birth_date }}{% endif %}
+                                        {% if sibling.birth_date %}b. {{ sibling.birth_date|format_date }}{% endif %}
                                         {% if sibling.birth_place %}{% if sibling.birth_date %}, {% endif %}{{ sibling.birth_place }}{% endif %}
+                                    </small>
+                                </div>
+                                {% endif %}
+                                {% if sibling.death_date or sibling.death_place %}
+                                <div class="mt-1">
+                                    <small class="text-muted">
+                                        {% if sibling.death_date %}d. {{ sibling.death_date|format_date }}{% endif %}
+                                        {% if sibling.death_place %}{% if sibling.death_date %}, {% endif %}{{ sibling.death_place }}{% endif %}
                                     </small>
                                 </div>
                                 {% endif %}
@@ -99,7 +134,16 @@
                     <ul class="list-group mt-2">
                         {% for sibling in half_siblings %}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
+                            {% with sibling_photo=photos|get_item:sibling.id %}
+                            {% if sibling_photo %}
+                            <img src="{{ sibling_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                            {% else %}
+                            <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            {% endif %}
+                            {% endwith %}
+                            <div class="flex-grow-1">
                                 <span class="fs-5">{{ sibling.full_name }}</span>
                                 {% if sibling.father == individual.father and sibling.father %}
                                 <span class="text-muted">(via father)</span>
@@ -109,8 +153,16 @@
                                 {% if sibling.birth_date or sibling.birth_place %}
                                 <div class="mt-1">
                                     <small class="text-muted">
-                                        {% if sibling.birth_date %}b. {{ sibling.birth_date }}{% endif %}
+                                        {% if sibling.birth_date %}b. {{ sibling.birth_date|format_date }}{% endif %}
                                         {% if sibling.birth_place %}{% if sibling.birth_date %}, {% endif %}{{ sibling.birth_place }}{% endif %}
+                                    </small>
+                                </div>
+                                {% endif %}
+                                {% if sibling.death_date or sibling.death_place %}
+                                <div class="mt-1">
+                                    <small class="text-muted">
+                                        {% if sibling.death_date %}d. {{ sibling.death_date|format_date }}{% endif %}
+                                        {% if sibling.death_place %}{% if sibling.death_date %}, {% endif %}{{ sibling.death_place }}{% endif %}
                                     </small>
                                 </div>
                                 {% endif %}
@@ -132,14 +184,31 @@
             <ul class="list-group">
                 {% for spouse in spouses %}
                 <li class="list-group-item">
+                    {% with spouse_photo=photos|get_item:spouse.id %}
+                    {% if spouse_photo %}
+                    <img src="{{ spouse_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover; float: left;">
+                    {% else %}
+                    <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; float: left; margin-right: 10px;">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="fs-5">{{ spouse.full_name }}</span>
                             {% if spouse.birth_date or spouse.birth_place %}
                             <div class="mt-1">
                                 <small class="text-muted">
-                                    {% if spouse.birth_date %}b. {{ spouse.birth_date }}{% endif %}
+                                    {% if spouse.birth_date %}b. {{ spouse.birth_date|format_date }}{% endif %}
                                     {% if spouse.birth_place %}{% if spouse.birth_date %}, {% endif %}{{ spouse.birth_place }}{% endif %}
+                                </small>
+                            </div>
+                            {% endif %}
+                            {% if spouse.death_date or spouse.death_place %}
+                            <div class="mt-1">
+                                <small class="text-muted">
+                                    {% if spouse.death_date %}d. {{ spouse.death_date|format_date }}{% endif %}
+                                    {% if spouse.death_place %}{% if spouse.death_date %}, {% endif %}{{ spouse.death_place }}{% endif %}
                                 </small>
                             </div>
                             {% endif %}
@@ -157,7 +226,16 @@
                                 {% with child=individuals_dict|get_item:child_id %}
                                 {% if child %}
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
+                                    {% with child_photo=photos|get_item:child.id %}
+                                    {% if child_photo %}
+                                    <img src="{{ child_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                    {% else %}
+                                    <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
+                                        <i class="bi bi-person"></i>
+                                    </div>
+                                    {% endif %}
+                                    {% endwith %}
+                                    <div class="flex-grow-1">
                                         <span class="fs-5">{{ child.full_name }}</span>
                                         {% with child_rel=spouse_children_relationship|get_item:spouse.id|get_item:child.id %}
                                         {% if child_rel == 'adopted' %}
@@ -173,8 +251,16 @@
                                         {% if child.birth_date or child.birth_place %}
                                         <div class="mt-1">
                                             <small class="text-muted">
-                                                {% if child.birth_date %}b. {{ child.birth_date }}{% endif %}
+                                                {% if child.birth_date %}b. {{ child.birth_date|format_date }}{% endif %}
                                                 {% if child.birth_place %}{% if child.birth_date %}, {% endif %}{{ child.birth_place }}{% endif %}
+                                            </small>
+                                        </div>
+                                        {% endif %}
+                                        {% if child.death_date or child.death_place %}
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                {% if child.death_date %}d. {{ child.death_date|format_date }}{% endif %}
+                                                {% if child.death_place %}{% if child.death_date %}, {% endif %}{{ child.death_place }}{% endif %}
                                             </small>
                                         </div>
                                         {% endif %}

@@ -1,3 +1,4 @@
+import hashlib
 import json
 import logging
 
@@ -6,6 +7,7 @@ from django.shortcuts import redirect, render
 
 from apps.generator.models import GedcomFile
 from apps.parser.models import PersonData
+from apps.chart_storage.models import IndividualPhoto
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -124,12 +126,31 @@ def browse_individuals(request):
                     logger.debug(
                         f"Converted to PersonData for {ind_id}: {person.full_name}"
                     )
+
+        # Get photos for individuals (if user is authenticated)
+        photos = {}
+        gedcom_hash = None
+        if request.user.is_authenticated and gedcom_file.file:
+            gedcom_hash = hashlib.sha256(gedcom_file.file.name.encode()).hexdigest()[
+                :16
+            ]
+            individual_ids = [ind.id for ind in processed_individuals]
+            photo_records = IndividualPhoto.objects.filter(
+                user=request.user,
+                gedcom_hash=gedcom_hash,
+                individual_id__in=individual_ids,
+            )
+            for photo in photo_records:
+                photos[photo.individual_id] = photo
+
         return render(
             request,
             "browse/browse_individuals.html",
             {
                 "individuals": processed_individuals,
                 "gedcom_file": gedcom_file,
+                "photos": photos,
+                "gedcom_hash": gedcom_hash,
             },
         )
 
@@ -386,6 +407,32 @@ def individual_detail(request, ind_id):
         if gedcom_file.home_person_id == individual.id:
             is_home_person = True
 
+        # Get photo for this individual (if user is authenticated)
+        individual_photo = None
+        photos = {}
+        gedcom_hash = None
+        gedcom_hash_short = None
+        if request.user.is_authenticated and gedcom_file.file:
+            gedcom_hash = hashlib.sha256(gedcom_file.file.name.encode()).hexdigest()
+            gedcom_hash_short = gedcom_hash[:16]
+            try:
+                individual_photo = IndividualPhoto.objects.get(
+                    user=request.user,
+                    gedcom_hash=gedcom_hash_short,
+                    individual_id=individual.id,
+                )
+            except IndividualPhoto.DoesNotExist:
+                individual_photo = None
+            # Get all photos for family members
+            family_ids = [ind_id for ind_id in individuals_dict.keys()]
+            photo_records = IndividualPhoto.objects.filter(
+                user=request.user,
+                gedcom_hash=gedcom_hash_short,
+                individual_id__in=family_ids,
+            )
+            for photo in photo_records:
+                photos[photo.individual_id] = photo
+
         return render(
             request,
             "browse/individual_detail.html",
@@ -408,6 +455,9 @@ def individual_detail(request, ind_id):
                 "file_name": gedcom_file.file.name
                 if gedcom_file.file
                 else "Unknown File",
+                "individual_photo": individual_photo,
+                "gedcom_hash": gedcom_hash_short,
+                "photos": photos,
             },
         )
 

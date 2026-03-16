@@ -1,12 +1,9 @@
 {% extends 'core/base.html' %}
+{% load custom_filters %}
 {% block content %}
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">Browse Individuals</h2>
-        <div class="position-relative">
-            <input type="text" id="searchInput" class="form-control form-control-sm" style="width: 200px;" placeholder="Search by name...">
-            <div id="searchResults" class="position-absolute bg-white border rounded mt-1" style="width: 200px; display: none; z-index: 1000;"></div>
-        </div>
     </div>
 
     {% if gedcom_file %}
@@ -15,34 +12,50 @@
     </div>
     {% endif %}
 
+    <div class="mb-3">
+        <input type="text" id="filterInput" class="form-control" placeholder="Filter by name...">
+    </div>
+
     <div class="card">
         <div class="card-body">
             <p class="card-text">
                 View details for all individuals in your family tree.
             </p>
 
-            <div class="mt-4">
+            <div class="mt-4" style="max-height: 600px; overflow-y: auto;">
                 <div class="list-group" id="individualsList">
                     {% for individual in individuals %}
                     <a
                         href="{% url 'browse:individual_detail' ind_id=individual.id %}"
                         class="list-group-item list-group-item-action"
+                        data-name="{{ individual.full_name|lower }}"
                     >
-                        <div class="d-flex w-100 justify-content-between">
-                            <h5 class="mb-1">{{ individual.full_name }}</h5>
+                        <div class="d-flex align-items-center">
+                            {% with photo=photos|get_item:individual.id %}
+                            {% if photo %}
+                            <img src="{{ photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                            {% else %}
+                            <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px;">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            {% endif %}
+                            {% endwith %}
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">{{ individual.full_name }}</h5>
+                                <p class="mb-1">
+                                    {% if individual.birth_date %}Born: {{ individual.birth_date|format_date }}
+                                    {% endif %}
+                                    {% if individual.birth_place %} in {{ individual.birth_place }}
+                                    {% endif %}
+                                </p>
+                                <small>
+                                    {% if individual.death_date %}Died: {{ individual.death_date|format_date }}
+                                    {% endif %}
+                                    {% if individual.death_place %} in {{ individual.death_place }}
+                                    {% endif %}
+                                </small>
+                            </div>
                         </div>
-                        <p class="mb-1">
-                            {% if individual.birth_date %}Born: {{ individual.birth_date }}
-                            {% endif %}
-                            {% if individual.birth_place %} in {{ individual.birth_place }}
-                            {% endif %}
-                        </p>
-                        <small>
-                            {% if individual.death_date %}Died: {{ individual.death_date }}
-                            {% endif %}
-                            {% if individual.death_place %} in {{ individual.death_place }}
-                            {% endif %}
-                        </small>
                     </a>
                     {% endfor %}
                 </div>
@@ -63,53 +76,26 @@
 
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
-                    const searchInput = document.getElementById('searchInput');
+                    const filterInput = document.getElementById('filterInput');
                     const individualsList = document.getElementById('individualsList');
-                    const searchResults = document.getElementById('searchResults');
                     const individuals = individualsList.getElementsByClassName('list-group-item');
 
-                    searchInput.addEventListener('input', function() {
-                        const searchTerm = searchInput.value.toLowerCase();
+                    filterInput.addEventListener('input', function() {
+                        const filterTerm = filterInput.value.toLowerCase();
 
-                        if (searchTerm.length === 0) {
-                            searchResults.style.display = 'none';
-                            for (let i = 0; i < individuals.length; i++) {
-                                individuals[i].style.display = '';
-                            }
-                            return;
-                        }
-
-                        // Split the search term into parts
-                        const searchParts = searchTerm.split(' ').filter(part => part.length > 0);
-                        searchResults.innerHTML = '';
-                        let hasResults = false;
+                        // Split the filter term into parts
+                        const filterParts = filterTerm.split(' ').filter(part => part.length > 0);
 
                         for (let i = 0; i < individuals.length; i++) {
                             const individual = individuals[i];
-                            const fullName = individual.querySelector('h5').textContent.toLowerCase();
+                            const fullName = individual.getAttribute('data-name');
 
-                            // Check if all parts of the search term are present in the full name
-                            if (searchParts.every(part => fullName.includes(part))) {
-                                hasResults = true;
-                                const clone = individual.cloneNode(true);
-                                clone.addEventListener('click', function(e) {
-                                    e.preventDefault();
-                                    window.location.href = clone.getAttribute('href');
-                                });
-                                searchResults.appendChild(clone);
+                            // Check if all parts of the filter term are present in the full name
+                            if (filterParts.length === 0 || filterParts.every(part => fullName.includes(part))) {
+                                individual.style.display = '';
+                            } else {
+                                individual.style.display = 'none';
                             }
-                        }
-
-                        if (hasResults) {
-                            searchResults.style.display = 'block';
-                        } else {
-                            searchResults.style.display = 'none';
-                        }
-                    });
-
-                    document.addEventListener('click', function(e) {
-                        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-                            searchResults.style.display = 'none';
                         }
                     });
                 });

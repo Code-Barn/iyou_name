@@ -1,5 +1,7 @@
 from django import template
 
+from apps.generator.utils.prototype.date_utils import format_date, DateFormat
+
 register = template.Library()
 
 
@@ -57,3 +59,14 @@ def empty_list():
     Usage: {% empty_list as list_name %}
     """
     return []
+
+
+@register.filter(name="format_date")
+def format_date_filter(date_str):
+    """
+    Template filter to format a date string to "19 Oct 1990" format.
+    Usage: {{ date_str|format_date }}
+    """
+    if not date_str:
+        return ""
+    return format_date(date_str, DateFormat.DA_MON_YEAR)
