@@ -182,20 +182,20 @@ class Generation7Constants:
     # Index corresponds to position in a_x_positions (0=A1111, 1=A1112, ... 15=A2222)
     POSITION_FINE_TUNE = {
         # index: (name_y, birth_date_y, birth_place_y, birth_date_x, birth_place_x)
-        0: (0, -10, 0, 33, 0),  # A1111
-        1: (0, 10, 0, 29, -5),  # A1112
-        2: (0, 5, 0, 20, -5),  # A1121
-        3: (0, 5, 0, 15, -10),  # A1122
-        4: (0, 10, 0, 5, -15),  # A1211
+        0: (0, -10, 0, 40, -10),  # A1111
+        1: (0, 10, 0, 29, -8),  # A1112
+        2: (0, 5, 0, 22, -10),  # A1121
+        3: (0, 5, 0, 16, -14),  # A1122
+        4: (0, 10, 0, 10, -19),  # A1211
         5: (0, 15, 0, 0, -25),  # A1212
         6: (0, 15, 0, -5, -25),  # A1221
         7: (6, 20, 0, -5, -40),  # A1222
         8: (6, 20, -10, -18, -40),  # A2111
         9: (7, 25, -10, -25, -45),  # A2112
-        10: (9, 25, 0, -30, -50),  # A2121
-        11: (10, 30, 0, -37, -55),  # A2122
-        12: (10, 30, -10, -45, -60),  # A2211
-        13: (8, 35, -5, -50, -65),  # A2212
+        10: (9, 25, 0, -27, -50),  # A2121
+        11: (10, 30, 0, -34, -55),  # A2122
+        12: (10, 30, -10, -42, -60),  # A2211
+        13: (8, 35, -5, -47, -65),  # A2212
         14: (13, 35, 0, -50, -70),  # A2221
         15: (15, -50, 0, -55, -75),  # A2222
         # Add more fine-tuning as needed
@@ -206,37 +206,37 @@ class Generation7Constants:
     GREAT_GREAT_GREAT_GREAT_GRANDPARENT_PLACE_INFO_FONT_SIZE = 5
 
     # Flag positions - centered on date pair (y=1823), 16 positions
-    FLAG_A1111_BASE_X = -794
+    FLAG_A1111_BASE_X = -795
     FLAG_A1111_BASE_Y = 848
-    FLAG_A1112_BASE_X = -675
+    FLAG_A1112_BASE_X = -686
     FLAG_A1112_BASE_Y = 848
     FLAG_A1121_BASE_X = -585
     FLAG_A1121_BASE_Y = 848
     FLAG_A1122_BASE_X = -480
     FLAG_A1122_BASE_Y = 848
-    FLAG_A1211_BASE_X = -350
+    FLAG_A1211_BASE_X = -370
     FLAG_A1211_BASE_Y = 848
-    FLAG_A1212_BASE_X = -243
+    FLAG_A1212_BASE_X = -263
     FLAG_A1212_BASE_Y = 848
-    FLAG_A1221_BASE_X = -140
+    FLAG_A1221_BASE_X = -160
     FLAG_A1221_BASE_Y = 848
-    FLAG_A1222_BASE_X = -35
+    FLAG_A1222_BASE_X = -55
     FLAG_A1222_BASE_Y = 848
-    FLAG_A2111_BASE_X = 35
+    FLAG_A2111_BASE_X = 55
     FLAG_A2111_BASE_Y = 848
-    FLAG_A2112_BASE_X = 140
+    FLAG_A2112_BASE_X = 160
     FLAG_A2112_BASE_Y = 848
-    FLAG_A2121_BASE_X = 243
+    FLAG_A2121_BASE_X = 263
     FLAG_A2121_BASE_Y = 848
-    FLAG_A2122_BASE_X = 350
+    FLAG_A2122_BASE_X = 370
     FLAG_A2122_BASE_Y = 848
     FLAG_A2211_BASE_X = 480
     FLAG_A2211_BASE_Y = 848
     FLAG_A2212_BASE_X = 585
     FLAG_A2212_BASE_Y = 848
-    FLAG_A2221_BASE_X = 675
+    FLAG_A2221_BASE_X = 686
     FLAG_A2221_BASE_Y = 848
-    FLAG_A2222_BASE_X = 794
+    FLAG_A2222_BASE_X = 795
     FLAG_A2222_BASE_Y = 848
 
     OVERLAY_SCALE = 0.8457
@@ -512,17 +512,17 @@ def generate_prototype_7gen_preview(
                 # A1111 moved 10px left, A1 positions keep 116px gap
                 # A2 positions adjusted inward
                 a_x_positions = [
-                    131,  # A1111 (+3px)
-                    241,  # A1112
-                    355,  # A1121
-                    468,  # A1122 (-3px)
-                    578,  # A1211
-                    692,  # A1212
-                    805,  # A1221
+                    125,  # A1111 (+3px)
+                    239,  # A1112
+                    352,  # A1121
+                    464,  # A1122 (-3px)
+                    574,  # A1211
+                    690,  # A1212
+                    802,  # A1221
                     907,  # A1222 (-10px)
-                    1028,  # A2111 (+15px)
-                    1140,  # A2112 (new)
-                    1249,  # A2121 (+10px)
+                    1025,  # A2111 (+15px)
+                    1138,  # A2112 (new)
+                    1246,  # A2121 (+10px)
                     1360,  # A2122 (+8px)
                     1473,  # A2211 (+8px)
                     1585,  # A2212 (+8px)
@@ -680,38 +680,38 @@ def generate_prototype_7gen_preview(
                 ) in great_great_great_grandparents:
                     if individual:
                         # Determine flag position based on base_x (16 master positions)
-                        # Using actual a_x_positions values: [131, 241, 355, 468, 578, 692, 805, 907, 1028, 1140, 1249, 1360, 1473, 1585, 1695, 1807]
-                        if base_x == 131:  # A1111
+                        # Using current a_x_positions values: [125, 239, 352, 464, 574, 690, 802, 907, 1025, 1138, 1246, 1360, 1473, 1585, 1693, 1807]
+                        if base_x == 125:  # A1111
                             flag_base_x = Generation7Constants.FLAG_A1111_BASE_X
                             flag_base_y = Generation7Constants.FLAG_A1111_BASE_Y
-                        elif base_x == 241:  # A1112
+                        elif base_x == 239:  # A1112
                             flag_base_x = Generation7Constants.FLAG_A1112_BASE_X
                             flag_base_y = Generation7Constants.FLAG_A1112_BASE_Y
-                        elif base_x == 355:  # A1121
+                        elif base_x == 352:  # A1121
                             flag_base_x = Generation7Constants.FLAG_A1121_BASE_X
                             flag_base_y = Generation7Constants.FLAG_A1121_BASE_Y
-                        elif base_x == 468:  # A1122
+                        elif base_x == 464:  # A1122
                             flag_base_x = Generation7Constants.FLAG_A1122_BASE_X
                             flag_base_y = Generation7Constants.FLAG_A1122_BASE_Y
-                        elif base_x == 578:  # A1211
+                        elif base_x == 574:  # A1211
                             flag_base_x = Generation7Constants.FLAG_A1211_BASE_X
                             flag_base_y = Generation7Constants.FLAG_A1211_BASE_Y
-                        elif base_x == 692:  # A1212
+                        elif base_x == 690:  # A1212
                             flag_base_x = Generation7Constants.FLAG_A1212_BASE_X
                             flag_base_y = Generation7Constants.FLAG_A1212_BASE_Y
-                        elif base_x == 805:  # A1221
+                        elif base_x == 802:  # A1221
                             flag_base_x = Generation7Constants.FLAG_A1221_BASE_X
                             flag_base_y = Generation7Constants.FLAG_A1221_BASE_Y
                         elif base_x == 907:  # A1222
                             flag_base_x = Generation7Constants.FLAG_A1222_BASE_X
                             flag_base_y = Generation7Constants.FLAG_A1222_BASE_Y
-                        elif base_x == 1028:  # A2111
+                        elif base_x == 1025:  # A2111
                             flag_base_x = Generation7Constants.FLAG_A2111_BASE_X
                             flag_base_y = Generation7Constants.FLAG_A2111_BASE_Y
-                        elif base_x == 1140:  # A2112
+                        elif base_x == 1138:  # A2112
                             flag_base_x = Generation7Constants.FLAG_A2112_BASE_X
                             flag_base_y = Generation7Constants.FLAG_A2112_BASE_Y
-                        elif base_x == 1249:  # A2121
+                        elif base_x == 1246:  # A2121
                             flag_base_x = Generation7Constants.FLAG_A2121_BASE_X
                             flag_base_y = Generation7Constants.FLAG_A2121_BASE_Y
                         elif base_x == 1360:  # A2122

@@ -35,7 +35,9 @@ class PersonData:
     death_flag: Optional[bytes] = None  # Binary image data for deathplace flag
     events: Optional[List[Dict]] = None  # List of events associated with the individual
     sex: Optional[str] = None  # Gender of the individual
-    title: Optional[str] = None  # Professional or nobility titles
+    title: Optional[str] = None  # Professional or nobility titles (Sir, Lady, etc.)
+    honorific: Optional[str] = None  # Honorifics (Mr., Mrs., Ms., Dr., etc.)
+    suffix: Optional[str] = None  # Suffixes (Jr., Sr., III, etc.)
     occupation: Optional[str] = None  # Occupation or trade
 
     def get_full_name(self) -> str:

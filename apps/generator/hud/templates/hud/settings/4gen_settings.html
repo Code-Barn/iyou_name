@@ -1,0 +1,519 @@
+<!-- 4 Generation Chart Settings -->
+<!-- Color Settings and Name Formatting -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Color Settings</h6>
+
+    <!-- Great-Grandparent Generation Colors -->
+    <div class="mb-3">
+        <h6 class="text-success mb-2">Great-Grandparent Generation Colors</h6>
+
+        <!-- Individual Great-Grandparent Colors -->
+        <div class="mb-3">
+            <h6 class="text-info mb-2">Individual Great-Grandparent Colors (8 Compass Positions)</h6>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Position 0 (Bottom) Name Color</label>
+                    <input type="color" name="great_grandparent_0_font_color" class="form-control form-control-color" value="{{ hud_settings.great_grandparent_0_font_color|default:'#000000' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Position 1 (Bottom-Right) Name Color</label>
+                    <input type="color" name="great_grandparent_1_font_color" class="form-control form-control-color" value="{{ hud_settings.great_grandparent_1_font_color|default:'#000000' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Position 2 (Right) Name Color</label>
+                    <input type="color" name="great_grandparent_2_font_color" class="form-control form-control-color" value="{{ hud_settings.great_grandparent_2_font_color|default:'#000000' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Position 3 (Top-Right) Name Color</label>
+                    <input type="color" name="great_grandparent_3_font_color" class="form-control form-control-color" value="{{ hud_settings.great_grandparent_3_font_color|default:'#000000' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Position 4 (Top) Name Color</label>
+                    <input type="color" name="great_grandparent_4_font_color" class="form-control form-control-color" value="{{ hud_settings.great_grandparent_4_font_color|default:'#000000' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Position 5 (Top-Left) Name Color</label>
+                    <input type="color" name="great_grandparent_5_font_color" class="form-control form-control-color" value="{{ hud_settings.great_grandparent_5_font_color|default:'#000000' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Position 6 (Left) Name Color</label>
+                    <input type="color" name="great_grandparent_6_font_color" class="form-control form-control-color" value="{{ hud_settings.great_grandparent_6_font_color|default:'#000000' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Position 7 (Bottom-Left) Name Color</label>
+                    <input type="color" name="great_grandparent_7_font_color" class="form-control form-control-color" value="{{ hud_settings.great_grandparent_7_font_color|default:'#000000' }}">
+                </div>
+            </div>
+        </div>
+
+        <!-- Generic Great-Grandparent Colors (Fallback) -->
+        <div class="mt-3">
+            <h6 class="text-warning mb-2">Generic Colors (Used When Individual Colors Not Set)</h6>
+            <div class="d-flex flex-wrap gap-3">
+                <div class="flex-grow-1">
+                    <label class="form-label">Great-Grandparent Name Color</label>
+                    <input type="color" name="greatgrandparent_font_color" class="form-control form-control-color" value="{{ hud_settings.greatgrandparent_font_color|default:'#000000' }}">
+                </div>
+                <div class="flex-grow-1">
+                    <label class="form-label">Great-Grandparent Birthdate Color</label>
+                    <input type="color" name="greatgrandparent_birth_color" class="form-control form-control-color" value="{{ hud_settings.greatgrandparent_birth_color|default:'#000000' }}">
+                </div>
+                <div class="flex-grow-1">
+                    <label class="form-label">Great-Grandparent Deathdate Color</label>
+                    <input type="color" name="greatgrandparent_death_color" class="form-control form-control-color" value="{{ hud_settings.greatgrandparent_death_color|default:'#000000' }}">
+                </div>
+                <div class="flex-grow-1">
+                    <label class="form-label">Great-Grandparent Birthplace Color</label>
+                    <input type="color" name="greatgrandparent_birth_place_color" class="form-control form-control-color" value="{{ hud_settings.greatgrandparent_birth_place_color|default:'#000000' }}">
+                </div>
+                <div class="flex-grow-1">
+                    <label class="form-label">Great-Grandparent Deathplace Color</label>
+                    <input type="color" name="greatgrandparent_death_place_color" class="form-control form-control-color" value="{{ hud_settings.greatgrandparent_death_place_color|default:'#000000' }}">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Font Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Font Settings</h6>
+    <div class="row g-3">
+        <div class="col-md-12">
+            <label class="form-label">Font Family</label>
+            <select name="font_family" class="form-select">
+                <option value="Arial" {% if hud_settings.font_family|default:'Arial' == 'Arial' %}selected{% endif %}>Arial</option>
+                <option value="Times New Roman" {% if hud_settings.font_family|default:'Arial' == 'Times New Roman' %}selected{% endif %}>Times New Roman</option>
+                <option value="Helvetica" {% if hud_settings.font_family|default:'Arial' == 'Helvetica' %}selected{% endif %}>Helvetica</option>
+                <option value="Georgia" {% if hud_settings.font_family|default:'Arial' == 'Georgia' %}selected{% endif %}>Georgia</option>
+                <option value="Courier New" {% if hud_settings.font_family|default:'Arial' == 'Courier New' %}selected{% endif %}>Courier New</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Font Size Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Font Size Settings</h6>
+
+    <!-- Great-Grandparent Generation Font Sizes -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-success">Great-Grandparent Generation Font Sizes</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Great-Grandparent Name Font Size (px)</label>
+            <input type="range" name="greatgrandparent_name_font_size" class="form-range" min="16" max="64" value="{{ hud_settings.greatgrandparent_name_font_size|default:32 }}" id="greatgrandparent-name-font-size-slider">
+            <div class="text-center">
+                <span id="greatgrandparent-name-font-size-value">{{ hud_settings.greatgrandparent_name_font_size|default:32 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Great-Grandparent Date Font Size (px)</label>
+            <input type="range" name="greatgrandparent_date_info_font_size" class="form-range" min="12" max="36" value="{{ hud_settings.greatgrandparent_date_info_font_size|default:20 }}" id="greatgrandparent-date-info-font-size-slider">
+            <div class="text-center">
+                <span id="greatgrandparent-date-info-font-size-value">{{ hud_settings.greatgrandparent_date_info_font_size|default:20 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Great-Grandparent Place Font Size (px)</label>
+            <input type="range" name="greatgrandparent_place_info_font_size" class="form-range" min="10" max="32" value="{{ hud_settings.greatgrandparent_place_info_font_size|default:16 }}" id="greatgrandparent-place-info-font-size-slider">
+            <div class="text-center">
+                <span id="greatgrandparent-place-info-font-size-value">{{ hud_settings.greatgrandparent_place_info_font_size|default:16 }}</span>px
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Position Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Position Settings</h6>
+
+    <!-- Great-Grandparent Edge Positioning -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-success">Great-Grandparent Edge Positioning</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Edge Distance from Center (px)</label>
+            <input type="range" name="greatgrandparent_edge_distance" class="form-range" min="10" max="100" value="{{ hud_settings.greatgrandparent_edge_distance|default:20 }}" id="greatgrandparent-edge-distance-slider">
+            <div class="text-center">
+                <span id="greatgrandparent-edge-distance-value">{{ hud_settings.greatgrandparent_edge_distance|default:20 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Date Distance from Name (px)</label>
+            <input type="range" name="greatgrandparent_date_distance" class="form-range" min="5" max="30" value="{{ hud_settings.greatgrandparent_date_distance|default:12 }}" id="greatgrandparent-date-distance-slider">
+            <div class="text-center">
+                <span id="greatgrandparent-date-distance-value">{{ hud_settings.greatgrandparent_date_distance|default:12 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Place Distance from Date (px)</label>
+            <input type="range" name="greatgrandparent_place_distance" class="form-range" min="5" max="25" value="{{ hud_settings.greatgrandparent_place_distance|default:8 }}" id="greatgrandparent-place-distance-slider">
+            <div class="text-center">
+                <span id="greatgrandparent-place-distance-value">{{ hud_settings.greatgrandparent_place_distance|default:8 }}</span>px
+            </div>
+        </div>
+    </div>
+
+    <!-- Individual Great-Grandparent Position Adjustments -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-info">Individual Great-Grandparent Position Adjustments</h6>
+            <p class="text-muted small">Fine-tune each great-grandparent position independently</p>
+        </div>
+
+        <!-- Position 0 (Bottom) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Position 0 (Bottom)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small">X Offset</label>
+                            <input type="range" name="great_grandparent_0_translate_x" class="form-range" min="-50" max="50" value="{{ hud_settings.great_grandparent_0_translate_x|default:0 }}" id="great-grandparent-0-translate-x-slider">
+                            <div class="text-center small"><span id="great-grandparent-0-translate-x-value">{{ hud_settings.great_grandparent_0_translate_x|default:0 }}</span>px</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Y Offset</label>
+                            <input type="range" name="great_grandparent_0_translate_y" class="form-range" min="-50" max="50" value="{{ hud_settings.great_grandparent_0_translate_y|default:0 }}" id="great-grandparent-0-translate-y-slider">
+                            <div class="text-center small"><span id="great-grandparent-0-translate-y-value">{{ hud_settings.great_grandparent_0_translate_y|default:0 }}</span>px</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Rotation</label>
+                            <input type="range" name="great_grandparent_0_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.great_grandparent_0_rotate|default:0 }}" id="great-grandparent-0-rotate-slider">
+                            <div class="text-center small"><span id="great-grandparent-0-rotate-value">{{ hud_settings.great_grandparent_0_rotate|default:0 }}</span>°</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Font Size</label>
+                            <input type="range" name="great_grandparent_0_font_size" class="form-range" min="16" max="48" value="{{ hud_settings.great_grandparent_0_font_size|default:32 }}" id="great-grandparent-0-font-size-slider">
+                            <div class="text-center small"><span id="great-grandparent-0-font-size-value">{{ hud_settings.great_grandparent_0_font_size|default:32 }}</span>px</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Position 1 (Bottom-Right) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Position 1 (Bottom-Right)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small">X Offset</label>
+                            <input type="range" name="great_grandparent_1_translate_x" class="form-range" min="-50" max="50" value="{{ hud_settings.great_grandparent_1_translate_x|default:0 }}" id="great-grandparent-1-translate-x-slider">
+                            <div class="text-center small"><span id="great-grandparent-1-translate-x-value">{{ hud_settings.great_grandparent_1_translate_x|default:0 }}</span>px</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Y Offset</label>
+                            <input type="range" name="great_grandparent_1_translate_y" class="form-range" min="-50" max="50" value="{{ hud_settings.great_grandparent_1_translate_y|default:0 }}" id="great-grandparent-1-translate-y-slider">
+                            <div class="text-center small"><span id="great-grandparent-1-translate-y-value">{{ hud_settings.great_grandparent_1_translate_y|default:0 }}</span>px</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Rotation</label>
+                            <input type="range" name="great_grandparent_1_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.great_grandparent_1_rotate|default:0 }}" id="great-grandparent-1-rotate-slider">
+                            <div class="text-center small"><span id="great-grandparent-1-rotate-value">{{ hud_settings.great_grandparent_1_rotate|default:0 }}</span>°</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Font Size</label>
+                            <input type="range" name="great_grandparent_1_font_size" class="form-range" min="16" max="48" value="{{ hud_settings.great_grandparent_1_font_size|default:32 }}" id="great-grandparent-1-font-size-slider">
+                            <div class="text-center small"><span id="great-grandparent-1-font-size-value">{{ hud_settings.great_grandparent_1_font_size|default:32 }}</span>px</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Position 2 (Right) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Position 2 (Right)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small">X Offset</label>
+                            <input type="range" name="great_grandparent_2_translate_x" class="form-range" min="-50" max="50" value="{{ hud_settings.great_grandparent_2_translate_x|default:0 }}" id="great-grandparent-2-translate-x-slider">
+                            <div class="text-center small"><span id="great-grandparent-2-translate-x-value">{{ hud_settings.great_grandparent_2_translate_x|default:0 }}</span>px</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Y Offset</label>
+                            <input type="range" name="great_grandparent_2_translate_y" class="form-range" min="-50" max="50" value="{{ hud_settings.great_grandparent_2_translate_y|default:0 }}" id="great-grandparent-2-translate-y-slider">
+                            <div class="text-center small"><span id="great-grandparent-2-translate-y-value">{{ hud_settings.great_grandparent_2_translate_y|default:0 }}</span>px</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Rotation</label>
+                            <input type="range" name="great_grandparent_2_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.great_grandparent_2_rotate|default:0 }}" id="great-grandparent-2-rotate-slider">
+                            <div class="text-center small"><span id="great-grandparent-2-rotate-value">{{ hud_settings.great_grandparent_2_rotate|default:0 }}</span>°</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Font Size</label>
+                            <input type="range" name="great_grandparent_2_font_size" class="form-range" min="16" max="48" value="{{ hud_settings.great_grandparent_2_font_size|default:32 }}" id="great-grandparent-2-font-size-slider">
+                            <div class="text-center small"><span id="great-grandparent-2-font-size-value">{{ hud_settings.great_grandparent_2_font_size|default:32 }}</span>px</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Position 3 (Top-Right) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Position 3 (Top-Right)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small">X Offset</label>
+                            <input type="range" name="great_grandparent_3_translate_x" class="form-range" min="-50" max="50" value="{{ hud_settings.great_grandparent_3_translate_x|default:0 }}" id="great-grandparent-3-translate-x-slider">
+                            <div class="text-center small"><span id="great-grandparent-3-translate-x-value">{{ hud_settings.great_grandparent_3_translate_x|default:0 }}</span>px</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Y Offset</label>
+                            <input type="range" name="great_grandparent_3_translate_y" class="form-range" min="-50" max="50" value="{{ hud_settings.great_grandparent_3_translate_y|default:0 }}" id="great-grandparent-3-translate-y-slider">
+                            <div class="text-center small"><span id="great-grandparent-3-translate-y-value">{{ hud_settings.great_grandparent_3_translate_y|default:0 }}</span>px</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Rotation</label>
+                            <input type="range" name="great_grandparent_3_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.great_grandparent_3_rotate|default:0 }}" id="great-grandparent-3-rotate-slider">
+                            <div class="text-center small"><span id="great-grandparent-3-rotate-value">{{ hud_settings.great_grandparent_3_rotate|default:0 }}</span>°</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Font Size</label>
+                            <input type="range" name="great_grandparent_3_font_size" class="form-range" min="16" max="48" value="{{ hud_settings.great_grandparent_3_font_size|default:32 }}" id="great-grandparent-3-font-size-slider">
+                            <div class="text-center small"><span id="great-grandparent-3-font-size-value">{{ hud_settings.great_grandparent_3_font_size|default:32 }}</span>px</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Position 4 (Top) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Position 4 (Top)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small">X Offset</label>
+                            <input type="range" name="great_grandparent_4_translate_x" class="form-range" min="-50" max="50" value="{{ hud_settings.great_grandparent_4_translate_x|default:0 }}" id="great-grandparent-4-translate-x-slider">
+                            <div class="text-center small"><span id="great-grandparent-4-translate-x-value">{{ hud_settings.great_grandparent_4_translate_x|default:0 }}</span>px</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Y Offset</label>
+                            <input type="range" name="great_grandparent_4_translate_y" class="form-range" min="-50" max="50" value="{{ hud_settings.great_grandparent_4_translate_y|default:0 }}" id="great-grandparent-4-translate-y-slider">
+                            <div class="text-center small"><span id="great-grandparent-4-translate-y-value">{{ hud_settings.great_grandparent_4_translate_y|default:0 }}</span>px</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Rotation</label>
+                            <input type="range" name="great_grandparent_4_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.great_grandparent_4_rotate|default:0 }}" id="great-grandparent-4-rotate-slider">
+                            <div class="text-center small"><span id="great-grandparent-4-rotate-value">{{ hud_settings.great_grandparent_4_rotate|default:0 }}</span>°</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Font Size</label>
+                            <input type="range" name="great_grandparent_4_font_size" class="form-range" min="16" max="48" value="{{ hud_settings.great_grandparent_4_font_size|default:32 }}" id="great-grandparent-4-font-size-slider">
+                            <div class="text-center small"><span id="great-grandparent-4-font-size-value">{{ hud_settings.great_grandparent_4_font_size|default:32 }}</span>px</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Position 5 (Top-Left) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Position 5 (Top-Left)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small">X Offset</label>
+                            <input type="range" name="great_grandparent_5_translate_x" class="form-range" min="-50" max="50" value="{{ hud_settings.great_grandparent_5_translate_x|default:0 }}" id="great-grandparent-5-translate-x-slider">
+                            <div class="text-center small"><span id="great-grandparent-5-translate-x-value">{{ hud_settings.great_grandparent_5_translate_x|default:0 }}</span>px</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Y Offset</label>
+                            <input type="range" name="great_grandparent_5_translate_y" class="form-range" min="-50" max="50" value="{{ hud_settings.great_grandparent_5_translate_y|default:0 }}" id="great-grandparent-5-translate-y-slider">
+                            <div class="text-center small"><span id="great-grandparent-5-translate-y-value">{{ hud_settings.great_grandparent_5_translate_y|default:0 }}</span>px</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Rotation</label>
+                            <input type="range" name="great_grandparent_5_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.great_grandparent_5_rotate|default:0 }}" id="great-grandparent-5-rotate-slider">
+                            <div class="text-center small"><span id="great-grandparent-5-rotate-value">{{ hud_settings.great_grandparent_5_rotate|default:0 }}</span>°</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Font Size</label>
+                            <input type="range" name="great_grandparent_5_font_size" class="form-range" min="16" max="48" value="{{ hud_settings.great_grandparent_5_font_size|default:32 }}" id="great-grandparent-5-font-size-slider">
+                            <div class="text-center small"><span id="great-grandparent-5-font-size-value">{{ hud_settings.great_grandparent_5_font_size|default:32 }}</span>px</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Position 6 (Left) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Position 6 (Left)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small">X Offset</label>
+                            <input type="range" name="great_grandparent_6_translate_x" class="form-range" min="-50" max="50" value="{{ hud_settings.great_grandparent_6_translate_x|default:0 }}" id="great-grandparent-6-translate-x-slider">
+                            <div class="text-center small"><span id="great-grandparent-6-translate-x-value">{{ hud_settings.great_grandparent_6_translate_x|default:0 }}</span>px</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Y Offset</label>
+                            <input type="range" name="great_grandparent_6_translate_y" class="form-range" min="-50" max="50" value="{{ hud_settings.great_grandparent_6_translate_y|default:0 }}" id="great-grandparent-6-translate-y-slider">
+                            <div class="text-center small"><span id="great-grandparent-6-translate-y-value">{{ hud_settings.great_grandparent_6_translate_y|default:0 }}</span>px</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Rotation</label>
+                            <input type="range" name="great_grandparent_6_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.great_grandparent_6_rotate|default:0 }}" id="great-grandparent-6-rotate-slider">
+                            <div class="text-center small"><span id="great-grandparent-6-rotate-value">{{ hud_settings.great_grandparent_6_rotate|default:0 }}</span>°</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Font Size</label>
+                            <input type="range" name="great_grandparent_6_font_size" class="form-range" min="16" max="48" value="{{ hud_settings.great_grandparent_6_font_size|default:32 }}" id="great-grandparent-6-font-size-slider">
+                            <div class="text-center small"><span id="great-grandparent-6-font-size-value">{{ hud_settings.great_grandparent_6_font_size|default:32 }}</span>px</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Position 7 (Bottom-Left) -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Position 7 (Bottom-Left)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small">X Offset</label>
+                            <input type="range" name="great_grandparent_7_translate_x" class="form-range" min="-50" max="50" value="{{ hud_settings.great_grandparent_7_translate_x|default:0 }}" id="great-grandparent-7-translate-x-slider">
+                            <div class="text-center small"><span id="great-grandparent-7-translate-x-value">{{ hud_settings.great_grandparent_7_translate_x|default:0 }}</span>px</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Y Offset</label>
+                            <input type="range" name="great_grandparent_7_translate_y" class="form-range" min="-50" max="50" value="{{ hud_settings.great_grandparent_7_translate_y|default:0 }}" id="great-grandparent-7-translate-y-slider">
+                            <div class="text-center small"><span id="great-grandparent-7-translate-y-value">{{ hud_settings.great_grandparent_7_translate_y|default:0 }}</span>px</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Rotation</label>
+                            <input type="range" name="great_grandparent_7_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.great_grandparent_7_rotate|default:0 }}" id="great-grandparent-7-rotate-slider">
+                            <div class="text-center small"><span id="great-grandparent-7-rotate-value">{{ hud_settings.great_grandparent_7_rotate|default:0 }}</span>°</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Font Size</label>
+                            <input type="range" name="great_grandparent_7_font_size" class="form-range" min="16" max="48" value="{{ hud_settings.great_grandparent_7_font_size|default:32 }}" id="great-grandparent-7-font-size-slider">
+                            <div class="text-center small"><span id="great-grandparent-7-font-size-value">{{ hud_settings.great_grandparent_7_font_size|default:32 }}</span>px</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic Position Adjustments (Fallback) -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-warning">Generic Position Adjustments (Applied When Individual Settings Not Set)</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Name Horizontal Offset (px)</label>
+            <input type="range" name="greatgrandparent_translate_x" class="form-range" min="-50" max="50" value="{{ hud_settings.greatgrandparent_translate_x|default:0 }}" id="greatgrandparent-translate-x-slider">
+            <div class="text-center">
+                <span id="greatgrandparent-translate-x-value">{{ hud_settings.greatgrandparent_translate_x|default:0 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Birthdate Vertical Offset (px)</label>
+            <input type="range" name="greatgrandparent_birth_translate_y" class="form-range" min="-30" max="30" value="{{ hud_settings.greatgrandparent_birth_translate_y|default:0 }}" id="greatgrandparent-birth-translate-y-slider">
+            <div class="text-center">
+                <span id="greatgrandparent-birth-translate-y-value">{{ hud_settings.greatgrandparent_birth_translate_y|default:0 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Name Rotation (degrees)</label>
+            <input type="range" name="greatgrandparent_name_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.greatgrandparent_name_rotate|default:0 }}" id="greatgrandparent-name-rotate-slider">
+            <div class="text-center">
+                <span id="greatgrandparent-name-rotate-value">{{ hud_settings.greatgrandparent_name_rotate|default:0 }}</span>°
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Composite Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">3Gen Overlay Settings</h6>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">3Gen Overlay Scale</label>
+            <input type="range" name="composite_3gen_scale" class="form-range" min="20" max="60" step="5" value="{{ hud_settings.composite_3gen_scale|default:30 }}" id="composite-3gen-scale-slider">
+            <div class="text-center">
+                <span id="composite-3gen-scale-value">{{ hud_settings.composite_3gen_scale|default:30 }}</span>%
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Overlay Position X</label>
+            <input type="range" name="composite_overlay_x" class="form-range" min="200" max="800" value="{{ hud_settings.composite_overlay_x|default:500 }}" id="composite-overlay-x-slider">
+            <div class="text-center">
+                <span id="composite-overlay-x-value">{{ hud_settings.composite_overlay_x|default:500 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Overlay Position Y</label>
+            <input type="range" name="composite_overlay_y" class="form-range" min="200" max="800" value="{{ hud_settings.composite_overlay_y|default:500 }}" id="composite-overlay-y-slider">
+            <div class="text-center">
+                <span id="composite-overlay-y-value">{{ hud_settings.composite_overlay_y|default:500 }}</span>px
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stroke Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Stroke Settings (Outside Stroke)</h6>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Outside Stroke Width</label>
+            <input type="range" name="gen4_stroke_width" class="form-range" min="0" max="18" step="1" value="{{ hud_settings.gen4_stroke_width|default:9 }}" id="default-stroke-width-slider">
+            <div class="text-center">
+                <span id="default-stroke-width-value">{{ hud_settings.gen4_stroke_width|default:9 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Outside Stroke Color</label>
+            <input type="color" name="gen4_stroke_color" class="form-control form-control-color" value="{{ hud_settings.gen4_stroke_color|default:'#ffffff' }}">
+        </div>
+    </div>
+</div>
+
+<!-- Flag Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Flag Settings</h6>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Flag Size (px)</label>
+            <input type="range" name="gen4_flag_size" class="form-range" min="48" max="400" value="{{ hud_settings.gen4_flag_size|default:142 }}" id="place-flag-size-slider">
+            <div class="text-center">
+                <span id="place-flag-size-value">{{ hud_settings.gen4_flag_size|default:142 }}</span>px
+            </div>
+        </div>
+    </div>
+</div>

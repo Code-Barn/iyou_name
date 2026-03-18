@@ -1,0 +1,594 @@
+<!-- 2 Generation Chart Settings -->
+<!-- Color Settings and Name Formatting -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Color Settings</h6>
+
+    <!-- Parent Generation Colors -->
+    <div class="mb-3">
+        <h6 class="text-success mb-2">Parent Generation Colors</h6>
+        <div class="d-flex flex-wrap gap-3">
+            <div class="flex-grow-1">
+                <label class="form-label">Father Name Color</label>
+                <input type="color" name="father_font_color" class="form-control form-control-color" value="{{ hud_settings.father_font_color|default:'#000000' }}">
+            </div>
+            <div class="flex-grow-1">
+                <label class="form-label">Mother Name Color</label>
+                <input type="color" name="mother_font_color" class="form-control form-control-color" value="{{ hud_settings.mother_font_color|default:'#000000' }}">
+            </div>
+            <div class="flex-grow-1">
+                <label class="form-label">Father Birthdate Color</label>
+                <input type="color" name="father_birth_color" class="form-control form-control-color" value="{{ hud_settings.father_birth_color|default:'#000000' }}">
+            </div>
+            <div class="flex-grow-1">
+                <label class="form-label">Mother Birthdate Color</label>
+                <input type="color" name="mother_birth_color" class="form-control form-control-color" value="{{ hud_settings.mother_birth_color|default:'#000000' }}">
+            </div>
+            <div class="flex-grow-1">
+                <label class="form-label">Father Deathdate Color</label>
+                <input type="color" name="father_death_color" class="form-control form-control-color" value="{{ hud_settings.father_death_color|default:'#000000' }}">
+            </div>
+            <div class="flex-grow-1">
+                <label class="form-label">Mother Deathdate Color</label>
+                <input type="color" name="mother_death_color" class="form-control form-control-color" value="{{ hud_settings.mother_death_color|default:'#000000' }}">
+            </div>
+            <div class="flex-grow-1">
+                <label class="form-label">Father Birthplace Color</label>
+                <input type="color" name="father_birth_place_color" class="form-control form-control-color" value="{{ hud_settings.father_birth_place_color|default:'#000000' }}">
+            </div>
+            <div class="flex-grow-1">
+                <label class="form-label">Mother Birthplace Color</label>
+                <input type="color" name="mother_birth_place_color" class="form-control form-control-color" value="{{ hud_settings.mother_birth_place_color|default:'#000000' }}">
+            </div>
+            <div class="flex-grow-1">
+                <label class="form-label">Father Deathplace Color</label>
+                <input type="color" name="father_death_place_color" class="form-control form-control-color" value="{{ hud_settings.father_death_place_color|default:'#000000' }}">
+            </div>
+            <div class="flex-grow-1">
+                <label class="form-label">Mother Deathplace Color</label>
+                <input type="color" name="mother_death_place_color" class="form-control form-control-color" value="{{ hud_settings.mother_death_place_color|default:'#000000' }}">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Font Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Font Settings</h6>
+    <div class="row g-3">
+        <div class="col-md-12">
+            <label class="form-label">Font Family</label>
+            <select name="font_family" class="form-select">
+                <option value="Arial" {% if hud_settings.font_family|default:'Arial' == 'Arial' %}selected{% endif %}>Arial</option>
+                <option value="Times New Roman" {% if hud_settings.font_family|default:'Arial' == 'Times New Roman' %}selected{% endif %}>Times New Roman</option>
+                <option value="Helvetica" {% if hud_settings.font_family|default:'Arial' == 'Helvetica' %}selected{% endif %}>Helvetica</option>
+                <option value="Georgia" {% if hud_settings.font_family|default:'Arial' == 'Georgia' %}selected{% endif %}>Georgia</option>
+                <option value="Courier New" {% if hud_settings.font_family|default:'Arial' == 'Courier New' %}selected{% endif %}>Courier New</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Font Size Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Font Size Settings</h6>
+
+    <!-- Parent Generation Font Sizes -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-success">Parent Generation Font Sizes</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Name Font Size (px)</label>
+            <input type="range" name="parent_father_name_font_size" class="form-range" min="28" max="100" value="{{ hud_settings.parent_father_name_font_size|default:60 }}" id="parent-father-name-font-size-slider">
+            <div class="text-center">
+                <span id="parent-father-name-font-size-value">{{ hud_settings.parent_father_name_font_size|default:60 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Name Font Size (px)</label>
+            <input type="range" name="parent_mother_name_font_size" class="form-range" min="28" max="100" value="{{ hud_settings.parent_mother_name_font_size|default:60 }}" id="parent-mother-name-font-size-slider">
+            <div class="text-center">
+                <span id="parent-mother-name-font-size-value">{{ hud_settings.parent_mother_name_font_size|default:60 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Parent Date Font Size (px)</label>
+            <input type="range" name="parent_date_info_font_size" class="form-range" min="20" max="60" value="{{ hud_settings.parent_date_info_font_size|default:40 }}" id="parent-date-info-font-size-slider">
+            <div class="text-center">
+                <span id="parent-date-info-font-size-value">{{ hud_settings.parent_date_info_font_size|default:40 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Parent Place Info Font Size (px)</label>
+            <input type="range" name="parent_place_info_font_size" class="form-range" min="18" max="48" value="{{ hud_settings.parent_place_info_font_size|default:28 }}" id="parent-place-info-font-size-slider">
+            <div class="text-center">
+                <span id="parent-place-info-font-size-value">{{ hud_settings.parent_place_info_font_size|default:28 }}</span>px
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Position Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Position Settings</h6>
+
+    <!-- Parent Generation Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-success">Parent Generation Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Parents Translate X</label>
+            <input type="range" name="parent_translate_x" class="form-range" min="-300" max="300" value="{{ hud_settings.parent_translate_x|default:0 }}" id="parent-translate-x-slider">
+            <div class="text-center">
+                <span id="parent-translate-x-value">{{ hud_settings.parent_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Parents Translate Y</label>
+            <input type="range" name="parent_translate_y" class="form-range" min="-300" max="300" value="{{ hud_settings.parent_translate_y|default:0 }}" id="parent-translate-y-slider">
+            <div class="text-center">
+                <span id="parent-translate-y-value">{{ hud_settings.parent_translate_y|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Parents Rotation (degrees)</label>
+            <input type="range" name="parent_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.parent_rotate|default:0 }}" id="parent-rotate-slider">
+            <div class="text-center">
+                <span id="parent-rotate-value">{{ hud_settings.parent_rotate|default:0 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Father Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-info">Father Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father First Name Translate X</label>
+            <input type="range" name="father_first_translate_x" class="form-range" min="800" max="1200" value="{{ hud_settings.father_first_translate_x|default:975 }}" id="father-first-translate-x-slider">
+            <div class="text-center">
+                <span id="father-first-translate-x-value">{{ hud_settings.father_first_translate_x|default:975 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father First Name Translate Y</label>
+            <input type="range" name="father_first_translate_y" class="form-range" min="1500" max="2000" value="{{ hud_settings.father_first_translate_y|default:1700 }}" id="father-first-translate-y-slider">
+            <div class="text-center">
+                <span id="father-first-translate-y-value">{{ hud_settings.father_first_translate_y|default:1700 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father First Name Rotation (degrees)</label>
+            <input type="range" name="father_first_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.father_first_rotate|default:0 }}" id="father-first-rotate-slider">
+            <div class="text-center">
+                <span id="father-first-rotate-value">{{ hud_settings.father_first_rotate|default:0 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Father Middle Name Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-info">Father Middle Name Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Middle Name Translate X</label>
+            <input type="range" name="father_middle_translate_x" class="form-range" min="-200" max="200" value="{{ hud_settings.father_middle_translate_x|default:0 }}" id="father-middle-translate-x-slider">
+            <div class="text-center">
+                <span id="father-middle-translate-x-value">{{ hud_settings.father_middle_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Middle Name Translate Y</label>
+            <input type="range" name="father_middle_translate_y" class="form-range" min="-200" max="200" value="{{ hud_settings.father_middle_translate_y|default:0 }}" id="father-middle-translate-y-slider">
+            <div class="text-center">
+                <span id="father-middle-translate-y-value">{{ hud_settings.father_middle_translate_y|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Middle Name Rotation (degrees)</label>
+            <input type="range" name="father_middle_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.father_middle_rotate|default:0 }}" id="father-middle-rotate-slider">
+            <div class="text-center">
+                <span id="father-middle-rotate-value">{{ hud_settings.father_middle_rotate|default:0 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Father Last Name Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-info">Father Last Name Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Last Name Translate X</label>
+            <input type="range" name="father_last_translate_x" class="form-range" min="-200" max="200" value="{{ hud_settings.father_last_translate_x|default:0 }}" id="father-last-translate-x-slider">
+            <div class="text-center">
+                <span id="father-last-translate-x-value">{{ hud_settings.father_last_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Last Name Translate Y</label>
+            <input type="range" name="father_last_translate_y" class="form-range" min="-200" max="200" value="{{ hud_settings.father_last_translate_y|default:0 }}" id="father-last-translate-y-slider">
+            <div class="text-center">
+                <span id="father-last-translate-y-value">{{ hud_settings.father_last_translate_y|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Last Name Rotation (degrees)</label>
+            <input type="range" name="father_last_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.father_last_rotate|default:0 }}" id="father-last-rotate-slider">
+            <div class="text-center">
+                <span id="father-last-rotate-value">{{ hud_settings.father_last_rotate|default:0 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Father Birth Date Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-success">Father Birth Date Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Birthdate Translate X</label>
+            <input type="range" name="father_birth_translate_x" class="form-range" min="-100" max="300" value="{{ hud_settings.father_birth_translate_x|default:0 }}" id="father-birth-translate-x-slider">
+            <div class="text-center">
+                <span id="father-birth-translate-x-value">{{ hud_settings.father_birth_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Birthdate Translate Y</label>
+            <input type="range" name="father_birth_translate_y" class="form-range" min="-300" max="300" value="{{ hud_settings.father_birth_translate_y|default:0 }}" id="father-birth-translate-y-slider">
+            <div class="text-center">
+                <span id="father-birth-translate-y-value">{{ hud_settings.father_birth_translate_y|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Birthdate Rotation (degrees)</label>
+            <input type="range" name="father_birth_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.father_birth_rotate|default:0 }}" id="father-birth-rotate-slider">
+            <div class="text-center">
+                <span id="father-birth-rotate-value">{{ hud_settings.father_birth_rotate|default:0 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Father Birth Place Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-info">Father Birth Place Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Birthplace Translate X</label>
+            <input type="range" name="father_birth_place_translate_x" class="form-range" min="-300" max="100" value="{{ hud_settings.father_birth_place_translate_x|default:0 }}" id="father-birth-place-translate-x-slider">
+            <div class="text-center">
+                <span id="father-birth-place-translate-x-value">{{ hud_settings.father_birth_place_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Birthplace Translate Y</label>
+            <input type="range" name="father_birth_place_translate_y" class="form-range" min="-300" max="100" value="{{ hud_settings.father_birth_place_translate_y|default:0 }}" id="father-birth-place-translate-y-slider">
+            <div class="text-center">
+                <span id="father-birth-place-translate-y-value">{{ hud_settings.father_birth_place_translate_y|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Birthplace Rotation (degrees)</label>
+            <input type="range" name="father_birth_place_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.father_birth_place_rotate|default:0 }}" id="father-birth-place-rotate-slider">
+            <div class="text-center">
+                <span id="father-birth-place-rotate-value">{{ hud_settings.father_birth_place_rotate|default:0 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Father Death Date Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-danger">Father Death Date Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Deathdate Translate X</label>
+            <input type="range" name="father_death_translate_x" class="form-range" min="-300" max="300" value="{{ hud_settings.father_death_translate_x|default:0 }}" id="father-death-translate-x-slider">
+            <div class="text-center">
+                <span id="father-death-translate-x-value">{{ hud_settings.father_death_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Deathdate Translate Y</label>
+            <input type="range" name="father_death_translate_y" class="form-range" min="-100" max="300" value="{{ hud_settings.father_death_translate_y|default:280 }}" id="father-death-translate-y-slider">
+            <div class="text-center">
+                <span id="father-death-translate-y-value">{{ hud_settings.father_death_translate_y|default:280 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Deathdate Rotation (degrees)</label>
+            <input type="range" name="father_death_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.father_death_rotate|default:-90 }}" id="father-death-rotate-slider">
+            <div class="text-center">
+                <span id="father-death-rotate-value">{{ hud_settings.father_death_rotate|default:-90 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Father Death Place Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-warning">Father Death Place Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Deathplace Translate X</label>
+            <input type="range" name="father_death_place_translate_x" class="form-range" min="-300" max="100" value="{{ hud_settings.father_death_place_translate_x|default:0 }}" id="father-death-place-translate-x-slider">
+            <div class="text-center">
+                <span id="father-death-place-translate-x-value">{{ hud_settings.father_death_place_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Deathplace Translate Y</label>
+            <input type="range" name="father_death_place_translate_y" class="form-range" min="-300" max="300" value="{{ hud_settings.father_death_place_translate_y|default:280 }}" id="father-death-place-translate-y-slider">
+            <div class="text-center">
+                <span id="father-death-place-translate-y-value">{{ hud_settings.father_death_place_translate_y|default:280 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Father Deathplace Rotation (degrees)</label>
+            <input type="range" name="father_death_place_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.father_death_place_rotate|default:-90 }}" id="father-death-place-rotate-slider">
+                <div class="text-center">
+                    <span id="father-death-place-rotate-value">{{ hud_settings.father_death_place_rotate|default:-90 }}</span>
+                </div>
+        </div>
+    </div>
+
+    <!-- Mother Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-warning">Mother Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother First Name Translate X</label>
+            <input type="range" name="mother_first_translate_x" class="form-range" min="-200" max="200" value="{{ hud_settings.mother_first_translate_x|default:0 }}" id="mother-first-translate-x-slider">
+            <div class="text-center">
+                <span id="mother-first-translate-x-value">{{ hud_settings.mother_first_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother First Name Translate Y</label>
+            <input type="range" name="mother_first_translate_y" class="form-range" min="-200" max="200" value="{{ hud_settings.mother_first_translate_y|default:0 }}" id="mother-first-translate-y-slider">
+            <div class="text-center">
+                <span id="mother-first-translate-y-value">{{ hud_settings.mother_first_translate_y|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother First Name Rotation (degrees)</label>
+            <input type="range" name="mother_first_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.mother_first_rotate|default:0 }}" id="mother-first-rotate-slider">
+            <div class="text-center">
+                <span id="mother-first-rotate-value">{{ hud_settings.mother_first_rotate|default:0 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mother Middle Name Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-warning">Mother Middle Name Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Middle Name Translate X</label>
+            <input type="range" name="mother_middle_translate_x" class="form-range" min="-200" max="200" value="{{ hud_settings.mother_middle_translate_x|default:0 }}" id="mother-middle-translate-x-slider">
+            <div class="text-center">
+                <span id="mother-middle-translate-x-value">{{ hud_settings.mother_middle_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Middle Name Translate Y</label>
+            <input type="range" name="mother_middle_translate_y" class="form-range" min="-200" max="200" value="{{ hud_settings.mother_middle_translate_y|default:0 }}" id="mother-middle-translate-y-slider">
+            <div class="text-center">
+                <span id="mother-middle-translate-y-value">{{ hud_settings.mother_middle_translate_y|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Middle Name Rotation (degrees)</label>
+            <input type="range" name="mother_middle_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.mother_middle_rotate|default:0 }}" id="mother-middle-rotate-slider">
+                <div class="text-center">
+                    <span id="mother-middle-rotate-value">{{ hud_settings.mother_middle_rotate|default:0 }}</span>
+                </div>
+        </div>
+    </div>
+
+    <!-- Mother Last Name Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-warning">Mother Last Name Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Last Name Translate X</label>
+            <input type="range" name="mother_last_translate_x" class="form-range" min="-200" max="200" value="{{ hud_settings.mother_last_translate_x|default:0 }}" id="mother-last-translate-x-slider">
+            <div class="text-center">
+                <span id="mother-last-translate-x-value">{{ hud_settings.mother_last_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Last Name Translate Y</label>
+            <input type="range" name="mother_last_translate_y" class="form-range" min="-200" max="200" value="{{ hud_settings.mother_last_translate_y|default:0 }}" id="mother-last-translate-y-slider">
+            <div class="text-center">
+                <span id="mother-last-translate-y-value">{{ hud_settings.mother_last_translate_y|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Last Name Rotation (degrees)</label>
+            <input type="range" name="mother_last_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.mother_last_rotate|default:0 }}" id="mother-last-rotate-slider">
+            <div class="text-center">
+                <span id="mother-last-rotate-value">{{ hud_settings.mother_last_rotate|default:0 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mother Birth Date Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-success">Mother Birth Date Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Birthdate Translate X</label>
+            <input type="range" name="mother_birth_translate_x" class="form-range" min="-200" max="200" value="{{ hud_settings.mother_birth_translate_x|default:0 }}" id="mother-birth-translate-x-slider">
+            <div class="text-center">
+                <span id="mother-birth-translate-x-value">{{ hud_settings.mother_birth_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Birthdate Translate Y</label>
+            <input type="range" name="mother_birth_translate_y" class="form-range" min="-300" max="300" value="{{ hud_settings.mother_birth_translate_y|default:0 }}" id="mother-birth-translate-y-slider">
+            <div class="text-center">
+                <span id="mother-birth-translate-y-value">{{ hud_settings.mother_birth_translate_y|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Birthdate Rotation (degrees)</label>
+            <input type="range" name="mother_birth_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.mother_birth_rotate|default:0 }}" id="mother-birth-rotate-slider">
+            <div class="text-center">
+                <span id="mother-birth-rotate-value">{{ hud_settings.mother_birth_rotate|default:0 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mother Birth Place Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-info">Mother Birth Place Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Birthplace Translate X</label>
+            <input type="range" name="mother_birth_place_translate_x" class="form-range" min="-300" max="100" value="{{ hud_settings.mother_birth_place_translate_x|default:0 }}" id="mother-birth-place-translate-x-slider">
+            <div class="text-center">
+                <span id="mother-birth-place-translate-x-value">{{ hud_settings.mother_birth_place_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Birthplace Translate Y</label>
+            <input type="range" name="mother_birth_place_translate_y" class="form-range" min="-300" max="100" value="{{ hud_settings.mother_birth_place_translate_y|default:0 }}" id="mother-birth-place-translate-y-slider">
+            <div class="text-center">
+                <span id="mother-birth-place-translate-y-value">{{ hud_settings.mother_birth_place_translate_y|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Birthplace Rotation (degrees)</label>
+            <input type="range" name="mother_birth_place_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.mother_birth_place_rotate|default:0 }}" id="mother-birth-place-rotate-slider">
+            <div class="text-center">
+                <span id="mother-birth-place-rotate-value">{{ hud_settings.mother_birth_place_rotate|default:0 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mother Death Date Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-danger">Mother Death Date Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Deathdate Translate X</label>
+            <input type="range" name="mother_death_translate_x" class="form-range" min="-200" max="200" value="{{ hud_settings.mother_death_translate_x|default:0 }}" id="mother-death-translate-x-slider">
+            <div class="text-center">
+                <span id="mother-death-translate-x-value">{{ hud_settings.mother_death_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Deathdate Translate Y</label>
+            <input type="range" name="mother_death_translate_y" class="form-range" min="-100" max="300" value="{{ hud_settings.mother_death_translate_y|default:280 }}" id="mother-death-translate-y-slider">
+            <div class="text-center">
+                <span id="mother-death-translate-y-value">{{ hud_settings.mother_death_translate_y|default:280 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Deathdate Rotation (degrees)</label>
+            <input type="range" name="mother_death_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.mother_death_rotate|default:-90 }}" id="mother-death-rotate-slider">
+            <div class="text-center">
+                <span id="mother-death-rotate-value">{{ hud_settings.mother_death_rotate|default:-90 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mother Death Place Position -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-12">
+            <h6 class="text-warning">Mother Death Place Position</h6>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Deathplace Translate X</label>
+            <input type="range" name="mother_death_place_translate_x" class="form-range" min="-300" max="100" value="{{ hud_settings.mother_death_place_translate_x|default:0 }}" id="mother-death-place-translate-x-slider">
+            <div class="text-center">
+                <span id="mother-death-place-translate-x-value">{{ hud_settings.mother_death_place_translate_x|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Deathplace Translate Y</label>
+            <input type="range" name="mother_death_place_translate_y" class="form-range" min="-300" max="300" value="{{ hud_settings.mother_death_place_translate_y|default:280 }}" id="mother-death-place-translate-y-slider">
+            <div class="text-center">
+                <span id="mother-death-place-translate-y-value">{{ hud_settings.mother_death_place_translate_y|default:280 }}</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Mother Deathplace Rotation (degrees)</label>
+            <input type="range" name="mother_death_place_rotate" class="form-range" min="-180" max="180" value="{{ hud_settings.mother_death_place_rotate|default:-90 }}" id="mother-death-place-rotate-slider">
+            <div class="text-center">
+                <span id="mother-death-place-rotate-value">{{ hud_settings.mother_death_place_rotate|default:-90 }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Composite Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Composite Settings</h6>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">1Gen Overlay Scale</label>
+            <input type="range" name="composite_1gen_scale" class="form-range" min="20" max="80" step="5" value="{{ hud_settings.composite_1gen_scale|default:48 }}" id="composite-1gen-scale-slider">
+            <div class="text-center">
+                <span id="composite-1gen-scale-value">{{ hud_settings.composite_1gen_scale|default:48 }}</span>%
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Overlay Position X</label>
+            <input type="range" name="composite_overlay_x" class="form-range" min="0" max="1600" value="{{ hud_settings.composite_overlay_x|default:508 }}" id="composite-overlay-x-slider">
+            <div class="text-center">
+                <span id="composite-overlay-x-value">{{ hud_settings.composite_overlay_x|default:508 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Overlay Position Y</label>
+            <input type="range" name="composite_overlay_y" class="form-range" min="0" max="1600" value="{{ hud_settings.composite_overlay_y|default:508 }}" id="composite-overlay-y-slider">
+            <div class="text-center">
+                <span id="composite-overlay-y-value">{{ hud_settings.composite_overlay_y|default:508 }}</span>px
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stroke Settings (Outside Stroke) -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Stroke Settings (Outside Stroke)</h6>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Outside Stroke Width</label>
+            <input type="range" name="gen2_stroke_width" class="form-range" min="0" max="44" step="1" value="{{ hud_settings.gen2_stroke_width|default:22 }}" id="default-stroke-width-slider">
+            <div class="text-center">
+                <span id="default-stroke-width-value">{{ hud_settings.gen2_stroke_width|default:22 }}</span>px
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Outside Stroke Color</label>
+            <input type="color" name="gen2_stroke_color" class="form-control form-control-color" value="{{ hud_settings.gen2_stroke_color|default:'#ffffff' }}">
+        </div>
+    </div>
+</div>
+
+<!-- Flag Settings -->
+<div class="mb-3">
+    <h6 class="text-muted mb-3">Flag Settings</h6>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Flag Size (px)</label>
+            <input type="range" name="gen2_flag_size" class="form-range" min="48" max="400" value="{{ hud_settings.gen2_flag_size|default:333 }}" id="place-flag-size-slider">
+            <div class="text-center">
+                <span id="place-flag-size-value">{{ hud_settings.gen2_flag_size|default:333 }}</span>px
+            </div>
+        </div>
+    </div>
+</div>

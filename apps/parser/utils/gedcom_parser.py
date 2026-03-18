@@ -129,10 +129,14 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
             given_name = ""
             surname = ""
             full_name = ""
+            honorific = ""
+            suffix = ""
 
             if name_obj:
                 given_name = getattr(name_obj, "given", "") or ""
                 surname = getattr(name_obj, "surname", "") or ""
+                honorific = getattr(name_obj, "prefix", "") or ""
+                suffix = getattr(name_obj, "suffix", "") or ""
                 full_name = (
                     getattr(name_obj, "format", lambda: f"{given_name} {surname}")()
                     or f"{given_name} {surname}".strip()
@@ -166,13 +170,23 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                         # Extract given and surname from sub-tags
                         birth_given = ""
                         birth_surname = ""
+                        birth_honorific = ""
+                        birth_suffix = ""
                         for sub in name_record.sub_tags():
                             if hasattr(sub, "tag"):
                                 if sub.tag == "GIVN" and hasattr(sub, "value"):
                                     birth_given = str(sub.value)
                                 elif sub.tag == "SURN" and hasattr(sub, "value"):
                                     birth_surname = str(sub.value)
+                                elif sub.tag == "NPFX" and hasattr(sub, "value"):
+                                    birth_honorific = str(sub.value)
+                                elif sub.tag == "NSFX" and hasattr(sub, "value"):
+                                    birth_suffix = str(sub.value)
                         birth_full = f"{birth_given} {birth_surname}".strip()
+                        if birth_honorific:
+                            honorific = birth_honorific
+                        if birth_suffix:
+                            suffix = birth_suffix
                         print(f"[DEBUG] Found BIRTH name: {birth_full}")
                         break
 
@@ -349,6 +363,8 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                 events=events,
                 sex=sex,
                 title=title,
+                honorific=honorific,
+                suffix=suffix,
                 occupation=occupation,
                 birth_flag=None,
                 death_flag=None,
@@ -902,57 +918,31 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                     f"[PEDI] {individual.full_name} has foster parents: {foster_parents}"
                 )
 
-        # Identify siblings for each individual using BIOLOGICAL parents (after PEDI correction)
-        # Full siblings = same biological parents
-        # Half siblings = share exactly one biological parent
+        # Identify siblings for each individual
+        # Siblings = people who appear as children in the same family record
+        # Then categorize relationship type (full, half, adopted, step, foster)
+
+        # First, build a map of family -> children
+        family_children = {}  # {family_id: [child_id, child_id, ...]}
+        for fam_id, family in family_data["families"].items():
+            children = family.get("children", [])
+            if children:
+                family_children[fam_id] = children
+
+        # For each individual, find siblings from same families
         for ind, individual in family_data["individuals"].items():
-            full_siblings = []
-            half_siblings = []
+            all_siblings = []  # All siblings from any family where both are children
 
-            # Get biological parents from individual object (after PEDI correction)
-            bio_father = individual.father
-            bio_mother = individual.mother
+            # Find families where this individual is a child
+            for fam_id, children in family_children.items():
+                if ind in children:
+                    # This individual is in this family - find other children
+                    for other_child_id in children:
+                        if other_child_id != ind and other_child_id not in all_siblings:
+                            all_siblings.append(other_child_id)
 
-            # Find full siblings = share both biological parents
-            for other_ind, other_individual in family_data["individuals"].items():
-                if other_ind == ind:
-                    continue
-
-                other_bio_father = other_individual.father
-                other_bio_mother = other_individual.mother
-
-                # Count shared biological parents
-                shared_parents = 0
-                if bio_father and other_bio_father and bio_father == other_bio_father:
-                    shared_parents += 1
-                if bio_mother and other_bio_mother and bio_mother == other_bio_mother:
-                    shared_parents += 1
-
-                if shared_parents == 2:
-                    full_siblings.append(other_ind)
-
-            # Find half siblings = share exactly one biological parent
-            for other_ind, other_individual in family_data["individuals"].items():
-                if other_ind == ind:
-                    continue
-                if other_ind in full_siblings:
-                    continue
-
-                other_bio_father = other_individual.father
-                other_bio_mother = other_individual.mother
-
-                # Count shared biological parents
-                shared_parents = 0
-                if bio_father and other_bio_father and bio_father == other_bio_father:
-                    shared_parents += 1
-                if bio_mother and other_bio_mother and bio_mother == other_bio_mother:
-                    shared_parents += 1
-
-                if shared_parents == 1:
-                    half_siblings.append(other_ind)
-
-            individual.siblings = full_siblings
-            individual.half_siblings = half_siblings
+            individual.siblings = all_siblings
+            individual.half_siblings = []
             individual.step_siblings = []
 
         # Debug: Print all individuals and their relationships

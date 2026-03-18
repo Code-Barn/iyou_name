@@ -1,0 +1,709 @@
+{% extends 'core/base.html' %}
+{% load custom_filters static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/zoom.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Interactive Family Tree Preview</h2>
+            <!-- Individual info alert box -->
+            <div class="alert alert-info">
+                <strong>Primary Individual:</strong> {{ individual.full_name }}
+                {% if gedcom_file.home_person_id == individual.id %}
+                <span class="badge bg-success ms-2 align-middle">
+                    <i class="bi bi-house-fill me-1"></i>Home Person
+                </span>
+                {% endif %}<br>
+                <strong>Birth:</strong>
+                {% if individual.birth_date or individual.birth_place %}
+                    {{ individual.birth_date }}{% if individual.birth_date and individual.birth_place %} in {% endif %}{{ individual.birth_place }}
+                {% else %}
+                    Unknown
+                {% endif %}<br>
+                {% if individual.death_date or individual.death_place %}
+                <strong>Death:</strong>
+                    {{ individual.death_date }}{% if individual.death_date and individual.death_place %} in {% endif %}{{ individual.death_place }}
+                {% endif %}
+            </div>
+            <div class="mt-3">
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Preview Area -->
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Live Preview</h5>
+                </div>
+<div class="card-body d-flex justify-content-center">
+                    <div class="hud-preview-area">
+                        <div id="hud-preview-container" class="preview-container">
+                            <img id="hud-preview" class="preview-image" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwMCIgaGVpZ2h0PSIxNTAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9" style="background-color: #000000;" />
+                        </div>
+                        
+                        <!-- Rotation and Zoom Controls -->
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <!-- Rotation Controls -->
+                            <div class="d-flex align-items-center">
+                                <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="HUD.Rotation.rotateCounterClockwise()" title="Rotate Counter-Clockwise (90°)">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Rotate Left
+                                </button>
+                                <span class="mx-2 text-muted small">
+                                    <span id="rotation-display">0°</span>
+                                </span>
+                                <button type="button" class="btn btn-outline-primary btn-sm ms-2" onclick="HUD.Rotation.rotateClockwise()" title="Rotate Clockwise (90°)">
+                                    <i class="bi bi-arrow-clockwise"></i> Rotate Right
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="HUD.Rotation.resetRotation()" title="Reset Rotation">
+                                    <i class="bi bi-arrow-return-left"></i> Reset
+                                </button>
+                            </div>
+                            
+                            <!-- Zoom Controls -->
+                            <div class="d-flex align-items-center">
+                                <button type="button" class="btn btn-outline-info btn-sm me-2" onclick="window.ZoomManager.toggleZoomMode()" title="Toggle Zoom Mode (Scale/Magnifier)" id="zoom-mode-toggle">
+                                    <i class="bi bi-toggle-on" id="zoom-mode-icon"></i> <span id="zoom-mode-text">Scale</span>
+                                </button>
+                                <span id="scale-controls">
+                                    <button type="button" class="btn btn-outline-success btn-sm me-2" onclick="window.ZoomManager.zoomOut()" title="Zoom Out (Make Smaller)" id="zoom-out-btn">
+                                        <i class="bi bi-zoom-out"></i> Zoom Out
+                                    </button>
+                                    <span class="mx-2 text-muted small">
+                                        <span id="zoom-display">100%</span>
+                                    </span>
+                                    <button type="button" class="btn btn-outline-success btn-sm ms-2" onclick="window.ZoomManager.zoomIn()" title="Zoom In (Make Larger)" id="zoom-in-btn">
+                                        <i class="bi bi-zoom-in"></i> Zoom In
+                                    </button>
+                                </span>
+                                <span id="magnifier-controls" style="display: none;">
+                                    <span class="mx-2 text-muted small">
+                                        <span id="magnifier-display">2.0x</span>
+                                    </span>
+                                </span>
+                                <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="window.ZoomManager.resetZoom()" title="Reset Zoom">
+                                    <i class="bi bi-arrows-angle-expand"></i> Reset
+                                </button>
+                            </div>
+                        </div>
+                            <div class="hud-loading" style="display: none"></div>
+                        
+                        <!-- Debug Panel (remove in production) -->
+                        <div class="mt-3">
+                            <div class="card card-body bg-light">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="card-title mb-0">📱 Debug Info</h6>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleDebugPanel()" title="Toggle Debug Panel">
+                                        <i class="bi bi-eye" id="debug-toggle-icon"></i>
+                                    </button>
+                                </div>
+                                <div id="debug-content">
+                                    <div class="row">
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <strong>Viewport:</strong> <span id="debug-viewport">-</span><br>
+                                            <strong>Preview:</strong> <span id="debug-preview-size">-</span><br>
+                                            <strong>Zoom:</strong> <span id="debug-zoom-level">100%</span><br>
+                                            <strong>Mode:</strong> <span id="debug-zoom-mode">Scale</span><br>
+                                            <strong>Media:</strong> <span id="debug-media">-</span>
+                                        </small>
+                                    </div>
+                                        <div class="col-md-6">
+                                            <div class="d-grid gap-2">
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="ResponsivePreview.logCurrentSize()">
+                                                    📊 Log Size
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-warning" onclick="ResponsivePreview.refreshPreview()">
+                                                    🔄 Refresh
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-success" onclick="fitToScreen()">
+                                                    📱 Fit Screen
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Settings Panel -->
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Chart Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form id="hud-settings-form" method="post" action="/hud/save-settings/">
+                        {% csrf_token %}
+
+                        <input type="hidden" name="individual_id" value="{{ individual.id }}">
+                        <input type="hidden" name="generations" value="{{ generations }}">
+
+                        <!-- Template Selection -->
+                        <div class="mb-4">
+                            <label class="form-label">Chart Generation</label>
+                            <div class="d-flex align-items-center justify-content-center gap-3">
+                                <button type="button" class="btn btn-outline-secondary" id="prev-gen-btn" onclick="window.navigateGeneration(-1)">
+                                    <i class="bi bi-arrow-left"></i> Prev
+                                </button>
+                                <span class="h5 mb-0" id="current-gen-display">1 Generation</span>
+                                <button type="button" class="btn btn-outline-secondary" id="next-gen-btn" onclick="window.navigateGeneration(1)">
+                                    Next <i class="bi bi-arrow-right"></i>
+                                </button>
+                            </div>
+                            <input type="hidden" name="template" id="template-input" value="{{ hud_settings.template|default:'1' }}">
+                            <input type="hidden" name="generations" value="{{ hud_settings.template|default:'1' }}">
+                        </div>
+
+                        <!-- Chart-Wide Place Name Formatting -->
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">Place Name Formatting</h6>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_use_country_abbrev" class="form-check-input" id="place-use-country-abbrev" {% if hud_settings.place_use_country_abbrev|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="place-use-country-abbrev">Abbreviate Country Names (USA, UK)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_use_state_abbrev" class="form-check-input" id="place-use-state-abbrev" {% if hud_settings.place_use_state_abbrev|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="place-use-state-abbrev">Abbreviate State Names (IL, CA)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_hide_us_counties" class="form-check-input" id="place-hide-us-counties" {% if hud_settings.place_hide_us_counties|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="place-hide-us-counties">Hide US Counties (Town, County, State)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_show_country" class="form-check-input" id="place-show-country" {% if hud_settings.place_show_country|default:False %}checked{% endif %}>
+                                <label class="form-check-label" for="place-show-country">Show Country</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_hide_usa_with_state" class="form-check-input" id="place-hide-usa-with-state" {% if hud_settings.place_hide_usa_with_state|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="place-hide-usa-with-state">Hide "USA" when State is shown</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_auto_shorten" class="form-check-input" id="place-auto-shorten" {% if hud_settings.place_auto_shorten|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="place-auto-shorten">Auto-shorten (3+ parts → 2)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_abbreviate_uk_counties" class="form-check-input" id="place-abbreviate-uk-counties" {% if hud_settings.place_abbreviate_uk_counties|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="place-abbreviate-uk-counties">Abbreviate UK/Ireland Counties</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_abbreviate_sweden_counties" class="form-check-input" id="place-abbreviate-sweden-counties" {% if hud_settings.place_abbreviate_sweden_counties|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="place-abbreviate-sweden-counties">Abbreviate Swedish Counties (Jönköping → F)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_abbreviate_france_departments" class="form-check-input" id="place-abbreviate-france-departments" {% if hud_settings.place_abbreviate_france_departments|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="place-abbreviate-france-departments">Abbreviate French Departments (Calvados → 14)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_abbreviate_germany_states" class="form-check-input" id="place-abbreviate-germany-states" {% if hud_settings.place_abbreviate_germany_states|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="place-abbreviate-germany-states">Abbreviate German States (Niedersachsen → NI)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_abbreviate_place_parts" class="form-check-input" id="place-abbreviate-place-parts" {% if hud_settings.place_abbreviate_place_parts|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="place-abbreviate-place-parts">Abbreviate Place Parts (Street → St, County → Co)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_year_only" class="form-check-input" id="place-year-only" {% if hud_settings.place_year_only|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="place-year-only">Show State/Province Only (like Year Only for dates) - Gen 6-7</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_show_township" class="form-check-input" id="place-show-township" {% if hud_settings.place_show_township|default:False %}checked{% endif %}>
+                                <label class="form-check-label" for="place-show-township">Show Township</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_show_flag" class="form-check-input" id="place-show-flag" {% if hud_settings.place_show_flag|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="place-show-flag">Show Country Flag</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_show_uk_flag" class="form-check-input" id="place-show-uk-flag" {% if hud_settings.place_show_uk_flag|default:False %}checked{% endif %}>
+                                <label class="form-check-label" for="place-show-uk-flag">Show UK Flag (after 1801)</label>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small" for="place-flag-type">Flag Type</label>
+                                <select name="place_flag_type" class="form-select form-select-sm" id="place-flag-type">
+                                    <option value="birth" {% if hud_settings.place_flag_type|default:'birth' == 'birth' %}selected{% endif %}>Birth Place</option>
+                                    <option value="death" {% if hud_settings.place_flag_type|default:'birth' == 'death' %}selected{% endif %}>Death Place</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small" for="place-flag-format">Flag Format</label>
+                                <select name="place_flag_format" class="form-select form-select-sm" id="place-flag-format">
+                                    <option value="png" {% if hud_settings.place_flag_format|default:'png' == 'png' %}selected{% endif %}>PNG Image (recommended)</option>
+                                    <option value="emoji" {% if hud_settings.place_flag_format|default:'png' == 'emoji' %}selected{% endif %}>Emoji</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small" for="flag-font">Emoji Font (for emoji format)</label>
+                                <select name="flag_font" class="form-select form-select-sm" id="flag-font">
+                                    <option value="/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf" {% if hud_settings.flag_font|default:'/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf' == '/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf' %}selected{% endif %}>Symbola (Linux)</option>
+                                    <option value="Segoe UI Emoji" {% if hud_settings.flag_font|default:'/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf' == 'Segoe UI Emoji' %}selected{% endif %}>Segoe UI Emoji (Windows)</option>
+                                    <option value="Apple Color Emoji" {% if hud_settings.flag_font|default:'/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf' == 'Apple Color Emoji' %}selected{% endif %}>Apple Color Emoji (Mac)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Chart-Wide Date Formatting -->
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">Date Format</h6>
+                            <div class="mb-2">
+                                <label class="form-label small" for="date-format">Date Display Format</label>
+                                <select name="date_format" class="form-select form-select-sm" id="date-format">
+                                    <option value="da_mon_year" {% if hud_settings.date_format|default:'da_mon_year' == 'da_mon_year' %}selected{% endif %}>Day Month Year (13 Aug 1985)</option>
+                                    <option value="american_month" {% if hud_settings.date_format|default:'da_mon_year' == 'american_month' %}selected{% endif %}>Month Day Year (Aug 13 1985)</option>
+                                    <option value="international_month" {% if hud_settings.date_format|default:'da_mon_year' == 'international_month' %}selected{% endif %}>Day Month Year (13 Aug 1985)</option>
+                                    <option value="american" {% if hud_settings.date_format|default:'da_mon_year' == 'american' %}selected{% endif %}>American (8/13/1985)</option>
+                                    <option value="international" {% if hud_settings.date_format|default:'da_mon_year' == 'international' %}selected{% endif %}>International (13/8/1985)</option>
+                                </select>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="date_year_only" class="form-check-input" id="date-year-only" {% if hud_settings.date_year_only|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="date-year-only">Show Year Only (for compact display)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="date_retain_leading_zeros" class="form-check-input" id="date-retain-leading-zeros" {% if hud_settings.date_retain_leading_zeros|default:False %}checked{% endif %}>
+                                <label class="form-check-label" for="date-retain-leading-zeros">Retain Leading Zeros (e.g., 03 Aug or 08/03)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="use_outside_stroke" class="form-check-input" id="use-outside-stroke" {% if hud_settings.use_outside_stroke|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="use-outside-stroke">Add white outline to text (for dark flag backgrounds) - Gen 5-7</label>
+                            </div>
+                        </div>
+
+                        <!-- Chart-Wide Name Formatting -->
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">Name Formatting</h6>
+                            <div class="form-check">
+                                <input type="checkbox" name="name_use_first_middle_only" class="form-check-input" id="name-use-first-middle-only" {% if hud_settings.name_use_first_middle_only|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="name-use-first-middle-only">Use First Middle Name Only</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="name_hide_hyphenated_surname" class="form-check-input" id="name-hide-hyphenated-surname" {% if hud_settings.name_hide_hyphenated_surname|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="name-hide-hyphenated-surname">Hide Hyphenated Surnames</label>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Settings Panel - Template Specific -->
+                        <div id="settings-panel">
+                            {% include current_settings_template %}
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-2">
+                            <button type="button" id="apply-settings" class="btn btn-primary w-100" onclick="saveAndApplySettings()">
+                                <i class="bi bi-check"></i> Apply Settings
+                            </button>
+
+                            <button type="button" class="btn btn-secondary w-100" onclick="resetToDefaults()">
+                                <i class="bi bi-arrow-counterclockwise"></i> Reset to Defaults
+                            </button>
+
+                            <button type="button" class="btn btn-outline-secondary w-100" id="back-to-select" onclick="window.location.href='{% url 'selector:select_individual' gedcom_file_id %}'">
+                                <i class="bi bi-arrow-left"></i> Back to Selection
+                            </button>
+                        </div>
+
+                        <!-- Load organized HUD JavaScript -->
+                        <script src="{% static 'hud/js/hud-organized.js' %}?v={% now 'Y-m-d-H-i-s' %}"></script>
+                        
+                        <!-- Load Shared Zoom JavaScript -->
+                        <script src="{% static 'core/js/zoom.js' %}"></script>
+
+                        <!-- Responsive Preview JavaScript -->
+                        <script>
+                        // Responsive Preview Management
+                        window.ResponsivePreview = {
+                            init: function() {
+                                console.log('Initializing responsive preview system...');
+                                this.updatePreviewSize();
+                                this.addResizeListener();
+                                this.logCurrentSize();
+                            },
+                            
+                            updatePreviewSize: function() {
+                                const container = document.getElementById('hud-preview-container');
+                                const preview = document.getElementById('hud-preview');
+                                
+                                if (container && preview) {
+                                    const viewportWidth = window.innerWidth;
+                                    const viewportHeight = window.innerHeight;
+                                    
+                                    // Log current viewport and preview size
+                                    console.log('Viewport:', viewportWidth + 'x' + viewportHeight);
+                                    console.log('Preview container size:', container.offsetWidth + 'x' + container.offsetHeight);
+                                    
+                                    // Add responsive class for debugging
+                                    container.setAttribute('data-viewport-width', viewportWidth);
+                                    container.setAttribute('data-viewport-height', viewportHeight);
+                                }
+                            },
+                            
+                            addResizeListener: function() {
+                                let resizeTimeout;
+                                window.addEventListener('resize', function() {
+                                    clearTimeout(resizeTimeout);
+                                    resizeTimeout = setTimeout(function() {
+                                        console.log('Window resized - updating preview size...');
+                                        ResponsivePreview.updatePreviewSize();
+                                        ResponsivePreview.updateDebugPanel();
+                                        
+                                        // Auto-adjust zoom for mobile if needed
+                                        if (window.innerWidth <= 768) {
+                                            ResponsivePreview.autoAdjustMobileZoom();
+                                        }
+                                    }, 250); // Debounce resize events
+                                });
+                            },
+                            
+                            autoAdjustMobileZoom: function() {
+                                // Auto-adjust zoom for mobile screens (only affects scale mode)
+                                if (window.ZoomManager && window.ZoomManager.zoomMode === 'scale') {
+                                    if (window.innerWidth <= 576) {
+                                        // Very small screens - zoom out to fit
+                                        const currentZoom = window.ZoomManager.getCurrentZoom();
+                                        if (currentZoom > 75) {
+                                            console.log('Auto-adjusting zoom for mobile screen');
+                                            window.ZoomManager.setZoom(75);
+                                        }
+                                    } else if (window.innerWidth <= 768) {
+                                        // Small screens - slight zoom out if needed
+                                        const currentZoom = window.ZoomManager.getCurrentZoom();
+                                        if (currentZoom > 90) {
+                                            console.log('Auto-adjusting zoom for tablet screen');
+                                            window.ZoomManager.setZoom(90);
+                                        }
+                                    }
+                                }
+                            },
+                            
+                            logCurrentSize: function() {
+                                const container = document.getElementById('hud-preview-container');
+                                if (container) {
+                                    const width = container.offsetWidth;
+                                    const height = container.offsetHeight;
+                                    console.log('Current preview size:', width + 'x' + height + 'px');
+                                    
+                                    // Update debug panel
+                                    this.updateDebugPanel();
+                                    
+                                    // Determine which media query is active
+                                    if (window.innerWidth <= 576) {
+                                        console.log('Active: Small screens (phones) - max 300x300');
+                                    } else if (window.innerWidth <= 768) {
+                                        console.log('Active: Medium screens (tablets) - max 500x500');
+                                    } else if (window.innerWidth <= 1200) {
+                                        console.log('Active: Large screens (desktop) - max 800x800');
+                                    } else if (window.innerWidth <= 1400) {
+                                        console.log('Active: Extra large screens - max 1000x1000');
+                                    } else {
+                                        console.log('Active: Ultra-wide screens - max 1200x1200');
+                                    }
+                                }
+                            },
+                            
+                            updateDebugPanel: function() {
+                                const viewportEl = document.getElementById('debug-viewport');
+                                const previewSizeEl = document.getElementById('debug-preview-size');
+                                const zoomLevelEl = document.getElementById('debug-zoom-level');
+                                const zoomModeEl = document.getElementById('debug-zoom-mode');
+                                const mediaEl = document.getElementById('debug-media');
+                                
+                                if (viewportEl) {
+                                    viewportEl.textContent = window.innerWidth + 'x' + window.innerHeight;
+                                }
+                                
+                                const container = document.getElementById('hud-preview-container');
+                                if (container && previewSizeEl) {
+                                    previewSizeEl.textContent = container.offsetWidth + 'x' + container.offsetHeight;
+                                }
+                                
+                                if (zoomLevelEl) {
+                                    const zoomLevel = window.ZoomManager ? 
+                                        window.ZoomManager.getCurrentZoom() : 100;
+                                    zoomLevelEl.textContent = zoomLevel + '%';
+                                }
+                                
+                                if (zoomModeEl) {
+                                    const zoomMode = window.ZoomManager ? 
+                                        window.ZoomManager.zoomMode : 'scale';
+                                    zoomModeEl.textContent = zoomMode.charAt(0).toUpperCase() + zoomMode.slice(1);
+                                }
+                                
+                                if (mediaEl) {
+                                    let mediaType = 'Unknown';
+                                    if (window.innerWidth <= 576) {
+                                        mediaType = 'Small (≤576px)';
+                                    } else if (window.innerWidth <= 768) {
+                                        mediaType = 'Medium (577-768px)';
+                                    } else if (window.innerWidth <= 1200) {
+                                        mediaType = 'Large (769-1200px)';
+                                    } else if (window.innerWidth <= 1400) {
+                                        mediaType = 'Extra Large (1201-1400px)';
+                                    } else {
+                                        mediaType = 'Ultra-Wide (≥1401px)';
+                                    }
+                                    mediaEl.textContent = mediaType;
+                                }
+                            },
+                            
+                            // Force preview refresh (useful for debugging)
+                            refreshPreview: function() {
+                                const preview = document.getElementById('hud-preview');
+                                if (preview) {
+                                    const currentSrc = preview.src;
+                                    preview.src = currentSrc + '&refresh=' + Date.now();
+                                    console.log('Preview refreshed');
+                                }
+                            },
+                            
+                            // Toggle debug panel visibility
+                            toggleDebugPanel: function() {
+                                const debugContent = document.getElementById('debug-content');
+                                const debugIcon = document.getElementById('debug-toggle-icon');
+                                
+                                if (debugContent) {
+                                    const isHidden = debugContent.style.display === 'none';
+                                    debugContent.style.display = isHidden ? 'block' : 'none';
+                                    
+                                    // Update icon
+                                    if (debugIcon) {
+                                        debugIcon.className = isHidden ? 'bi bi-eye' : 'bi bi-eye-slash';
+                                    }
+                                    
+                                    console.log('Debug panel', isHidden ? 'shown' : 'hidden');
+                                }
+                            },
+                            
+                            // Fit preview to screen (mobile helper)
+                            fitToScreen: function() {
+                                const container = document.getElementById('hud-preview-container');
+                                const preview = document.getElementById('hud-preview');
+                                
+                                if (container && preview) {
+                                    // Reset zoom first
+                                    if (window.ZoomManager) {
+                                        window.ZoomManager.resetZoom();
+                                    }
+                                    
+                                    // Calculate optimal size for mobile
+                                    const viewportWidth = window.innerWidth;
+                                    const viewportHeight = window.innerHeight;
+                                    const maxDimension = Math.min(viewportWidth * 0.9, viewportHeight * 0.7);
+                                    
+                                    // Apply mobile-friendly size
+                                    container.style.width = maxDimension + 'px';
+                                    container.style.height = maxDimension + 'px';
+                                    container.style.maxWidth = maxDimension + 'px';
+                                    container.style.maxHeight = maxDimension + 'px';
+                                    
+                                    console.log('Fit to screen:', maxDimension + 'x' + maxDimension + 'px');
+                                    
+                                    // Update debug panel
+                                    setTimeout(function() {
+                                        this.updateDebugPanel();
+                                    }.bind(this), 100);
+                                }
+                            }
+                        };
+                        
+                        // Make toggleDebugPanel globally available
+                        window.toggleDebugPanel = function() {
+                            ResponsivePreview.toggleDebugPanel();
+                        };
+                        
+                        // Make fitToScreen globally available
+                        window.fitToScreen = function() {
+                            ResponsivePreview.fitToScreen();
+                        };
+                        
+                        // Initialize responsive preview when DOM is ready
+                        document.addEventListener('DOMContentLoaded', function() {
+                            ResponsivePreview.init();
+                            
+                            // Initialize ZoomManager
+                            if (window.ZoomManager) {
+                                window.ZoomManager.init('hud-preview-container', 'hud-preview', {
+                                    autoMobileZoom: true
+                                });
+                            }
+                        });
+                        
+                        // Also initialize after window load (in case DOM ready was missed)
+                        window.addEventListener('load', function() {
+                            setTimeout(function() {
+                                ResponsivePreview.init();
+                                
+                                // Initialize ZoomManager if not already done
+                                if (window.ZoomManager && !window.ZoomManager.previewContainerId) {
+                                    window.ZoomManager.init('hud-preview-container', 'hud-preview', {
+                                        autoMobileZoom: true
+                                    });
+                                }
+                            }, 100);
+                        });
+                        </script>
+
+                        <!-- Fallback script for immediate availability -->
+                        <script>
+                            // Ensure saveAndApplySettings is available immediately
+                            if (typeof window.saveAndApplySettings === 'undefined') {
+                                console.log('saveAndApplySettings not yet loaded, adding fallback...');
+                                window.saveAndApplySettings = function() {
+                                    console.log('Fallback saveAndApplySettings called');
+                                    // Try to use the organized version if available
+                                    if (window.HUD && window.HUD.Settings) {
+                                        return window.HUD.Settings.saveAndApplySettings();
+                                    }
+                                    console.error('HUD module not available');
+                                };
+                            }
+                            
+                            // Initialize HUD namespace if not exists
+                            if (typeof window.HUD === 'undefined') {
+                                window.HUD = {};
+                            }
+                            
+                            // Link ZoomManager to HUD for backward compatibility
+                            if (window.ZoomManager && !window.HUD.Zoom) {
+                                window.HUD.Zoom = window.ZoomManager;
+                                console.log('HUD.Zoom linked to ZoomManager');
+                            }
+                            
+                            // Load storage usage on page load
+                            if (window.HUD && window.HUD.PresetManager) {
+                                window.HUD.PresetManager.getStorageUsage().then(data => {
+                                    const usageDiv = document.getElementById('storage-usage');
+                                    if (usageDiv) {
+                                        const usedMB = (data.bytes_used / 1024 / 1024).toFixed(1);
+                                        const limitMB = (data.bytes_limit / 1024 / 1024).toFixed(0);
+                                        const percent = data.usage_percentage.toFixed(1);
+                                        usageDiv.innerHTML = `
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <strong>Storage Usage</strong>
+                                                <span class="badge bg-secondary">${data.buffer_count} charts</span>
+                                            </div>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar ${percent > 80 ? 'bg-warning' : 'bg-primary'}" 
+                                                     style="width: ${Math.min(percent, 100)}%"></div>
+                                            </div>
+                                            <small class="text-muted">${usedMB} MB / ${limitMB} MB (${percent}%)</small>
+                                        `;
+                                    }
+                                }).catch(err => {
+                                    console.log('Storage usage not available:', err);
+                                });
+                            }
+                        </script>
+                    </form>
+
+                    <!-- Generate Final Chart Button (outside the form but grouped with other buttons) -->
+                    <div class="card-footer bg-transparent">
+                        <form method="post" action="{% url 'generator:generate_final_chart' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="individual_id" value="{{ individual.id }}">
+                            <input type="hidden" name="template" value="{{ hud_settings.template }}">
+
+                            <!-- Include user settings as hidden inputs -->
+                            <input type="hidden" name="font_family" value="{{ hud_settings.font_family|default:'Arial' }}">
+                            <input type="hidden" name="primary_name_font_size" value="{{ hud_settings.primary_name_font_size|default:84 }}">
+                            <input type="hidden" name="primary_date_info_font_size" value="{{ hud_settings.primary_date_info_font_size|default:60 }}">
+                            <input type="hidden" name="primary_place_info_font_size" value="{{ hud_settings.primary_place_info_font_size|default:28 }}">
+                            <input type="hidden" name="default_stroke_width" value="{{ hud_settings.default_stroke_width|default:0.5 }}">
+                            <input type="hidden" name="primary_background_color" value="{{ hud_settings.primary_background_color|default:'#FFFFFF' }}">
+                            <input type="hidden" name="primary_stroke_color" value="{{ hud_settings.primary_stroke_color|default:'#000000' }}">
+                            <input type="hidden" name="primary_font_color" value="{{ hud_settings.primary_font_color|default:'#000000' }}">
+                            <input type="hidden" name="primary_birth_color" value="{{ hud_settings.primary_birth_color|default:'#000000' }}">
+                            <input type="hidden" name="primary_birth_place_color" value="{{ hud_settings.primary_birth_place_color|default:'#000000' }}">
+                            <input type="hidden" name="primary_death_color" value="{{ hud_settings.primary_death_color|default:'#000000' }}">
+                            <input type="hidden" name="primary_death_place_color" value="{{ hud_settings.primary_death_place_color|default:'#000000' }}">
+                            <input type="hidden" name="primary_translate_x" value="{{ hud_settings.primary_translate_x|default:0 }}">
+                            <input type="hidden" name="primary_translate_y" value="{{ hud_settings.primary_translate_y|default:0 }}">
+                            <input type="hidden" name="primary_name_rotate" value="{{ hud_settings.primary_name_rotate|default:-45 }}">
+                            <input type="hidden" name="primary_birth_translate_x" value="{{ hud_settings.primary_birth_translate_x|default:0 }}">
+                            <input type="hidden" name="primary_birth_translate_y" value="{{ hud_settings.primary_birth_translate_y|default:0 }}">
+                            <input type="hidden" name="primary_birth_rotate" value="{{ hud_settings.primary_birth_rotate|default:-90 }}">
+                            <input type="hidden" name="primary_birth_place_translate_x" value="{{ hud_settings.primary_birth_place_translate_x|default:0 }}">
+                            <input type="hidden" name="primary_birth_place_translate_y" value="{{ hud_settings.primary_birth_place_translate_y|default:0 }}">
+                            <input type="hidden" name="primary_birth_place_rotate" value="{{ hud_settings.primary_birth_place_rotate|default:0 }}">
+                            <input type="hidden" name="primary_death_translate_x" value="{{ hud_settings.primary_death_translate_x|default:0 }}">
+                            <input type="hidden" name="primary_death_translate_y" value="{{ hud_settings.primary_death_translate_y|default:0 }}">
+                            <input type="hidden" name="primary_death_rotate" value="{{ hud_settings.primary_death_rotate|default:0 }}">
+                            <input type="hidden" name="primary_death_place_translate_x" value="{{ hud_settings.primary_death_place_translate_x|default:0 }}">
+                            <input type="hidden" name="primary_death_place_translate_y" value="{{ hud_settings.primary_death_place_translate_y|default:0 }}">
+                            <input type="hidden" name="primary_death_place_rotate" value="{{ hud_settings.primary_death_place_rotate|default:-90 }}">
+
+                            <!-- Place Name Formatting Settings -->
+                            <input type="hidden" name="place_use_country_abbrev" value="{{ hud_settings.place_use_country_abbrev|default:'on' }}">
+                            <input type="hidden" name="place_use_state_abbrev" value="{{ hud_settings.place_use_state_abbrev|default:'on' }}">
+                            <input type="hidden" name="place_hide_us_counties" value="{{ hud_settings.place_hide_us_counties|default:'on' }}">
+                            <input type="hidden" name="place_show_country" value="{{ hud_settings.place_show_country|default:'on' }}">
+                            <input type="hidden" name="place_hide_usa_with_state" value="{{ hud_settings.place_hide_usa_with_state|default:'on' }}">
+                            <input type="hidden" name="place_auto_shorten" value="{{ hud_settings.place_auto_shorten|default:'' }}">
+                            <input type="hidden" name="place_abbreviate_uk_counties" value="{{ hud_settings.place_abbreviate_uk_counties|default:'' }}">
+                            <input type="hidden" name="place_abbreviate_sweden_counties" value="{{ hud_settings.place_abbreviate_sweden_counties|default:'' }}">
+                            <input type="hidden" name="place_abbreviate_france_departments" value="{{ hud_settings.place_abbreviate_france_departments|default:'' }}">
+                            <input type="hidden" name="place_abbreviate_germany_states" value="{{ hud_settings.place_abbreviate_germany_states|default:'' }}">
+                            <input type="hidden" name="place_abbreviate_place_parts" value="{{ hud_settings.place_abbreviate_place_parts|default:'' }}">
+                            <input type="hidden" name="place_year_only" value="{{ hud_settings.place_year_only|default:'' }}">
+                            <input type="hidden" name="place_show_township" value="{{ hud_settings.place_show_township|default:'' }}">
+                            <input type="hidden" name="place_show_flag" value="{{ hud_settings.place_show_flag|default:'on' }}">
+                            <input type="hidden" name="place_show_uk_flag" value="{{ hud_settings.place_show_uk_flag|default:'' }}">
+                            <input type="hidden" name="place_flag_type" value="{{ hud_settings.place_flag_type|default:'birth' }}">
+                            <input type="hidden" name="place_flag_format" value="{{ hud_settings.place_flag_format|default:'png' }}">
+                            <input type="hidden" name="flag_font" value="{{ hud_settings.flag_font|default:'/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf' }}">
+
+                            <!-- Date Format Settings -->
+                            <input type="hidden" name="date_format" value="{{ hud_settings.date_format|default:'da_mon_year' }}">
+                            <input type="hidden" name="date_year_only" value="{{ hud_settings.date_year_only|default:'on' }}">
+                            <input type="hidden" name="date_retain_leading_zeros" value="{{ hud_settings.date_retain_leading_zeros|default:'' }}">
+
+                            <!-- Name Format Settings -->
+                            <input type="hidden" name="name_use_first_middle_only" value="{{ hud_settings.name_use_first_middle_only|default:'on' }}">
+                            <input type="hidden" name="name_hide_hyphenated_surname" value="{{ hud_settings.name_hide_hyphenated_surname|default:'on' }}">
+
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-file-earmark-pdf"></i> Generate Final Chart
+                            </button>
+                        </form>
+                        
+                        <!-- Preset and Storage Management -->
+                        <div class="mt-3 pt-3 border-top">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="HUD.PresetManager.showSavePresetDialog().then(() => alert('Preset saved!'))">
+                                    <i class="bi bi-bookmark"></i> Save as Preset
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="HUD.PresetManager.listPresets().then(data => { console.log('Presets:', data.presets); alert('Check console for presets list'); })">
+                                    <i class="bi bi-bookmark-check"></i> Load Preset
+                                </button>
+                                {% if gedcom_file.home_person_id != individual.id %}
+                                <button type="button" class="btn btn-outline-info btn-sm" onclick="var name='{{ individual.full_name|escapejs }}'; var id='{{ individual.id }}'; var gedcom='{{ gedcom_file.id }}'; HUD.PresetManager.setHomePerson(gedcom, id, name).then(() => { alert('Set as home person!'); location.reload(); })">
+                                    <i class="bi bi-house"></i> Set as Home Person
+                                </button>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Storage Usage -->
+                            <div class="mt-3 p-2 bg-light rounded" id="storage-usage">
+                                <small class="text-muted">Loading storage info...</small>
+                            </div>
+                            
+                            <button type="button" class="btn btn-outline-danger btn-sm mt-2" onclick="HUD.PresetManager.clearAllBuffers().then(data => { if(data.cancelled) return; alert('Cleared ' + data.buffers_deleted + ' buffers'); location.reload(); })">
+                                <i class="bi bi-trash"></i> Clear Cached Charts
+                            </button>
+                        </div>
+                    </div>
+
+</div>
+
+{% endblock %}
