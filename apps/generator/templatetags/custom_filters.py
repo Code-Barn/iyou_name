@@ -70,3 +70,27 @@ def format_date_filter(date_str):
     if not date_str:
         return ""
     return format_date(date_str, DateFormat.DA_MON_YEAR)
+
+
+@register.simple_tag(name="count_spouse_children")
+def count_spouse_children(spouse_id, spouse_children_ids, individuals_dict):
+    """
+    Template tag to count children excluding step/adopted/foster children of the spouse.
+    Usage: {% count_spouse_children spouse.id children_list individuals_dict as count %}
+    """
+    if not spouse_id or not spouse_children_ids or not individuals_dict:
+        return 0
+    count = 0
+    for child_id in spouse_children_ids:
+        child = individuals_dict.get(child_id)
+        if child:
+            step_parents = getattr(child, "step_parents", None) or []
+            adoptive_parents = getattr(child, "adoptive_parents", None) or []
+            foster_parents = getattr(child, "foster_parents", None) or []
+            if (
+                spouse_id not in step_parents
+                and spouse_id not in adoptive_parents
+                and spouse_id not in foster_parents
+            ):
+                count += 1
+    return count

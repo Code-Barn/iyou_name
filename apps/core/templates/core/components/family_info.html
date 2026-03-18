@@ -306,13 +306,18 @@
                     {% if individual.spouses_children and individual.spouses_children|get_item:spouse.id %}
                     <div class="mt-2">
                         <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="collapse" data-bs-target="#childrenCollapse{{ spouse.id }}" aria-expanded="true" aria-controls="childrenCollapse{{ spouse.id }}">
-                            <strong>Children ({{ individual.spouses_children|get_item:spouse.id|length }}):</strong>
+                            <strong>Children ({% count_spouse_children spouse.id individual.spouses_children|get_item:spouse.id individuals_dict as child_count %}{{ child_count }}):</strong>
                         </button>
                         <div class="collapse show" id="childrenCollapse{{ spouse.id }}">
                             <ul class="list-group mt-2">
                                 {% for child_id in individual.spouses_children|get_item:spouse.id %}
                                 {% with child=individuals_dict|get_item:child_id %}
                                 {% if child %}
+                                {% with child_step=child.step_parents|default:'' %}
+                                {% with child_adoptive=child.adoptive_parents|default:'' %}
+                                {% with child_foster=child.foster_parents|default:'' %}
+                                {# Don't show if spouse is step/adoptive/foster parent of this child #}
+                                {% if spouse.id not in child_step and spouse.id not in child_adoptive and spouse.id not in child_foster %}
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     {% with child_photo=photos|get_item:child.id %}
                                     {% if child_photo %}
@@ -325,17 +330,12 @@
                                     {% endwith %}
                                     <div class="flex-grow-1">
                                         <span class="fs-5">{{ child.full_name }}</span>
-                                        {% with child_step=child.step_parents|default:'' %}
-                                        {% with child_adoptive=child.adoptive_parents|default:'' %}
-                                        {% with child_foster=child.foster_parents|default:'' %}
-                                        {% if child.adopted %}<span class="text-success">(Adopted{% if child.father and child.father != spouse.id %} - biological father: {% with bio_father=individuals_dict|get_item:child.father %}{{ bio_father.full_name }}{% endwith %}{% endif %}{% if child.mother and child.mother != spouse.id %}{% if child.father and child.father != spouse.id %} and {% else %} - {% endif %}biological mother: {% with bio_mother=individuals_dict|get_item:child.mother %}{{ bio_mother.full_name }}{% endwith %}{% endif %})</span>
-                                        {% elif spouse.id in child_step %}<span class="text-info">(Step{% if child.father and child.father != spouse.id %} - biological father: {% with bio_father=individuals_dict|get_item:child.father %}{{ bio_father.full_name }}{% endwith %}{% endif %}{% if child.mother and child.mother != spouse.id %}{% if child.father and child.father != spouse.id %} and {% else %} - {% endif %}biological mother: {% with bio_mother=individuals_dict|get_item:child.mother %}{{ bio_mother.full_name }}{% endwith %}{% endif %})</span>
+                                        {# Check if viewing individual is step parent of this child #}
+                                        {% if individual.id in child_step %}<span class="text-info">(Step{% if child.father and child.father != spouse.id %} - biological father: {% with bio_father=individuals_dict|get_item:child.father %}{{ bio_father.full_name }}{% endwith %}{% endif %}{% if child.mother and child.mother != spouse.id %}{% if child.father and child.father != spouse.id %} and {% else %} - {% endif %}biological mother: {% with bio_mother=individuals_dict|get_item:child.mother %}{{ bio_mother.full_name }}{% endwith %}{% endif %})</span>
+                                        {% elif child.adopted %}<span class="text-success">(Adopted{% if child.father and child.father != spouse.id %} - biological father: {% with bio_father=individuals_dict|get_item:child.father %}{{ bio_father.full_name }}{% endwith %}{% endif %}{% if child.mother and child.mother != spouse.id %}{% if child.father and child.father != spouse.id %} and {% else %} - {% endif %}biological mother: {% with bio_mother=individuals_dict|get_item:child.mother %}{{ bio_mother.full_name }}{% endwith %}{% endif %})</span>
                                         {% elif spouse.id in child_adoptive %}<span class="text-success">(Adopted{% if child.father and child.father != spouse.id %} - biological father: {% with bio_father=individuals_dict|get_item:child.father %}{{ bio_father.full_name }}{% endwith %}{% endif %}{% if child.mother and child.mother != spouse.id %}{% if child.father and child.father != spouse.id %} and {% else %} - {% endif %}biological mother: {% with bio_mother=individuals_dict|get_item:child.mother %}{{ bio_mother.full_name }}{% endwith %}{% endif %})</span>
                                         {% elif spouse.id in child_foster %}<span class="text-warning">(Foster{% if child.father and child.father != spouse.id %} - biological father: {% with bio_father=individuals_dict|get_item:child.father %}{{ bio_father.full_name }}{% endwith %}{% endif %}{% if child.mother and child.mother != spouse.id %}{% if child.father and child.father != spouse.id %} and {% else %} - {% endif %}biological mother: {% with bio_mother=individuals_dict|get_item:child.mother %}{{ bio_mother.full_name }}{% endwith %}{% endif %})</span>
                                         {% endif %}
-                                        {% endwith %}
-                                        {% endwith %}
-                                        {% endwith %}
                                         {% if child.birth_date or child.birth_place %}
                                         <div class="mt-1">
                                             <small class="text-muted">
@@ -355,6 +355,10 @@
                                     </div>
                                     <a href="{% url 'browse:individual_detail' child.id %}" class="btn btn-primary btn-sm">Profile</a>
                                 </li>
+                                {% endif %}
+                                {% endwith %}
+                                {% endwith %}
+                                {% endwith %}
                                 {% endif %}
                                 {% endwith %}
                                 {% endfor %}
