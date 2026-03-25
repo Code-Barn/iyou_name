@@ -97,6 +97,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.core.context_processors.grampsweb_url",
             ],
         },
     },
@@ -243,3 +244,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # DJANGO DEBUG TOOLBAR SETTINGS
 
 INTERNAL_IPS = ["127.0.0.1", "::1"]
+
+# GrampsWeb Integration
+GRAMPSWEB_API_URL = os.environ.get("GRAMPSWEB_API_URL", "")
+GRAMPSWEB_API_TOKEN = os.environ.get("GRAMPSWEB_API_TOKEN", "")
+GRAMPSWEB_API_TIMEOUT = int(os.environ.get("GRAMPSWEB_API_TIMEOUT", "30"))
+GRAMPSWEB_BASE_URL = os.environ.get("GRAMPSWEB_BASE_URL", "")
+
+# Redis URL for caching
+REDIS_URL = os.environ.get("REDIS_URL", "")

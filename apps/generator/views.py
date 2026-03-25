@@ -21,6 +21,7 @@ from apps.generator.template_mapping import get_template_mapping
 #    image_7generator,
 # )
 from apps.parser.models import PersonData
+from apps.upload.views import upload_and_generate
 
 logger = logging.getLogger(__name__)
 
@@ -59,9 +60,10 @@ def generate_final_chart(request):
             "place_abbreviate_sweden_counties": False,
             "place_abbreviate_france_departments": False,
             "place_abbreviate_germany_states": False,
+            "place_abbreviate_poland_voivodeships": False,
             "place_abbreviate_place_parts": False,
             "place_year_only": False,
-            "place_show_township": False,
+            "place_hide_township": False,
             "place_show_uk_flag": False,
             "place_flag_type": "birth",
             "place_flag_format": "png",
@@ -118,6 +120,7 @@ def generate_final_chart(request):
                 "place_abbreviate_sweden_counties",
                 "place_abbreviate_france_departments",
                 "place_abbreviate_germany_states",
+                "place_abbreviate_poland_voivodeships",
                 "place_abbreviate_place_parts",
                 "place_year_only",
             ]:
@@ -144,6 +147,14 @@ def generate_final_chart(request):
 
         logger.debug(
             f"Collected {len(user_settings)} settings from POST for PDF generation"
+        )
+
+        # Debug: log use_outside_stroke specifically
+        logger.info(
+            f"[PDF DEBUG] use_outside_stroke value: {user_settings.get('use_outside_stroke', 'NOT IN SETTINGS')}"
+        )
+        logger.info(
+            f"[PDF DEBUG] place_year_only value: {user_settings.get('place_year_only', 'NOT IN SETTINGS')}"
         )
 
         # For cumulative inheritance, we need to merge stored settings from previous generations
@@ -202,7 +213,7 @@ def generate_final_chart(request):
                 "place_hide_us_counties",
                 "place_show_country",
                 "place_hide_usa_with_state",
-                "place_show_township",
+                "place_hide_township",
                 "place_auto_shorten",
                 "place_abbreviate_uk_counties",
                 "place_show_flag",
@@ -213,8 +224,10 @@ def generate_final_chart(request):
                 "place_abbreviate_sweden_counties",
                 "place_abbreviate_france_departments",
                 "place_abbreviate_germany_states",
+                "place_abbreviate_poland_voivodeships",
                 "place_abbreviate_place_parts",
                 "place_year_only",
+                "use_outside_stroke",
             ]
         )
 
@@ -310,7 +323,7 @@ def generate_final_chart(request):
                 "place_hide_usa_with_state": hud_settings.get(
                     "place_hide_usa_with_state", True
                 ),
-                "place_show_township": hud_settings.get("place_show_township", True),
+                "place_hide_township": hud_settings.get("place_hide_township", False),
                 "place_auto_shorten": hud_settings.get("place_auto_shorten", False),
                 "place_abbreviate_uk_counties": hud_settings.get(
                     "place_abbreviate_uk_counties", False
@@ -327,10 +340,14 @@ def generate_final_chart(request):
                 "place_abbreviate_germany_states": hud_settings.get(
                     "place_abbreviate_germany_states", False
                 ),
+                "place_abbreviate_poland_voivodeships": hud_settings.get(
+                    "place_abbreviate_poland_voivodeships", False
+                ),
                 "place_abbreviate_place_parts": hud_settings.get(
                     "place_abbreviate_place_parts", False
                 ),
                 "place_year_only": hud_settings.get("place_year_only", False),
+                "use_outside_stroke": hud_settings.get("use_outside_stroke", False),
             }
         else:
             logger.debug("Using POST settings for final chart generation")
@@ -490,7 +507,11 @@ def test_pdf_generation(request):
         primary_individual = PersonData(**first_individual_data)
 
         # Generate PDF
-        image_buffer = image_1generator.generate_1gen_preview(
+        from apps.generator.utils.prototype.prototype_image_1generator import (
+            generate_prototype_1gen_preview,
+        )
+
+        image_buffer = generate_prototype_1gen_preview(
             primary_individual, gedcom_file.parsed_data, template="1gen"
         )
         image_buffer.seek(0)

@@ -93,7 +93,7 @@ def display_tree_hud(request):
             "place_abbreviate_germany_states": False,
             "place_abbreviate_place_parts": False,
             "place_year_only": False,
-            "place_show_township": False,
+            "place_hide_township": False,
             "place_show_uk_flag": False,
             "place_flag_type": "birth",
             "place_flag_format": "png",

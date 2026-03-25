@@ -360,6 +360,32 @@ def individual_detail(request, ind_id):
                 if sibling_id in individuals_dict:
                     half_siblings.append(individuals_dict[sibling_id])
 
+        # Get all siblings objects (combined list for counting)
+        all_siblings = []
+        if hasattr(individual, "all_siblings") and individual.all_siblings:
+            for sibling_id in individual.all_siblings:
+                if sibling_id in individuals_dict:
+                    all_siblings.append(individuals_dict[sibling_id])
+
+        # Sort all siblings by birth date (oldest first, then by name for ties)
+        def get_birth_sort_key(person):
+            date = person.birth_date if hasattr(person, "birth_date") else None
+            if date:
+                # Try to parse year
+                import re
+
+                year_match = re.search(r"\d{4}", str(date))
+                if year_match:
+                    return (int(year_match.group()), person.full_name.lower())
+            return (
+                9999,
+                person.full_name.lower() if hasattr(person, "full_name") else "",
+            )
+
+        all_siblings.sort(key=get_birth_sort_key)
+        siblings.sort(key=get_birth_sort_key)
+        half_siblings.sort(key=get_birth_sort_key)
+
         # Get spouses objects
         spouses = []
         if individual.spouse:
@@ -496,6 +522,7 @@ def individual_detail(request, ind_id):
                 "mother": mother,
                 "siblings": siblings,
                 "half_siblings": half_siblings,
+                "all_siblings": all_siblings,
                 "spouses": spouses,
                 "children": children,
                 "children_relationship": children_relationship,

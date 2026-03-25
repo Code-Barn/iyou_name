@@ -93,7 +93,7 @@ GENERATION_3_SETTINGS_SCHEMA = {
     "place_hide_us_counties": (bool, True),
     "place_show_country": (bool, True),
     "place_hide_usa_with_state": (bool, True),
-    "place_show_township": (bool, False),
+    "place_hide_township": (bool, False),
     "place_auto_shorten": (bool, False),
     "place_abbreviate_uk_counties": (bool, False),
     "place_show_flag": (bool, True),
@@ -103,6 +103,7 @@ GENERATION_3_SETTINGS_SCHEMA = {
     "place_abbreviate_france_departments": (bool, False),
     "place_abbreviate_place_parts": (bool, False),
     "place_abbreviate_germany_states": (bool, False),
+    "place_abbreviate_poland_voivodeships": (bool, False),
     "gen3_flag_size": (int, 200),  # Generation-specific flag size
     "place_flag_layer": (str, "bottom"),
     "place_flag_in_overlay": (bool, False),

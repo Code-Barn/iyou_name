@@ -1,0 +1,141 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grampsweb
+  namespace: grampsweb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grampsweb
+  template:
+    metadata:
+      labels:
+        app: grampsweb
+    spec:
+      containers:
+        - name: grampsweb
+          image: ghcr.io/gramps-project/grampsweb:latest
+          ports:
+            - containerPort: 5000
+              name: http
+          env:
+            - name: GRAMPSWEB_TREE
+              value: "Family Tree"
+            - name: GRAMPSWEB_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: grampsweb-secrets
+                  key: SECRET_KEY
+            - name: GRAMPSWEB_BASE_URL
+              value: "https://genealogy.example.com"
+            - name: GRAMPSWEB_CELERY_CONFIG__broker_url
+              value: "redis://redis.grampsweb:6379/0"
+            - name: GRAMPSWEB_CELERY_CONFIG__result_backend
+              value: "redis://redis.grampsweb:6379/0"
+            - name: GRAMPSWEB_RATELIMIT_STORAGE_URI
+              value: "redis://redis.grampsweb:6379/1"
+            - name: GRAMPSWEB_USER_DB_URI
+              value: "postgresql://namechart:namechart_secret@postgresql.namechart:5432/grampsweb"
+            - name: GRAMPSWEB_CORS_ORIGINS
+              value: "https://namechart.example.com"
+            - name: GRAMPSWEB_EMAIL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: grampsweb-secrets
+                  key: EMAIL_HOST
+                  optional: true
+            - name: GRAMPSWEB_EMAIL_PORT
+              value: "465"
+            - name: GRAMPSWEB_EMAIL_HOST_USER
+              valueFrom:
+                secretKeyRef:
+                  name: grampsweb-secrets
+                  key: EMAIL_HOST_USER
+                  optional: true
+            - name: GRAMPSWEB_EMAIL_HOST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: grampsweb-secrets
+                  key: EMAIL_HOST_PASSWORD
+                  optional: true
+            - name: GRAMPSWEB_EMAIL_USE_SSL
+              value: "True"
+            - name: GRAMPSWEB_DEFAULT_FROM_EMAIL
+              value: "noreply@example.com"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: gramps-users
+              mountPath: /app/users
+            - name: gramps-index
+              mountPath: /app/indexdir
+            - name: gramps-thumb-cache
+              mountPath: /app/thumbnail_cache
+            - name: gramps-cache
+              mountPath: /app/cache
+            - name: gramps-secret
+              mountPath: /app/secret
+            - name: gramps-db
+              mountPath: /root/.gramps/grampsdb
+            - name: gramps-media
+              mountPath: /app/media
+            - name: gramps-tmp
+              mountPath: /tmp
+      volumes:
+        - name: gramps-users
+          persistentVolumeClaim:
+            claimName: grampsweb-users-pvc
+        - name: gramps-index
+          persistentVolumeClaim:
+            claimName: grampsweb-index-pvc
+        - name: gramps-thumb-cache
+          persistentVolumeClaim:
+            claimName: grampsweb-thumb-cache-pvc
+        - name: gramps-cache
+          persistentVolumeClaim:
+            claimName: grampsweb-cache-pvc
+        - name: gramps-secret
+          persistentVolumeClaim:
+            claimName: grampsweb-secret-pvc
+        - name: gramps-db
+          persistentVolumeClaim:
+            claimName: grampsweb-db-pvc
+        - name: gramps-media
+          persistentVolumeClaim:
+            claimName: grampsweb-media-pvc
+        - name: gramps-tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grampsweb
+  namespace: grampsweb
+spec:
+  selector:
+    app: grampsweb
+  ports:
+    - port: 80
+      targetPort: 5000
+  type: ClusterIP

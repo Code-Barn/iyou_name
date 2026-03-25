@@ -190,9 +190,9 @@
     <div class="row g-3">
         <div class="col-md-4">
             <label class="form-label">Outside Stroke Width</label>
-            <input type="range" name="gen6_stroke_width" class="form-range" min="0" max="12" step="1" value="{{ hud_settings.gen6_stroke_width|default:6 }}" id="default-stroke-width-slider">
+            <input type="range" name="gen6_stroke_width" class="form-range" min="0" max="12" step=".5" value="{{ hud_settings.gen6_stroke_width|default:4.5 }}" id="default-stroke-width-slider">
             <div class="text-center">
-                <span id="default-stroke-width-value">{{ hud_settings.gen6_stroke_width|default:6 }}</span>px
+                <span id="default-stroke-width-value">{{ hud_settings.gen6_stroke_width|default:4.5 }}</span>px
             </div>
         </div>
         <div class="col-md-4">

@@ -1,0 +1,214 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grampsweb-celery
+  namespace: grampsweb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grampsweb-celery
+  template:
+    metadata:
+      labels:
+        app: grampsweb-celery
+    spec:
+      containers:
+        - name: celery
+          image: ghcr.io/gramps-project/grampsweb:latest
+          command: ["celery", "-A", "gramps_webapi.celery", "worker", "--loglevel=INFO", "--concurrency=2"]
+          env:
+            - name: GRAMPSWEB_TREE
+              value: "Family Tree"
+            - name: GRAMPSWEB_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: grampsweb-secrets
+                  key: SECRET_KEY
+            - name: GRAMPSWEB_CELERY_CONFIG__broker_url
+              value: "redis://redis.grampsweb:6379/0"
+            - name: GRAMPSWEB_CELERY_CONFIG__result_backend
+              value: "redis://redis.grampsweb:6379/0"
+            - name: GRAMPSWEB_RATELIMIT_STORAGE_URI
+              value: "redis://redis.grampsweb:6379/1"
+            - name: GRAMPSWEB_USER_DB_URI
+              value: "postgresql://namechart:namechart_secret@postgresql.namechart:5432/grampsweb"
+          volumeMounts:
+            - name: gramps-users
+              mountPath: /app/users
+            - name: gramps-index
+              mountPath: /app/indexdir
+            - name: gramps-thumb-cache
+              mountPath: /app/thumbnail_cache
+            - name: gramps-cache
+              mountPath: /app/cache
+            - name: gramps-secret
+              mountPath: /app/secret
+            - name: gramps-db
+              mountPath: /root/.gramps/grampsdb
+            - name: gramps-media
+              mountPath: /app/media
+            - name: gramps-tmp
+              mountPath: /tmp
+      volumes:
+        - name: gramps-users
+          persistentVolumeClaim:
+            claimName: grampsweb-users-pvc
+        - name: gramps-index
+          persistentVolumeClaim:
+            claimName: grampsweb-index-pvc
+        - name: gramps-thumb-cache
+          persistentVolumeClaim:
+            claimName: grampsweb-thumb-cache-pvc
+        - name: gramps-cache
+          persistentVolumeClaim:
+            claimName: grampsweb-cache-pvc
+        - name: gramps-secret
+          persistentVolumeClaim:
+            claimName: grampsweb-secret-pvc
+        - name: gramps-db
+          persistentVolumeClaim:
+            claimName: grampsweb-db-pvc
+        - name: gramps-media
+          persistentVolumeClaim:
+            claimName: grampsweb-media-pvc
+        - name: gramps-tmp
+          emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: grampsweb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+              name: redis
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: grampsweb-redis-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grampsweb-users-pvc
+  namespace: grampsweb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grampsweb-index-pvc
+  namespace: grampsweb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grampsweb-thumb-cache-pvc
+  namespace: grampsweb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grampsweb-cache-pvc
+  namespace: grampsweb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grampsweb-secret-pvc
+  namespace: grampsweb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grampsweb-db-pvc
+  namespace: grampsweb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grampsweb-media-pvc
+  namespace: grampsweb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grampsweb-redis-pvc
+  namespace: grampsweb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: grampsweb
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+  clusterIP: None

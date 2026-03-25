@@ -15,30 +15,31 @@ class PersonData:
     death_date: Optional[str] = None
     death_place: Optional[str] = None
     burial_place: Optional[str] = None
-    father: Optional[str] = None  # Reference to father's ID
-    mother: Optional[str] = None  # Reference to mother's ID
-    spouse: Optional[List[str]] = None  # List of spouse IDs
-    children: Optional[List[str]] = None  # List of child IDs
-    siblings: Optional[List[str]] = None  # List of full sibling IDs (both parents)
-    half_siblings: Optional[List[str]] = None  # List of half-sibling IDs (one parent)
-    adoptive_parents: Optional[List[str]] = None  # List of adoptive parent IDs
-    foster_parents: Optional[List[str]] = None  # List of foster parent IDs
-    step_parents: Optional[List[str]] = None  # List of step-parent IDs
-    step_siblings: Optional[List[str]] = (
-        None  # List of step-sibling IDs (no biological relation)
-    )
-    adopted: bool = False  # Flag to indicate if person has an ADOP event
-    spouses_children: Optional[Dict[str, List[str]]] = (
-        None  # Dictionary to store children for each spouse
-    )
-    birth_flag: Optional[bytes] = None  # Binary image data for birthplace flag
-    death_flag: Optional[bytes] = None  # Binary image data for deathplace flag
-    events: Optional[List[Dict]] = None  # List of events associated with the individual
-    sex: Optional[str] = None  # Gender of the individual
-    title: Optional[str] = None  # Professional or nobility titles (Sir, Lady, etc.)
-    honorific: Optional[str] = None  # Honorifics (Mr., Mrs., Ms., Dr., etc.)
-    suffix: Optional[str] = None  # Suffixes (Jr., Sr., III, etc.)
-    occupation: Optional[str] = None  # Occupation or trade
+    father: Optional[str] = None
+    mother: Optional[str] = None
+    spouse: Optional[List[str]] = None
+    children: Optional[List[str]] = None
+    siblings: Optional[List[str]] = None
+    half_siblings: Optional[List[str]] = None
+    step_siblings: Optional[List[str]] = None
+    all_siblings: Optional[List[str]] = None
+    adoptive_parents: Optional[List[str]] = None
+    foster_parents: Optional[List[str]] = None
+    step_parents: Optional[List[str]] = None
+    adopted: bool = False
+    spouses_children: Optional[Dict[str, List[str]]] = None
+    birth_flag: Optional[bytes] = None
+    death_flag: Optional[bytes] = None
+    events: Optional[List[Dict]] = None
+    sex: Optional[str] = None
+    title: Optional[str] = None
+    honorific: Optional[str] = None
+    suffix: Optional[str] = None
+    occupation: Optional[str] = None
+    paternal_grandfather: Optional[str] = None
+    paternal_grandmother: Optional[str] = None
+    maternal_grandfather: Optional[str] = None
+    maternal_grandmother: Optional[str] = None
 
     def get_full_name(self) -> str:
         """Return the full name in 'Given Surname' format"""

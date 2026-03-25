@@ -272,3 +272,32 @@ python manage.py test --verbosity=2 tests.test_buffer_system
 - **LSP errors in generators** - Pre-existing, not from your changes
 - **Database** - Use migrations, never edit schema directly
 - **Secrets** - Never commit API keys or credentials
+
+---
+
+## 9. GrampsWeb Integration
+
+### Overview
+namechart can integrate with GrampsWeb to fetch genealogy data via the REST API.
+
+### Configuration
+Set these environment variables:
+- `GRAMPSWEB_API_URL` - Base URL of GrampsWeb (e.g., `http://grampsweb:5000`)
+- `GRAMPSWEB_API_TOKEN` - JWT token from GrampsWeb API access
+- `GRAMPSWEB_API_TIMEOUT` - Request timeout in seconds (default: 30)
+
+### API Client
+Use `apps.core.grampsweb` module:
+```python
+from apps.core.grampsweb import get_client, fetch_gedcom_from_grampsweb
+
+# Get configured client
+client = get_client()
+if client:
+    gedcom_bytes = fetch_gedcom_from_grampsweb()
+```
+
+### Deployment
+- Docker: See `deploy/docker/docker-compose.yml`
+- Kubernetes: See `deploy/kubernetes/` directory
+- GrampsWeb runs on subdomain (e.g., `genealogy.example.com`)

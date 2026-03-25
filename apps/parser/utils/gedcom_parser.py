@@ -929,9 +929,11 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
             if children:
                 family_children[fam_id] = children
 
-        # For each individual, find siblings from same families
+        # For each individual, find siblings
         for ind, individual in family_data["individuals"].items():
-            all_siblings = []  # All siblings from any family where both are children
+            all_siblings = []  # Full siblings (same family)
+            half_siblings = []  # Half siblings (share one biological parent)
+            step_siblings_list = []  # Step siblings (no biological relation)
 
             # Find families where this individual is a child
             for fam_id, children in family_children.items():
@@ -941,9 +943,45 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                         if other_child_id != ind and other_child_id not in all_siblings:
                             all_siblings.append(other_child_id)
 
+            # Also find half siblings based on shared biological parents
+            bio_father = individual.father
+            bio_mother = individual.mother
+
+            for other_ind, other_individual in family_data["individuals"].items():
+                if other_ind == ind:
+                    continue
+                if other_ind in all_siblings:
+                    continue
+                if other_ind in half_siblings:
+                    continue
+
+                other_father = other_individual.father
+                other_mother = other_individual.mother
+
+                # Count shared biological parents
+                shared = 0
+                if bio_father and other_father and bio_father == other_father:
+                    shared += 1
+                if bio_mother and other_mother and bio_mother == other_mother:
+                    shared += 1
+
+                if shared == 1:
+                    half_siblings.append(other_ind)
+
+            # Combine all siblings for the total count (full + half + step/adopted)
+            # Store separate lists for UI display, but also create combined list for counting
+            combined_siblings = list(all_siblings)  # Start with full siblings
+            for hs in half_siblings:
+                if hs not in combined_siblings:
+                    combined_siblings.append(hs)
+            for ss in step_siblings_list:
+                if ss not in combined_siblings:
+                    combined_siblings.append(ss)
+
             individual.siblings = all_siblings
-            individual.half_siblings = []
-            individual.step_siblings = []
+            individual.half_siblings = half_siblings
+            individual.step_siblings = step_siblings_list
+            individual.all_siblings = combined_siblings  # Combined list for total count
 
         # Debug: Print all individuals and their relationships
         print("\n=== Debug: Individuals and Relationships ===")

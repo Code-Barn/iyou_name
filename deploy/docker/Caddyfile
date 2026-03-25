@@ -1,0 +1,32 @@
+# Caddy reverse proxy configuration for namechart + GrampsWeb
+# This file is used when deploying behind Caddy for automatic HTTPS
+
+# Development - uncomment for local testing with Caddy
+# {
+#     admin off
+# }
+
+# Namechart - main application
+localhost:80, localhost:8000 {
+    reverse_proxy localhost:8000
+}
+
+# GrampsWeb - genealogy database (subdomain example)
+localhost:8080 {
+    reverse_proxy localhost:8080
+}
+
+# Production example with subdomains (uncomment and modify for production)
+# namechart.example.com {
+#     reverse_proxy web:8000
+#     tls {
+#         dns cloudflare YOUR_API_KEY
+#     }
+# }
+
+# genealogy.example.com {
+#     reverse_proxy grampsweb:5000
+#     tls {
+#         dns cloudflare YOUR_API_KEY
+#     }
+# }

@@ -132,7 +132,7 @@ GENERATION_2_SETTINGS_SCHEMA = {
     "place_hide_us_counties": (bool, True),
     "place_show_country": (bool, True),
     "place_hide_usa_with_state": (bool, True),
-    "place_show_township": (bool, True),
+    "place_hide_township": (bool, False),
     "place_auto_shorten": (bool, False),
     "place_abbreviate_uk_counties": (bool, False),
     "place_show_flag": (bool, True),
@@ -142,6 +142,7 @@ GENERATION_2_SETTINGS_SCHEMA = {
     "place_abbreviate_france_departments": (bool, False),
     "place_abbreviate_place_parts": (bool, False),
     "place_abbreviate_germany_states": (bool, False),
+    "place_abbreviate_poland_voivodeships": (bool, False),
     "gen2_flag_size": (int, 333),  # Generation-specific flag size
     "place_flag_layer": (str, "bottom"),
     "place_flag_in_overlay": (bool, False),
@@ -311,7 +312,7 @@ def generate_prototype_2gen_preview(
                             flag_base_y=760,
                             flag_rotation=-45,
                             flag_size=validated_settings.get("gen2_flag_size", 333),
-                            **base_params,
+                            **base_params,  # type: ignore[arg-type]
                             outside_stroke=validated_settings.get(
                                 "use_outside_stroke", False
                             ),

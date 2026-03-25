@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: namechart
+  labels:
+    name: namechart
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: grampsweb
+  labels:
+    name: grampsweb

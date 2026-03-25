@@ -897,6 +897,7 @@ HUD.Utils = (function() {
 
         // First, handle checkboxes explicitly - include all checkbox settings
         const checkboxes = document.querySelectorAll('#hud-settings-form input[type="checkbox"]');
+        console.log(`Found ${checkboxes.length} checkboxes in form`);
         checkboxes.forEach(checkbox => {
             // Include checkboxes that start with 'place_' OR are specific named checkboxes
             if (checkbox.name && (checkbox.name.startsWith('place_') || checkbox.name === 'use_outside_stroke')) {
@@ -937,6 +938,8 @@ HUD.Utils = (function() {
             // Use cumulative settings if provided, otherwise use current settings
             const settingsToUpdate = cumulativeSettings || userSettings;
             console.log('Updating final chart form with settings:', settingsToUpdate);
+            console.log('use_outside_stroke in settings:', settingsToUpdate.use_outside_stroke);
+            console.log('place_year_only in settings:', settingsToUpdate.place_year_only);
 
             let finalChartForm = document.querySelector('form[action*="generate_final_chart"]');
             if (!finalChartForm) {

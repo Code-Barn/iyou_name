@@ -480,13 +480,13 @@
                                 <i id="theme-toggle-light-icon" class="bi bi-sun-fill d-none" style="font-size: 1.25rem;"></i>
                             </button>
                         </li>
+                        {% if grampsweb_url %}
                         <li class="nav-item">
-                            <a
-                                class="nav-link"
-                                href="{% url 'upload:home' %}"
-                                >Upload</a
-                            >
+                            <a class="nav-link" href="{{ grampsweb_url }}" target="_blank" rel="noopener noreferrer">
+                                <i class="bi bi-globe"></i> Genealogy
+                            </a>
                         </li>
+                        {% endif %}
                         <li class="nav-item">
                             <a
                                 class="nav-link"
@@ -507,6 +507,11 @@
                             </a>
                         </li>
                         {% if user.is_authenticated %}
+                        <li class="nav-item d-flex align-items-center">
+                            <span class="nav-link text-primary fw-semibold">
+                                {{ user.username }}
+                            </span>
+                        </li>
                         <li class="nav-item d-flex align-items-center">
                             <form method="post" action="{% url 'users:logout' %}" class="d-flex align-items-center">
                                 {% csrf_token %}

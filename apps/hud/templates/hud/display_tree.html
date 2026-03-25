@@ -211,6 +211,14 @@
                                 <label class="form-check-label" for="place-abbreviate-germany-states">Abbreviate German States (Niedersachsen → NI)</label>
                             </div>
                             <div class="form-check">
+                                <input type="checkbox" name="place_abbreviate_poland_voivodeships" class="form-check-input" id="place-abbreviate-poland-voivodeships" {% if hud_settings.place_abbreviate_poland_voivodeships|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="place-abbreviate-poland-voivodeships">Abbreviate Polish Voivodeships (Mazowieckie → MA)</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="place_abbreviate_norway_counties" class="form-check-input" id="place-abbreviate-norway-counties" {% if hud_settings.place_abbreviate_norway_counties|default:True %}checked{% endif %}>
+                                <label class="form-check-label" for="place-abbreviate-norway-counties">Abbreviate Norwegian Counties (Buskerud → BUS)</label>
+                            </div>
+                            <div class="form-check">
                                 <input type="checkbox" name="place_abbreviate_place_parts" class="form-check-input" id="place-abbreviate-place-parts" {% if hud_settings.place_abbreviate_place_parts|default:True %}checked{% endif %}>
                                 <label class="form-check-label" for="place-abbreviate-place-parts">Abbreviate Place Parts (Street → St, County → Co)</label>
                             </div>
@@ -219,8 +227,8 @@
                                 <label class="form-check-label" for="place-year-only">Show State/Province Only (like Year Only for dates) - Gen 6-7</label>
                             </div>
                             <div class="form-check">
-                                <input type="checkbox" name="place_show_township" class="form-check-input" id="place-show-township" {% if hud_settings.place_show_township|default:False %}checked{% endif %}>
-                                <label class="form-check-label" for="place-show-township">Show Township</label>
+                                <input type="checkbox" name="place_hide_township" class="form-check-input" id="place-hide-township" {% if hud_settings.place_hide_township|default:False %}checked{% endif %}>
+                                <label class="form-check-label" for="place-hide-township">Hide Township/Ward/Townland</label>
                             </div>
                             <div class="form-check">
                                 <input type="checkbox" name="place_show_flag" class="form-check-input" id="place-show-flag" {% if hud_settings.place_show_flag|default:True %}checked{% endif %}>
@@ -654,9 +662,10 @@
                             <input type="hidden" name="place_abbreviate_sweden_counties" value="{{ hud_settings.place_abbreviate_sweden_counties|default:'' }}">
                             <input type="hidden" name="place_abbreviate_france_departments" value="{{ hud_settings.place_abbreviate_france_departments|default:'' }}">
                             <input type="hidden" name="place_abbreviate_germany_states" value="{{ hud_settings.place_abbreviate_germany_states|default:'' }}">
+                            <input type="hidden" name="place_abbreviate_poland_voivodeships" value="{{ hud_settings.place_abbreviate_poland_voivodeships|default:'' }}">
                             <input type="hidden" name="place_abbreviate_place_parts" value="{{ hud_settings.place_abbreviate_place_parts|default:'' }}">
                             <input type="hidden" name="place_year_only" value="{{ hud_settings.place_year_only|default:'' }}">
-                            <input type="hidden" name="place_show_township" value="{{ hud_settings.place_show_township|default:'' }}">
+                            <input type="hidden" name="place_hide_township" value="{{ hud_settings.place_hide_township|default:'' }}">
                             <input type="hidden" name="place_show_flag" value="{{ hud_settings.place_show_flag|default:'on' }}">
                             <input type="hidden" name="place_show_uk_flag" value="{{ hud_settings.place_show_uk_flag|default:'' }}">
                             <input type="hidden" name="place_flag_type" value="{{ hud_settings.place_flag_type|default:'birth' }}">
@@ -705,5 +714,28 @@
                     </div>
 
 </div>
+
+<script>
+// Update final chart form with current checkbox values before submission
+document.querySelector('form[action*="generate_final_chart"]')?.addEventListener('submit', function(e) {
+    // Get all checkboxes from the main settings form
+    const mainForm = document.getElementById('hud-settings-form');
+    if (mainForm) {
+        const checkboxes = mainForm.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            // Find or create matching hidden input in final chart form
+            let hiddenInput = this.querySelector(`input[name="${checkbox.name}"]`);
+            if (!hiddenInput) {
+                hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = checkbox.name;
+                this.appendChild(hiddenInput);
+            }
+            hiddenInput.value = checkbox.checked ? 'true' : 'false';
+            console.log(`Submit handler: ${checkbox.name} = ${checkbox.checked}`);
+        });
+    }
+});
+</script>
 
 {% endblock %}

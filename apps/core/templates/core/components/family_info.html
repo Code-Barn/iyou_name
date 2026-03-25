@@ -204,10 +204,10 @@
             </div>
             {% endif %}
 
-            {% if siblings %}
+            {% if siblings or half_siblings or all_siblings %}
             <div class="mt-2">
                 <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="collapse" data-bs-target="#siblingsCollapse" aria-expanded="true" aria-controls="siblingsCollapse">
-                    <strong>Siblings ({{ siblings|length }}):</strong>
+                    <strong>Siblings ({{ all_siblings|length }}):</strong>
                 </button>
                 <div class="collapse show" id="siblingsCollapse">
                     <ul class="list-group mt-2">
@@ -228,17 +228,47 @@
                                     {% if sibling.father == individual.father and sibling.mother == individual.mother %}
                                     {% elif sibling.father == individual.father %}<span class="text-muted">(Half - via father)</span>
                                     {% elif sibling.mother == individual.mother %}<span class="text-muted">(Half - via mother)</span>
-                                    {% elif sibling.adopted %}<span class="text-success">(Adopted{% if sibling.father and sibling.father != individual.father %} - biological father: {% with bio_parent=individuals_dict|get_item:sibling.father %}{{ bio_parent.full_name }}{% endwith %}{% endif %}{% if sibling.mother and sibling.mother != individual.mother %}{% if sibling.father and sibling.father != individual.father %} and {% else %} - {% endif %}biological mother: {% with bio_parent=individuals_dict|get_item:sibling.mother %}{{ bio_parent.full_name }}{% endwith %}{% endif %})</span>
-                                    {% elif sibling.step_parents %}<span class="text-info">(Step{% if sibling.father and sibling.father != individual.father %} - biological father: {% with bio_parent=individuals_dict|get_item:sibling.father %}{{ bio_parent.full_name }}{% endwith %}{% endif %}{% if sibling.mother and sibling.mother != individual.mother %}{% if sibling.father and sibling.father != individual.father %} and {% else %} - {% endif %}biological mother: {% with bio_parent=individuals_dict|get_item:sibling.mother %}{{ bio_parent.full_name }}{% endwith %}{% endif %})</span>
-                                    {% elif sibling.adoptive_parents %}<span class="text-success">(Adopted{% if sibling.father and sibling.father != individual.father %} - biological father: {% with bio_parent=individuals_dict|get_item:sibling.father %}{{ bio_parent.full_name }}{% endwith %}{% endif %}{% if sibling.mother and sibling.mother != individual.mother %}{% if sibling.father and sibling.father != individual.father %} and {% else %} - {% endif %}biological mother: {% with bio_parent=individuals_dict|get_item:sibling.mother %}{{ bio_parent.full_name }}{% endwith %}{% endif %})</span>
-                                    {% elif sibling.foster_parents %}<span class="text-warning">(Foster{% if sibling.father and sibling.father != individual.father %} - biological father: {% with bio_parent=individuals_dict|get_item:sibling.father %}{{ bio_parent.full_name }}{% endwith %}{% endif %}{% if sibling.mother and sibling.mother != individual.mother %}{% if sibling.father and sibling.father != individual.father %} and {% else %} - {% endif %}biological mother: {% with bio_parent=individuals_dict|get_item:sibling.mother %}{{ bio_parent.full_name }}{% endwith %}{% endif %})</span>
                                     {% else %}<span class="text-muted">(Half)</span>
                                     {% endif %}
-                                {% elif sibling.adopted %}<span class="text-success">(Adopted{% if sibling.father %} - biological father: {% with bio_parent=individuals_dict|get_item:sibling.father %}{{ bio_parent.full_name }}{% endwith %}{% endif %}{% if sibling.mother %}{% if sibling.father %} and {% else %} - {% endif %}biological mother: {% with bio_parent=individuals_dict|get_item:sibling.mother %}{{ bio_parent.full_name }}{% endwith %}{% endif %})</span>
-                                {% elif sibling.step_parents %}<span class="text-info">(Step{% if sibling.father %} - biological father: {% with bio_parent=individuals_dict|get_item:sibling.father %}{{ bio_parent.full_name }}{% endwith %}{% endif %}{% if sibling.mother %}{% if sibling.father %} and {% else %} - {% endif %}biological mother: {% with bio_parent=individuals_dict|get_item:sibling.mother %}{{ bio_parent.full_name }}{% endwith %}{% endif %})</span>
-                                {% elif sibling.adoptive_parents %}<span class="text-success">(Adopted{% if sibling.father %} - biological father: {% with bio_parent=individuals_dict|get_item:sibling.father %}{{ bio_parent.full_name }}{% endwith %}{% endif %}{% if sibling.mother %}{% if sibling.father %} and {% else %} - {% endif %}biological mother: {% with bio_parent=individuals_dict|get_item:sibling.mother %}{{ bio_parent.full_name }}{% endwith %}{% endif %})</span>
-                                {% elif sibling.foster_parents %}<span class="text-warning">(Foster{% if sibling.father %} - biological father: {% with bio_parent=individuals_dict|get_item:sibling.father %}{{ bio_parent.full_name }}{% endwith %}{% endif %}{% if sibling.mother %}{% if sibling.father %} and {% else %} - {% endif %}biological mother: {% with bio_parent=individuals_dict|get_item:sibling.mother %}{{ bio_parent.full_name }}{% endwith %}{% endif %})</span>
                                 {% endif %}
+                                {% if sibling.birth_date or sibling.birth_place %}
+                                <div class="mt-1">
+                                    <small class="text-muted">
+                                        {% if sibling.birth_date %}b. {{ sibling.birth_date|format_date }}{% endif %}
+                                        {% if sibling.birth_place %}{% if sibling.birth_date %}, {% endif %}{{ sibling.birth_place }}{% endif %}
+                                    </small>
+                                </div>
+                                {% endif %}
+                                {% if sibling.death_date or sibling.death_place %}
+                                <div class="mt-1">
+                                    <small class="text-muted">
+                                        {% if sibling.death_date %}d. {{ sibling.death_date|format_date }}{% endif %}
+                                        {% if sibling.death_place %}{% if sibling.death_date %}, {% endif %}{{ sibling.death_place }}{% endif %}
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'browse:individual_detail' sibling.id %}" class="btn btn-primary btn-sm">Profile</a>
+                        </li>
+                        {% endfor %}
+                        {% for sibling in half_siblings %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {% with sibling_photo=photos|get_item:sibling.id %}
+                            {% if sibling_photo %}
+                            <img src="{{ sibling_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                            {% else %}
+                            <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            {% endif %}
+                            {% endwith %}
+                            <div class="flex-grow-1">
+                                <span class="fs-5">{{ sibling.full_name }}</span>
+                                <span class="text-muted">
+                                    {% if sibling.father == individual.father %}(Half - via father)
+                                    {% elif sibling.mother == individual.mother %}(Half - via mother)
+                                    {% else %}(Half){% endif %}
+                                </span>
                                 {% if sibling.birth_date or sibling.birth_place %}
                                 <div class="mt-1">
                                     <small class="text-muted">

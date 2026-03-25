@@ -1,0 +1,63 @@
+# Traefik dynamic configuration for namechart + GrampsWeb
+# Add these labels to your docker-compose.yml service definitions
+
+# === namechart (web) service labels ===
+# traefik.enable=true
+# traefik.http.routers.namechart.rule=Host(`namechart.example.com`)
+# traefik.http.routers.namechart.entrypoints=websecure
+# traefik.http.routers.namechart.tls=true
+# traefik.http.routers.namechart.tls.certresolver=cloudflare
+# traefik.http.services.namechart.loadbalancer.server.port=8000
+# traefik.docker.network=traefik
+
+# === grampsweb service labels ===
+# traefik.http.routers.grampsweb.rule=Host(`genealogy.example.com`)
+# traefik.http.routers.grampsweb.entrypoints=websecure
+# traefik.http.routers.grampsweb.tls=true
+# traefik.http.routers.grampsweb.tls.certresolver=cloudflare
+# traefik.http.services.grampsweb.loadbalancer.server.port=5000
+# traefik.docker.network=traefik
+
+# === Example docker-compose.yml service definitions ===
+#
+# services:
+#   web:
+#     labels:
+#       - "traefik.enable=true"
+#       - "traefik.http.routers.namechart.rule=Host(`namechart.example.com`)"
+#       - "traefik.http.routers.namechart.entrypoints=websecure"
+#       - "traefik.http.routers.namechart.tls=true"
+#       - "traefik.http.services.namechart.loadbalancer.server.port=8000"
+#       - "traefik.docker.network=traefik"
+#
+#   grampsweb:
+#     labels:
+#       - "traefik.enable=true"
+#       - "traefik.http.routers.grampsweb.rule=Host(`genealogy.example.com`)"
+#       - "traefik.http.routers.grampsweb.entrypoints=websecure"
+#       - "traefik.http.routers.grampsweb.tls=true"
+#       - "traefik.http.services.grampsweb.loadbalancer.server.port=5000"
+#       - "traefik.docker.network=traefik"
+
+# === Development (HTTP only) ===
+#
+# For local development without TLS, use:
+#
+# services:
+#   web:
+#     labels:
+#       - "traefik.enable=true"
+#       - "traefik.http.routers.namechart.rule=Host(`localhost`)"
+#       - "traefik.http.routers.namechart.entrypoints=web"
+#       - "traefik.http.services.namechart.loadbalancer.server.port=8000"
+#       - "traefik.docker.network=traefik"
+#
+#   grampsweb:
+#     labels:
+#       - "traefik.enable=true"
+#       - "traefik.http.routers.grampsweb.rule=Host(`localhost`)"
+#       - "traefik.http.routers.grampsweb.entrypoints=web"
+#       - "traefik.http.routers.grampsweb.middlewares=grampsweb-stripprefix"
+#       - "traefik.http.services.grampsweb.loadbalancer.server.port=5000"
+#       - "traefik.docker.network=traefik"
+#       - "traefik.http.middlewares.grampsweb-stripprefix.stripprefix.prefixes=/api"

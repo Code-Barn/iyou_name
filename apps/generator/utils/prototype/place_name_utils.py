@@ -590,6 +590,128 @@ SWEDISH_COUNTY_CODES = {
     "stockholm": "AB",
 }
 
+NORWEGIAN_COUNTY_CODES = {
+    # Current counties (fylker) - as of 2024, reverted from Viken split
+    "oslo": "OSL",
+    "viken": "VIK",
+    "innlandet": "INN",
+    "hedmark": "HEI",  # Historical
+    "oppland": "OPL",  # Historical
+    "buskerud": "BUS",
+    "vestfold": "VFO",
+    "telemark": "TEL",
+    "agder": "AGD",
+    "rogaland": "ROG",
+    "vestland": "VLS",
+    "hordaland": "HRL",  # Historical
+    "sogn og fjordane": "SFI",  # Historical
+    "more og romsdal": "MRO",
+    "trondelag": "TRØ",
+    "nordland": "NRL",
+    "troms": "TRO",
+    "finnmark": "FNM",
+    "roeand": "ROS",  # Historical (merged into Trøndelag)
+    "enontekiö": "ENØ",  # Sami language name for Enontekis
+    "karesuvanto": "KAR",  # Sami language area
+    "tana": "TAN",  # Sami language area
+    "neseby": "NES",  # Sami language area
+    "sor-varanger": "SVK",  # Sami language area
+    # With Norwegian diacritics (for display purposes)
+    "østfold": "ØFO",
+    "akershus": "AKR",
+    "akershus": "AKR",
+    "østfold": "ØFO",
+    "drammen": "BUS",  # City in Buskerud
+    "holes": "BUS",  # Hole municipality
+    "hole": "BUS",
+    "hvaler": "VFO",  # Hvaler in Vestfold
+    "kragerø": "TEL",  # Kragerø in Telemark
+    "sjernarøy": "ROG",  # Historical municipality
+    "finnøy": "ROG",  # Finnøy municipality (in Rogaland)
+    "bamble": "TEL",  # Bamble in Telemark
+    "porsgrunn": "TEL",  # Porsgrunn city
+    "skien": "TEL",  # Skien city
+    "notodden": "TEL",  # Notodden city
+    "kongsberg": "BUS",  # Kongsberg in Buskerud
+    "lillehammer": "INN",  # Lillehammer in Innlandet
+    "gjøvik": "INN",  # Gjøvik in Innlandet
+    "hamar": "INN",  # Hamar in Innlandet
+    "hamar": "INN",
+    "rumsdal": "MRO",  # Rumsdal
+    "sula": "MRO",  # Sula municipality
+    "alesund": "MRO",  # Ålesund city
+    "molde": "MRO",  # Molde city
+    "kristiansund": "MRO",  # Kristiansund city
+    "stein": "NRL",  # Steigen
+    "bodø": "NRL",  # Bodø city
+    "narvik": "NRL",  # Narvik municipality
+    "harstad": "TRO",  # Harstad municipality
+    "tromsø": "TRO",  # Tromsø city
+    "hammerfest": "FNM",  # Hammerfest municipality
+    "kirkenes": "FNM",  # Kirkenes in Sør-Varanger
+    "stavanger": "ROG",  # Stavanger city
+    "sola": "ROG",  # Sola municipality
+    "sandnes": "ROG",  # Sandnes city
+    "haugesund": "ROG",  # Haugesund city
+    "bergen": "VLS",  # Bergen city
+    "oslo": "OSL",  # Oslo
+    "drammen": "BUS",  # Drammen
+    # With "fylke" suffix
+    "oslo fylke": "OSL",
+    "viken fylke": "VIK",
+    "innlandet fylke": "INN",
+    "buskerud fylke": "BUS",
+    "vestfold fylke": "VFO",
+    "telemark fylke": "TEL",
+    "agder fylke": "AGD",
+    "rogaland fylke": "ROG",
+    "vestland fylke": "VLS",
+    "more og romsdal fylke": "MRO",
+    "trondelag fylke": "TRØ",
+    "nordland fylke": "NRL",
+    "troms fylke": "TRO",
+    "finnmark fylke": "FNM",
+    "østfold fylke": "ØFO",
+    "akershus fylke": "AKR",
+    # English variants
+    "oslo county": "OSL",
+    "akershus county": "AKR",
+    "ostfold county": "ØFO",
+    "østfold county": "ØFO",
+    "buskerud county": "BUS",
+    "vestfold county": "VFO",
+    "telemark county": "TEL",
+    "rogaland county": "ROG",
+    "hordaland county": "HRL",
+    "sogn og fjordane county": "SFI",
+    "more og romsdal county": "MRO",
+    "trondelag county": "TRØ",
+    "nordland county": "NRL",
+    "troms county": "TRO",
+    "finnmark county": "FNM",
+    "innlandet county": "INN",
+    # ASCII versions without diacritics
+    "oslo": "OSL",
+    "akershus": "AKR",
+    "ostfold": "ØFO",
+    "akershus": "AKR",
+    "ostfold": "ØFO",
+    "buskerud": "BUS",
+    "vestfold": "VFO",
+    "telemark": "TEL",
+    "rogaland": "ROG",
+    "hordaland": "HRL",
+    "sogn og fjordane": "SFI",
+    "more og romsdal": "MRO",
+    "trondelag": "TRØ",
+    "nordland": "NRL",
+    "troms": "TRO",
+    "finnmark": "FNM",
+    "innlandet": "INN",
+    "agder": "AGD",
+    "vestland": "VLS",
+}
+
 # French department codes (departements) - INSEE codes
 # Two-digit codes used for postal codes and administrative filing
 FRENCH_DEPARTMENT_CODES = {
@@ -729,8 +851,10 @@ GERMAN_STATE_CODES = {
     "baden-wurttemberg": "BW",
     "hessen": "HE",
     "hesse": "HE",
-    "nordrhein-westfalen": "NW",
-    "north rhine-westphalia": "NW",
+    "nordrhein-westfalen": "NRW",
+    "nordrhein westfalen": "NRW",  # Without hyphen
+    "north rhine-westphalia": "NRW",
+    "north rhine westphalia": "NRW",  # Without hyphen
     "rheinland-pfalz": "RP",
     "rhineland-palatinate": "RP",
     "sachsen": "SN",
@@ -757,8 +881,10 @@ GERMAN_STATE_CODES = {
     "schlesien": "SL",
     "silesia": "SL",
     "ostpreußen": "OP",
+    "ostpreussen": "OP",  # Without umlaut
     "east prussia": "OP",
     "westpreußen": "WP",
+    "westpreussen": "WP",  # Without umlaut
     "west prussia": "WP",
     "posen": "PO",
     "sachsen (province)": "SN",
@@ -767,6 +893,89 @@ GERMAN_STATE_CODES = {
     "oldenburg": "OL",
     "anhalt": "AH",
     "thüringen (historical)": "TH",
+    # Additional historical regions
+    "westfalen": "NRW",  # Westphalia - now part of Nordrhein-Westfalen
+    "westphalia": "NRW",
+    "preußen": "DE",  # Prussia - historical country
+    "preussen": "DE",  # Without umlaut
+    "prussia": "DE",
+    "rheinprovinz": "RP",  # Rhine Province
+    "rhenish prussia": "RP",  # Rheinprovinz in English
+    "posen": "WP",  # Posen - now part of Greater Poland
+    "schleswig": "SH",  # Schleswig (historically contested)
+    "holstein": "SH",  # Holstein
+}
+
+POLISH_VOIVODESHIP_CODES = {
+    # Current voivodeships (16 since 1999)
+    "dolnośląskie": "DS",
+    "dolnoslaskie": "DS",  # Without diacritics
+    "lower silesian": "DS",
+    "kujawsko-pomorskie": "KP",
+    "kuyavian-pomeranian": "KP",
+    "lubelskie": "LU",
+    "lublin": "LU",
+    "lubuskie": "LB",
+    "lubusz": "LB",
+    "łódzkie": "LD",
+    "lodzkie": "LD",
+    "małopolskie": "MP",
+    "malopolskie": "MP",
+    "lesser poland": "MP",
+    "mazowieckie": "MA",
+    "masovian": "MA",
+    "opolskie": "OP",
+    "opolskie voivodeship": "OP",
+    "podkarpackie": "PK",
+    "subcarpathian": "PK",
+    "podlaskie": "PD",
+    "pomorskie": "PM",
+    "pomeranian": "PM",
+    "śląskie": "SL",
+    "slaskie": "SL",
+    "silesian": "SL",
+    "świętokrzyskie": "SW",
+    "swietokrzyskie": "SW",
+    "holy cross": "SW",
+    "warmińsko-mazurskie": "WM",
+    "warminsko-mazurskie": "WM",
+    "warmian-masurian": "WM",
+    "wielkopolskie": "WP",
+    "greater poland": "WP",
+    "zachodniopomorskie": "ZP",
+    "west pomeranian": "ZP",
+    # Additional variants
+    "polska": "PL",
+    "poland": "PL",
+    # Historical regions (for pre-1999 research)
+    "warszawskie": "WM",
+    "krakowskie": "MP",
+    "poznańskie": "WP",
+    "pozanskie": "WP",
+    "łodzkie": "LD",
+    # Handle "Województwo" prefix (with and without diacritics)
+    "województwo dolnośląskie": "DS",
+    "wojewodztwo dolnoslaskie": "DS",
+    "województwo kujawsko-pomorskie": "KP",
+    "województwo lubelskie": "LU",
+    "województwo lubuskie": "LB",
+    "województwo łódzkie": "LD",
+    "wojewodztwo lodzkie": "LD",
+    "województwo małopolskie": "MP",
+    "wojewodztwo malopolskie": "MP",
+    "województwo mazowieckie": "MA",
+    "województwo opolskie": "OP",
+    "województwo podkarpackie": "PK",
+    "województwo podlaskie": "PD",
+    "województwo pomorskie": "PM",
+    "województwo śląskie": "SL",
+    "wojewodztwo slaskie": "SL",
+    "województwo świętokrzyskie": "SW",
+    "wojewodztwo swietokrzyskie": "SW",
+    "województwo warmińsko-mazurskie": "WM",
+    "wojewodztwo warminsko-mazurskie": "WM",
+    "województwo wielkopolskie": "WP",
+    "województwo zachodniopomorskie": "ZP",
 }
 
 # Combine all state/province abbreviations (full name -> abbreviation)
@@ -960,6 +1169,7 @@ KNOWN_COUNTRIES = {
     "switzerland",
     "austria",
     "poland",
+    "polska",
     "portugal",
     "brazil",
     "argentina",
@@ -1342,8 +1552,10 @@ def detect_country(place: str) -> dict:
             "is_us": False,
             "is_uk": False,
             "is_sweden": False,
+            "is_norway": False,
             "is_france": False,
             "is_germany": False,
+            "is_poland": False,
             "raw_country": "",
         }
 
@@ -1354,8 +1566,10 @@ def detect_country(place: str) -> dict:
             "is_us": False,
             "is_uk": False,
             "is_sweden": False,
+            "is_norway": False,
             "is_france": False,
             "is_germany": False,
+            "is_poland": False,
             "raw_country": "",
         }
 
@@ -1365,8 +1579,10 @@ def detect_country(place: str) -> dict:
     is_us = False
     is_uk = False
     is_sweden = False
+    is_norway = False
     is_france = False
     is_germany = False
+    is_poland = False
     country = raw_country
 
     # Check if it's a US place
@@ -1401,6 +1617,10 @@ def detect_country(place: str) -> dict:
     if last_part in {"sweden", "sverige"}:
         is_sweden = True
 
+    # Check if it's Norway
+    if last_part in {"norway", "norge"}:
+        is_norway = True
+
     # Check if it's France
     if last_part in {"france", "francia", "frankrijk", "frankreich", "francía"}:
         is_france = True
@@ -1409,13 +1629,19 @@ def detect_country(place: str) -> dict:
     if last_part in {"germany", "deutschland", "preussen", "preußen", "prussia"}:
         is_germany = True
 
+    # Check if it's Poland
+    if last_part in {"poland", "polska"}:
+        is_poland = True
+
     return {
         "country": country,
         "is_us": is_us,
         "is_uk": is_uk,
         "is_sweden": is_sweden,
+        "is_norway": is_norway,
         "is_france": is_france,
         "is_germany": is_germany,
+        "is_poland": is_poland,
         "raw_country": raw_country,
     }
 
@@ -1442,7 +1668,10 @@ def parse_place(place: str) -> dict:
             "is_us": False,
             "is_uk": False,
             "is_sweden": False,
+            "is_norway": False,
             "is_france": False,
+            "is_germany": False,
+            "is_poland": False,
         }
 
     # Detect country first
@@ -1462,8 +1691,10 @@ def parse_place(place: str) -> dict:
         "is_us": country_info["is_us"],
         "is_uk": country_info["is_uk"],
         "is_sweden": country_info["is_sweden"],
+        "is_norway": country_info["is_norway"],
         "is_france": country_info["is_france"],
         "is_germany": country_info["is_germany"],
+        "is_poland": country_info["is_poland"],
     }
 
     if parts_count == 0:
@@ -1555,6 +1786,58 @@ def parse_place(place: str) -> dict:
                 return key
         return None
 
+    # Helper for case-insensitive Polish voivodeship lookup with diacritic normalization
+    def find_polish_voivodeship(part: str) -> str | None:
+        part_lower = part.lower().strip()
+        # Skip country identifiers (not actual voivodeships)
+        if part_lower in {"polska", "poland"}:
+            return None
+        if part_lower in POLISH_VOIVODESHIP_CODES:
+            return part
+        # Normalize Polish diacritics: ą->a, ć->c, ę->e, ł->l, ń->n, ó->o, ś->s, ź->z, ż->z
+        diacritic_map = str.maketrans("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ", "acelnoszzACELNOSZZ")
+        part_normalized = part_lower.translate(diacritic_map)
+        if part_normalized in POLISH_VOIVODESHIP_CODES:
+            return part
+        # Try case-insensitive search for complex names
+        for key in POLISH_VOIVODESHIP_CODES:
+            if key.lower() == part_lower:
+                # Skip country identifiers
+                if key.lower() in {"polska", "poland"}:
+                    continue
+                return key
+            # Also match normalized versions
+            key_normalized = key.lower().translate(diacritic_map)
+            if key_normalized == part_normalized:
+                return key
+        return None
+
+    # Helper for case-insensitive Norwegian county lookup with diacritic normalization
+    def find_norwegian_county(part: str) -> str | None:
+        part_lower = part.lower().strip()
+        # Skip country identifiers (not actual counties)
+        if part_lower in {"norge", "norway"}:
+            return None
+        if part_lower in NORWEGIAN_COUNTY_CODES:
+            return part
+        # Normalize Norwegian diacritics: ø->o, æ->ae, å->a
+        diacritic_map = str.maketrans("øæåØÆÅ", "oeaOEA")
+        part_normalized = part_lower.translate(diacritic_map)
+        if part_normalized in NORWEGIAN_COUNTY_CODES:
+            return part
+        # Try case-insensitive search for complex names
+        for key in NORWEGIAN_COUNTY_CODES:
+            if key.lower() == part_lower:
+                # Skip country identifiers
+                if key.lower() in {"norge", "norway"}:
+                    continue
+                return key
+            # Also match normalized versions
+            key_normalized = key.lower().translate(diacritic_map)
+            if key_normalized == part_normalized:
+                return key
+        return None
+
     if parts_count >= 1:
         # For Swedish: check last part for "län" or known county
         last_lower = parts[-1].lower().strip()
@@ -1565,6 +1848,20 @@ def parse_place(place: str) -> dict:
         # For German: check for known state names (e.g., Niedersachsen, Bayern)
         # German pattern: Town, District, State, Country OR Town, State, Country
         elif find_german_state(parts[-1]):
+            result["state"] = parts[-1]
+            parts = parts[:-1]
+            parts_count = len(parts)
+        # For Polish: check for known voivodeship names (e.g., Mazowieckie, Małopolskie)
+        # Polish pattern: "Town, Voivodeship, Country" OR "Town, Powiat, Voivodeship, Country"
+        # Voivodeship is typically the 2nd to last or last part before country
+        elif find_polish_voivodeship(parts[-1]):
+            result["state"] = parts[-1]
+            parts = parts[:-1]
+            parts_count = len(parts)
+        # For Norwegian: check for known county names (e.g., Buskerud, Oslo, Rogaland)
+        # Norwegian pattern: "Town, Parish, County, Country" OR "Town, County, Country"
+        # e.g., "Finnøy, Hole, Buskerud, Norway" -> city=Finnøy, county=Hole, state=Buskerud
+        elif find_norwegian_county(parts[-1]):
             result["state"] = parts[-1]
             parts = parts[:-1]
             parts_count = len(parts)
@@ -1874,7 +2171,95 @@ def abbreviate_german_state(state: str) -> str:
     for key, value in GERMAN_STATE_CODES.items():
         if key.lower() == state_lower:
             return value
+    # Handle compound names without hyphens (e.g., "Nordrhein Westfalen" -> "Nordrhein-Westfalen")
+    # Only do this for known compound states
+    compound_mappings = {
+        "nordrhein westfalen": "nordrhein-westfalen",
+        "north rhine westphalia": "north rhine-westphalia",
+        "niedersachsen": "niedersachsen",
+        "bayern": "bayern",
+    }
+    for compound, normalized in compound_mappings.items():
+        if state_lower == compound:
+            if normalized in GERMAN_STATE_CODES:
+                return GERMAN_STATE_CODES[normalized]
+    # Try replacing space with hyphen for compound states
+    state_hyphenated = state_lower.replace(" ", "-")
+    if state_hyphenated in GERMAN_STATE_CODES:
+        return GERMAN_STATE_CODES[state_hyphenated]
     return state
+
+
+def abbreviate_polish_voivodeship(voivodeship: str) -> str:
+    """
+    Abbreviate Polish voivodeship (province) name to its 2-letter code.
+
+    Args:
+        voivodeship: Full voivodeship name (e.g., "Mazowieckie", "Województwo Mazowieckie")
+
+    Returns:
+        Abbreviated voivodeship code (e.g., "MA", "DS", "KP") or original if not recognized
+    """
+    if not voivodeship:
+        return voivodeship
+
+    voivodeship_lower = voivodeship.lower().strip()
+    # Try exact match first
+    if voivodeship_lower in POLISH_VOIVODESHIP_CODES:
+        return POLISH_VOIVODESHIP_CODES[voivodeship_lower]
+    # Normalize Polish diacritics for flexible matching
+    # ą->a, ć->c, ę->e, ł->l, ń->n, ó->o, ś->s, ź->z, ż->z
+    normalized = voivodeship_lower
+    diacritic_map = str.maketrans("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ", "acelnoszzACELNOSZZ")
+    normalized = normalized.translate(diacritic_map)
+    # Try with normalized version
+    if normalized in POLISH_VOIVODESHIP_CODES:
+        return POLISH_VOIVODESHIP_CODES[normalized]
+    # Try case-insensitive search
+    for key, value in POLISH_VOIVODESHIP_CODES.items():
+        if key.lower() == voivodeship_lower:
+            return value
+        # Also check against normalized keys
+        key_normalized = key.lower().translate(diacritic_map)
+        if key_normalized == normalized:
+            return value
+    return voivodeship
+
+
+def abbreviate_norwegian_county(county: str) -> str:
+    """
+    Abbreviate Norwegian county (fylke) name to its code.
+
+    Args:
+        county: Full county name (e.g., "Buskerud", "Oslo", "Rogaland")
+
+    Returns:
+        Abbreviated county code (e.g., "BUS", "OSL", "ROG") or original if not recognized
+    """
+    if not county:
+        return county
+
+    county_lower = county.lower().strip()
+    # Try exact match first
+    if county_lower in NORWEGIAN_COUNTY_CODES:
+        return NORWEGIAN_COUNTY_CODES[county_lower]
+    # Normalize Norwegian diacritics for flexible matching
+    # ø->o, æ->ae, å->a
+    normalized = county_lower
+    diacritic_map = str.maketrans("øæåØÆÅ", "oeaOEA")
+    normalized = normalized.translate(diacritic_map)
+    # Try with normalized version
+    if normalized in NORWEGIAN_COUNTY_CODES:
+        return NORWEGIAN_COUNTY_CODES[normalized]
+    # Try case-insensitive search
+    for key, value in NORWEGIAN_COUNTY_CODES.items():
+        if key.lower() == county_lower:
+            return value
+        # Also check against normalized keys
+        key_normalized = key.lower().translate(diacritic_map)
+        if key_normalized == normalized:
+            return value
+    return county
 
 
 def abbreviate_place_name_parts(place: str) -> str:
@@ -1923,7 +2308,7 @@ def format_place(
     use_country_abbrev: bool = False,
     use_state_abbrev: bool = False,
     hide_us_counties: bool = True,
-    show_township: bool = True,
+    hide_township: bool = False,
     show_country: bool = True,
     hide_usa_with_state: bool = True,
     country_first: bool = False,
@@ -1932,6 +2317,8 @@ def format_place(
     abbreviate_sweden_counties: bool = False,
     abbreviate_france_departments: bool = False,
     abbreviate_germany_states: bool = False,
+    abbreviate_poland_voivodeships: bool = False,
+    abbreviate_norway_counties: bool = False,
     abbreviate_place_parts: bool = False,
     place_year_only: bool = False,
 ) -> str:
@@ -1943,7 +2330,7 @@ def format_place(
         use_country_abbrev: Abbreviate country name (USA, UK, etc.)
         use_state_abbrev: Abbreviate state/province to 2-letter code
         hide_us_counties: Hide US county names when part of Town,County,State pattern
-        show_township: Include township in output (only if detected as township)
+        hide_township: Hide sub-city level place designators (Township, Ward, Townland, etc.)
         show_country: Include country in output
         hide_usa_with_state: Hide "USA" when a US state is present
         country_first: Put country before other parts
@@ -1954,6 +2341,8 @@ def format_place(
         abbreviate_sweden_counties: Abbreviate Swedish counties to codes (e.g., Jönköpings län → F)
         abbreviate_france_departments: Abbreviate French departments to codes (e.g., Calvados → 14)
         abbreviate_germany_states: Abbreviate German states to codes (e.g., Niedersachsen → NI)
+        abbreviate_poland_voivodeships: Abbreviate Polish voivodeships to codes (e.g., Mazowieckie → MA)
+        abbreviate_norway_counties: Abbreviate Norwegian counties to codes (e.g., Buskerud → BUS)
         abbreviate_place_parts: Abbreviate common place parts (e.g., Street → St, Mountain → Mtn)
         place_year_only: When enabled, show only the state/province level (e.g., "PA", "NI", "F")
                         Similar to date_year_only for dates. Intended for compact displays.
@@ -2079,6 +2468,12 @@ def format_place(
         # Apply German state abbreviation
         if state and parsed.get("is_germany"):
             state = abbreviate_german_state(state)
+        # Apply Polish voivodeship abbreviation
+        if state and parsed.get("is_poland"):
+            state = abbreviate_polish_voivodeship(state)
+        # Apply Norwegian county abbreviation
+        if state and parsed.get("is_norway"):
+            state = abbreviate_norwegian_county(state)
         # Apply US state abbreviation
         if state and (parsed.get("is_us") or use_state_abbrev):
             state = abbreviate_state(state)
@@ -2200,6 +2595,20 @@ def format_place(
         }:
             parsed["country"] = ""
 
+    # Apply Polish voivodeship abbreviations
+    if abbreviate_poland_voivodeships and parsed["state"] and parsed.get("is_poland"):
+        parsed["state"] = abbreviate_polish_voivodeship(parsed["state"])
+        # Hide Poland when voivodeship code is shown
+        if parsed["country"] and parsed["country"].lower() in {"poland", "polska"}:
+            parsed["country"] = ""
+
+    # Apply Norwegian county abbreviations
+    if abbreviate_norway_counties and parsed["state"] and parsed.get("is_norway"):
+        parsed["state"] = abbreviate_norwegian_county(parsed["state"])
+        # Hide Norway when county code is shown
+        if parsed["country"] and parsed["country"].lower() in {"norway", "norge"}:
+            parsed["country"] = ""
+
     # Determine if we should hide the county
     # Only hide US counties when: is US place AND has both city and county
     should_hide_county = (
@@ -2211,7 +2620,38 @@ def format_place(
     original_parts = [p.strip() for p in place.split(",")]
     filtered_parts = []
 
-    for part in original_parts:
+    # Handle 5-part US places: Township, City, County, State, Country
+    # When hide_township is enabled and we detect this pattern, skip the first part
+    skip_first_part = False
+    if hide_township and len(original_parts) == 5:
+        # Check if it's a US place (last part is US country)
+        last_lower = original_parts[-1].lower().strip()
+        is_us_country = last_lower in US_STATES or last_lower in {
+            "usa",
+            "us",
+            "u.s.",
+            "u.s.a.",
+            "united states",
+            "united states of america",
+        }
+        if is_us_country:
+            # Check if 4th part is a state
+            fourth_lower = original_parts[-2].lower().strip()
+            is_state = fourth_lower in STATE_ABBREVIATIONS or fourth_lower in US_STATES
+            if is_state:
+                # Check if 3rd part is a county
+                third_lower = original_parts[-3].lower().strip()
+                is_county_keyword = "county" in third_lower or third_lower.endswith(
+                    ", co"
+                )
+                if is_county_keyword:
+                    skip_first_part = True
+
+    for i, part in enumerate(original_parts):
+        # Skip the first part of 5-part US township pattern
+        if skip_first_part and i == 0:
+            continue
+
         part_lower = part.lower()
         is_county = (
             "county" in part_lower
@@ -2230,13 +2670,13 @@ def format_place(
         # Include part unless it's a county/township we're hiding
         if is_county and should_hide_county:
             continue
-        if is_township and not show_township:
+        if is_township and hide_township:
             continue
         filtered_parts.append(part)
 
-    # Also filter parsed["city"] for townland/township when show_township=False
+    # Also filter parsed["city"] for townland/township when hide_township=True
     # This handles cases where townland is parsed into the city field
-    if not show_township and parsed["city"]:
+    if hide_township and parsed["city"]:
         city_lower = parsed["city"].lower()
         if any(
             kw in city_lower for kw in ["townland", "township", "twp", "ward", " td "]
@@ -2308,9 +2748,9 @@ def format_place(
             # UK, France, others: show as-is without Co. modification
             display_county = county
 
-    # Clean up township suffix for display (only if showing)
+    # Clean up township suffix for display (only if showing - i.e., not hiding)
     display_township = ""
-    if show_township and parsed["township"]:
+    if not hide_township and parsed["township"]:
         township = parsed["township"]
         township_lower = township.lower()
         if township_lower.endswith(" township"):
@@ -2334,7 +2774,7 @@ def format_place(
         if parsed["city"]:
             parts.append(parsed["city"])
 
-        if show_township and display_township:
+        if not hide_township and display_township:
             parts.append(display_township)
 
         # County goes after state (for US: town, county, state, USA)
@@ -2354,7 +2794,7 @@ def format_place(
         if parsed["city"]:
             parts.append(parsed["city"])
 
-        if show_township and display_township:
+        if not hide_township and display_township:
             parts.append(display_township)
 
         if parsed["state"]:
@@ -2366,13 +2806,15 @@ def format_place(
     if parsed["other"]:
         parts.append(parsed["other"])
 
-    # Filter out "other" (regions) when French/Swedish/German abbreviations are enabled
+    # Filter out "other" (regions) when French/Swedish/German/Polish abbreviations are enabled
     # French regions (e.g., Haute-Normandie, Basse-Normandie) should be hidden
     # when the department code is shown
     if (
         (abbreviate_france_departments and parsed.get("is_france"))
         or (abbreviate_sweden_counties and parsed.get("is_sweden"))
         or (abbreviate_germany_states and parsed.get("is_germany"))
+        or (abbreviate_poland_voivodeships and parsed.get("is_poland"))
+        or (abbreviate_norway_counties and parsed.get("is_norway"))
     ):
         # Remove the "other" part (region) from the output
         filtered_parts = [p for p in parts if p != parsed.get("other", "")]
@@ -2491,7 +2933,7 @@ def format_place_from_settings(place: str, settings: dict, flag: str = "") -> st
             - place_use_country_abbrev: bool
             - place_use_state_abbrev: bool
             - place_hide_us_counties: bool (formerly place_show_county inverted)
-            - place_show_township: bool
+            - place_hide_township: bool (hide Township, Ward, Townland, etc.)
             - place_show_country: bool
             - place_hide_usa_with_state: bool
             - place_country_first: bool
@@ -2500,6 +2942,8 @@ def format_place_from_settings(place: str, settings: dict, flag: str = "") -> st
             - place_abbreviate_sweden_counties: bool
             - place_abbreviate_france_departments: bool
             - place_abbreviate_germany_states: bool
+            - place_abbreviate_poland_voivodeships: bool
+            - place_abbreviate_norway_counties: bool
             - place_abbreviate_place_parts: bool
             - place_year_only: bool (show only state/province, like year only for dates)
         flag: Optional flag emoji to append to place
@@ -2515,7 +2959,7 @@ def format_place_from_settings(place: str, settings: dict, flag: str = "") -> st
         use_country_abbrev=settings.get("place_use_country_abbrev", False),
         use_state_abbrev=settings.get("place_use_state_abbrev", False),
         hide_us_counties=settings.get("place_hide_us_counties", True),
-        show_township=settings.get("place_show_township", True),
+        hide_township=settings.get("place_hide_township", False),
         show_country=settings.get("place_show_country", True),
         hide_usa_with_state=settings.get("place_hide_usa_with_state", True),
         country_first=settings.get("place_country_first", False),
@@ -2529,6 +2973,12 @@ def format_place_from_settings(place: str, settings: dict, flag: str = "") -> st
         ),
         abbreviate_germany_states=settings.get(
             "place_abbreviate_germany_states", False
+        ),
+        abbreviate_poland_voivodeships=settings.get(
+            "place_abbreviate_poland_voivodeships", False
+        ),
+        abbreviate_norway_counties=settings.get(
+            "place_abbreviate_norway_counties", False
         ),
         abbreviate_place_parts=settings.get("place_abbreviate_place_parts", False),
         place_year_only=settings.get("place_year_only", False),
@@ -2673,8 +3123,8 @@ IRELAND_INDEPENDENCE_DATE = "1922-12-06"  # Irish Free State established
 
 def get_flag_from_place_with_settings(
     place: str,
-    birth_date: str = None,
-    death_date: str = None,
+    birth_date: Optional[str] = None,
+    death_date: Optional[str] = None,
     show_uk_flag: bool = False,
     show_ireland_flag: bool = False,
 ) -> str:

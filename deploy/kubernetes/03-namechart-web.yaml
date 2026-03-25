@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: namechart-web
+  namespace: namechart
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: namechart-web
+  template:
+    metadata:
+      labels:
+        app: namechart-web
+    spec:
+      containers:
+        - name: web
+          image: namechart:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: DEBUG
+              value: "0"
+            - name: DATABASE_URL
+              value: "postgres://namechart:namechart_secret@postgresql.namechart:5432/namechart"
+            - name: REDIS_URL
+              value: "redis://redis.namechart:6379/0"
+            - name: GRAMPSWEB_API_URL
+              value: "http://grampsweb.grampsweb:5000"
+            - name: GRAMPSWEB_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: namechart-secrets
+                  key: GRAMPSWEB_API_TOKEN
+                  optional: true
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: namechart-secrets
+                  key: SECRET_KEY
+                  optional: true
+            - name: ALLOWED_HOSTS
+              value: "namechart.example.com"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /health/
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: media
+              mountPath: /app/media
+      volumes:
+        - name: media
+          persistentVolumeClaim:
+            claimName: namechart-media-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: namechart-media-pvc
+  namespace: namechart
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: namechart-web
+  namespace: namechart
+spec:
+  selector:
+    app: namechart-web
+  ports:
+    - port: 80
+      targetPort: 8000
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: namechart-web-hpa
+  namespace: namechart
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: namechart-web
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
