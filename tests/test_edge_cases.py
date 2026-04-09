@@ -5,7 +5,7 @@ Comprehensive edge case tests for the restructured namechart application
 import os
 
 import django
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib.sessions.backends.db import SessionStore
 from django.test import RequestFactory, TestCase
 
@@ -18,6 +18,8 @@ from apps.users.views import profile
 # Setup Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
+
+User = get_user_model()
 
 
 class EdgeCaseTests(TestCase):

@@ -7,7 +7,7 @@ import os
 import tempfile
 import unittest
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -15,6 +15,8 @@ from django.urls import reverse
 from apps.generator.models import GedcomFile
 from apps.parser.models import PersonData
 from apps.parser.utils.gedcom_parser import parse_gedcom_data
+
+User = get_user_model()
 
 
 def get_spouse_and_children(spouse_id, individual_id, individuals, family):

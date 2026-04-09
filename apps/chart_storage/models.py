@@ -1,5 +1,5 @@
+from django.conf import settings
 from django.db import models
-from django.contrib.auth.models import User
 
 
 class UserStorageQuota(models.Model):
@@ -9,7 +9,7 @@ class UserStorageQuota(models.Model):
     """
 
     user = models.OneToOneField(
-        User, on_delete=models.CASCADE, related_name="storage_quota"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="storage_quota"
     )
     bytes_used = models.PositiveBigIntegerField(default=0)
     bytes_limit = models.PositiveBigIntegerField(
@@ -54,7 +54,9 @@ class UserSettingsPreset(models.Model):
     """
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="settings_presets"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="settings_presets",
     )
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
@@ -77,7 +79,7 @@ class GedcomInfo(models.Model):
     """
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="gedcom_files"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="gedcom_files"
     )
     gedcom_hash = models.CharField(max_length=64, unique=True)
     filename = models.CharField(max_length=255)
@@ -107,7 +109,9 @@ class IndividualSettings(models.Model):
     """
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="individual_settings"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="individual_settings",
     )
     gedcom_hash = models.CharField(max_length=64)
     gedcom_name = models.CharField(max_length=255)
@@ -144,7 +148,7 @@ class ChartBuffer(models.Model):
     """
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="chart_buffers"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chart_buffers"
     )
     gedcom_hash = models.CharField(max_length=64)
     individual_id = models.CharField(max_length=100)
@@ -191,7 +195,9 @@ class IndividualPhoto(models.Model):
     """
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="individual_photos"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="individual_photos",
     )
     gedcom_hash = models.CharField(max_length=64)
     gedcom_name = models.CharField(max_length=255)

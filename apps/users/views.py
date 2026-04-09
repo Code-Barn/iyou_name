@@ -386,7 +386,9 @@ def share_gedcom_file(request, file_id):
     if gedcom_file.user != request.user:
         return JsonResponse({"error": "Not authorized"}, status=403)
 
-    from django.contrib.auth.models import User
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
 
     try:
         shared_with_user = User.objects.get(username=username)

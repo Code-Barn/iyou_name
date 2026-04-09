@@ -5,6 +5,7 @@ Test for the browse enhancement: logged-out users with files should see browse p
 import os
 
 import django
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.backends.db import SessionStore
 from django.test import RequestFactory, TestCase
@@ -15,6 +16,8 @@ from apps.upload.views import upload_and_generate
 # Setup Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
+
+User = get_user_model()
 
 
 class BrowseEnhancementTest(TestCase):
@@ -86,8 +89,6 @@ class BrowseEnhancementTest(TestCase):
         """Test that authenticated users still redirect to profile"""
         # Create authenticated user with unique username
         import uuid
-
-        from django.contrib.auth.models import User
 
         username = f"testuser_{uuid.uuid4().hex[:8]}"
         user = User.objects.create_user(username=username, password="test123")

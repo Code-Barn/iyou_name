@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.db import models
 from django.db.models import JSONField
 from django.db.models.signals import post_delete
@@ -6,7 +6,9 @@ from django.dispatch import receiver
 
 
 class GedcomFile(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True
+    )
     file = models.FileField(upload_to="gedcom_files/")
     uploaded_at = models.DateTimeField(auto_now_add=True)
     parsed_data = JSONField(null=True, blank=True)  # Store parsed data directly here
@@ -60,14 +62,14 @@ class GedcomShare(models.Model):
         GedcomFile, on_delete=models.CASCADE, related_name="shares"
     )
     shared_with = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="gedcom_shares"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="gedcom_shares"
     )
     can_edit = models.BooleanField(
         default=False
     )  # If True, can also sync (owner decides)
     shared_at = models.DateTimeField(auto_now_add=True)
     shared_by = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="gedcom_shared"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="gedcom_shared"
     )
 
     class Meta:
