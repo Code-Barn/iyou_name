@@ -194,21 +194,43 @@ git push origin feature/new-feature-name
 
 ### Database Models
 ```python
-# Core User Model (Django built-in)
-from django.contrib.auth.models import AbstractUser
+# Core User Model (with DID support)
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 class CustomUser(AbstractUser):
-    # Add custom fields as needed
-    pass
+    """User model with DID and VC support."""
+    did = models.CharField(max_length=255, unique=True, null=True)
+    did_method = models.CharField(max_length=50, default="key")
+    did_key = models.TextField(blank=True)  # JWK format
+    vcs = models.JSONField(default=list)  # List of VCs
 
 # File Model (in generator/models.py)
 class GedcomFile(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     file = models.FileField(upload_to='uploads/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
     is_processed = models.BooleanField(default=False)
     parsed_data = models.JSONField(default=dict)
     home_person_id = models.CharField(max_length=50, blank=True, null=True)
+```
+
+### DID Integration
+
+See [DID_INTEGRATION.md](DID_INTEGRATION.md) for full documentation.
+
+```python
+# Generate a DID
+from apps.users.did_utils import generate_did
+did = generate_did("key")
+
+# Verify a VC
+from apps.users.did_utils import verify_vc
+is_valid = verify_vc(vc_json)
+
+# Issue a VC
+from apps.users.did_utils import issue_vc
+vc = issue_vc(credential, did, key)
 ```
 
 ## 🔍 Common Development Tasks
