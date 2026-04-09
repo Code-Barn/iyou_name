@@ -2,7 +2,7 @@ import io
 import logging
 from typing import Dict, Optional
 
-import chardet
+import charset_normalizer
 from ged4py.parser import GedcomReader
 
 from apps.parser.models import PersonData
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def detect_encoding(file_path: str) -> Optional[str]:
     """
-    Detect the encoding of a file using chardet.
+    Detect the encoding of a file using charset-normalizer.
 
     Args:
         file_path: Path to the file.
@@ -24,12 +24,20 @@ def detect_encoding(file_path: str) -> Optional[str]:
     try:
         with open(file_path, "rb") as f:
             file_content = f.read()
-            result = chardet.detect(file_content)
-            encoding = result["encoding"]
-            confidence = result["confidence"]
 
-            print(f"Detected encoding: {encoding} with confidence: {confidence}")
-            return encoding
+            # Detect using charset-normalizer
+            results = charset_normalizer.from_bytes(file_content)
+            result = results.best()
+
+            if result:
+                encoding = result.encoding
+                confidence = result.coherence  # Similar to confidence (0.0 to 1.0)
+
+                print(f"Detected encoding: {encoding} with confidence: {confidence}")
+                return encoding
+
+            return None
+
     except Exception as e:
         print(f"Error detecting encoding: {e}")
         return None
@@ -1020,9 +1028,11 @@ def convert_to_utf8(file_content: bytes) -> str:
         str: The file content decoded as UTF-8.
     """
     # Detect the encoding
-    result = chardet.detect(file_content)
-    encoding = result["encoding"]
-    confidence = result["confidence"]
+    results = charset_normalizer.from_bytes(file_content)
+    result = results.best()
+
+    encoding = result.encoding
+    confidence = result.coherence  # Changed from confidence to coherence
 
     print(f"Detected encoding: {encoding} with confidence: {confidence}")
 

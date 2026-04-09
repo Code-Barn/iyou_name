@@ -1,11 +1,11 @@
 [project]
 name = "namechart"
 version = "0.1.0"
-description = "Add your description here"
+description = "genealogical chart generator"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "chardet>=5.2.0",
+    "charset-normalizer>=3.4.6",
     "coverage>=7.13.1",
     "dj-database-url>=3.1.0",
     "django>=6.0",
@@ -16,6 +16,7 @@ dependencies = [
     "pycycle>=0.0.8",
     "pylint>=4.0.4",
     "requests>=2.32.5",
+    "urllib3<2.6",
     "wand>=0.6.13",
 ]
 

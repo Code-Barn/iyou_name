@@ -1,8 +1,20 @@
 from django.conf import settings
 
 
-def grampsweb_url(request):
-    """Add GrampsWeb URL to template context."""
+def genealogy(request):
+    """Add genealogy configuration to template context."""
+    mode = getattr(settings, "GENEALOGY_MODE", "disabled")
+
+    if mode == "grampsweb":
+        genealogy_url = getattr(settings, "GRAMPSWEB_BASE_URL", "")
+    elif mode == "webtrees":
+        genealogy_url = getattr(settings, "WEBTREES_URL", "")
+    elif mode == "external":
+        genealogy_url = getattr(settings, "GENEALOGY_EXTERNAL_URL", "")
+    else:
+        genealogy_url = ""
+
     return {
-        "grampsweb_url": getattr(settings, "GRAMPSWEB_BASE_URL", ""),
+        "genealogy_mode": mode,
+        "genealogy_url": genealogy_url,
     }

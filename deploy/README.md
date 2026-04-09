@@ -31,23 +31,31 @@ deploy/
 
 ```bash
 cd deploy/docker
-
-# Run the setup script (handles everything)
 ./setup.sh
-
-# Or do it manually:
-cp .env.example .env
-docker compose up -d --build
-docker compose exec db psql -U namechart -c "CREATE DATABASE grampsweb;"
-docker compose exec web uv run python manage.py migrate
 ```
 
-The `setup.sh` script will:
+The setup script will:
 1. Create `.env` from `.env.example` (first run only)
 2. Build and start all containers
-3. Create the `grampsweb` database automatically
+3. Create databases automatically
 4. Run Django migrations
-5. Wait for GrampsWeb to be ready
+
+### Genealogy Options
+
+Choose one mode in `.env`:
+
+| Mode | Service | Description |
+|------|---------|-------------|
+| `disabled` | - | No genealogy link |
+| `grampsweb` | GrampsWeb | Private family trees |
+| `webtrees` | WebTrees | Public/multi-user trees |
+| `external` | URL | Link to external site |
+
+Start with a specific genealogy service:
+```bash
+docker compose --profile grampsweb up -d
+docker compose --profile webtrees up -d
+```
 
 ### Services
 
@@ -56,11 +64,8 @@ The `setup.sh` script will:
 | web | 8000 | Namechart Django app |
 | db | 5433 | PostgreSQL (internal 5432, exposed 5433) |
 | redis | 6379 | Redis for caching |
-| grampsweb | 8080 | GrampsWeb genealogy app |
-
-### Configuration
-
-Set `GRAMPSWEB_API_URL` and `GRAMPSWEB_API_TOKEN` to enable API integration.
+| grampsweb | 8080 | GrampsWeb genealogy (profile) |
+| webtrees | 8081 | WebTrees genealogy (profile) |
 
 ## Kubernetes (Production)
 

@@ -1,6 +1,5 @@
 #!/bin/bash
 # This script runs automatically when PostgreSQL is first initialized
-# It creates the grampsweb database for GrampsWeb
 
 set -e
 
@@ -11,5 +10,10 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     CREATE DATABASE grampsweb;
 EOSQL
 
+# Create webtrees database for WebTrees
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+    CREATE DATABASE webtrees;
+EOSQL
+
 echo "Database initialization complete."
-echo "Created: grampsweb database for GrampsWeb"
+echo "Created: grampsweb and webtrees databases"

@@ -14,10 +14,16 @@ services:
       - POSTGRES_PASSWORD=namechart_secret
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      # Genealogy settings
+      - GENEALOGY_MODE=${GENEALOGY_MODE:-disabled}
+      - GENEALOGY_EXTERNAL_URL=${GENEALOGY_EXTERNAL_URL:-}
       - GRAMPSWEB_API_URL=http://grampsweb:5000
       - GRAMPSWEB_BASE_URL=${GRAMPSWEB_BASE_URL:-http://localhost:8080}
       - GRAMPSWEB_API_TOKEN=${GRAMPSWEB_API_TOKEN:-}
-      - REDIS_URL=redis://redis:6379/0
+      - WEBTREES_URL=${WEBTREES_URL:-http://localhost:8081}
+      - WEBTREES_API_URL=${WEBTREES_API_URL:-}
+      - WEBTREES_API_TOKEN=${WEBTREES_API_TOKEN:-}
     depends_on:
       db:
         condition: service_healthy
@@ -54,7 +60,7 @@ services:
     volumes:
       - redis_data:/data
 
-  # GrampsWeb - Genealogy Database
+  # GrampsWeb - Private genealogy
   grampsweb:
     image: ghcr.io/gramps-project/grampsweb:latest
     restart: unless-stopped
@@ -96,7 +102,7 @@ services:
       redis:
         condition: service_started
 
-  # GrampsWeb Celery worker for async tasks
+  # GrampsWeb Celery worker
   grampsweb_celery:
     image: ghcr.io/gramps-project/grampsweb:latest
     restart: unless-stopped
@@ -125,6 +131,32 @@ services:
     deploy:
       replicas: 0
 
+  # WebTrees - Public genealogy
+  webtrees:
+    image: dtjs48jkt/webtrees:latest
+    restart: unless-stopped
+    ports:
+      - "8081:443"
+    environment:
+      - WT_MODE=production
+      - WT_DATA=/var/www/webtrees/data
+      - WT_DB_TYPE=pgsql
+      - WT_DB_HOST=db
+      - WT_DB_PORT=5432
+      - WT_DB_NAME=webtrees
+      - WT_DB_USER=namechart
+      - WT_DB_PASSWORD=namechart_secret
+      - WT_ADMIN_USER=${WEBTREES_ADMIN_USER:-admin}
+      - WT_ADMIN_EMAIL=${WEBTREES_ADMIN_EMAIL:-admin@example.com}
+      - WT_ADMIN_PASSWORD=${WEBTREES_ADMIN_PASSWORD:-changeme123}
+      - WT_BASE_URL=${WEBTREES_URL:-http://localhost:8081}
+    volumes:
+      - webtrees_data:/var/www/webtrees/data
+      - webtrees_media:/var/www/webtrees/media
+    depends_on:
+      db:
+        condition: service_healthy
+
   # Optional: Caddy reverse proxy for SSL (uncomment for production)
   # caddy:
   #   image: caddy:2-alpine
@@ -149,4 +181,6 @@ volumes:
   gramps_db:
   gramps_media:
   gramps_tmp:
+  webtrees_data:
+  webtrees_media:
   caddy_data:

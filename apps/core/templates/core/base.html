@@ -480,11 +480,21 @@
                                 <i id="theme-toggle-light-icon" class="bi bi-sun-fill d-none" style="font-size: 1.25rem;"></i>
                             </button>
                         </li>
-                        {% if grampsweb_url %}
+                        {% if genealogy_url %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ grampsweb_url }}" target="_blank" rel="noopener noreferrer">
+                            {% if genealogy_mode == "webtrees" %}
+                            <a class="nav-link" href="{{ genealogy_url }}" target="_blank" rel="noopener noreferrer">
+                                <i class="bi bi-globe"></i> Family Trees
+                            </a>
+                            {% elif genealogy_mode == "external" %}
+                            <a class="nav-link" href="{{ genealogy_url }}" target="_blank" rel="noopener noreferrer">
                                 <i class="bi bi-globe"></i> Genealogy
                             </a>
+                            {% else %}
+                            <a class="nav-link" href="{{ genealogy_url }}" target="_blank" rel="noopener noreferrer">
+                                <i class="bi bi-globe"></i> My Tree
+                            </a>
+                            {% endif %}
                         </li>
                         {% endif %}
                         <li class="nav-item">

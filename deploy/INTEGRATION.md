@@ -1,8 +1,71 @@
-# GrampsWeb Integration Summary
+# Genealogy Integration
 
 ## Overview
 
-namechart can integrate with GrampsWeb to fetch genealogy data from a running GrampsWeb instance.
+namechart supports multiple genealogy integration options. Choose the one that fits your use case:
+
+| Mode | Use Case | Multi-user | Privacy |
+|------|----------|-----------|---------|
+| `disabled` | No genealogy link | N/A | N/A |
+| `grampsweb` | Private family trees | No | Private |
+| `webtrees` | Public/multi-user trees | Yes | Public |
+| `external` | Link to any URL | Varies | Varies |
+
+## Quick Start
+
+```bash
+cd deploy/docker
+./setup.sh
+```
+
+Edit `.env` to set `GENEALOGY_MODE` and configure your chosen service.
+
+## Configuration
+
+### Common Settings
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `GENEALOGY_MODE` | Integration mode | `disabled` |
+| `GENEALOGY_EXTERNAL_URL` | URL for external mode | - |
+
+### GrampsWeb (Private)
+
+For private family trees where you want full control.
+
+```bash
+GENEALOGY_MODE=grampsweb
+GRAMPSWEB_BASE_URL=http://localhost:8080
+GRAMPSWEB_SECRET_KEY=your-secret-key
+GRAMPSWEB_TREE=Family Tree
+```
+
+```bash
+docker compose --profile grampsweb up -d
+```
+
+### WebTrees (Public)
+
+For public, multi-user genealogy sites.
+
+```bash
+GENEALOGY_MODE=webtrees
+WEBTREES_URL=http://localhost:8081
+WEBTREES_ADMIN_PASSWORD=your-admin-password
+```
+
+```bash
+docker compose --profile webtrees up -d
+```
+
+### External URL
+
+Link to any external genealogy service.
+
+```bash
+GENEALOGY_MODE=external
+GENEALOGY_EXTERNAL_URL=https://www.familysearch.org
+```
 
 ## Architecture
 
@@ -12,72 +75,39 @@ namechart can integrate with GrampsWeb to fetch genealogy data from a running Gr
 │           namechart.example.com  +  genealogy.example.com     │
 └─────────────────────────────────────────────────────────────┘
                               │
-        ┌─────────────────────┼─────────────────────┐
-        │                     │                     │
-        ▼                     ▼                     ▼
-   ┌─────────┐          ┌──────────┐         ┌─────────┐
-   │namechart│          │GrampsWeb │         │  Redis  │
-   │  (Django)│         │ (Flask)  │         │         │
-   └────┬────┘          └────┬─────┘         └─────────┘
-        │                    │
-        │   GEDCOM API       │
-        └──────────────────► │ ◄── REST API
-                             │
-                             ▼
-                      ┌─────────────┐
-                      │ PostgreSQL  │
-                      │  (shared)   │
-                      └─────────────┘
-```
-
-## Deployment Options
-
-### Docker Compose (Development)
-```bash
-cd deploy/docker
-./setup.sh
-```
-
-### Kubernetes (Production)
-```bash
-kubectl apply -f deploy/kubernetes/
-```
-
-## Configuration
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `GRAMPSWEB_API_URL` | GrampsWeb base URL (e.g., `http://grampsweb:5000`) | Yes |
-| `GRAMPSWEB_API_TOKEN` | JWT token from GrampsWeb | Yes |
-| `GRAMPSWEB_API_TIMEOUT` | Request timeout (default: 30s) | No |
-
-## Usage
-
-```python
-from apps.core.grampsweb import get_client, fetch_gedcom_from_grampsweb
-
-client = get_client()
-if client:
-    # Check availability
-    if client.is_available():
-        # Get GEDCOM export
-        gedcom_bytes = fetch_gedcom_from_grampsweb()
-        
-        # Or query individual records
-        person = client.get_person(handle)
+            ┌─────────────────┼─────────────────┐
+            │                 │                 │
+            ▼                 ▼                 ▼
+       ┌─────────┐      ┌──────────┐      ┌─────────┐
+       │namechart│      │ GrampsWeb│      │ WebTrees│
+       │ (Django)│      │ (Private)│      │(Public) │
+       └────┬────┘      └────┬─────┘      └────┬────┘
+            │                │                 │
+            └────────────────┴─────────────────┘
+                              │
+                              ▼
+                       ┌─────────────┐
+                       │ PostgreSQL  │
+                       └─────────────┘
 ```
 
 ## Services & Ports
 
-| Service | Docker Port | K8s Namespace | Purpose |
-|---------|-------------|---------------|---------|
-| namechart | 8000 | namechart | Chart generation |
-| grampsweb | 8080 | grampsweb | Genealogy database |
-| postgresql | 5432 | namechart | User data |
-| redis | 6379 | namechart | Caching |
+| Service | Docker Port | Purpose |
+|---------|-------------|---------|
+| namechart | 8000 | Chart generation |
+| grampsweb | 8080 | Private genealogy (profile) |
+| webtrees | 8081 | Public genealogy (profile) |
+| postgresql | 5433 (host) / 5432 (container) | Database |
+| redis | 6379 | Caching |
 
-## Security
+## Navbar Integration
 
-- CORS configured to allow cross-origin requests between services
-- API token authentication for GrampsWeb API access
-- Secrets stored in Kubernetes Secrets (update defaults before deploy)
+The navbar shows a "Genealogy" link based on your mode:
+
+| Mode | Label | URL |
+|------|-------|-----|
+| grampsweb | My Tree | GrampsWeb URL |
+| webtrees | Family Trees | WebTrees URL |
+| external | Genealogy | External URL |
+| disabled | (no link) | - |

@@ -97,7 +97,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "apps.core.context_processors.grampsweb_url",
+                "apps.core.context_processors.genealogy",
             ],
         },
     },
@@ -180,7 +180,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Add this to include additional static file directories
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
     os.path.join(BASE_DIR, "apps", "core", "static"),
     os.path.join(BASE_DIR, "apps", "upload", "static"),
     os.path.join(BASE_DIR, "apps", "browse", "static"),
@@ -246,10 +245,21 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 INTERNAL_IPS = ["127.0.0.1", "::1"]
 
 # GrampsWeb Integration
+# Genealogy Integration
+# GENEALOGY_MODE options: "disabled", "grampsweb", "webtrees", "external"
+GENEALOGY_MODE = os.environ.get("GENEALOGY_MODE", "disabled")
+GENEALOGY_EXTERNAL_URL = os.environ.get("GENEALOGY_EXTERNAL_URL", "")
+
+# GrampsWeb settings (used when GENEALOGY_MODE="grampsweb")
 GRAMPSWEB_API_URL = os.environ.get("GRAMPSWEB_API_URL", "")
 GRAMPSWEB_API_TOKEN = os.environ.get("GRAMPSWEB_API_TOKEN", "")
 GRAMPSWEB_API_TIMEOUT = int(os.environ.get("GRAMPSWEB_API_TIMEOUT", "30"))
 GRAMPSWEB_BASE_URL = os.environ.get("GRAMPSWEB_BASE_URL", "")
+
+# WebTrees settings (used when GENEALOGY_MODE="webtrees")
+WEBTREES_URL = os.environ.get("WEBTREES_URL", "")
+WEBTREES_API_URL = os.environ.get("WEBTREES_API_URL", "")
+WEBTREES_API_TOKEN = os.environ.get("WEBTREES_API_TOKEN", "")
 
 # Redis URL for caching
 REDIS_URL = os.environ.get("REDIS_URL", "")
