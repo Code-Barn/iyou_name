@@ -14,17 +14,21 @@
 | **Python** | 3.13+ (`.python-version`), Dockerfile still on `python:3.12-slim` |
 | **Django** | 6.0.x (settings header: `Django 6.0`, migration timestamps confirm 6.0) |
 | **Package Manager** | `uv` — uses `uv sync`, `uv run`, `uv add`; `uv.lock` present |
-| **Database** | PostgreSQL via `dj-database-url`; Docker compose also provisions Postgres |
+| **Database** | PostgreSQL via `django-environ`/`DATABASE_URL`; Docker compose also provisions Postgres |
 | **Image Library** | Wand 0.6.13 (Python ctypes wrapper for ImageMagick) |
 | **Frontend** | Vanilla JS, Bootstrap 5, static HUD JS |
+| **Authentication** | Passwordless OIDC via `mozilla-django-oidc` 5.0.2 + `MyOIDCAuthenticationBackend` |
+| **Server** | `gunicorn` 26.0.0 (added for production mesh deployments) |
 | **Testing** | `unittest`/Django TestCase, Playwright e2e (`@playwright/test` ^1.57.0) |
 | **Formatter/Linter** | `ruff` 0.14.x (installed as dev dependency) |
 
 ### 1.2 Project Identity
 
-- `pyproject.toml` line 2: `name = "namechart"` — **needs update to `iyou_name`**
-- `package.json` line 2: `"name": "namechart"` — **needs update**
+- `pyproject.toml` line 2: `name = "iyou_name"` — **RESOLVED** (was `namechart`)
+- `package.json` line 2: `"name": "iyou_name"` — **RESOLVED** (was `namechart`)
 - `pyproject.toml` line 3: `version = "0.1.0"`
+- `pyproject.toml` authors: `[{name = "Byers Brands, LLC"}]` — **NEW**
+- `pyproject.toml` dependencies: `dj-database-url` removed; `mozilla-django-oidc`, `gunicorn` added; dev-only tools (`coverage`, `pycycle`, `pylint`) moved to `[dependency-groups.dev]`
 
 ### 1.3 Directory Layout
 
@@ -40,10 +44,14 @@
 │   │   └── storage_views.py
 │   ├── charts/                    # Chart serving (empty models)
 │   │   └── templates/
+│   ├── accounts/                  # Sovereign Mesh OIDC backend (NEW)
+│   │   ├── __init__.py
+│   │   ├── apps.py
+│   │   └── backends.py            # MyOIDCAuthenticationBackend
 │   ├── core/                      # Shared utilities, middleware, rate-limiting
 │   │   ├── grampsweb/             # GrampsWeb API client
 │   │   ├── middleware.py
-│   │   ├── auth_security.py       # Auth monitor
+│   │   ├── auth_security.py       # DISMANTLED (password auth removed)
 │   │   ├── rate_limiting.py
 │   │   └── templates/
 │   ├── generator/                 # Chart generation engine (HEAVY)
@@ -222,21 +230,27 @@ Two-layer caching:
 
 ### 4.1 Authentication
 
+**Status: Passwordless OIDC — RESOLVED (migration complete)**
+
 | Aspect | Status |
 |--------|--------|
-| Auth backend | Standard `django.contrib.auth.backends.ModelBackend` |
-| User model | `CustomUser(AbstractUser)` — swappable |
-| Login flow | Template-based (login.html, password change/reset templates) |
+| Auth backend | `apps.accounts.backends.MyOIDCAuthenticationBackend` only — **ModelBackend removed** |
+| User model | `CustomUser(AbstractUser)` — swappable; `username` stores the DID (`sub` claim) |
+| Login flow | OIDC redirect via `oidc_authentication_init` — **all password/login/register views removed** |
 | Session engine | DB-backed (`django.contrib.sessions.backends.db`) |
-| Password validators | Default Django 6.0 validators |
+| Cookies | Hardened — `SESSION_COOKIE_NAME = "name_sessionid"`, `CSRF_COOKIE_NAME = "name_csrftoken"` |
+| Password validators | **Removed entirely** — no password storage exists |
 | Rate limiting | Custom `RateLimitMiddleware` in `apps/core/rate_limiting.py` |
-| Auth monitoring | In-memory `AuthenticationMonitor` in `apps/core/auth_security.py` |
-| Registration | Not currently active — `django_registration` is commented out |
-| Social/OAuth | **None** — no `django-allauth`, `python-social-auth`, or OAuth2 present |
+| Auth monitoring | **Dismantled** — `AuthenticationMonitor` was in-memory only, never survived restart |
+| Registration | **Removed** — `RegisterForm`, `register()` view, `register.html` all deleted |
+| OIDC endpoints | 7 endpoints configured via `django-environ` with k8s cluster DNS defaults |
+| OIDC RP credentials | `OIDC_RP_CLIENT_ID` (default: `name-client`), `OIDC_RP_CLIENT_SECRET` (required) |
 
 ### 4.2 Decentralized Identity (DID) System
 
-**Status: Experimental / Hybrid**
+**Status: Hybrid (legacy DID utils + OIDC-backed user creation)**
+
+The OIDC integration (Section 4.1) is now the primary identity pipeline: the IDP's `sub` claim (a portable DID) becomes `CustomUser.username`. The legacy DID/VC utilities remain for backward compatibility.
 
 - Model fields on `CustomUser`: `did`, `did_method`, `did_key`, `vcs` (JSON array)
 - Three-backend architecture:
@@ -263,20 +277,15 @@ Two-layer caching:
 | **Docker deployment** | `docker-compose.yml` + Kubernetes manifests in `deploy/` |
 | **Polly** (family polling) | Mentioned in README but no code found in project |
 
-**Assessment**: This project is largely **monolithic with grafted-on federation**. The DID system is a standalone feature with no shared auth provider integration. The genealogy integrations are thin API wrappers. No OpenID Connect, OAuth2, or internal service mesh patterns are present.
+**Assessment**: OpenID Connect is now integrated as the sole authentication pathway. The legacy DID/VC system remains as a secondary identity layer but the primary user creation pipeline flows through OIDC. Genealogy integrations remain thin API wrappers. No internal service mesh patterns are present yet.
 
 ---
 
 ## 5. Technical Debt & Disruptions
 
-### 5.1 Hardcoded Absolute Paths (37+ occurrences — CRITICAL)
+### 5.1 Hardcoded Absolute Paths (remnant occurrences — MODERATE)
 
-These will **immediately break** any deployment not at the exact original path:
-
-**`template_mapping.py`** (lines 26–69): All 7 template paths hardcoded:
-```python
-"filename": "/home/user/CODE_BASE/namechart/apps/charts/static/charts/images/base_image_templates/US_LETTER_1GEN_BW.pdf"
-```
+**`template_mapping.py`** — **RESOLVED**: All 7 paths were replaced with `settings.BASE_DIR / "staticfiles" / "charts" / "images" / "base_image_templates" / "US_LETTER_{N}GEN_BW.pdf"` in the first remediation pass.
 
 **Test files** — systematic use of `sys.path.append("/home/user/CODE_BASE/namechart")`:
 - `tests/test_buffer_system.py`, `test_buffer_simple.py`, `test_enhanced_buffer.py`
@@ -291,8 +300,8 @@ These will **immediately break** any deployment not at the exact original path:
 **Output paths in tests**: Many write output to hardcoded `/home/user/CODE_BASE/namechart/` (e.g., `test_3gen_byers.png`, `test_3gen_positioning.png`, `prototype_4gen_output_test.png`).
 
 **Production code**:
-- `apps/users/did_rust_wrapper/rust_ffi.py:39`: Hardcoded `.so` path
-- `prototype_image_1generator.py` flag font path: `/usr/share/fonts/truetype/ancient-scripts/Symbola_hint.ttf`
+- `apps/users/did_rust_wrapper/rust_ffi.py:39`: Hardcoded `.so` path — still unresolved
+- `sunbeam_position_calculator.py:266`: **RESOLVED** — hardcoded SVG output path replaced with local filename
 
 ### 5.2 Duplicate HUD Application
 
@@ -332,7 +341,7 @@ Both define `app_name = "hud"`, both have `urls.py` with identical patterns. The
 
 ### 5.7 In-Memory Auth Monitor
 
-`apps/core/auth_security.py` keeps failed-login tracking in a process-local `defaultdict`. This is **reset on every server restart** and **not shared across worker processes** — effectively non-functional in production.
+**RESOLVED** — `apps/core/auth_security.py` was gutted (replaced with stub docstring). Password-based authentication no longer exists; OIDC handles all identity verification server-side.
 
 ### 5.8 Commented Legacy Imports
 
@@ -343,16 +352,17 @@ Both define `app_name = "hud"`, both have `urls.py` with identical patterns. The
 #    image_2generator, ...
 # )
 ```
+Still present but non-blocking. The `home()` entry view was rewritten as part of the OIDC route gate enforcement.
 
 ### 5.9 Other Issues
 
-- `config/settings.py` comment on line 235 references "Django 5.2" (should be 6.0)
-- `config/settings.py` line 48: `django_registration` is commented out but present in `EXTERNAL_APPS` list — unused dependency
+- `config/settings.py` — **RESOLVED**: Django 5.2 reference removed during environ rewrite; `django_registration` removed from `EXTERNAL_APPS`; `DEFAULT_AUTO_FIELD` deduplicated in rewrite. `SESSION_COOKIE_NAME` and `CSRF_COOKIE_NAME` now hardened to `"name_sessionid"` / `"name_csrftoken"`.
 - `GedcomShare.unique_together` — order matters for composite index creation but is undocumented
 - No internationalization present despite `USE_I18N = True`
-- `DEFAULT_AUTO_FIELD` repeated (line 243)
 - `ChartBuffer` model's `buffer_file` FileField stores potentially large images — no compression or cleanup scheduled
 - `Signal handler` in `generator/models.py:86` (`delete_parsed_data`) has an empty body and a TODO comment
+- `tests/test_views.py` — **RESOLVED**: `client.login()` replaced with `self.client.force_login(self.user)`, removing the dependency on password authentication backends
+- `tests/test_logged_out_flow.py` — **RESOLVED**: assertion updated from `"login"` to `"oidc"` to match new redirect target
 
 ---
 
@@ -372,4 +382,35 @@ Both define `app_name = "hud"`, both have `urls.py` with identical patterns. The
 - `apps/generator/template_mapping.py` — routes template IDs to generator functions
 - `apps/generator/views.py` — `generate_final_chart` entry point
 
-The codebase has significant technical debt concentrated in hardcoded filesystem paths, duplicate HUD applications, a sprawling test directory, and oversized single-file utilities. The architecture is fundamentally sound but will benefit from targeted extraction of the rendering pipeline into a standalone module and a systematic path-hygiene pass.
+The codebase has significant technical debt concentrated in hardcoded filesystem paths (remnant test files), duplicate HUD applications, a sprawling test directory, and oversized single-file utilities. The architecture is fundamentally sound but will benefit from targeted extraction of the rendering pipeline into a standalone module and a systematic path-hygiene pass across the remaining test files.
+
+---
+
+## Remediation Delta (2026-05-19)
+
+The following work was completed in a single OIDC Core Integration & Ancillary Purge pass:
+
+| # | Action | Files Changed |
+|---|--------|---------------|
+| 1 | Created `apps/accounts/` with `MyOIDCAuthenticationBackend` | 3 new files |
+| 2 | Replaced `ModelBackend` with OIDC-only `AUTHENTICATION_BACKENDS` | `config/settings.py` |
+| 3 | Purged `AUTH_PASSWORD_VALIDATORS` block | `config/settings.py` |
+| 4 | Added 7 OIDC endpoint variables via `django-environ` | `config/settings.py` |
+| 5 | Added `path("oidc/", include("mozilla_django_oidc.urls"))` | `config/urls.py` |
+| 6 | Rewrote `home()` gate to redirect unauthenticated → `oidc_authentication_init` | `apps/generator/views.py` |
+| 7 | Stripped `register()`, `user_login()` views; rewrote `profile()` with DID context | `apps/users/views.py` |
+| 8 | Removed 7 password/registration URL patterns (kept DID API + file management) | `apps/users/urls.py` |
+| 9 | Removed `RegisterForm(UserCreationForm)` | `apps/generator/forms.py` |
+| 10 | Deleted entire `apps/users/templates/users/auth/` directory + `register.html` | 11 files removed |
+| 11 | Gutted `apps/core/auth_security.py` (vestigial auth monitor) | 1 file stripped |
+| 12 | Replaced `client.login()` with `force_login()` in view tests | `tests/test_views.py` |
+| 13 | Updated redirect assertion to match OIDC target URL | `tests/test_logged_out_flow.py` |
+| 14 | Created `.env` (gitignored) + `.env.example` + `.gitignore` | 3 new files |
+| 15 | Hardened cookie names: `name_sessionid` / `name_csrftoken` | `config/settings.py` |
+| 16 | Replaced 7 hardcoded template paths with `settings.BASE_DIR`-relative | `apps/generator/template_mapping.py` |
+| 17 | Replaced hardcoded SVG output path with local filename | `apps/generator/utils/sunbeam_position_calculator.py` |
+| 18 | Updated `pyproject.toml`: name, authors, dependency cleanup | `pyproject.toml` |
+| 19 | Updated `package.json`: name, author, repo URLs | `package.json` |
+| 20 | Updated docstrings in 5 app files to reflect ecosystem name | `did_utils.py`, `did_views.py`, `parser/utils/__init__.py`, `grampsweb/__init__.py`, `grampsweb/client.py` |
+
+**Result**: `uv run python manage.py check --deploy` passes with **0 errors** (9 warnings — all dev-mode security/staticfiles pre-existing).
