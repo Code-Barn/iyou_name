@@ -1,5 +1,5 @@
 """
-DID-related views for namechart.
+DID-related views for Namecharts (aka iyou_name).
 
 Provides API endpoints for DID generation, VC issuance, and verification.
 """

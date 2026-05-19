@@ -137,7 +137,7 @@ class LoggedOutUserFlowTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_logged_out_user_profile_redirect(self):
-        """Test that logged-out users are redirected from profile"""
+        """Test that logged-out users are redirected to OIDC init"""
         from apps.users.views import profile
 
         request = self.factory.get("/users/profile/")
@@ -147,7 +147,7 @@ class LoggedOutUserFlowTest(TestCase):
 
         response = profile(request)
         self.assertEqual(response.status_code, 302)
-        self.assertIn("login", response.url)
+        self.assertIn("oidc", response.url)
 
 
 if __name__ == "__main__":

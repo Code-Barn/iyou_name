@@ -20,10 +20,8 @@ class ViewTests(TestCase):
 
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(
-            username="testuser", password="testpass123"
-        )
-        self.client.login(username="testuser", password="testpass123")
+        self.user = User.objects.create_user(username="testuser")
+        self.client.force_login(self.user)
 
     def test_upload_file_view(self):
         """Test upload file view"""

@@ -1,5 +1,5 @@
 """
-Parser utilities for the Namechart application.
+Parser utilities for the Namecharts (aka iyou_name) application.
 
 This module provides utilities for parsing GEDCOM files and other data formats.
 """

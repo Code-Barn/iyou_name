@@ -1,5 +1,5 @@
 """
-DID utilities for namechart.
+DID utilities for Namecharts (aka iyou_name).
 
 This module provides DID generation and verification functionality using the Rust backend
 when available, with Python fallback. For VC issuance, it uses didkit with the

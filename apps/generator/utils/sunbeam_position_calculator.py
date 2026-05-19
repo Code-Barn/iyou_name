@@ -263,7 +263,7 @@ if __name__ == "__main__":
 
     # Create SVG template
     calculator.create_svg_template(
-        example_family, "/home/user/CODE_BASE/namechart/generated_10gen_template.svg"
+        example_family, "generated_10gen_template.svg"
     )
 
     print(f"\nSVG template generated for {calculator.canvas_size}px canvas")

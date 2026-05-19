@@ -2,7 +2,7 @@
 GrampsWeb API client for fetching genealogy data.
 
 This module provides utilities for integrating with a GrampsWeb instance,
-allowing namechart to fetch GEDCOM data and person information from GrampsWeb.
+allowing Namecharts (aka iyou_name) to fetch GEDCOM data and person information from GrampsWeb.
 """
 
 import logging

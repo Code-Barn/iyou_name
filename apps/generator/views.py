@@ -529,14 +529,10 @@ def home(request):
     """
     View for the home page.
     """
+    if not request.user.is_authenticated:
+        return redirect("oidc_authentication_init")
+
     if request.method == "POST" and "gedcom_file" in request.FILES:
         return upload_and_generate(request)
 
-    if request.user.is_authenticated:
-        return redirect("users:profile")
-    else:
-        # Check if anonymous user has a file in session
-        if request.session.get("current_gedcom_file_id"):
-            return redirect("browse:browse_individuals")
-        else:
-            return redirect("upload:upload_file")
+    return redirect("users:profile")

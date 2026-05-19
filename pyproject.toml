@@ -1,20 +1,21 @@
 [project]
-name = "namechart"
+name = "iyou_name"
 version = "0.1.0"
-description = "genealogical chart generator"
+description = "Genealogical chart generator — Namecharts (aka iyou_name)"
 readme = "README.md"
 requires-python = ">=3.13"
+authors = [
+    {name = "Byers Brands, LLC"},
+]
 dependencies = [
     "charset-normalizer>=3.4.6",
-    "coverage>=7.13.1",
-    "dj-database-url>=3.1.0",
     "django>=6.0",
     "django-environ>=0.12.0",
     "ged4py>=0.5.2",
+    "gunicorn>=23.0.0",
+    "mozilla-django-oidc>=4.0.0",
     "pillow>=12.1.1",
     "psycopg2-binary>=2.9.11",
-    "pycycle>=0.0.8",
-    "pylint>=4.0.4",
     "requests>=2.32.5",
     "urllib3<2.6",
     "wand>=0.6.13",
@@ -22,6 +23,9 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "coverage>=7.13.1",
     "django-debug-toolbar>=6.1.0",
+    "pycycle>=0.0.8",
+    "pylint>=4.0.4",
     "ruff>=0.14.11",
 ]

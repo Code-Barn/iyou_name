@@ -30,7 +30,8 @@ urlpatterns = [
     path("selector/", include("apps.selector.urls")),
     path("storage/", include("apps.chart_storage.urls")),
     path("admin/", admin.site.urls),
-    path("__debug__/", include("debug_toolbar.urls")),  # Disabled for testing
+    path("oidc/", include("mozilla_django_oidc.urls")),
+    path("__debug__/", include("debug_toolbar.urls")),
 ]
 
 # Add static and media file serving for development

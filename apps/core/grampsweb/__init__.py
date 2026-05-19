@@ -1,7 +1,7 @@
 """
 GrampsWeb integration module.
 
-This module provides utilities for integrating namechart with a GrampsWeb instance,
+This module provides utilities for integrating Namecharts (aka iyou_name) with a GrampsWeb instance,
 allowing users to sync their genealogy data from GrampsWeb.
 """
 

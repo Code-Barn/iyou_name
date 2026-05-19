@@ -2,8 +2,6 @@ import hashlib
 import logging
 import os
 
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.forms import AuthenticationForm
 from django.core.files.base import ContentFile
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
@@ -11,15 +9,8 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 
-from apps.core.rate_limiting import auth_rate_limit, user_rate_limit, upload_rate_limit
-from apps.core.auth_security import (
-    check_login_security,
-    record_authentication_result,
-    get_client_ip,
-    get_user_agent,
-)
 from apps.core.file_validation import validate_uploaded_file
-from apps.generator.forms import RegisterForm
+from apps.core.rate_limiting import auth_rate_limit, user_rate_limit, upload_rate_limit
 from apps.chart_storage.models import IndividualPhoto
 from apps.generator.models import GedcomFile, GedcomShare
 from apps.parser.utils import convert_to_utf8, parse_gedcom_data
@@ -32,7 +23,7 @@ def profile(request):
     View for user profile page
     """
     if not request.user.is_authenticated:
-        return redirect("users:login")
+        return redirect("oidc_authentication_init")
 
     try:
         # Get user's uploaded files
@@ -60,6 +51,7 @@ def profile(request):
             "users/profile.html",
             {
                 "user": request.user,
+                "did": request.user.username,
                 "gedcom_files": gedcom_files,
                 "shared_files": shared_files,
                 "current_file": current_file,
@@ -70,78 +62,6 @@ def profile(request):
         return render(
             request, "users/error.html", {"error": f"Error loading profile: {str(e)}"}
         )
-
-
-@csrf_protect
-@auth_rate_limit
-def register(request):
-    """
-    View for user registration
-    """
-    if request.user.is_authenticated:
-        return redirect("upload:home")
-
-    if request.method == "POST":
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect("upload:home")
-    else:
-        form = RegisterForm()
-
-    return render(request, "users/register.html", {"form": form})
-
-
-@csrf_protect
-@auth_rate_limit
-def user_login(request):
-    """
-    Custom login view with security monitoring
-    """
-    if request.user.is_authenticated:
-        return redirect("upload:home")
-
-    if request.method == "POST":
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get("username")
-            password = form.cleaned_data.get("password")
-
-            # Get client info for security monitoring
-            ip_address = get_client_ip(request)
-            user_agent = get_user_agent(request)
-
-            # Check security before authentication
-            is_allowed, error_message = check_login_security(
-                username, password, ip_address, user_agent
-            )
-            if not is_allowed:
-                logger.warning(
-                    f"Login blocked by security: {error_message} (user: {username}, IP: {ip_address})"
-                )
-                form.add_error(None, error_message)
-                return render(request, "users/auth/login.html", {"form": form})
-
-            # Attempt authentication
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                # Record successful login
-                record_authentication_result(username, True, ip_address, user_agent)
-                login(request, user)
-                logger.info(f"User logged in: {username} from {ip_address}")
-                return redirect("upload:home")
-            else:
-                # Record failed login attempt
-                record_authentication_result(username, False, ip_address, user_agent)
-                logger.warning(
-                    f"Failed login attempt for user: {username} from {ip_address}"
-                )
-                form.add_error(None, "Invalid username or password")
-    else:
-        form = AuthenticationForm()
-
-    return render(request, "users/auth/login.html", {"form": form})
 
 
 @csrf_protect
