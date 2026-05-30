@@ -37,13 +37,6 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username
 
-    def generate_did(self) -> str:
-        """Generate a new DID for this user."""
-        from apps.users.did_utils import generate_did
-
-        self.did = generate_did(self.did_method)
-        return self.did
-
     def add_vc(self, vc: dict, name: str = None) -> None:
         """Add a verifiable credential to the user's list."""
         vcs = self.vcs.copy()

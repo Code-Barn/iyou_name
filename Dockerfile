@@ -52,9 +52,6 @@ COPY --from=builder /app/staticfiles /app/staticfiles
 # Copy application code (excluding .venv and staticfiles from build context)
 COPY --from=builder /app /app
 
-# Copy libdid_rust.so if present (conditional — file may not exist)
-RUN if [ -f libdid_rust.so ]; then cp libdid_rust.so /usr/local/lib/libdid_rust.so; fi
-
 # Non-root user for security
 RUN useradd --create-home --shell /bin/bash appuser && \
     chown -R appuser:appuser /app

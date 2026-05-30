@@ -78,10 +78,7 @@
 │   ├── parser/                    # GEDCOM parsing (PersonData dataclass)
 │   ├── selector/                  # Individual selection
 │   ├── upload/                    # File upload
-│   └── users/                     # CustomUser, DID/VC system
-│       ├── did_utils.py
-│       ├── did_views.py
-│       └── did_rust_wrapper/      # Rust FFI (hardcoded dev path)
+│   └── users/                     # CustomUser, OIDC-authenticated user management
 ├── config/
 │   ├── settings.py
 │   ├── urls.py                    # Root URL conf
@@ -258,21 +255,10 @@ Two-layer caching:
 
 **Status: Hybrid (legacy DID utils + OIDC-backed user creation)**
 
-The OIDC integration (Section 4.1) is now the primary identity pipeline: the IDP's `sub` claim (a portable DID) becomes `CustomUser.username`. The legacy DID/VC utilities remain for backward compatibility.
+The OIDC integration (Section 4.1) is the sole authentication pathway. All login flows are delegated to the external **iyou_idp** (which uses `../did_rust` for crypto). The legacy DID/VC system (`did_views.py`, `did_utils.py`, `did_rust_wrapper/`) has been removed from this repo.
 
-- Model fields on `CustomUser`: `did`, `did_method`, `did_key`, `vcs` (JSON array)
-- Three-backend architecture:
-  1. **Rust FFI backend** (`apps/users/did_rust_wrapper/`) — production path, hardcoded library path: `/home/user/CODE_BASE/did_rust/target/release/libdid_rust.so`
-  2. **didkit** (Python package) — secondary, tried on import
-  3. **Python mock** — fallback (`did:key:mock-{uuid}`)
-- API endpoints (all behind `@login_required`):
-  - `POST /users/api/did/generate/` — generate DID for user
-  - `GET /users/api/did/` — get user's DID
-  - `POST /users/api/did/verify/` — verify a VC
-  - `POST /users/api/did/vc/issue/` — issue a VC
-  - `POST /users/api/did/vc/add/` — add VC to user
-  - `GET /users/api/did/vcs/` — list VCs
-  - `GET /users/api/did/vcs/type/<str>/` — filter by type
+- Model fields on `CustomUser`: `did`, `did_method`, `did_key`, `vcs` (JSON array) — retained for potential OIDC claims storage
+- No DID API endpoints or backend switching logic remain in this repo
 
 ### 4.3 Ecosystem / Microservice Hooks
 
@@ -285,7 +271,7 @@ The OIDC integration (Section 4.1) is now the primary identity pipeline: the IDP
 | **Docker deployment** | `docker-compose.yml` + Kubernetes manifests in `deploy/` |
 | **Polly** (family polling) | Mentioned in README but no code found in project |
 
-**Assessment**: OpenID Connect is now integrated as the sole authentication pathway. The legacy DID/VC system remains as a secondary identity layer but the primary user creation pipeline flows through OIDC. Genealogy integrations remain thin API wrappers. No internal service mesh patterns are present yet.
+**Assessment**: OpenID Connect is now the sole authentication pathway. All DID/auth logic delegated to external iyou_idp. The legacy DID/VC code (did_views, did_utils, did_rust_wrapper) was removed in this pass. Genealogy integrations remain thin API wrappers. No internal service mesh patterns are present yet.
 
 ---
 
@@ -308,7 +294,6 @@ The OIDC integration (Section 4.1) is now the primary identity pipeline: the IDP
 **Output paths in tests**: Many write output to hardcoded `/home/user/CODE_BASE/namechart/` (e.g., `test_3gen_byers.png`, `test_3gen_positioning.png`, `prototype_4gen_output_test.png`).
 
 **Production code**:
-- `apps/users/did_rust_wrapper/rust_ffi.py:39`: Hardcoded `.so` path — still unresolved in source, but mitigated by Dockerfile Shared Object Guard (`COPY libdid_rust.so /usr/local/lib/libdid_rust.so`)
 - `sunbeam_position_calculator.py:266`: **RESOLVED** — hardcoded SVG output path replaced with local filename
 
 ### 5.2 Duplicate HUD Application
@@ -436,7 +421,7 @@ The following work was completed in a single Production Containerization & Docum
 | # | Action | Files Changed |
 |---|--------|---------------|
 | 1 | Replaced single-stage `python:3.12-slim` Dockerfile with 2-stage `python:3.13-slim` build (`builder` + `runtime`) | `Dockerfile`, `deploy/docker/Dockerfile` |
-| 2 | Added Shared Object Guard for `libdid_rust.so` ctypes resolution in runtime stage | `Dockerfile`, `deploy/docker/Dockerfile` |
+| 2 | Removed Shared Object Guard for `libdid_rust.so` (DID auth delegated to external iyou_idp) | `Dockerfile`, `deploy/docker/Dockerfile` |
 | 3 | Switched production CMD from `runserver` to `gunicorn config.wsgi:application --bind 0.0.0.0:8000` | `Dockerfile`, `deploy/docker/Dockerfile` |
 | 4 | Harvested static assets at build time via `collectstatic --noinput` | `Dockerfile`, `deploy/docker/Dockerfile` |
 | 5 | Created `docker-entrypoint.sh` (migrate → exec gunicorn) | 1 new file |
@@ -450,4 +435,4 @@ The following work was completed in a single Production Containerization & Docum
 | 13 | Added OIDC endpoint comments to both `.env.example` files | `.env.example`, `deploy/docker/.env.example` |
 | 14 | Updated this audit document to reflect all changes | `PROJECT_STATE_AUDIT.md` |
 
-**Result**: `check --deploy` remains clean. Docker images now build on `python:3.13-slim` with no version mismatch, use gunicorn in production, include the `libdid_rust.so` guard, and run migrations at container start. Documentation is consolidated into a single authoritative developer guide with 12 sections.
+**Result**: `check --deploy` remains clean. Docker images now build on `python:3.13-slim` with no version mismatch, use gunicorn in production, and run migrations at container start. Documentation is consolidated into a single authoritative developer guide. Legacy DID/auth code (`did_views.py`, `did_utils.py`, `did_rust_wrapper/`) removed — all auth delegated to external `iyou_idp`.

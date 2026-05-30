@@ -1,0 +1,68 @@
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# Environment
+.env
+.env.example
+.env.*
+.venv/
+venv/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+.eggs/
+*.egg
+*.so
+*.dylib
+*.dll
+
+# Django generated
+staticfiles/
+media/
+*.log
+
+# Cache & coverage
+.ruff_cache/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.typeshed/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docs (irrelevant to build)
+docs/outdated/
+
+# Docker (avoid sending Dockerfiles as part of context)
+docker-compose*.yml
+Dockerfile
+.dockerignore
+
+# Project state audit (not needed in image)
+PROJECT_STATE_AUDIT.md
+AGENTS.md

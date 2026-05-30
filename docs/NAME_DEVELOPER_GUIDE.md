@@ -24,8 +24,9 @@
 | **Image Library** | Wand 0.6.13 (Python ctypes wrapper for ImageMagick) |
 | **PDF** | Ghostscript (base template compositing) |
 | **Frontend** | Vanilla JS, Bootstrap 5, static HUD JS |
-| **Authentication** | Passwordless OIDC via `mozilla-django-oidc` + `MyOIDCAuthenticationBackend` |
-| **DID Backend** | Python (didkit) or Rust (ctypes FFI via `libdid_rust.so`) |
+| **Authentication** | Passwordless OIDC via `mozilla-django-oidc` + `MyOIDCAuthenticationBackend`; all auth flows delegated to `../iyou_idp` |
+| **External Rust (auth/DID)** | `../iyou_idp` → `../did_rust` — handles all login, DID generation, VC ops outside this repo |
+| **External Rust (chart kernel)** | `../iyou_name_rust` → `libiyou_chart_kernel.so` via PyO3 (untested, not yet wired) |
 | **Server** | Gunicorn 23+ (production); `runserver` (dev) |
 | **Testing** | Django TestCase + Playwright e2e (`@playwright/test`) |
 | **Linter** | Ruff 0.14.x |
@@ -47,8 +48,7 @@ iyou_name/
 │   ├── hud/             # Interactive HUD (live preview, settings UI)
 │   ├── parser/          # GEDCOM parsing → PersonData dataclass
 │   ├── selector/        # Individual selection interface
-│   └── users/           # CustomUser model, DID/VC system
-│       └── did_rust_wrapper/   # Rust FFI ctypes bridge for iyou_name_rust
+│   └── users/           # CustomUser model, OIDC-authenticated user management
 ├── config/              # Django settings (settings.py), root URL conf, WSGI/ASGI
 ├── deploy/
 │   ├── docker/          # Docker Compose for local dev + optional genealogy
@@ -59,7 +59,16 @@ iyou_name/
 ├── tests/               # Test suite (Django TestCase + Playwright)
 ├── pyproject.toml       # Python dependencies & project metadata
 ├── uv.lock              # Locked dependency tree
-└── AGENTS.md            # AI coding agent guidelines
+├── AGENTS.md            # AI coding agent guidelines
+│
+├── ../iyou_name_rust/   # SIBLING REPO: Rust chart kernel retrofit (PyO3)
+│   ├── src/             # Rust source: generators, rendering, core types
+│   ├── Cargo.toml       # Rust dependencies: magick_rust, pyo3, serde
+│   ├── pyproject.toml   # Maturin build config
+│   └── tests/           # 42 Rust tests (unit + integration)
+│
+├── ../iyou_idp/         # SIBLING REPO: OIDC identity provider (handles all auth/login)
+└── ../did_rust/         # SIBLING REPO: DID crypto backend (used by iyou_idp, not directly by iyou_name)
 ```
 
 ---
@@ -112,89 +121,83 @@ All persons are serialized into a single JSON blob on `GedcomFile.parsed_data` (
 
 ---
 
-## 5. DID / iyou_name_rust Integration
+## 5. External Rust Repos
 
-### 5.1 Architecture
+All Rust-based functionality lives in sibling repos. **iyou_name does not contain or directly call any Rust code itself** — it delegates via OIDC (auth) and will eventually import a PyO3 module (chart kernel).
+
+### 5.1 Auth & DID: `../iyou_idp` → `../did_rust`
+
+| Repo | Role |
+|------|------|
+| `../iyou_idp/` | OIDC identity provider — handles **100% of login, registration, logout**. iyou_name redirects all auth flows to iyou_idp via `mozilla-django-oidc`. |
+| `../did_rust/` | DID crypto library (`libdid_rust.so`) — called by iyou_idp for DID generation, VC signing/verification. Not directly used by iyou_name. |
+
+**iyou_name's only involvement**: the `CustomUser` model retains `did`, `did_key`, `vcs` fields for storing identity data that may arrive via OIDC claims from iyou_idp.
 
 ```
-┌───────────────────────────────────────────────┐
-│                  iyou_name                     │
-│  ┌─────────────────────────────────────────┐   │
-│  │         apps/users/did_utils.py          │   │
-│  │  generate_did()  verify_vc()  issue_vc() │   │
-│  └──────────┬──────────────────────────────┘   │
-│             │ DID_BACKEND env var               │
-│     ┌───────┴───────┐                           │
-│     ▼               ▼                           │
-│  Python           Rust                          │
-│  (didkit)         (ctypes)                      │
-│  fallback         libdid_rust.so                │
-└─────────────────────────────────────────────────┘
-                   │
+User browser ──→ iyou_name (/users/login/) ──redirect──→ iyou_idp (OIDC) ──→ did_rust (crypto)
+                                                        │
+                                              ←─callback──
+                        iyou_name creates/updates User ←─
+```
+
+---
+
+### 5.2 Chart Kernel: `../iyou_name_rust` (Retrofit — UNTESTED)
+
+**Purpose**: High-performance Rust reimplementation of the Python chart generation engine (Gen1–7). Uses ImageMagick via `magick_rust` for all rendering.
+
+**Repo**: `../iyou_name_rust/`
+
+**Integration**: PyO3 Python extension. Exposes `iyou_chart_kernel.render_chart_from_json(generation, primary_json, ancestors_json, settings_json) -> bytes`.
+
+**Current status**: **NOT WIRED**. No Django code calls `import iyou_chart_kernel`. The Rust project has 42 tests passing and a Python bridge verification script (`verify_bridge.py`), but end-to-end integration from Django has never been executed.
+
+```
+┌────────────────────────────────────────────┐
+│             iyou_name                      │
+│  # nothing calls iyou_chart_kernel yet     │
+└──────────────────┬─────────────────────────┘
+                   │ (future: render_chart_from_json)
                    ▼
-      ┌──────────────────────┐
-      │  iyou_name_rust      │
-      │  (../iyou_name_rust) │
-      │  Cargo.toml          │
-      │  src/lib.rs          │
-      │  target/release/     │
-      │   libdid_rust.so     │
-      └──────────────────────┘
+┌────────────────────────────────────────────┐
+│           iyou_name_rust                    │
+│  src/python_module.rs → render_chart_from_json()
+│  src/generators/strategies/                │
+│  ├── gen1.rs                               │
+│  ├── gen2.rs                               │
+│  ├── radial.rs  (Gen3-5)                   │
+│  └── sunbeam.rs (Gen6-7)                   │
+└────────────────────────────────────────────┘
 ```
 
-### 5.2 Backend Selection
+**Build methods**:
 
-Set `DID_BACKEND` environment variable:
+| Method | Command | Output |
+|--------|---------|--------|
+| Cargo | `cargo build --release` | `target/release/libiyou_chart_kernel.so` |
+| Maturin (dev) | `maturin develop --release` | Installs into current Python venv |
+| Maturin (wheel) | `maturin build --release` | `.whl` in `target/wheels/` |
 
-| Value | Backend | Library |
-|-------|---------|---------|
-| `python` (default) | Python didkit | `didkit` pip package |
-| `rust` | Rust FFI | `libdid_rust.so` via `ctypes.CDLL` |
+**To wire it in**: (1) `import iyou_chart_kernel` in a generator view, (2) replace the Python generator call, (3) add the `.whl` to the Dockerfile, (4) test end-to-end.
 
-### 5.3 Shared Object Guard (Docker)
+---
 
-The multi-stage `Dockerfile` includes a **Shared Object Guard** that places `libdid_rust.so` at `/usr/local/lib/libdid_rust.so` if present in the build context:
+### 5.3 OIDC Configuration
 
-```dockerfile
-COPY libdid_rust.so /usr/local/lib/libdid_rust.so 2>/dev/null || true
-```
+All auth endpoints point to iyou_idp via environment variables:
 
-To bake the Rust library into the image, place the `.so` at the Docker context root before building. The `RustDIDFFI` class in `apps/users/did_rust_wrapper/rust_ffi.py` searches these paths:
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `OIDC_OP_AUTHORIZATION_ENDPOINT` | `https://iyou.me/openid/authorize/` | Auth redirect target |
+| `OIDC_OP_TOKEN_ENDPOINT` | `http://127.0.0.1:8000/openid/token/` | Token exchange |
+| `OIDC_OP_USER_ENDPOINT` | `http://127.0.0.1:8000/openid/userinfo/` | User info claims |
+| `OIDC_OP_JWKS_ENDPOINT` | `http://127.0.0.1:8000/openid/jwks/` | JWKS key set |
+| `OIDC_RP_CALLBACK_URL` | `http://127.0.0.1:8000/oidc/callback/` | OIDC callback |
 
-1. `/usr/local/lib/libdid_rust.so`
-2. `/usr/lib/libdid_rust.so`
-3. `../../../../../did_rust/target/release/libdid_rust.so` (dev relative)
-4. `<module_dir>/libdid_rust.so`
+### 5.4 Auth URL Patterns
 
-### 5.4 DID API Endpoints
-
-All behind `@login_required`:
-
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/users/api/did/generate/` | POST | Generate DID for current user |
-| `/users/api/did/` | GET | Get user's DID |
-| `/users/api/did/verify/` | POST | Verify a verifiable credential |
-| `/users/api/did/vc/issue/` | POST | Issue a VC |
-| `/users/api/did/vc/add/` | POST | Attach VC to user profile |
-| `/users/api/did/vcs/` | GET | List user's VCs |
-| `/users/api/did/vcs/type/<str>/` | GET | Filter VCs by type |
-
-### 5.5 127.0.0.1 Binding Rule (OIDC)
-
-OIDC endpoints in `config/settings.py` default to localhost loopback for unified token evaluation against `iyou_idp`. Override via environment variables for remote deployment:
-
-| Variable | Default |
-|----------|---------|
-| `OIDC_OP_AUTHORIZATION_ENDPOINT` | `https://iyou.me/openid/authorize/` |
-| `OIDC_OP_TOKEN_ENDPOINT` | `http://127.0.0.1:8000/openid/token/` |
-| `OIDC_OP_USER_ENDPOINT` | `http://127.0.0.1:8000/openid/userinfo/` |
-| `OIDC_OP_JWKS_ENDPOINT` | `http://127.0.0.1:8000/openid/jwks/` |
-| `OIDC_RP_CALLBACK_URL` | `http://127.0.0.1:8000/oidc/callback/` |
-
-### 5.6 Auth URL Patterns
-
-Django admin templates require bare `{% url 'login' %}` and `{% url 'logout' %}` (unnamespaced). Since Django 5.0+ removed `django.contrib.auth.views.login`, these are provided as redirects to the OIDC flow:
+Admin templates require bare `{% url 'login' %}` / `{% url 'logout' %}` (Django 5.0+ removed built-in auth views). All redirect to iyou_idp via OIDC:
 
 | URL name | Path | Target |
 |----------|------|--------|
@@ -284,7 +287,7 @@ The `Dockerfile` (root and `deploy/docker/Dockerfile`) uses a two-stage `python:
 **Stage 2 — Runtime Vessel**:
 - System: `libmagickwand-dev`, `ghostscript`, `libpq5`
 - Copies `.venv` and `staticfiles` from builder
-- Shared Object Guard for `libdid_rust.so`
+- **No** iyou_name_rust chart kernel included (not yet wired)
 - Non-root `appuser`
 - Entrypoint: `docker-entrypoint.sh` (migrate → exec gunicorn)
 - CMD: `uv run gunicorn config.wsgi:application --bind 0.0.0.0:8000`
@@ -304,7 +307,18 @@ K8s manifests in `deploy/kubernetes/`:
 | `06-ingress.yaml` | nginx-ingress for `namechart.example.com` + `genealogy.example.com` |
 | `07-secrets.yaml` | DB passwords, Django SECRET_KEY, API tokens |
 
-### 8.3 Required Environment Variables
+### 8.3 Chart Kernel Deployment (`../iyou_name_rust` — not yet wired)
+
+Once integration code is added to Django, deploy via either:
+
+| Method | Steps |
+|--------|-------|
+| **Embed in Docker image** | `cd iyou_name_rust && maturin build --release && cp target/wheels/iyou_chart_kernel-*.whl ../iyou_name/` then add `COPY *.whl /tmp/ && uv pip install /tmp/iyou_chart_kernel-*.whl` to Dockerfile |
+| **Sidecar container** | Build iyou_name_rust's own Dockerfile and deploy as a separate container in the K8s pod |
+
+Currently **neither is implemented** — this is a pending integration task.
+
+### 8.4 Required Environment Variables
 
 | Variable | Required | Default | Purpose |
 |----------|----------|---------|---------|
@@ -315,7 +329,6 @@ K8s manifests in `deploy/kubernetes/`:
 | `OIDC_RP_CLIENT_SECRET` | Yes | — | OIDC client secret |
 | `OIDC_RP_CLIENT_ID` | Conditional | `name-client` | OIDC client ID |
 | `OIDC_RP_CALLBACK_URL` | Conditional | `http://127.0.0.1:8000/oidc/callback/` | OIDC callback URL |
-| `DID_BACKEND` | No | `python` | `python` or `rust` |
 | `GENEALOGY_MODE` | No | `disabled` | `disabled`, `grampsweb`, `webtrees`, `external` |
 | `GRAMPSWEB_API_URL` | Conditional | — | GrampsWeb API base URL |
 | `GRAMPSWEB_API_TOKEN` | Conditional | — | GrampsWeb JWT |
@@ -362,15 +375,6 @@ ruff check apps/
 ruff check --fix apps/
 ```
 
-### 9.4 Creating a DID-Backed User
-
-```bash
-DID_BACKEND=rust uv run python manage.py runserver   # Rust backend
-uv run python manage.py runserver                     # Python fallback
-```
-
-Then POST to `/users/api/did/generate/` (authenticated via OIDC).
-
 ---
 
 ## 10. Genealogy Integration
@@ -394,7 +398,7 @@ GrampsWeb sync: `GENEALOGY_MODE=grampsweb` with `GRAMPSWEB_API_URL` + `GRAMPSWEB
 4. **Test sprawl**: ~79 test/debug files in `tests/` with mixed conventions.
 5. **Dockerfile Python version**: Was pinned to 3.12 despite project requiring 3.13 (now fixed in multi-stage refactor).
 6. **Hardcoded test paths**: Many test files use `sys.path.append("/home/user/CODE_BASE/namechart")`.
-7. **Rust `.so` path**: `rust_ffi.py:39` hardcodes `/home/user/CODE_BASE/did_rust/target/release/libdid_rust.so`.
+7. **iyou_name_rust chart kernel unwired**: The Rust chart generation retrofit (`../iyou_name_rust/`) has 42 passing tests but has never been called from Django. No `import iyou_chart_kernel` exists anywhere in the codebase.
 
 ---
 
@@ -404,8 +408,15 @@ GrampsWeb sync: `GENEALOGY_MODE=grampsweb` with `GRAMPSWEB_API_URL` + `GRAMPSWEB
 |----------|----------|---------|
 | Agent guidelines | `AGENTS.md` (root) | AI agent coding conventions |
 | Buffer/cache system | `docs/BUFFER_SYSTEM.md` | Chart caching architecture |
-| DID integration | `docs/DID_INTEGRATION.md` | Legacy DID/VC documentation |
+| DID integration | `docs/outdated/DID_INTEGRATION.md` | Legacy DID/VC documentation (archived) |
 | GEDCOM parser | `docs/GEDCOM_PARSER.md` | Parser design and data model |
 | Multi-gen spec | `docs/MULTI_GENERATION_STANDARDIZATION_SPEC.md` | Validated generator standards |
 | Outdated docs | `docs/outdated/` | Archived documentation (do not reference) |
 | Project state audit | `PROJECT_STATE_AUDIT.md` (root) | Full technical debt audit (2026-05-19) |
+| Rust chart kernel | `../iyou_name_rust/README.md` | iyou_name_rust project overview |
+| Rust deployment | `../iyou_name_rust/DEPLOYMENT_READY.md` | Chart kernel deployment instructions |
+| Rust CI/CD | `../iyou_name_rust/CI_CD_GUIDE.md` | Dual-repo CI/CD pipeline reference |
+| Rust test matrix | `../iyou_name_rust/TEST_MATRIX.md` | Test coverage (42 Rust tests) |
+| Rust status | `../iyou_name_rust/PROJECT_STATUS.md` | v1.1.0-python-ready status report |
+| Rust integration summary | `../iyou_name_rust/FINAL_SUMMARY.md` | Python-PyO3 integration (5-day retrofit) |
+| Rust bridge verification | `../iyou_name_rust/verify_bridge.py` | E2E Python bridge test script (run with `python verify_bridge.py`) |

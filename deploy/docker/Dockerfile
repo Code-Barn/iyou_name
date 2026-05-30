@@ -48,11 +48,6 @@ COPY --from=builder /app/staticfiles /app/staticfiles
 # Copy application code (excluding .venv and staticfiles from build context)
 COPY --from=builder /app /app
 
-# The Shared Object Guard: if libdid_rust.so is present in the build context,
-# place it where ctypes can resolve it. To use, place the file at
-# context root as libdid_rust.so before building.
-COPY libdid_rust.so /usr/local/lib/libdid_rust.so 2>/dev/null || true
-
 # Non-root user for security
 RUN useradd --create-home --shell /bin/bash appuser && \
     chown -R appuser:appuser /app
