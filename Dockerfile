@@ -40,6 +40,9 @@ RUN apt-get update && apt-get install -y \
     libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
+# Copy uv binary for runtime use
+COPY --from=builder /bin/uv /bin/
+
 # Copy virtual environment from builder
 COPY --from=builder /app/.venv /app/.venv
 
@@ -49,10 +52,8 @@ COPY --from=builder /app/staticfiles /app/staticfiles
 # Copy application code (excluding .venv and staticfiles from build context)
 COPY --from=builder /app /app
 
-# The Shared Object Guard: if libdid_rust.so is present in the build context,
-# place it where ctypes can resolve it. To use, place the file at
-# context root as libdid_rust.so before building.
-COPY libdid_rust.so /usr/local/lib/libdid_rust.so 2>/dev/null || true
+# Copy libdid_rust.so if present (conditional — file may not exist)
+RUN if [ -f libdid_rust.so ]; then cp libdid_rust.so /usr/local/lib/libdid_rust.so; fi
 
 # Non-root user for security
 RUN useradd --create-home --shell /bin/bash appuser && \
