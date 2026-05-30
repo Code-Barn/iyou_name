@@ -1,6 +1,6 @@
-# namechart-django
+# iyou_name
 
-Generate printable family trees in our unique format.
+Generate printable family trees in our unique format — Namecharts.
 
 ## Features
 
@@ -53,9 +53,12 @@ For production, use the Rust DID backend:
 DID_BACKEND=rust uv run python manage.py runserver
 ```
 
-See [/home/user/CODE_BASE/did_rust/README.md](file:///home/user/CODE_BASE/did_rust/README.md) for building the Rust library.
+See `docs/NAME_DEVELOPER_GUIDE.md` (Section 5) for the Shared Object Guard and Rust library integration.
 
 ## Documentation
 
-- [Developer Guide](docs/DEVELOPER_GUIDE.md) - Detailed development documentation
+- [Developer Guide](docs/NAME_DEVELOPER_GUIDE.md) - Comprehensive development documentation
 - [DID Integration](docs/DID_INTEGRATION.md) - DID/VC implementation details
+- [Buffer System](docs/BUFFER_SYSTEM.md) - Chart caching architecture
+- [GEDCOM Parser](docs/GEDCOM_PARSER.md) - Parser design and data model
+- [Multi-Generation Spec](docs/MULTI_GENERATION_STANDARDIZATION_SPEC.md) - Validated generator standards

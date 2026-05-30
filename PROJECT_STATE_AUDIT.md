@@ -11,7 +11,7 @@
 
 | Component | Version / Choice |
 |-----------|------------------|
-| **Python** | 3.13+ (`.python-version`), Dockerfile still on `python:3.12-slim` |
+| **Python** | 3.13+ (`.python-version`, Dockerfile now on `python:3.13-slim`) |
 | **Django** | 6.0.x (settings header: `Django 6.0`, migration timestamps confirm 6.0) |
 | **Package Manager** | `uv` — uses `uv sync`, `uv run`, `uv add`; `uv.lock` present |
 | **Database** | PostgreSQL via `django-environ`/`DATABASE_URL`; Docker compose also provisions Postgres |
@@ -92,10 +92,18 @@
 │   └── kubernetes/
 ├── staticfiles/                   # Collected static (admin, Bootstrap, flags, PDFs)
 ├── docs/
+│   ├── NAME_DEVELOPER_GUIDE.md   # Comprehensive dev guide (canonical)
+│   ├── BUFFER_SYSTEM.md
+│   ├── DID_INTEGRATION.md
+│   ├── GEDCOM_PARSER.md
+│   ├── MULTI_GENERATION_STANDARDIZATION_SPEC.md
+│   └── outdated/                 # Archived stale docs
 ├── pyproject.toml
 ├── uv.lock
-├── Dockerfile
+├── docker-entrypoint.sh        # Container entrypoint (migrate → gunicorn)
+├── Dockerfile                   # Multi-stage build (python:3.13-slim)
 └── docker-compose.yml
+
 ```
 
 ---
@@ -243,7 +251,7 @@ Two-layer caching:
 | Rate limiting | Custom `RateLimitMiddleware` in `apps/core/rate_limiting.py` |
 | Auth monitoring | **Dismantled** — `AuthenticationMonitor` was in-memory only, never survived restart |
 | Registration | **Removed** — `RegisterForm`, `register()` view, `register.html` all deleted |
-| OIDC endpoints | 7 endpoints configured via `django-environ` with k8s cluster DNS defaults |
+| OIDC endpoints | 7 endpoints configured via `django-environ` with 127.0.0.1 binding rule defaults |
 | OIDC RP credentials | `OIDC_RP_CLIENT_ID` (default: `name-client`), `OIDC_RP_CLIENT_SECRET` (required) |
 
 ### 4.2 Decentralized Identity (DID) System
@@ -300,7 +308,7 @@ The OIDC integration (Section 4.1) is now the primary identity pipeline: the IDP
 **Output paths in tests**: Many write output to hardcoded `/home/user/CODE_BASE/namechart/` (e.g., `test_3gen_byers.png`, `test_3gen_positioning.png`, `prototype_4gen_output_test.png`).
 
 **Production code**:
-- `apps/users/did_rust_wrapper/rust_ffi.py:39`: Hardcoded `.so` path — still unresolved
+- `apps/users/did_rust_wrapper/rust_ffi.py:39`: Hardcoded `.so` path — still unresolved in source, but mitigated by Dockerfile Shared Object Guard (`COPY libdid_rust.so /usr/local/lib/libdid_rust.so`)
 - `sunbeam_position_calculator.py:266`: **RESOLVED** — hardcoded SVG output path replaced with local filename
 
 ### 5.2 Duplicate HUD Application
@@ -323,9 +331,11 @@ Both define `app_name = "hud"`, both have `urls.py` with identical patterns. The
 
 ### 5.4 Dockerfile Version Mismatch
 
-- `Dockerfile` uses `python:3.12-slim`
-- Project requires `python >= 3.13`
-- Will break at `uv sync` due to Python version constraint
+**RESOLVED** — Multi-stage refactor (2026-05-30):
+- Both `Dockerfile` and `deploy/docker/Dockerfile` now use `python:3.13-slim`
+- Gunicorn replaces `runserver` in production CMD
+- Static assets harvested at build time via `collectstatic --noinput`
+- `docker-entrypoint.sh` handles migrations at container start
 
 ### 5.5 Place Name Utils Bloat
 
@@ -384,6 +394,8 @@ Still present but non-blocking. The `home()` entry view was rewritten as part of
 
 The codebase has significant technical debt concentrated in hardcoded filesystem paths (remnant test files), duplicate HUD applications, a sprawling test directory, and oversized single-file utilities. The architecture is fundamentally sound but will benefit from targeted extraction of the rendering pipeline into a standalone module and a systematic path-hygiene pass across the remaining test files.
 
+Documentation has been consolidated into `docs/NAME_DEVELOPER_GUIDE.md` as the canonical single-source-of-truth reference for developers, covering architecture, DID/iyou_name_rust integration, deployment, and tech debt. Stale docs are archived in `docs/outdated/`.
+
 ---
 
 ## Remediation Delta (2026-05-19)
@@ -414,3 +426,28 @@ The following work was completed in a single OIDC Core Integration & Ancillary P
 | 20 | Updated docstrings in 5 app files to reflect ecosystem name | `did_utils.py`, `did_views.py`, `parser/utils/__init__.py`, `grampsweb/__init__.py`, `grampsweb/client.py` |
 
 **Result**: `uv run python manage.py check --deploy` passes with **0 errors** (9 warnings — all dev-mode security/staticfiles pre-existing).
+
+---
+
+## Remediation Delta (2026-05-30)
+
+The following work was completed in a single Production Containerization & Documentation Consolidation pass:
+
+| # | Action | Files Changed |
+|---|--------|---------------|
+| 1 | Replaced single-stage `python:3.12-slim` Dockerfile with 2-stage `python:3.13-slim` build (`builder` + `runtime`) | `Dockerfile`, `deploy/docker/Dockerfile` |
+| 2 | Added Shared Object Guard for `libdid_rust.so` ctypes resolution in runtime stage | `Dockerfile`, `deploy/docker/Dockerfile` |
+| 3 | Switched production CMD from `runserver` to `gunicorn config.wsgi:application --bind 0.0.0.0:8000` | `Dockerfile`, `deploy/docker/Dockerfile` |
+| 4 | Harvested static assets at build time via `collectstatic --noinput` | `Dockerfile`, `deploy/docker/Dockerfile` |
+| 5 | Created `docker-entrypoint.sh` (migrate → exec gunicorn) | 1 new file |
+| 6 | Switched to non-root `appuser` in runtime container | `Dockerfile`, `deploy/docker/Dockerfile` |
+| 7 | Re-anchored OIDC endpoints to 127.0.0.1 Binding Rule (`iyou-idp` loopback) | `config/settings.py` |
+| 8 | Fixed deploy docker-compose context path (relative `../..`) | `deploy/docker/docker-compose.yml` |
+| 9 | Modernized root `docker-compose.yml` (healthchecks, proper `NAME_*` env vars, removed dev volume mount) | `docker-compose.yml` |
+| 10 | Moved 8 stale docs → `docs/outdated/` archive | `README_OG.md`, `DEVELOPER_GUIDE.md`, `DOCKER_SETUP.md`, `PROJECT_STRATEGY.md`, `RESPONSIVE_STATUS.md`, `ZOOM_STATUS.md`, `ZOOM_IMPROVEMENTS.md`, `ADOPTIVE_RELATIONSHIP_DISPLAY.md` |
+| 11 | Created comprehensive `docs/NAME_DEVELOPER_GUIDE.md` (canonical single-source-of-truth) | 1 new file |
+| 12 | Updated `README.md` to reference new developer guide and remove hardcoded `/home/user/` path | `README.md` |
+| 13 | Added OIDC endpoint comments to both `.env.example` files | `.env.example`, `deploy/docker/.env.example` |
+| 14 | Updated this audit document to reflect all changes | `PROJECT_STATE_AUDIT.md` |
+
+**Result**: `check --deploy` remains clean. Docker images now build on `python:3.13-slim` with no version mismatch, use gunicorn in production, include the `libdid_rust.so` guard, and run migrations at container start. Documentation is consolidated into a single authoritative developer guide with 12 sections.

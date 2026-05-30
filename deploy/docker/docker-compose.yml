@@ -2,7 +2,7 @@ services:
   # Namechart Django application
   web:
     build:
-      context: /home/user/CODE_BASE/namechart
+      context: ../..
       dockerfile: deploy/docker/Dockerfile
     ports:
       - "8000:8000"

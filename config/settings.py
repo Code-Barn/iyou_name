@@ -217,21 +217,24 @@ if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # OIDC / Sovereign Mesh Identity Provider
+# All OIDC endpoints support the 127.0.0.1 Binding Rule, defaulting to the
+# iyou_idp loopback for unified token evaluation. Override via environment
+# variables when deploying with a remote identity provider.
 OIDC_OP_AUTHORIZATION_ENDPOINT = env.str(
     "OIDC_OP_AUTHORIZATION_ENDPOINT",
-    default="https://idp.iyou.me/openid/authorize/",
+    default="https://iyou.me/openid/authorize/",
 )
 OIDC_OP_TOKEN_ENDPOINT = env.str(
     "OIDC_OP_TOKEN_ENDPOINT",
-    default="http://iyou-idp.identity.svc.cluster.local:8000/openid/token/",
+    default="http://127.0.0.1:8000/openid/token/",
 )
 OIDC_OP_USER_ENDPOINT = env.str(
     "OIDC_OP_USER_ENDPOINT",
-    default="http://iyou-idp.identity.svc.cluster.local:8000/openid/userinfo/",
+    default="http://127.0.0.1:8000/openid/userinfo/",
 )
 OIDC_OP_JWKS_ENDPOINT = env.str(
     "OIDC_OP_JWKS_ENDPOINT",
-    default="http://iyou-idp.identity.svc.cluster.local:8000/openid/jwks/",
+    default="http://127.0.0.1:8000/openid/jwks/",
 )
 OIDC_RP_CLIENT_ID = env.str("OIDC_RP_CLIENT_ID", default="name-client")
 OIDC_RP_CLIENT_SECRET = env.str("OIDC_RP_CLIENT_SECRET")
