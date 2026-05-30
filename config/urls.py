@@ -19,6 +19,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
     path("", include("apps.upload.urls")),
@@ -30,6 +31,9 @@ urlpatterns = [
     path("selector/", include("apps.selector.urls")),
     path("storage/", include("apps.chart_storage.urls")),
     path("admin/", admin.site.urls),
+    # Root-level auth fallbacks for Django admin templates (Django 5.0+ removed built-in auth views)
+    path("accounts/login/", RedirectView.as_view(pattern_name="oidc_authentication_init"), name="login"),
+    path("accounts/logout/", RedirectView.as_view(pattern_name="oidc_logout"), name="logout"),
     path("oidc/", include("mozilla_django_oidc.urls")),
     path("__debug__/", include("debug_toolbar.urls")),
 ]

@@ -190,6 +190,19 @@ OIDC endpoints in `config/settings.py` default to localhost loopback for unified
 | `OIDC_OP_TOKEN_ENDPOINT` | `http://127.0.0.1:8000/openid/token/` |
 | `OIDC_OP_USER_ENDPOINT` | `http://127.0.0.1:8000/openid/userinfo/` |
 | `OIDC_OP_JWKS_ENDPOINT` | `http://127.0.0.1:8000/openid/jwks/` |
+| `OIDC_RP_CALLBACK_URL` | `http://127.0.0.1:8000/oidc/callback/` |
+
+### 5.6 Auth URL Patterns
+
+Django admin templates require bare `{% url 'login' %}` and `{% url 'logout' %}` (unnamespaced). Since Django 5.0+ removed `django.contrib.auth.views.login`, these are provided as redirects to the OIDC flow:
+
+| URL name | Path | Target |
+|----------|------|--------|
+| `login` (root) | `/accounts/login/` | RedirectView → `oidc_authentication_init` |
+| `logout` (root) | `/accounts/logout/` | RedirectView → `oidc_logout` |
+| `users:login` | `/users/login/` | RedirectView → `oidc_authentication_init` |
+| `users:register` | `/users/register/` | RedirectView → `oidc_authentication_init` |
+| `users:logout` | `/users/logout/` | RedirectView → `oidc_logout` |
 
 ---
 
@@ -301,6 +314,7 @@ K8s manifests in `deploy/kubernetes/`:
 | `DATABASE_URL` | Yes | — | PostgreSQL DSN |
 | `OIDC_RP_CLIENT_SECRET` | Yes | — | OIDC client secret |
 | `OIDC_RP_CLIENT_ID` | Conditional | `name-client` | OIDC client ID |
+| `OIDC_RP_CALLBACK_URL` | Conditional | `http://127.0.0.1:8000/oidc/callback/` | OIDC callback URL |
 | `DID_BACKEND` | No | `python` | `python` or `rust` |
 | `GENEALOGY_MODE` | No | `disabled` | `disabled`, `grampsweb`, `webtrees`, `external` |
 | `GRAMPSWEB_API_URL` | Conditional | — | GrampsWeb API base URL |
