@@ -231,17 +231,17 @@ OIDC_OP_AUTHORIZATION_ENDPOINT = env.str(
 )
 OIDC_OP_TOKEN_ENDPOINT = env.str(
     "OIDC_OP_TOKEN_ENDPOINT",
-    default="http://127.0.0.1:8000/openid/token/",
+    default="http://iyou-idp.identity.svc.cluster.local:8000/openid/token/",
 )
 OIDC_OP_USER_ENDPOINT = env.str(
     "OIDC_OP_USER_ENDPOINT",
-    default="http://127.0.0.1:8000/openid/userinfo/",
+    default="http://iyou-idp.identity.svc.cluster.local:8000/openid/userinfo/",
 )
 OIDC_OP_JWKS_ENDPOINT = env.str(
     "OIDC_OP_JWKS_ENDPOINT",
-    default="http://127.0.0.1:8000/openid/jwks/",
+    default="http://iyou-idp.identity.svc.cluster.local:8000/openid/jwks/",
 )
-OIDC_RP_CLIENT_ID = env.str("OIDC_RP_CLIENT_ID", default="name-client")
+OIDC_RP_CLIENT_ID = env.str("OIDC_RP_CLIENT_ID", default="name-satellite-client")
 OIDC_RP_CLIENT_SECRET = env.str("OIDC_RP_CLIENT_SECRET")
 OIDC_RP_CALLBACK_URL = env.str("OIDC_RP_CALLBACK_URL", default="http://127.0.0.1:8000/oidc/callback/")
 LOGIN_URL = "oidc_authentication_init"
