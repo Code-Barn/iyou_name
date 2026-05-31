@@ -35,6 +35,11 @@ DEBUG = env("NAME_DEBUG")
 
 ALLOWED_HOSTS = env.list("NAME_ALLOWED_HOSTS", default=[])
 
+CSRF_TRUSTED_ORIGINS = env.list(
+    "NAME_CSRF_TRUSTED_ORIGINS",
+    default=["https://name.iyou.me"],
+)
+
 # File upload size limit (10MB)
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB in bytes
 
