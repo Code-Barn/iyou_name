@@ -26,7 +26,8 @@ RUN uv sync --no-dev --frozen
 COPY . .
 
 # Harvest static assets
-RUN uv run python manage.py collectstatic --noinput
+RUN OIDC_RP_CLIENT_ID=builder OIDC_RP_CLIENT_SECRET=builder OIDC_RP_CALLBACK_URL=builder \
+    uv run python manage.py collectstatic --noinput
 
 # Stage 2: Runtime Vessel
 FROM python:3.13-slim
@@ -35,8 +36,7 @@ WORKDIR /app
 
 # System application dependencies
 RUN apt-get update && apt-get install -y \
-    ghostscript \
-    libmagickwand-dev \
+    libmagickwand-7.q16-10 \
     libpq5 \
     && rm -rf /var/lib/apt/lists/*
 

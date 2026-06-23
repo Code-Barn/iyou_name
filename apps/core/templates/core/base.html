@@ -412,6 +412,8 @@
                 }
             }
 
+
+
             /* Reset to Defaults button - white in dark mode */
             html.dark .btn-light {
                 background-color: white !important;
@@ -446,6 +448,10 @@
         </script>
     </head>
     <body>
+        {% if user.is_authenticated %}
+        {% include 'includes/_ecosystem_bar.html' %}
+        {% include 'includes/_standard_header.html' %}
+        {% endif %}
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center" href="{% url 'upload:home' %}">

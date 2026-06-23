@@ -109,11 +109,18 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.core.context_processors.satellite_urls",
                 "apps.core.context_processors.genealogy",
             ],
         },
     },
 ]
+
+# Ecosystem satellite URLs (context processor defaults)
+IDP_HOME_URL = "https://iyou.me"
+WUN_URL = "https://wun.iyou.me"
+POLY_URL = "https://poly.iyou.me"
+HIVE_URL = "https://hive.iyou.me"
 
 WSGI_APPLICATION = "config.wsgi.application"
 
@@ -209,41 +216,40 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
-SESSION_COOKIE_NAME = "name_sessionid"
-CSRF_COOKIE_NAME = "name_csrftoken"
+APP_NAME_PREFIX = env.str("APP_NAME_PREFIX", default="name")
+SESSION_COOKIE_NAME = f"{APP_NAME_PREFIX}_sessionid"
+CSRF_COOKIE_NAME = f"{APP_NAME_PREFIX}_csrftoken"
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_TRUSTED_ORIGINS = [f"https://{APP_NAME_PREFIX}.iyou.me"]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # DJANGO DEBUG TOOLBAR SETTINGS
 INTERNAL_IPS = ["127.0.0.1", "::1"]
 
-# Production proxy SSL header (only when DEBUG is False)
-if not DEBUG:
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # OIDC / Sovereign Mesh Identity Provider
 # All OIDC endpoints support the 127.0.0.1 Binding Rule, defaulting to the
 # iyou_idp loopback for unified token evaluation. Override via environment
 # variables when deploying with a remote identity provider.
-OIDC_OP_AUTHORIZATION_ENDPOINT = env.str(
-    "OIDC_OP_AUTHORIZATION_ENDPOINT",
-    default="https://iyou.me/openid/authorize/",
-)
-OIDC_OP_TOKEN_ENDPOINT = env.str(
-    "OIDC_OP_TOKEN_ENDPOINT",
-    default="http://iyou-idp.identity.svc.cluster.local:8000/openid/token/",
-)
-OIDC_OP_USER_ENDPOINT = env.str(
-    "OIDC_OP_USER_ENDPOINT",
-    default="http://iyou-idp.identity.svc.cluster.local:8000/openid/userinfo/",
-)
-OIDC_OP_JWKS_ENDPOINT = env.str(
-    "OIDC_OP_JWKS_ENDPOINT",
-    default="http://iyou-idp.identity.svc.cluster.local:8000/openid/jwks/",
-)
-OIDC_RP_CLIENT_ID = env.str("OIDC_RP_CLIENT_ID", default="name-satellite-client")
+# IDP base URLs for endpoint construction
+IDP_BASE_INTERNAL_URL = env.str("IDP_BASE_INTERNAL_URL", default="http://iyou-idp.identity.svc.cluster.local:8000")
+IDP_BASE_PUBLIC_URL = env.str("IDP_BASE_PUBLIC_URL", default="https://iyou.me")
+
+# OIDC Relying Party — all values purely from environment
+OIDC_RP_CLIENT_ID = env.str("OIDC_RP_CLIENT_ID")
 OIDC_RP_CLIENT_SECRET = env.str("OIDC_RP_CLIENT_SECRET")
-OIDC_RP_CALLBACK_URL = env.str("OIDC_RP_CALLBACK_URL", default="http://127.0.0.1:8000/oidc/callback/")
+OIDC_RP_SIGN_ALGO = "RS256"
+OIDC_RP_CALLBACK_URL = env.str("OIDC_RP_CALLBACK_URL")
+
+OIDC_OP_AUTHORIZATION_ENDPOINT = f"{IDP_BASE_PUBLIC_URL}/openid/authorize/"
+OIDC_OP_TOKEN_ENDPOINT = f"{IDP_BASE_INTERNAL_URL}/openid/token/"
+OIDC_OP_USER_ENDPOINT = f"{IDP_BASE_INTERNAL_URL}/openid/userinfo/"
+OIDC_OP_JWKS_ENDPOINT = f"{IDP_BASE_INTERNAL_URL}/openid/jwks/"
+
 LOGIN_URL = "oidc_authentication_init"
 LOGIN_REDIRECT_URL = "/"
 
