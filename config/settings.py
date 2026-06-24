@@ -231,19 +231,9 @@ INTERNAL_IPS = ["127.0.0.1", "::1"]
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-# OIDC / Sovereign Mesh Identity Provider
-# All OIDC endpoints support the 127.0.0.1 Binding Rule, defaulting to the
-# iyou_idp loopback for unified token evaluation. Override via environment
-# variables when deploying with a remote identity provider.
-# IDP base URLs for endpoint construction
-IDP_BASE_INTERNAL_URL = env.str("IDP_BASE_INTERNAL_URL", default="http://iyou-idp.identity.svc.cluster.local:8000")
+# Force environment strings for the Sovereign Identity Provider
 IDP_BASE_PUBLIC_URL = env.str("IDP_BASE_PUBLIC_URL", default="https://iyou.me")
-
-# OIDC Relying Party — all values purely from environment
-OIDC_RP_CLIENT_ID = env.str("OIDC_RP_CLIENT_ID")
-OIDC_RP_CLIENT_SECRET = env.str("OIDC_RP_CLIENT_SECRET")
-OIDC_RP_SIGN_ALGO = "RS256"
-OIDC_RP_CALLBACK_URL = env.str("OIDC_RP_CALLBACK_URL")
+IDP_BASE_INTERNAL_URL = env.str("IDP_BASE_INTERNAL_URL", default="http://iyou-idp.identity.svc.cluster.local:8000")
 
 OIDC_OP_AUTHORIZATION_ENDPOINT = f"{IDP_BASE_PUBLIC_URL}/openid/authorize/"
 OIDC_OP_TOKEN_ENDPOINT = f"{IDP_BASE_INTERNAL_URL}/openid/token/"
@@ -252,6 +242,13 @@ OIDC_OP_JWKS_ENDPOINT = f"{IDP_BASE_INTERNAL_URL}/openid/jwks/"
 
 LOGIN_URL = "oidc_authentication_init"
 LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = f"{IDP_BASE_PUBLIC_URL}/"
+
+# OIDC Relying Party — all values purely from environment
+OIDC_RP_CLIENT_ID = env.str("OIDC_RP_CLIENT_ID")
+OIDC_RP_CLIENT_SECRET = env.str("OIDC_RP_CLIENT_SECRET")
+OIDC_RP_SIGN_ALGO = "RS256"
+OIDC_RP_CALLBACK_URL = env.str("OIDC_RP_CALLBACK_URL")
 
 # GrampsWeb Integration
 # GENEALOGY_MODE options: "disabled", "grampsweb", "webtrees", "external"
