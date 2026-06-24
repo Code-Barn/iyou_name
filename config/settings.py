@@ -216,7 +216,8 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
-APP_NAME_PREFIX = env.str("APP_NAME_PREFIX", default="name")
+# Force exact short-app namespace token to align with ingress web subdomains
+APP_NAME_PREFIX = "name"
 SESSION_COOKIE_NAME = f"{APP_NAME_PREFIX}_sessionid"
 CSRF_COOKIE_NAME = f"{APP_NAME_PREFIX}_csrftoken"
 SESSION_COOKIE_SECURE = True
