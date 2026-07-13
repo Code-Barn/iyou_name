@@ -84,6 +84,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "apps.core.middleware.OIDCStatePruningMiddleware",
     "apps.core.middleware.SessionCleanupMiddleware",
     "apps.core.rate_limiting.RateLimitMiddleware",
 ]
@@ -250,6 +251,14 @@ OIDC_RP_CLIENT_ID = env.str("OIDC_RP_CLIENT_ID")
 OIDC_RP_CLIENT_SECRET = env.str("OIDC_RP_CLIENT_SECRET")
 OIDC_RP_SIGN_ALGO = "RS256"
 OIDC_RP_CALLBACK_URL = env.str("OIDC_RP_CALLBACK_URL")
+
+# PKCE — session-backed code verifier for zero-secret auth
+OIDC_USE_PKCE = True
+OIDC_PKCE_CODE_VERIFIER_SIZE = 64
+OIDC_PKCE_CODE_CHALLENGE_METHOD = "S256"
+OIDC_MAX_STATES = 50
+OIDC_STATE_SIZE = 32
+OIDC_NONCE_SIZE = 32
 
 # GrampsWeb Integration
 # GENEALOGY_MODE options: "disabled", "grampsweb", "webtrees", "external"
