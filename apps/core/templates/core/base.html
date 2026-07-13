@@ -114,6 +114,13 @@
                 corePlugins: {
                     preflight: false,
                 },
+                theme: {
+                    extend: {
+                        screens: {
+                            xs: '360px',
+                        },
+                    },
+                },
             }
         </script>
         <script src="https://cdn.tailwindcss.com"></script>
@@ -224,7 +231,7 @@
         </nav>
 
 
-        <div class="container mt-4">
+        <div class="container mt-4 pt-5">
             {% block content %}
             {% endblock %}
         </div>
