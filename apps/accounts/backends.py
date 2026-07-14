@@ -1,15 +1,19 @@
-from django.conf import settings
+import os
+
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
 
 class MyOIDCAuthenticationBackend(OIDCAuthenticationBackend):
+
+    def get_username(self, claims):
+        return claims.get("sub")
 
     def _evaluate_admin_elevation(self, user):
         """Hardens admin DID validation rules and forces persistent database synchronization."""
         if not user or user.is_anonymous:
             return user
 
-        admin_did_target = getattr(settings, "ADMIN_DID", None)
+        admin_did_target = os.environ.get("ADMIN_DID", "")
         if admin_did_target and user.username == admin_did_target:
             user.is_staff = True
             user.is_superuser = True
