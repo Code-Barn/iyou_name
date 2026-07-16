@@ -59,7 +59,7 @@ iyou_name/
 ├── tests/               # Test suite (Django TestCase + Playwright)
 ├── pyproject.toml       # Python dependencies & project metadata
 ├── uv.lock              # Locked dependency tree
-├── AGENTS.md            # AI coding agent guidelines
+├── AGENT.md             # AI coding agent guidelines
 │
 ├── ../iyou_name_rust/   # SIBLING REPO: Rust chart kernel retrofit (PyO3)
 │   ├── src/             # Rust source: generators, rendering, core types
@@ -406,7 +406,7 @@ GrampsWeb sync: `GENEALOGY_MODE=grampsweb` with `GRAMPSWEB_API_URL` + `GRAMPSWEB
 
 | Document | Location | Content |
 |----------|----------|---------|
-| Agent guidelines | `AGENTS.md` (root) | AI agent coding conventions |
+| Agent guidelines | `AGENT.md` (root) | AI agent coding conventions |
 | Buffer/cache system | `docs/BUFFER_SYSTEM.md` | Chart caching architecture |
 | DID integration | `docs/outdated/DID_INTEGRATION.md` | Legacy DID/VC documentation (archived) |
 | GEDCOM parser | `docs/GEDCOM_PARSER.md` | Parser design and data model |
