@@ -21,8 +21,8 @@ import logging
 
 import requests
 from django.conf import settings
-from django.contrib import auth
 from django.contrib.auth import get_user_model
+from django.contrib.auth.backends import ModelBackend
 from django.urls import reverse
 from mozilla_django_oidc.utils import absolutify
 
@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
-class PKCEAuthenticationBackend(auth.Backend):
+class PKCEAuthenticationBackend(ModelBackend):
     """Public-client OIDC backend — PKCE S256, no client_secret."""
 
     def authenticate(self, request, code_verifier=None, **kwargs):
