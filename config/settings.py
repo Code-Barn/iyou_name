@@ -90,7 +90,7 @@ MIDDLEWARE = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    "apps.accounts.backends.MyOIDCAuthenticationBackend",
+    "apps.accounts.backends.PKCEAuthenticationBackend",
 ]
 
 AUTH_USER_MODEL = "users.CustomUser"
@@ -215,7 +215,7 @@ LOGGING = {
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-SESSION_ENGINE = "django.contrib.sessions.backends.db"
+SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 
 # Force exact short-app namespace token to align with ingress web subdomains
 APP_NAME_PREFIX = "name"
@@ -232,6 +232,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 INTERNAL_IPS = ["127.0.0.1", "::1"]
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
 
 # Force environment strings for the Sovereign Identity Provider
 IDP_BASE_PUBLIC_URL = env.str("IDP_BASE_PUBLIC_URL", default="https://iyou.me")
@@ -244,11 +245,11 @@ OIDC_OP_JWKS_ENDPOINT = f"{IDP_BASE_INTERNAL_URL}/openid/jwks/"
 
 LOGIN_URL = "oidc_authentication_init"
 LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = f"{IDP_BASE_PUBLIC_URL}/"
+LOGOUT_REDIRECT_URL = "/"
 
-# OIDC Relying Party — all values purely from environment
+# OIDC Relying Party — public client, zero-secret PKCE
 OIDC_RP_CLIENT_ID = env.str("OIDC_RP_CLIENT_ID")
-OIDC_RP_CLIENT_SECRET = env.str("OIDC_RP_CLIENT_SECRET")
+OIDC_RP_SCOPES = "openid profile email"
 OIDC_RP_SIGN_ALGO = "RS256"
 OIDC_RP_CALLBACK_URL = env.str("OIDC_RP_CALLBACK_URL")
 
@@ -259,6 +260,10 @@ OIDC_PKCE_CODE_CHALLENGE_METHOD = "S256"
 OIDC_MAX_STATES = 50
 OIDC_STATE_SIZE = 32
 OIDC_NONCE_SIZE = 32
+OIDC_AUTHENTICATION_CALLBACK_URL = "oidc_authentication_callback"
+
+# Sovereign Admin Posture — DID string that grants is_staff/is_superuser
+ADMIN_DID = env.str("ADMIN_DID", default="")
 
 # GrampsWeb Integration
 # GENEALOGY_MODE options: "disabled", "grampsweb", "webtrees", "external"
