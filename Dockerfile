@@ -35,29 +35,19 @@ FROM python:3.13-slim
 WORKDIR /app
 
 # System application dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libmagickwand-7.q16-10 \
     libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy uv binary for runtime use
-COPY --from=builder /bin/uv /bin/
+RUN groupadd --system --gid 1001 appgroup && \
+    adduser --system --uid 1001 --gid 1001 --no-create-home appuser
 
-# Copy virtual environment from builder
-COPY --from=builder /app/.venv /app/.venv
-
-# Copy collected static assets
-COPY --from=builder /app/staticfiles /app/staticfiles
-
-# Copy application code (excluding .venv and staticfiles from build context)
-COPY --from=builder /app /app
-
-# Non-root user for security
-RUN useradd --create-home --shell /bin/bash appuser && \
-    chown -R appuser:appuser /app
-USER appuser
+# Single COPY from builder — no redundant layer copies
+COPY --from=builder --chown=appuser:appgroup /app /app
 
 ENV PATH="/app/.venv/bin:$PATH"
+USER appuser
 
 EXPOSE 8000
 
