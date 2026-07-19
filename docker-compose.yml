@@ -16,7 +16,9 @@ services:
       retries: 5
 
   web:
-    build: .
+    build:
+      context: ..
+      dockerfile: iyou_name/Dockerfile
     ports:
       - "8000:8000"
     environment:

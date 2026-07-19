@@ -1,54 +1,69 @@
-# Stage 1: Build Forge
-FROM python:3.13-slim AS builder
+# =====================================================================
+# STAGE 1: The Heavy Compilation Forge
+# =====================================================================
+FROM python:3.13-slim-bookworm AS forge
 
-WORKDIR /app
-
-# System dependencies for building
-RUN apt-get update && apt-get install -y \
+# Install essential system compilers and ImageMagick headers
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    pkg-config \
+    libmagickwand-dev \
     curl \
-    gcc \
-    git \
-    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+# Install the canonical Rust compiler toolchain
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
 
-ENV DJANGO_SETTINGS_MODULE=config.settings \
-    UV_PYTHON_PREFERENCE=only-system
+WORKDIR /forge_space
+RUN python -m venv .venv && .venv/bin/pip install --upgrade pip maturin
 
-# Copy dependency manifests first for layer caching
-COPY pyproject.toml uv.lock ./
-RUN uv sync --no-dev --frozen
+# Copy only the Rust source tree context to utilize layer caching
+COPY ./iyou_name_rust /forge_space/iyou_name_rust
 
-# Copy application code
-COPY . .
+WORKDIR /forge_space/iyou_name_rust
+# Compile the optimized native PyO3 wheel asset
+RUN ../.venv/bin/maturin build --release --features python --out /forge_space/dist
 
-# Harvest static assets
-RUN OIDC_RP_CLIENT_ID=builder OIDC_RP_CLIENT_SECRET=builder OIDC_RP_CALLBACK_URL=builder \
-    uv run python manage.py collectstatic --noinput
+# =====================================================================
+# STAGE 2: The Production Runtime Environment
+# =====================================================================
+FROM python:3.13-slim-bookworm AS runner
 
-# Stage 2: Runtime Vessel
-FROM python:3.13-slim
-
-WORKDIR /app
-
-# System application dependencies
+# Install runtime-only ImageMagick shared objects (no heavy headers)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libmagickwand-7.q16-10 \
     libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN groupadd --system --gid 1001 appgroup && \
-    adduser --system --uid 1001 --gid 1001 --no-create-home appuser
+# Setup privileged execution boundary context
+RUN groupadd -g 1000 appgroup && useradd -u 1000 -g appgroup -m appuser
 
-# Single COPY from builder — no redundant layer copies
-COPY --from=builder --chown=appuser:appgroup /app /app
+# Install uv for dependency management and entrypoint
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /app
+
+# Pull the compiled native wheel package from the Forge stage
+COPY --from=forge /forge_space/dist /tmp/dist
+
+# Copy Python dependency manifests first for layer caching
+COPY ./iyou_name/pyproject.toml ./iyou_name/uv.lock /app/
+
+# Install the local native compiled Rust wheel into system Python
+RUN pip install --no-cache-dir /tmp/dist/*.whl \
+    && rm -rf /tmp/dist
+
+# Install Python dependencies via uv (matches existing project convention)
+RUN cd /app && uv sync --no-dev --frozen
+
+# Copy the rest of the application codebase
+COPY --chown=appuser:appgroup ./iyou_name /app
+
+RUN mkdir -p /app/staticfiles /app/media && chown -R appuser:appgroup /app/staticfiles /app/media
 
 ENV PATH="/app/.venv/bin:$PATH"
 USER appuser
-
 EXPOSE 8000
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

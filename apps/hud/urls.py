@@ -1,5 +1,6 @@
 from django.urls import path
 
+from .views import generate_tree_chart
 from .views_simple_buffered import (
     display_tree_hud,
     get_template_preview_simple,
@@ -18,6 +19,11 @@ from .test_views import (
 app_name = "hud"
 
 urlpatterns = [
+    path(
+        "generate-chart/<int:document_id>/",
+        generate_tree_chart,
+        name="generate_tree_chart",
+    ),
     path("display-tree/", display_tree_hud, name="display_tree"),
     path("save-settings/", save_hud_settings, name="save_settings"),
     path(

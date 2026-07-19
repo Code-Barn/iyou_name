@@ -55,6 +55,9 @@ htmlcov/
 ehthumbs.db
 Thumbs.db
 
+# Rust build artifacts (huge, must not enter build context)
+iyou_name_rust/target/
+
 # Docs (irrelevant to build)
 docs/outdated/
 
