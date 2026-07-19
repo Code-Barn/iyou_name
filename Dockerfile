@@ -25,7 +25,7 @@ RUN ../.venv/bin/maturin build --release --features python --out /forge_space/di
 FROM python:3.13-slim-bookworm AS runner
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libmagickwand-7.q16-10 libpq5 \
+    libmagickwand-6.q16-6 libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -g 1000 appgroup && useradd -u 1000 -g appgroup -m appuser

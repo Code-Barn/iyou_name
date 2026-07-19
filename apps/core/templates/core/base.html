@@ -210,27 +210,7 @@
                                 <i class="bi bi-github"></i>
                             </a>
                         </li>
-                        {% if user.is_authenticated %}
-                        <li class="nav-item d-flex align-items-center">
-                            <span class="nav-link text-primary fw-semibold">
-                                {{ user.username }}
-                            </span>
-                        </li>
-                        <li class="nav-item d-flex align-items-center">
-                            <form method="post" action="{% url 'users:logout' %}" class="d-flex align-items-center">
-                                {% csrf_token %}
-                                <button type="submit" class="nav-link" style="background: none; border: none; padding: 0; margin: 0; cursor: pointer; line-height: 1.5;">Logout</button>
-                            </form>
-                        </li>
-                        {% else %}
-                        <li class="nav-item">
-                            <a
-                                class="nav-link"
-                                href="{% url 'oidc_authentication_init' %}"
-                                >Login</a
-                            >
-                        </li>
-                        {% endif %}
+
                     </ul>
                 </div>
             </div>
