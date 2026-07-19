@@ -1,7 +1,7 @@
 # =====================================================================
 # STAGE 1: The Heavy Compilation Forge
 # =====================================================================
-FROM python:3.13-slim-bookworm AS forge
+FROM python:3.13-slim-trixie AS forge
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential pkg-config libmagickwand-dev curl \
@@ -22,10 +22,10 @@ RUN ../.venv/bin/maturin build --release --features python --out /forge_space/di
 # =====================================================================
 # STAGE 2: The Production Runtime Environment
 # =====================================================================
-FROM python:3.13-slim-bookworm AS runner
+FROM python:3.13-slim-trixie AS runner
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libmagickwand-6.q16-6 libpq5 \
+    libmagickwand-7.q16-10 libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -g 1000 appgroup && useradd -u 1000 -g appgroup -m appuser
