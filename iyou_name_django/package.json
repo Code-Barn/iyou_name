@@ -4,6 +4,8 @@
   "description": "Generate printable family trees in our unique format — Namecharts (aka iyou_name)",
   "main": "index.js",
   "scripts": {
+    "tailwind:build": "tailwindcss -i ./static/css/input.css -o ./static/css/output.css --minify",
+    "tailwind:watch": "tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,5 +21,10 @@
   "homepage": "https://github.com/dcbyers13/iyou_name#readme",
   "dependencies": {
     "@playwright/test": "^1.57.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0"
   }
 }

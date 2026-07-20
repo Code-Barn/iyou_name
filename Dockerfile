@@ -1,5 +1,19 @@
 # =====================================================================
-# STAGE 1: The Heavy Compilation Forge
+# STAGE 1: Node.js Asset Builder (Tailwind CSS)
+# =====================================================================
+FROM node:20-alpine AS assets
+
+WORKDIR /app
+COPY iyou_name_django/package.json iyou_name_django/package-lock.json ./
+RUN npm ci --ignore-scripts
+COPY iyou_name_django/tailwind.config.js iyou_name_django/postcss.config.js ./
+COPY iyou_name_django/static/css/input.css ./static/css/input.css
+COPY iyou_name_django/apps/ ./apps/
+COPY iyou_name_django/templates/ ./templates/
+RUN npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --minify
+
+# =====================================================================
+# STAGE 2: The Heavy Compilation Forge
 # =====================================================================
 FROM python:3.13-slim-trixie AS forge
 
@@ -23,7 +37,7 @@ ENV BINDGEN_EXTRA_CLANG_ARGS="-DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DE
 RUN ../.venv/bin/maturin build --release --features python --out /forge_space/dist
 
 # =====================================================================
-# STAGE 2: The Production Runtime Environment
+# STAGE 3: Production Runner
 # =====================================================================
 FROM python:3.13-slim-trixie AS runner
 
@@ -46,7 +60,13 @@ RUN cd /app && uv sync --no-dev --frozen
 # Copy the unified Django application codebase straight into the runner app path
 COPY --chown=appuser:appgroup ./iyou_name_django /app
 
-RUN mkdir -p /app/staticfiles /app/media && chown -R appuser:appgroup /app/staticfiles /app/media /app/.venv
+# Copy compiled Tailwind CSS from assets stage (overwrites any stale output.css)
+COPY --from=assets /app/static/css/output.css /app/static/css/output.css
+
+# Collect all static files into STATIC_ROOT (must run before switching to appuser)
+RUN python manage.py collectstatic --noinput
+
+RUN mkdir -p /app/media && chown -R appuser:appgroup /app/staticfiles /app/media /app/.venv
 
 ENV PATH="/app/.venv/bin:$PATH"
 USER appuser

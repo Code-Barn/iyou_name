@@ -9,6 +9,8 @@
 .env.*
 .venv/
 venv/
+iyou_name_django/.venv/
+iyou_name_rust/.venv/
 
 # Python bytecode
 __pycache__/
@@ -24,6 +26,7 @@ build/
 *.so
 *.dylib
 *.dll
+node_modules/
 
 # Django generated
 staticfiles/

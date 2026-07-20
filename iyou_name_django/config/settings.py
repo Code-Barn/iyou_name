@@ -159,6 +159,7 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_DIRS = [
+    BASE_DIR / "static",
     BASE_DIR / "apps" / "core" / "static",
     BASE_DIR / "apps" / "upload" / "static",
     BASE_DIR / "apps" / "browse" / "static",
