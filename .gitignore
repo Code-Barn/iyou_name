@@ -1,18 +1,56 @@
-# Environment
-.env
-.venv/
+# ── OS ──────────────────────────────────────────────────
+.DS_Store
 
-# Python
+# ── Environment ─────────────────────────────────────────
+.env
+.env.local
+.env*.local
+
+# ── Python ──────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *.egg-info/
+*.egg
 dist/
 build/
+.mypy_cache/
 
-# Django
-staticfiles/
-media/
+# ── Virtual Environments ────────────────────────────────
+iyou_name_django/.venv/
+iyou_name_rust/.venv/
+.venv/
+venv/
+
+# ── Django ──────────────────────────────────────────────
+iyou_name_django/staticfiles/
+iyou_name_django/media/
 *.log
 
-# OS
-.DS_Store
+# ── Rust / Cargo ───────────────────────────────────────
+iyou_name_rust/target/
+**/*.rs.bk
+Cargo.lock
+
+# ── Build Artifacts ─────────────────────────────────────
+*.wheels/
+.ruff_cache/
+
+# ── IDE ─────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Testing ─────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache/
+
+# ── Node ────────────────────────────────────────────────
+node_modules/
+
+# ── Misc ────────────────────────────────────────────────
+*.sqlite3
+*.db

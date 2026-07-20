@@ -17,8 +17,8 @@ services:
 
   web:
     build:
-      context: ..
-      dockerfile: iyou_name/Dockerfile
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     environment:

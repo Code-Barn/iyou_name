@@ -1,0 +1,6 @@
+# ImageMagick 7 configuration for iyou_chart_kernel
+# These settings are now handled in build.rs for better isolation
+
+[build]
+# Ensure consistent build environment
+rustflags = ["-C", "debuginfo=0"]
