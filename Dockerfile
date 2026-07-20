@@ -4,14 +4,14 @@
 FROM python:3.13-slim-trixie AS forge
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential pkg-config libmagickwand-7.q16hdri-dev libmagickwand-dev libclang-dev curl \
+    build-essential pkg-config libmagickwand-7.q16hdri-dev libmagickwand-dev libclang-dev curl patchelf \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 WORKDIR /forge_space
-RUN python -m venv .venv && .venv/bin/pip install --upgrade pip "maturin[patchelf]"
+RUN python -m venv .venv && .venv/bin/pip install --upgrade pip maturin
 
 # Copy the Rust workspace from the unified repo layout
 COPY ./iyou_name_rust /forge_space/iyou_name_rust
@@ -46,7 +46,7 @@ RUN cd /app && uv sync --no-dev --frozen
 # Copy the unified Django application codebase straight into the runner app path
 COPY --chown=appuser:appgroup ./iyou_name_django /app
 
-RUN mkdir -p /app/staticfiles /app/media && chown -R appuser:appgroup /app/staticfiles /app/media
+RUN mkdir -p /app/staticfiles /app/media && chown -R appuser:appgroup /app/staticfiles /app/media /app/.venv
 
 ENV PATH="/app/.venv/bin:$PATH"
 USER appuser
