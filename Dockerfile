@@ -64,7 +64,7 @@ COPY --chown=appuser:appgroup ./iyou_name_django /app
 COPY --from=assets /app/static/css/output.css /app/static/css/output.css
 
 # Collect all static files into STATIC_ROOT (must run before switching to appuser)
-RUN python manage.py collectstatic --noinput
+RUN uv run python manage.py collectstatic --noinput
 
 RUN mkdir -p /app/media && chown -R appuser:appgroup /app/staticfiles /app/media /app/.venv
 

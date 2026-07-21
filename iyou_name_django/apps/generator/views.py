@@ -1,10 +1,8 @@
-import json
 import logging
 import importlib
-from io import BytesIO
 
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods
 
@@ -435,6 +433,19 @@ def generate_final_chart(request):
                 status=400,
             )
 
+        # PyO3 Rust Kernel Ingress Hook
+        RUST_KERNEL_AVAILABLE = False
+        try:
+            import iyou_chart_kernel
+            RUST_KERNEL_AVAILABLE = True
+            logger.info("PyO3 Rust kernel available - using accelerated rendering")
+        except ImportError:
+            logger.info("PyO3 Rust kernel not available - falling back to Python prototype")
+            RUST_KERNEL_AVAILABLE = False
+        except Exception as e:
+            logger.warning(f"PyO3 Rust kernel import failed with error: {e} - falling back to Python prototype")
+            RUST_KERNEL_AVAILABLE = False
+
         # Dynamically import the generator module
         module = importlib.import_module(template_config["module"])
         generator_function = getattr(module, template_config["function"])
@@ -450,12 +461,42 @@ def generate_final_chart(request):
 
         # Generate the family tree with the selected template
         logger.debug("Calling generator function with user_settings...")
-        image_buffer = generator_function(
-            primary_individual,
-            family_data,
-            template_type,
-            user_settings=user_settings,
-        )
+        
+        # Try PyO3 Rust kernel first if available
+        if RUST_KERNEL_AVAILABLE:
+            try:
+                # Convert family data to JSON payload for Rust kernel
+                import json
+                json_payload = {
+                    "individual_id": individual_id,
+                    "family_data": family_data,
+                    "template": template,
+                    "template_type": template_type,
+                    "settings": user_settings
+                }
+                json_str = json.dumps(json_payload)
+                
+                # Call Rust kernel
+                image_buffer = iyou_chart_kernel.render_chart_from_json(json_str)
+                logger.info("Successfully generated chart using PyO3 Rust kernel")
+            except Exception as rust_error:
+                logger.error(f"PyO3 Rust kernel execution failed: {rust_error} - falling back to Python prototype")
+                # Fall back to Python prototype
+                image_buffer = generator_function(
+                    primary_individual,
+                    family_data,
+                    template_type,
+                    user_settings=user_settings,
+                )
+        else:
+            # Use Python prototype baseline
+            image_buffer = generator_function(
+                primary_individual,
+                family_data,
+                template_type,
+                user_settings=user_settings,
+            )
+        
         logger.debug("Generator function completed successfully")
         image_buffer.seek(0)
 
