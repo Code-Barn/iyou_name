@@ -1,11 +1,11 @@
 {% load static %}
 {# _footer.html — site footer #}
 <footer class="bg-white border-t border-gray-200 dark:bg-slate-900 dark:border-slate-800 py-6 mt-10 text-gray-600 dark:text-gray-400 text-xs font-mono">
-    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="px-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-4">
             <img id="footer-logo" alt="Namecharts Logo" class="h-12 w-auto" /><script>document.getElementById('footer-logo').src = document.documentElement.classList.contains('dark') ? '{% static "core/images/tinynamelogo_DM.png" %}' : '{% static "core/images/tinynamelogo.png" %}';</script>
             <p class="mb-0">&copy; 2024 Namecharts.org. All rights reserved.</p>
         </div>
-        <img id="footer-dekalb-logo" alt="Created in DeKalb" class="h-12 w-auto" /><script>document.getElementById('footer-dekalb-logo').src = document.documentElement.classList.contains('dark') ? '{% static "core/images/createdinDeKalb_DM.png" %}' : '{% static "core/images/createdinDeKalb.png" %}';</script>
+        <img id="footer-dekalb-logo" alt="Created in DeKalb" class="h-14 w-auto" /><script>document.getElementById('footer-dekalb-logo').src = document.documentElement.classList.contains('dark') ? '{% static "core/images/createdinDeKalb_DM.png" %}' : '{% static "core/images/createdinDeKalb.png" %}';</script>
     </div>
 </footer>
