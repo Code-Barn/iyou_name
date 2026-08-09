@@ -16,18 +16,16 @@ build/
 .mypy_cache/
 
 # ── Virtual Environments ────────────────────────────────
-iyou_name_django/.venv/
-iyou_name_rust/.venv/
 .venv/
 venv/
 
 # ── Django ──────────────────────────────────────────────
-iyou_name_django/staticfiles/
-iyou_name_django/media/
+staticfiles/
+media/
 *.log
 
 # ── Rust / Cargo ───────────────────────────────────────
-iyou_name_rust/target/
+crates/iyou_chart_kernel/target/
 **/*.rs.bk
 Cargo.lock
 

@@ -4,12 +4,12 @@
 FROM node:20-alpine AS assets
 
 WORKDIR /app
-COPY iyou_name_django/package.json iyou_name_django/package-lock.json ./
+COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts
-COPY iyou_name_django/tailwind.config.js iyou_name_django/postcss.config.js ./
-COPY iyou_name_django/static/css/input.css ./static/css/input.css
-COPY iyou_name_django/apps/ ./apps/
-COPY iyou_name_django/templates/ ./templates/
+COPY tailwind.config.js postcss.config.js ./
+COPY static/css/input.css ./static/css/input.css
+COPY apps/ ./apps/
+COPY templates/ ./templates/
 RUN npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --minify
 
 # =====================================================================
@@ -28,9 +28,9 @@ WORKDIR /forge_space
 RUN python -m venv .venv && .venv/bin/pip install --upgrade pip maturin
 
 # Copy the Rust workspace from the unified repo layout
-COPY ./iyou_name_rust /forge_space/iyou_name_rust
+COPY ./crates/iyou_chart_kernel /forge_space/iyou_chart_kernel
 
-WORKDIR /forge_space/iyou_name_rust
+WORKDIR /forge_space/iyou_chart_kernel
 ENV MAGICKCORE_HDRI_ENABLE=1
 ENV MAGICKCORE_QUANTUM_DEPTH=16
 ENV BINDGEN_EXTRA_CLANG_ARGS="-DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16"
@@ -50,15 +50,15 @@ RUN groupadd -g 1000 appgroup && useradd -u 1000 -g appgroup -m appuser
 
 WORKDIR /app
 
-# Pull dependency definitions from the unified Django subdirectory path
-COPY ./iyou_name_django/pyproject.toml ./iyou_name_django/uv.lock* /app/
+# Pull dependency definitions from the repo root
+COPY ./pyproject.toml ./uv.lock* /app/
 COPY --from=forge /forge_space/dist /tmp/dist
 
 RUN pip install --no-cache-dir /tmp/dist/*.whl && rm -rf /tmp/dist
 RUN cd /app && uv sync --no-dev --frozen
 
-# Copy the unified Django application codebase straight into the runner app path
-COPY --chown=appuser:appgroup ./iyou_name_django /app
+# Copy the unified application codebase straight into the runner app path
+COPY --chown=appuser:appgroup . /app
 
 # Copy compiled Tailwind CSS from assets stage (overwrites any stale output.css)
 COPY --from=assets /app/static/css/output.css /app/static/css/output.css

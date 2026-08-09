@@ -9,8 +9,6 @@
 .env.*
 .venv/
 venv/
-iyou_name_django/.venv/
-iyou_name_rust/.venv/
 
 # Python bytecode
 __pycache__/
@@ -59,7 +57,7 @@ ehthumbs.db
 Thumbs.db
 
 # Rust build artifacts (huge, must not enter build context)
-iyou_name_rust/target/
+crates/iyou_chart_kernel/target/
 
 # Docs (irrelevant to build)
 docs/outdated/

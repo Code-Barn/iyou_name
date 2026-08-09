@@ -1,21 +1,11 @@
-<!-- Tailwind Safe Initialization - Prevents "Can't find variable: tailwind" errors -->
+{# _tailwind_safe_init.html — Dark mode bootstrap (runs before body render) #}
 <script>
-// Prevent script execution crashes if runtime tailwind variables are unresolved
-if (typeof tailwind !== 'undefined') {
-    tailwind.config = { 
-        theme: { 
-            extend: { 
-                colors: { 
-                    // App accent color for dynamic theming
-                    'accent': 'var(--color-accent)'
-                } 
-            } 
-        } 
-    };
-}
-</script>
-<style>
-    :root {
-        --color-accent: #0d9488;
+  (function () {
+    var theme = localStorage.getItem('color-theme');
+    if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
     }
-</style>
+  })();
+</script>
