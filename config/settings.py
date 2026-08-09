@@ -37,7 +37,11 @@ ALLOWED_HOSTS = env.list("NAME_ALLOWED_HOSTS", default=[])
 
 CSRF_TRUSTED_ORIGINS = env.list(
     "NAME_CSRF_TRUSTED_ORIGINS",
-    default=["https://name.iyou.me"],
+    default=[
+        "https://name.iyou.me",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ],
 )
 
 # File upload size limit (10MB)
@@ -220,8 +224,8 @@ SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 APP_NAME_PREFIX = "name"
 SESSION_COOKIE_NAME = f"{APP_NAME_PREFIX}_sessionid"
 CSRF_COOKIE_NAME = f"{APP_NAME_PREFIX}_csrftoken"
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_TRUSTED_ORIGINS = [f"https://{APP_NAME_PREFIX}.iyou.me"]
 
