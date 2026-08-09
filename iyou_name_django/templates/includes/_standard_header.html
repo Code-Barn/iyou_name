@@ -10,13 +10,13 @@
                 <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span class="text-slate-600 dark:text-slate-300 max-w-[240px] truncate" title="{{ request.user.username }}">{{ request.user.username }}</span>
             </div>
-            <a href="{% url 'oidc_logout' %}" class="text-slate-400 hover:text-rose-500 transition-colors duration-150">Sign Out</a>
+            <a href="{% url 'oidc_logout' %}" class="text-slate-400 hover:text-rose-500 no-underline transition-colors duration-150">Sign Out</a>
         {% else %}
             <div class="flex items-center space-x-2">
                 <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                 <span class="text-slate-400 italic">Sovereign Key Required</span>
             </div>
-            <a href="{% url 'oidc_authentication_init' %}" class="bg-teal-600 hover:bg-teal-500 text-white font-bold px-3 py-1 rounded transition-colors duration-150 shadow-sm">Sign In</a>
+            <a href="{% url 'oidc_authentication_init' %}" class="bg-teal-600 hover:bg-teal-500 text-white font-bold no-underline px-3 py-1 rounded transition-colors duration-150 shadow-sm">Sign In</a>
         {% endif %}
     </div>
 </header>

@@ -277,25 +277,7 @@
             var logoImg = new Image();
             logoImg.src = isDark ? '{% static "core/images/tinynamelogo_DM.png" %}' : '{% static "core/images/tinynamelogo.png" %}';
         </script>
-        <script>
-            // Prevent script execution crashes if runtime tailwind variables are unresolved
-            if (typeof tailwind !== 'undefined') {
-                tailwind.config = {
-                    corePlugins: {
-                        preflight: false,
-                    },
-                    theme: {
-                        extend: {
-                            screens: {
-                                xs: '360px',
-                            },
-                        },
-                    },
-                }
-            }
-        </script>
-        <!-- REPLACE WITH STATIC TAILWIND CSS - Rule 7 compliance -->
-        <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+        <!-- STATIC TAILWIND CSS (compiled via `npm run tailwind:build`) -->
         <link rel="stylesheet" href="{% static 'css/output.css' %}">
         <style>
             /* Restore Bootstrap collapse visibility overridden by Tailwind utility */
