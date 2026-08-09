@@ -56,7 +56,6 @@ DJANGO_APPS = [
 ]
 
 EXTERNAL_APPS = [
-    "debug_toolbar",
     "mozilla_django_oidc",
 ]
 
@@ -76,7 +75,6 @@ OWN_APPS = [
 INSTALLED_APPS = DJANGO_APPS + EXTERNAL_APPS + OWN_APPS
 
 MIDDLEWARE = [
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -228,9 +226,6 @@ SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_TRUSTED_ORIGINS = [f"https://{APP_NAME_PREFIX}.iyou.me"]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# DJANGO DEBUG TOOLBAR SETTINGS
-INTERNAL_IPS = ["127.0.0.1", "::1"]
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True

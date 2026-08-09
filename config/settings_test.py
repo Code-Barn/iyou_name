@@ -7,7 +7,7 @@ in production environments.
 
 import tempfile
 
-from .settings import INSTALLED_APPS, MIDDLEWARE, TEMPLATES
+from .settings import TEMPLATES
 
 # Use SQLite for testing - faster and doesn't require database permissions
 DATABASES = {
@@ -20,12 +20,6 @@ DATABASES = {
 # Speed up password hashing for tests
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.MD5PasswordHasher",
-]
-
-# Disable debug toolbar for tests
-INSTALLED_APPS = [app for app in INSTALLED_APPS if app != "debug_toolbar"]
-MIDDLEWARE = [
-    middleware for middleware in MIDDLEWARE if "debug_toolbar" not in middleware
 ]
 
 # Use faster template backend for tests

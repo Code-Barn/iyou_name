@@ -38,7 +38,6 @@ urlpatterns = [
     # OIDC routes — explicit logout for universal header compatibility (Rule 5)
     path("oidc/logout/", OIDCLogoutView.as_view(), name="oidc_logout"),
     path("oidc/", include("mozilla_django_oidc.urls")),
-    path("__debug__/", include("debug_toolbar.urls")),
 ]
 
 # Add static and media file serving for development
