@@ -9,7 +9,7 @@
 | Version | 0.1.0 |
 | License | AGPL-3.0 |
 
-**Mission**: Public name resolution engine — generate printable family tree namecharts from GEDCOM genealogical data, with Decentralized Identity (DID) integration for cross-app sovereign identity via the iyou_name_rust cryptographic backend.
+**Mission**: Public name resolution engine — generate printable family tree namecharts from GEDCOM genealogical data, with Decentralized Identity (DID) integration for cross-app sovereign identity via the integrated `crates/iyou_chart_kernel/` cryptographic backend.
 
 ---
 
@@ -27,7 +27,7 @@
 | **CSS Framework** | Tailwind CSS 3.4 (compiled) + Bootstrap 5 (scoped grid) |
 | **Authentication** | Passwordless OIDC via `mozilla-django-oidc` + `MyOIDCAuthenticationBackend`; all auth flows delegated to `../iyou_idp` |
 | **Integrated Rust (auth/DID)** | `../iyou_idp` → `../did_rust` — handles all login, DID generation, VC ops outside this repo |
-| **Integrated Rust (chart kernel)** | `iyou_name_rust/` → `libiyou_chart_kernel.so` via PyO3 (wired with fallback) |
+| **Integrated Rust (chart kernel)** | `crates/iyou_chart_kernel/` → `libiyou_chart_kernel.so` via PyO3 (wired with fallback) |
 | **Server** | Gunicorn 23+ (production); `runserver` (dev) |
 | **Testing** | Django TestCase + Playwright e2e (`@playwright/test`) |
 | **Linter** | Ruff 0.14.x |
@@ -80,71 +80,62 @@ templates/
 ├── includes/
 │   ├── _ecosystem_bar.html   # Tailwind-only (utility classes)
 │   ├── _standard_header.html  # Tailwind-only (utility classes)
-│   └── _tailwind_safe_init.html # Tailwind initialization
+│   ├── _tailwind_safe_init.html # Tailwind initialization
+│   ├── _nav.html              # Layer 2 app header (Tailwind-only)
+│   └── _footer.html           # Site footer (Tailwind-only)
 └── apps/                     # App-specific templates (use both frameworks)
 ```
 
+### Known Frontend Debt
+
+Global Bootstrap 5 Reboot CSS in `base.html` introduces micro-font/flex resets that cause subtle spacing differences compared to pure Tailwind sister repos (`iyou_wun`/`iyou_poly`). Future task: Deprecate global Bootstrap completely in favor of scoped Tailwind UI components.
+
 ---
 
-## 4. App Architecture & Data Flow
-
-## 3. Directory Layout
+## 3. Directory Layout (Flattened Monorepo)
 
 ```
 iyou_name/
-├── iyou_name_django/    # Unified Django monorepo (formerly standalone)
-│   ├── apps/
-│   │   ├── accounts/        # Sovereign Mesh OIDC authentication backend
-│   │   ├── browse/          # Individual browsing & family detail views
-│   │   ├── chart_storage/   # Persistent settings, buffer cache, photos
-│   │   ├── charts/          # Chart serving (download/final PDF)
-│   │   ├── core/            # Shared utilities, middleware, rate-limiting, GrampsWeb client
-│   │   ├── generator/       # Chart generation engine (1gen–7gen + buffer manager)
-│   │   ├── hud/             # Interactive HUD (live preview, settings UI)
-│   │   ├── parser/          # GEDCOM parsing → PersonData dataclass
-│   │   ├── selector/        # Individual selection interface
-│   │   └── users/           # CustomUser model, OIDC-authenticated user management
-│   ├── config/              # Django settings (settings.py), root URL conf, WSGI/ASGI
-│   ├── deploy/
-│   │   ├── docker/          # Docker Compose for local dev + optional genealogy
-│   │   └── kubernetes/      # Production K8s manifests (namespaces, PVCs, ingress, HPA)
-│   ├── docker-entrypoint.sh # Container startup: migrate → exec gunicorn
-│   ├── Dockerfile           # Multi-stage build (python:3.13-slim + Node.js for Tailwind)
-│   ├── staticfiles/         # Pre-collected static assets
-│   ├── static/              # Source static assets (CSS, JS, images)
-│   │   ├── css/              # Tailwind input/output files
-│   │   └── vendor/           # Third-party libraries (Bootstrap, icons)
-│   ├── templates/           # Global templates and includes
-│   │   └── includes/         # Reusable components (_ecosystem_bar.html, _standard_header.html)
-│   ├── tests/               # Test suite (Django TestCase + Playwright)
-│   ├── pyproject.toml       # Python dependencies & project metadata
-│   ├── uv.lock              # Locked dependency tree
-│   ├── package.json        # Node.js dependencies for Tailwind CSS
-│   ├── package-lock.json   # Locked Node.js dependencies
-│   ├── tailwind.config.js  # Tailwind CSS configuration
-│   ├── postcss.config.js   # PostCSS configuration
-│   └── AGENT.md             # AI coding agent guidelines
-│
-├── iyou_name_rust/        # INTEGRATED RUST CRATE: Chart kernel (PyO3)
-│   ├── src/
-│   │   ├── lib.rs           # Main library entry point
-│   │   ├── python_module.rs # PyO3 Python bindings
-│   │   └── generators/
-│   │       ├── gen1.rs      # 1-generation chart renderer
-│   │       ├── gen2.rs      # 2-generation chart renderer
-│   │       ├── radial.rs    # 3-5 generation radial strategy
-│   │       └── sunbeam.rs   # 6-7 generation sunbeam strategy
-│   ├── Cargo.toml           # Rust dependencies (magick_rust, pyo3, serde)
-│   ├── pyproject.toml       # Maturin build configuration
-│   └── tests/               # 42 Rust tests (unit + integration)
-│
+├── manage.py              # Django entrypoint (root)
+├── config/                # Django settings (settings.py), root URL conf, WSGI/ASGI
+├── apps/                  # Django applications
+│   ├── accounts/          # Sovereign Mesh OIDC authentication backend
+│   ├── browse/            # Individual browsing & family detail views
+│   ├── chart_storage/     # Persistent settings, buffer cache, photos
+│   ├── charts/            # Chart serving (download/final PDF)
+│   ├── core/              # Shared utilities, middleware, rate-limiting, GrampsWeb client
+│   ├── generator/         # Chart generation engine (1gen–7gen + buffer manager)
+│   ├── hud/               # Interactive HUD (live preview, settings UI)
+│   ├── parser/            # GEDCOM parsing → PersonData dataclass
+│   ├── selector/          # Individual selection interface
+│   ├── upload/            # GEDCOM upload handling
+│   └── users/             # CustomUser model, OIDC-authenticated user management
+├── crates/
+│   └── iyou_chart_kernel/ # INTEGRATED RUST CRATE: Chart kernel (PyO3)
+│       ├── src/
+│       │   ├── lib.rs            # Main library entry point
+│       │   ├── python_module.rs  # PyO3 Python bindings
+│       │   ├── core/             # Types, constants, coordinate system, errors
+│       │   ├── generators/       # gen1.rs, gen2.rs, unified_generator.rs, strategies/, specs/
+│       │   ├── rendering/        # Text renderer, place abbreviation
+│       │   └── utils/
+│       ├── tests/           # Rust unit + integration tests
+│       ├── Cargo.toml       # Rust dependencies (magick_rust, pyo3, serde)
+│       └── pyproject.toml   # Maturin build configuration
+├── static/                # Source static assets (CSS, JS, images)
+│   └── css/               # Tailwind input/output files
+├── templates/             # Global templates and includes
+│   └── includes/          # Reusable components (_ecosystem_bar.html, _standard_header.html, _nav.html, _footer.html)
 ├── docs/                  # Comprehensive documentation
 │   ├── NAME_DEVELOPER_GUIDE.md  # This file (canonical reference)
 │   └── ecosystem_shared/    # Shared ecosystem specifications
-│
+├── tests/                 # Test suite (Django TestCase + Playwright)
+├── deploy/                # Docker + Kubernetes manifests
 ├── Dockerfile             # Root multi-stage Dockerfile (Node.js + Python + Rust)
 ├── docker-compose.yml     # Unified development environment
-└── .gitignore             # Unified gitignore for monorepo
+├── pyproject.toml         # Python dependencies & project metadata
+├── package.json           # Node.js dependencies for Tailwind CSS
+└── tailwind.config.js     # Tailwind CSS configuration
 ```
 
 ---
@@ -199,7 +190,7 @@ All persons are serialized into a single JSON blob on `GedcomFile.parsed_data` (
 
 ## 5. External Rust Repos
 
-All Rust-based functionality lives in sibling repos. **iyou_name does not contain or directly call any Rust code itself** — it delegates via OIDC (auth) and will eventually import a PyO3 module (chart kernel).
+Auth and DID handling lives in sibling repos; the chart kernel lives **inside this repo** under `crates/iyou_chart_kernel/` (see §5.2).
 
 ### 5.1 Auth & DID: `../iyou_idp` → `../did_rust`
 
@@ -219,11 +210,11 @@ User browser ──→ iyou_name (/users/login/) ──redirect──→ iyou_id
 
 ---
 
-### 5.2 Chart Kernel: `iyou_name_rust/` (Integrated & Wired)
+### 5.2 Chart Kernel: `crates/iyou_chart_kernel/` (Integrated & Wired)
 
 **Purpose**: High-performance Rust reimplementation of the Python chart generation engine (Gen1–7). Uses ImageMagick via `magick_rust` for all rendering.
 
-**Location**: `iyou_name_rust/` (integrated into monorepo)
+**Location**: `crates/iyou_chart_kernel/` (integrated into the flattened monorepo)
 
 **Integration**: PyO3 Python extension. Exposes `iyou_chart_kernel.render_chart_from_json(json_payload) -> bytes`.
 
@@ -231,7 +222,7 @@ User browser ──→ iyou_name (/users/login/) ──redirect──→ iyou_id
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     iyou_name_django                        │
+│                     iyou_name (Django)                       │
 │  apps/generator/views.py → generate_final_chart()          │
 │  ┌───────────────────────────────────────────────────────┐  │
 │  │ PyO3 Rust Kernel Ingress Hook                         │  │
@@ -262,7 +253,7 @@ User browser ──→ iyou_name (/users/login/) ──redirect──→ iyou_id
                    │                                         │
                    ▼                                         │
 ┌─────────────────────────────────────────────────────────────┐  │
-│                     iyou_name_rust                          │  │
+│                crates/iyou_chart_kernel                      │  │
 │  src/python_module.rs → render_chart_from_json()          │  │
 │  src/generators/strategies/                                │  │
 │  ├── gen1.rs               # 1-generation chart renderer  │  │
@@ -491,7 +482,7 @@ K8s manifests in `deploy/kubernetes/`:
 | `06-ingress.yaml` | nginx-ingress for `namechart.example.com` + `genealogy.example.com` |
 | `07-secrets.yaml` | DB passwords, Django SECRET_KEY, API tokens |
 
-### 8.3 Chart Kernel Deployment (`iyou_name_rust/` — fully wired with fallback)
+### 8.3 Chart Kernel Deployment (`crates/iyou_chart_kernel/` — fully wired with fallback)
 
 The Rust chart kernel is **fully integrated** with automatic detection and fallback:
 
@@ -505,13 +496,13 @@ The Rust chart kernel is **fully integrated** with automatic detection and fallb
 
 | Method | Steps | Status |
 |--------|-------|--------|
-| **Embed in Docker image** | `cd iyou_name_rust && maturin build --release && cp target/wheels/iyou_chart_kernel-*.whl ../iyou_name_django/` then add to Dockerfile Stage 2 | ✅ Recommended |
-| **Sidecar container** | Build iyou_name_rust's own Dockerfile and deploy as separate K8s container | ⚠️ Alternative |
+| **Embed in Docker image** | `cd crates/iyou_chart_kernel && maturin build --release && cp target/wheels/iyou_chart_kernel-*.whl ../../` then add to Dockerfile Stage 2 | ✅ Recommended |
+| **Sidecar container** | Build the crate's own Dockerfile and deploy as separate K8s container | ⚠️ Alternative |
 
 **Dockerfile Integration** (Stage 2 - Python Build Forge):
 ```dockerfile
 # Add to Stage 2 after uv sync
-COPY --from=iyou_name_rust_build /app/target/wheels/iyou_chart_kernel-*.whl /tmp/
+COPY --from=iyou_chart_kernel_build /app/target/wheels/iyou_chart_kernel-*.whl /tmp/
 RUN uv pip install /tmp/iyou_chart_kernel-*.whl
 ```
 
@@ -565,7 +556,7 @@ uv sync
 npm install
 
 # Copy env and edit
-cp iyou_name_django/.env.example iyou_name_django/.env
+cp .env.example .env
 
 # Build Tailwind CSS
 npm run tailwind:build
@@ -581,14 +572,13 @@ uv run python manage.py runserver
 
 ```bash
 # Terminal 1: Django development server
-cd iyou_name_django
 uv run python manage.py runserver
 
 # Terminal 2: Tailwind CSS watch mode
 npm run tailwind:watch
 
 # Terminal 3: Rust development (when working on chart kernel)
-cd iyou_name_rust
+cd crates/iyou_chart_kernel
 cargo watch -x "build --release"
 ```
 
@@ -624,15 +614,15 @@ npm run tailwind:watch
 npm run build
 
 # Build Rust chart kernel (development)
-cd iyou_name_rust
+cd crates/iyou_chart_kernel
 maturin develop --release
 
 # Build Rust chart kernel (production wheel)
-cd iyou_name_rust
+cd crates/iyou_chart_kernel
 maturin build --release
 
 # Install Rust kernel into Django environment
-uv pip install iyou_name_rust/target/wheels/iyou_chart_kernel-*.whl
+uv pip install crates/iyou_chart_kernel/target/wheels/iyou_chart_kernel-*.whl
 ```
 
 ---
@@ -657,6 +647,8 @@ GrampsWeb sync: `GENEALOGY_MODE=grampsweb` with `GRAMPSWEB_API_URL` + `GRAMPSWEB
 1. **✅ CSS Framework Conflict**: Resolved via Hybrid CSS Matrix (Tailwind + Bootstrap)
 2. **✅ Rust Kernel Integration**: Fully wired with automatic detection and fallback
 3. **✅ Monorepo Structure**: Unified Django and Rust codebases
+4. **✅ CSRF/Session Secure-Cookie Fix**: `CSRF_COOKIE_SECURE = not DEBUG` and `SESSION_COOKIE_SECURE = not DEBUG` in `config/settings.py` — cookies stay HTTP-safe for local development while remaining Secure in production.
+5. **✅ Layer 2 Header Refactor**: 3-logo branding cluster (Namecharts logo + tagline + harp seal) with a floating hamburger dropdown card (`templates/includes/_nav.html`).
 
 ### 🚧 Active Tech Debt
 
@@ -673,7 +665,6 @@ GrampsWeb sync: `GENEALOGY_MODE=grampsweb` with `GRAMPSWEB_API_URL` + `GRAMPSWEB
 4. **Kubernetes**: Horizontal pod autoscaling based on chart generation load
 5. **Dockerfile Python version**: Was pinned to 3.12 despite project requiring 3.13 (now fixed in multi-stage refactor).
 6. **Hardcoded test paths**: Many test files use `sys.path.append("/home/user/CODE_BASE/namechart")`.
-7. **iyou_name_rust chart kernel unwired**: The Rust chart generation retrofit (`../iyou_name_rust/`) has 42 passing tests but has never been called from Django. No `import iyou_chart_kernel` exists anywhere in the codebase.
 
 ---
 
@@ -688,10 +679,4 @@ GrampsWeb sync: `GENEALOGY_MODE=grampsweb` with `GRAMPSWEB_API_URL` + `GRAMPSWEB
 | Multi-gen spec | `docs/MULTI_GENERATION_STANDARDIZATION_SPEC.md` | Validated generator standards |
 | Outdated docs | `docs/outdated/` | Archived documentation (do not reference) |
 | Project state audit | `PROJECT_STATE_AUDIT.md` (root) | Full technical debt audit (2026-05-19) |
-| Rust chart kernel | `../iyou_name_rust/README.md` | iyou_name_rust project overview |
-| Rust deployment | `../iyou_name_rust/DEPLOYMENT_READY.md` | Chart kernel deployment instructions |
-| Rust CI/CD | `../iyou_name_rust/CI_CD_GUIDE.md` | Dual-repo CI/CD pipeline reference |
-| Rust test matrix | `../iyou_name_rust/TEST_MATRIX.md` | Test coverage (42 Rust tests) |
-| Rust status | `../iyou_name_rust/PROJECT_STATUS.md` | v1.1.0-python-ready status report |
-| Rust integration summary | `../iyou_name_rust/FINAL_SUMMARY.md` | Python-PyO3 integration (5-day retrofit) |
-| Rust bridge verification | `../iyou_name_rust/verify_bridge.py` | E2E Python bridge test script (run with `python verify_bridge.py`) |
+| Rust chart kernel | `crates/iyou_chart_kernel/` | Integrated PyO3 chart kernel (Rust, `Cargo.toml`, `src/`, `tests/`) |

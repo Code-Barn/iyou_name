@@ -1,7 +1,19 @@
 # TODO — iyou_name (Genealogy Registry)
 
 **Orchestrated from:** `omni_social` (central hub)
-**Last synced:** 2026-07-14
+**Last synced:** 2026-08-09
+
+---
+
+## ✅ Completed — Phases 1–4 (Restructuring & Hardening)
+
+- [x] Monorepo flattening and directory consolidation.
+- [x] Rust crate migration to `crates/iyou_chart_kernel`.
+- [x] Header specificity fix & phantom comment leak removal.
+- [x] Debug toolbar removal.
+- [x] Local CSRF 403 secure-cookie fix (`CSRF_COOKIE_SECURE` / `SESSION_COOKIE_SECURE` gated behind `not DEBUG` in `config/settings.py`).
+- [x] Layer 2 header refactor (left branding cluster + floating hamburger card overlay).
+- [x] Solid white HUD chart settings panel normalization across Gen 1–7.
 
 ---
 
@@ -37,5 +49,18 @@ Current state: `PkceAuthMixin` with `oidc_states` dict, 300s prune cycle. Custom
 
 - [ ] **(Potential)** Bootstrap → Tailwind migration: iyou_name is the only repo using Bootstrap (`core/base.html` line 21-23). Dual-framework hybrid with `preflight: false`. Page templates deeply use Bootstrap classes (`container`, `d-flex`, `card`, `list-group`, `form-control`, `navbar`, `data-bs-toggle`, Bootstrap Icons). *Not committed — pending decision.*
 - [ ] **Ecosystem Doc Organization:** Standardize repo layout to match iyou_wun precedent — root: `AGENT.md`, `README.md`; `docs/`: `DEVELOPER_GUIDE.md`, `DESIGN_DOC.md`, `TODO.md`, `ecosystem_shared/`, `archive/`.
+
+---
+
+## 🚧 Phase 5 — Active Sprint Tasks
+
+- [ ] **End-to-end chart generation pipeline test:** Verify `prototype_image_*generator.py` fallback vs PyO3 `iyou_chart_kernel` extension produce byte-identical charts for Gen 1–7.
+- [ ] **Audit base template background overlays:** Review `US_LETTER_*GEN_BW.pdf` / PNGs used in the chart rendering pipeline.
+- [ ] **Audit GEDCOM parsing & Browse View labeling:** Handle non-standard relationships (`PEDI`, adoptions, foster, step-parents, half-siblings) in parser and Browse View labels.
+
+## 🎯 Long-Term Release Goals (3–6 Month Horizon)
+
+- [ ] **Roadmap Item:** Optional "Adoptive Lineage Chart" toggle — allow users with unknown biological parents or adopted lines to generate charts centered on adoptive families.
+- [ ] **Roadmap Item:** Fully deprecate global `bootstrap.min.css` from `base.html` to achieve pure Tailwind parity across all layers.
 
 ---
