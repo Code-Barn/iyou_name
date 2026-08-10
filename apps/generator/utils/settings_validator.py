@@ -7,6 +7,9 @@ error handling, logging, and fallback defaults.
 """
 
 import logging
+import os
+import shutil
+import subprocess
 from typing import Any, Type, Union, Optional
 from wand.color import Color
 
@@ -17,6 +20,122 @@ class GenerationError(Exception):
     """Custom exception for generation-related errors."""
 
     pass
+
+
+# Guaranteed sans-serif TrueType/OpenType fonts, checked in order of preference.
+# Covers the common Linux distribution paths (Debian/Ubuntu `fonts-dejavu-core`,
+# `fonts-liberation`) and the macOS system font directory.
+_FALLBACK_FONT_PATHS = [
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+    "/System/Library/Fonts/Supplemental/Arial.ttf",
+    "/System/Library/Fonts/Helvetica.ttc",
+    "/Library/Fonts/Arial.ttf",
+]
+
+# Well-known logical font names -> candidate files, checked for existence.
+_FONT_NAME_CANDIDATES = {
+    "arial": [
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        "/System/Library/Fonts/Supplemental/Arial.ttf",
+    ],
+    "helvetica": [
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        "/System/Library/Fonts/Helvetica.ttc",
+    ],
+    "dejavu sans": ["/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"],
+    "liberation sans": ["/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"],
+    "times": ["/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf"],
+    "courier": ["/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf"],
+}
+
+
+def _existing_font_path(candidates):
+    """Return the first candidate path that exists on disk, else None."""
+    for path in candidates:
+        if path and os.path.isfile(path):
+            return path
+    return None
+
+
+def _fontconfig_match(query):
+    """Resolve a font via fontconfig (fc-match) to a concrete file path."""
+    fc = shutil.which("fc-match")
+    if not fc:
+        return None
+    try:
+        result = subprocess.run(
+            [fc, "-f", "%{file}", query],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (subprocess.SubprocessError, OSError):
+        return None
+    if result.returncode != 0:
+        return None
+    path = result.stdout.strip()
+    if path and os.path.isfile(path):
+        return path
+    return None
+
+
+def system_sans_font_path():
+    """Return a guaranteed system sans-serif font path, or None if none found."""
+    path = _existing_font_path(_FALLBACK_FONT_PATHS)
+    if path:
+        return path
+    return _fontconfig_match("sans-serif")
+
+
+def resolve_font_path(font_name):
+    """
+    Safely resolve a font name or path to an actual font file on disk.
+
+    Wand/ImageMagick raises an unhandled FreeType error (``unable to read
+    font``) when given a font name that is not registered on the host (for
+    example ``Arial`` inside a slim Debian container). This helper guards that:
+
+    1. Absolute paths that exist are returned unchanged.
+    2. Known logical names (Arial, Helvetica, DejaVu Sans, ...) are mapped to
+       concrete candidate files.
+    3. Any other name is passed through fontconfig (``fc-match``) if available.
+    4. As a last resort, a guaranteed system sans-serif TrueType is returned.
+
+    Args:
+        font_name: The requested font name or file path.
+
+    Returns:
+        str: A concrete font file path (or the original name if nothing on the
+        system can be resolved).
+    """
+    if not font_name:
+        return system_sans_font_path() or font_name or "Arial"
+
+    name = str(font_name).strip()
+    if not name:
+        return system_sans_font_path() or "Arial"
+
+    # Already a concrete, existing file path.
+    if os.path.isfile(name):
+        return name
+
+    # Known logical name -> candidate files.
+    lowered = name.lower()
+    for logical, candidates in _FONT_NAME_CANDIDATES.items():
+        if lowered == logical or logical in lowered:
+            path = _existing_font_path(candidates)
+            if path:
+                return path
+
+    # Let fontconfig resolve it (handles family names and system substitution).
+    path = _fontconfig_match(name)
+    if path:
+        return path
+
+    # Final guaranteed fallback so Wand never receives an unresolvable name.
+    return system_sans_font_path() or name
+
 
 
 def validate_setting(
@@ -307,6 +426,11 @@ def get_validated_settings(
                 default_value,
                 setting_key,
             )
+
+        # Resolve font names to concrete files so ImageMagick never receives an
+        # unresolvable font (e.g. "Arial" on a font-less slim container).
+        if setting_key in ("font_family", "flag_font"):
+            validated_value = resolve_font_path(validated_value)
 
         validated_settings[setting_key] = validated_value
 

@@ -42,7 +42,7 @@ RUN ../.venv/bin/maturin build --release --features python --out /forge_space/di
 FROM python:3.13-slim-trixie AS runner
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libmagickwand-7.q16hdri-10 libpq5 \
+    libmagickwand-7.q16hdri-10 libpq5 fonts-dejavu-core fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
