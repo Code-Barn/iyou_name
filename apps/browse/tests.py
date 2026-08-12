@@ -114,7 +114,9 @@ class IndividualDetailRelationshipTests(TestCase):
         content = response.content.decode()
         self.assertIn("Siblings (1)", content)
         self.assertIn("Sibling Gamma", content)
-        self.assertIn("Full Siblings (1)", content)
+
+        # Grey category headers must be gone in favor of a unified sibling list.
+        self.assertNotIn("Full Siblings (", content)
 
         self.assertEqual(response.context["full_siblings_count"], 1)
         self.assertEqual(response.context["total_siblings_count"], 1)
@@ -168,17 +170,11 @@ class IndividualDetailRelationshipTests(TestCase):
         self.assertIn(".family-info .collapse", content)
         self.assertIn("visibility: visible", content)
 
-    def test_half_and_step_siblings_labeled(self):
+    def test_profile_photo_grid_layout_with_placeholder(self):
+        """The top detail card must use a 2-column grid (info left, photo right)
+        and render a fallback avatar frame when no profile photo exists."""
         individuals = {
-            "I1": _person(
-                id="I1",
-                full_name="Main Person",
-                half_siblings=["I2"],
-                step_siblings=["I3"],
-                all_siblings=["I2", "I3"],
-            ),
-            "I2": _person(id="I2", full_name="Half Sibling Delta"),
-            "I3": _person(id="I3", full_name="Step Sibling Epsilon"),
+            "I1": _person(id="I1", full_name="Grid Person"),
         }
         self._set_file(individuals)
 
@@ -186,12 +182,43 @@ class IndividualDetailRelationshipTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         content = response.content.decode()
-        self.assertIn("Half Siblings (1)", content)
-        self.assertIn("Step Siblings (1)", content)
+        self.assertIn('class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4"', content)
+        self.assertIn('class="md:col-span-3"', content)
+        self.assertIn('class="md:col-span-1 flex items-start justify-center md:justify-end"', content)
+        # Fallback avatar frame renders when no photo exists.
+        self.assertIn('class="rounded-lg border border-gray-200 bg-gray-50', content)
+        self.assertIn('bi bi-person', content)
+
+    def test_half_and_step_siblings_labeled(self):
+        individuals = {
+            "I1": _person(
+                id="I1",
+                full_name="Main Person",
+                father="I9",
+                half_siblings=["I2"],
+                step_siblings=["I3"],
+                all_siblings=["I2", "I3"],
+            ),
+            "I2": _person(id="I2", full_name="Half Sibling Delta", father="I9"),
+            "I3": _person(id="I3", full_name="Step Sibling Epsilon"),
+            "I9": _person(id="I9", full_name="Shared Father"),
+        }
+        self._set_file(individuals)
+
+        response = self.client.get("/browse/person/I1/")
+
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn("Siblings (2)", content)
         self.assertIn("Half Sibling Delta", content)
         self.assertIn("Step Sibling Epsilon", content)
         self.assertIn("(Half - via father)", content)
         self.assertIn("(Step)", content)
+
+        # Grey category headers must be gone in favor of a unified sibling list.
+        self.assertNotIn("Full Siblings (", content)
+        self.assertNotIn("Half Siblings (", content)
+        self.assertNotIn("Step Siblings (", content)
 
         self.assertEqual(response.context["half_siblings_count"], 1)
         self.assertEqual(response.context["step_siblings_count"], 1)

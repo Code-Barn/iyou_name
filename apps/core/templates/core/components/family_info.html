@@ -227,8 +227,6 @@
                     </button>
                     <div class="collapse show" id="siblingsCollapse">
                         <ul class="list-group mt-2">
-                            {% if siblings %}
-                            <li class="list-group-item list-group-item-secondary"><strong>Full Siblings ({{ full_siblings_count }})</strong></li>
                             {% for sibling in siblings %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 {% with sibling_photo=photos|get_item:sibling.id %}
@@ -269,9 +267,6 @@
                                 <a href="{% url 'browse:individual_detail' sibling.id %}" class="btn btn-primary btn-sm">Profile</a>
                             </li>
                             {% endfor %}
-                            {% endif %}
-                            {% if half_siblings %}
-                            <li class="list-group-item list-group-item-secondary"><strong>Half Siblings ({{ half_siblings_count }})</strong></li>
                             {% for sibling in half_siblings %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 {% with sibling_photo=photos|get_item:sibling.id %}
@@ -286,8 +281,8 @@
                                 <div class="flex-grow-1">
                                     <span class="fs-5">{{ sibling.full_name }}</span>
                                     <span class="text-muted">
-                                        {% if sibling.father == individual.father %}(Half - via father)
-                                        {% elif sibling.mother == individual.mother %}(Half - via mother)
+                                        {% if sibling.father and sibling.father == individual.father %}(Half - via father)
+                                        {% elif sibling.mother and sibling.mother == individual.mother %}(Half - via mother)
                                         {% else %}(Half){% endif %}
                                     </span>
                                     {% if sibling.birth_date or sibling.birth_place %}
@@ -310,9 +305,6 @@
                                 <a href="{% url 'browse:individual_detail' sibling.id %}" class="btn btn-primary btn-sm">Profile</a>
                             </li>
                             {% endfor %}
-                            {% endif %}
-                            {% if step_siblings %}
-                            <li class="list-group-item list-group-item-secondary"><strong>Step Siblings ({{ step_siblings_count }})</strong></li>
                             {% for sibling in step_siblings %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 {% with sibling_photo=photos|get_item:sibling.id %}
@@ -347,7 +339,6 @@
                                 <a href="{% url 'browse:individual_detail' sibling.id %}" class="btn btn-primary btn-sm">Profile</a>
                             </li>
                             {% endfor %}
-                            {% endif %}
                         </ul>
                     </div>
                 </div>
