@@ -86,11 +86,10 @@ impl AncestorData {
                         "Gen2 requires mother".to_string(),
                     ));
                 }
-                if self.count() > 2 {
-                    return Err(ChartError::InvalidSettings(
-                        "Gen2 can only have father and mother".to_string(),
-                    ));
-                }
+                // NOTE: No `count() > 2` rejection here. The same AncestorData map
+                // feeds enclosing overlay strategies (radial/sunbeam) which chain
+                // back down through Gen2, and those legitimately carry additional
+                // higher-generation positions alongside father/mother.
                 Ok(())
             }
             3 => {

@@ -39,10 +39,10 @@ impl UnifiedChartGenerator {
         })?;
 
         let mut wand = MagickWand::new();
-        wand.set_size(1950, 1950)?;
-        let mut bg = PixelWand::new();
-        bg.set_color("white")?;
-        wand.new_image(1950, 1950, &bg)?;
+
+        // NOTE: Each strategy owns full canvas creation via set_size + new_image.
+        // Pre-creating a canvas here and then letting the strategy create another
+        // on the same wand results in a blank rendered image (ImageMagick quirk).
 
         strategy.generate(&mut wand, primary, ancestors, &self.settings)?;
 

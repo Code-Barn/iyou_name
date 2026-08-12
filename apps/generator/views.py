@@ -1,5 +1,7 @@
+import json
 import logging
 import importlib
+from itertools import product
 
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect
@@ -25,6 +27,128 @@ logger = logging.getLogger(__name__)
 
 # Use the centralized template mapping
 TEMPLATE_MAPPING = get_template_mapping()
+
+# PyO3 Rust acceleration kernel (native C-extension). When installed, chart
+# generation is routed through it for ~10-50ms rendering; otherwise the pure
+# Python Wand engine remains the fail-safe fallback.
+try:
+    import iyou_chart_kernel
+
+    RUST_ENGINE_AVAILABLE = True
+    logger.info("PyO3 Rust kernel loaded - accelerated rendering enabled")
+except ImportError:
+    RUST_ENGINE_AVAILABLE = False
+    logger.info("PyO3 Rust kernel not installed - using Python Wand engine")
+except Exception as e:  # pragma: no cover - defensive
+    RUST_ENGINE_AVAILABLE = False
+    logger.warning(
+        f"PyO3 Rust kernel import failed: {e} - using Python Wand engine"
+    )
+
+
+def _person_to_kernel_payload(person):
+    """Map a Django PersonData onto the Rust kernel's PersonData JSON shape."""
+    return {
+        "id": person.id or "",
+        "full_name": person.full_name or "",
+        "given_name": person.given_name or "",
+        "surname": person.surname or "",
+        "birth_date": person.birth_date,
+        "birth_place": person.birth_place,
+        "death_date": person.death_date,
+        "death_place": person.death_place,
+    }
+
+
+def _ancestor_position_labels(generation):
+    """Return the kernel position IDs the given generation expects."""
+    if generation == 2:
+        return ["1", "2"]
+    if generation == 3:
+        return ["A", "B", "C", "D"]
+    if generation in (4, 5, 6):
+        return [
+            f"{chr(ord('A') + i)}{d}"
+            for i in range(2 ** (generation - 2))
+            for d in (1, 2)
+        ]
+    if generation == 7:
+        return [f"{chr(ord('A') + i)}{d}" for i in range(16) for d in (1, 2, 3, 4)]
+    return []
+
+
+def _walk_ancestor(people, start_id, steps):
+    """Walk father/mother steps from start_id, returning the terminal person or None."""
+    person_id = start_id
+    for step in steps:
+        person = people.get(person_id)
+        if not person:
+            return None
+        parent_id = getattr(person, "father" if step == "father" else "mother", None)
+        if not parent_id:
+            return None
+        person_id = parent_id
+    return people.get(person_id)
+
+
+def _build_ancestors_payload(people, primary_id, generation):
+    """
+    Build the kernel AncestorData JSON for all generations 2..N.
+
+    The kernel's strategies compose previous-generation overlays recursively,
+    so the payload must contain positions for every generation below N as well
+    (Gen2 requires "1"/"2", Gen3 requires A-D, etc.).
+    """
+    individuals = {}
+    if generation <= 1:
+        return {"individuals": individuals}
+    for gen in range(2, generation + 1):
+        steps_list = list(product(("father", "mother"), repeat=gen - 1))
+        for label, steps in zip(_ancestor_position_labels(gen), steps_list):
+            person = _walk_ancestor(people, primary_id, steps)
+            if person:
+                individuals[label] = _person_to_kernel_payload(person)
+    return {"individuals": individuals}
+
+
+def _as_bool(value, default=False):
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() in ("1", "true", "yes", "on")
+
+
+def _as_float(value, default=0.0):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _build_settings_payload(user_settings):
+    """Map Django user_settings onto the kernel's ChartSettings JSON shape."""
+    from apps.generator.utils.settings_validator import resolve_font_path
+
+    return {
+        "font_family": resolve_font_path(user_settings.get("font_family", "Arial")),
+        "font_color": user_settings.get("primary_font_color", "#000000"),
+        "background_color": user_settings.get("primary_background_color", "#FFFFFF"),
+        "name_font_size": _as_float(
+            user_settings.get("primary_name_font_size"), 84.0
+        ),
+        "date_font_size": _as_float(
+            user_settings.get("primary_date_info_font_size"), 60.0
+        ),
+        "place_font_size": _as_float(
+            user_settings.get("primary_place_info_font_size"), 28.0
+        ),
+        "use_outside_stroke": _as_bool(user_settings.get("use_outside_stroke")),
+        "stroke_width": _as_float(user_settings.get("default_stroke_width"), 0.5),
+        "stroke_color": user_settings.get("primary_stroke_color", "#000000"),
+        "flag_size": 0,
+        "flag_type": user_settings.get("place_flag_type", "birth"),
+    }
 
 
 @csrf_protect
@@ -433,69 +557,43 @@ def generate_final_chart(request):
                 status=400,
             )
 
-        # PyO3 Rust Kernel Ingress Hook
-        RUST_KERNEL_AVAILABLE = False
-        try:
-            import iyou_chart_kernel
-            RUST_KERNEL_AVAILABLE = True
-            logger.info("PyO3 Rust kernel available - using accelerated rendering")
-        except ImportError:
-            logger.info("PyO3 Rust kernel not available - falling back to Python prototype")
-            RUST_KERNEL_AVAILABLE = False
-        except Exception as e:
-            logger.warning(f"PyO3 Rust kernel import failed with error: {e} - falling back to Python prototype")
-            RUST_KERNEL_AVAILABLE = False
-
-        # Dynamically import the generator module
+        # Dynamically import the generator module (used by the Python fallback)
         module = importlib.import_module(template_config["module"])
         generator_function = getattr(module, template_config["function"])
 
-        logger.debug(f"Using generator: {generator_function.__name__}")
-        logger.debug(f"User settings for final chart: {user_settings}")
-        logger.debug(f"Request POST data keys: {list(request.POST.keys())}")
-        logger.debug(f"HUD settings from session: {hud_settings}")
-
         # Determine the template type (default to "final" for chart generation)
         template_type = template_config.get("template_type", "final")
-        logger.debug(f"Template type: {template_type}")
 
-        # Generate the family tree with the selected template
-        logger.debug("Calling generator function with user_settings...")
-        
-        # Try PyO3 Rust kernel first if available
-        if RUST_KERNEL_AVAILABLE:
+        # PyO3 Rust Kernel Fast Path
+        if RUST_ENGINE_AVAILABLE:
             try:
-                # Convert family data to JSON payload for Rust kernel
-                import json
-                json_payload = {
-                    "individual_id": individual_id,
-                    "family_data": family_data,
-                    "template": template,
-                    "template_type": template_type,
-                    "settings": user_settings
-                }
-                json_str = json.dumps(json_payload)
-                
-                # Call Rust kernel
-                image_buffer = iyou_chart_kernel.render_chart_from_json(json_str)
-                logger.info("Successfully generated chart using PyO3 Rust kernel")
-            except Exception as rust_error:
-                logger.error(f"PyO3 Rust kernel execution failed: {rust_error} - falling back to Python prototype")
-                # Fall back to Python prototype
-                image_buffer = generator_function(
-                    primary_individual,
-                    family_data,
-                    template_type,
-                    user_settings=user_settings,
+                generation_num = int(template)
+                png_bytes = iyou_chart_kernel.render_chart_from_json(
+                    str(generation_num),
+                    json.dumps(_person_to_kernel_payload(primary_individual)),
+                    json.dumps(
+                        _build_ancestors_payload(
+                            person_data_objects, individual_id, generation_num
+                        )
+                    ),
+                    json.dumps(_build_settings_payload(user_settings)),
                 )
-        else:
-            # Use Python prototype baseline
-            image_buffer = generator_function(
-                primary_individual,
-                family_data,
-                template_type,
-                user_settings=user_settings,
-            )
+                logger.info(
+                    f"Rust kernel rendered chart ({len(png_bytes)} bytes) for template {template}"
+                )
+                return HttpResponse(png_bytes, content_type="image/png")
+            except Exception as rust_error:
+                logger.error(
+                    f"Rust kernel render failed: {rust_error}. Falling back to Python engine."
+                )
+
+        # Pure-Python Wand fallback (fail-safe)
+        image_buffer = generator_function(
+            primary_individual,
+            family_data,
+            template_type,
+            user_settings=user_settings,
+        )
         
         logger.debug("Generator function completed successfully")
         image_buffer.seek(0)

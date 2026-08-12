@@ -5,15 +5,24 @@ use crate::core::ancestor_data::AncestorData;
 use crate::core::data_types::{ChartSettings, PersonData};
 use crate::generators::unified_generator::UnifiedChartGenerator;
 use pyo3::prelude::*;
+use pyo3::types::{PyBytes, PyModule};
 
 /// Main chart generation function using zero-copy JSON pass-through
 #[pyfunction]
-pub fn render_chart_from_json(
-    generation: u8,
+pub fn render_chart_from_json<'py>(
+    py: Python<'py>,
+    generation: &str,
     primary_json: &str,
     ancestors_json: &str,
     settings_json: &str,
-) -> PyResult<Vec<u8>> {
+) -> PyResult<Bound<'py, PyBytes>> {
+    let generation: u8 = generation.trim().parse().map_err(|_| {
+        pyo3::exceptions::PyValueError::new_err(format!(
+            "Invalid generation '{}': expected an integer between 1 and 7",
+            generation
+        ))
+    })?;
+
     // Deserialize strings directly into frozen types using zero-copy references where possible
     let primary: PersonData = serde_json::from_str(primary_json).map_err(|e| {
         pyo3::exceptions::PyValueError::new_err(format!(
@@ -34,6 +43,7 @@ pub fn render_chart_from_json(
     })?;
 
     // Execute performance-isolated strategy execution
+    crate::initialize_magick();
     let generator = UnifiedChartGenerator::new(settings);
     let image_bytes = generator
         .generate(generation, &primary, &ancestors)
@@ -45,7 +55,7 @@ pub fn render_chart_from_json(
         })?;
 
     // Return clean memory handle back to Django as a Python bytes block
-    Ok(image_bytes)
+    Ok(PyBytes::new_bound(py, &image_bytes))
 }
 
 /// Python module definition
