@@ -360,6 +360,13 @@ def individual_detail(request, ind_id):
                 if sibling_id in individuals_dict:
                     half_siblings.append(individuals_dict[sibling_id])
 
+        # Get step-siblings objects
+        step_siblings = []
+        if hasattr(individual, "step_siblings") and individual.step_siblings:
+            for sibling_id in individual.step_siblings:
+                if sibling_id in individuals_dict:
+                    step_siblings.append(individuals_dict[sibling_id])
+
         # Get all siblings objects (combined list for counting)
         all_siblings = []
         if hasattr(individual, "all_siblings") and individual.all_siblings:
@@ -385,6 +392,7 @@ def individual_detail(request, ind_id):
         all_siblings.sort(key=get_birth_sort_key)
         siblings.sort(key=get_birth_sort_key)
         half_siblings.sort(key=get_birth_sort_key)
+        step_siblings.sort(key=get_birth_sort_key)
 
         # Get spouses objects
         spouses = []
@@ -398,8 +406,7 @@ def individual_detail(request, ind_id):
 
         # Get children objects
         children = []
-        children_relationship = {}  # {child_id: 'biological', 'adopted', 'foster'}
-        spouse_children_relationship = {}  # {spouse_id: {child_id: 'biological', 'adopted', 'foster', 'other'}}
+        children_relationship = {}  # {child_id: 'biological', 'adopted', 'foster', 'step'}
 
         if individual.children:
             for child_id in individual.children:
@@ -434,52 +441,53 @@ def individual_detail(request, ind_id):
                                 rel_type = "step"
                     children_relationship[child_id] = rel_type
 
-        # Calculate spouse-children relationships (for children listed under each spouse)
+        # Build structured spouse groups: each group carries the spouse object plus
+        # the children shared with that spouse (excluding the spouse's step/adoptive/
+        # foster children, matching the previous template-side count logic).
+        spouse_groups = []
+        assigned_child_ids = set()
         for spouse in spouses:
-            spouse_children_relationship[spouse.id] = {}
             spouse_child_ids = (
                 individual.spouses_children.get(spouse.id, [])
                 if hasattr(individual, "spouses_children")
                 and individual.spouses_children
                 else []
             )
+            group_children = []
             for child_id in spouse_child_ids:
-                if child_id in individuals_dict:
-                    child = individuals_dict[child_id]
-                    # Determine child's relationship to this spouse
-                    is_adopted_by_spouse = False
-                    is_foster_by_spouse = False
-                    is_step_by_spouse = False
-                    is_adopted = hasattr(child, "adopted") and child.adopted
+                if child_id not in individuals_dict:
+                    continue
+                child = individuals_dict[child_id]
+                step_parents = getattr(child, "step_parents", None) or []
+                adoptive_parents = getattr(child, "adoptive_parents", None) or []
+                foster_parents = getattr(child, "foster_parents", None) or []
+                if (
+                    spouse.id in step_parents
+                    or spouse.id in adoptive_parents
+                    or spouse.id in foster_parents
+                ):
+                    continue
+                group_children.append(child)
+                assigned_child_ids.add(child_id)
+            spouse_groups.append(
+                {
+                    "spouse": spouse,
+                    "children": group_children,
+                    "count": len(group_children),
+                }
+            )
 
-                    if hasattr(child, "adoptive_parents") and child.adoptive_parents:
-                        if spouse.id in child.adoptive_parents:
-                            is_adopted_by_spouse = True
-                    if hasattr(child, "foster_parents") and child.foster_parents:
-                        if spouse.id in child.foster_parents:
-                            is_foster_by_spouse = True
-                    if hasattr(child, "step_parents") and child.step_parents:
-                        if spouse.id in child.step_parents:
-                            # If child has adopted flag, treat as adopted
-                            if is_adopted:
-                                is_adopted_by_spouse = True
-                            else:
-                                is_step_by_spouse = True
+        # Children who belong to this individual but are not tied to any spouse group
+        # (e.g. single parents, or children from relationships without a FAM record)
+        unassigned_children = [
+            child for child in children if child.id not in assigned_child_ids
+        ]
 
-                    # If spouse is adoptive/foster/step parent, show simplified indicator (no bio parent info)
-                    if is_adopted_by_spouse or is_foster_by_spouse or is_step_by_spouse:
-                        rel_type = "other"
-                    else:
-                        # Check if spouse is biological parent
-                        rel_type = "biological"
-                        if spouse.sex == "M":
-                            if child.father != spouse.id:
-                                rel_type = "other"
-                        elif spouse.sex == "F":
-                            if child.mother != spouse.id:
-                                rel_type = "other"
-
-                    spouse_children_relationship[spouse.id][child_id] = rel_type
+        # Explicit sibling metadata for template count badges
+        full_siblings_count = len(siblings)
+        half_siblings_count = len(half_siblings)
+        step_siblings_count = len(step_siblings)
+        total_siblings_count = len(all_siblings)
 
         # Check if this individual is the home person for this file
         is_home_person = False
@@ -522,11 +530,17 @@ def individual_detail(request, ind_id):
                 "mother": mother,
                 "siblings": siblings,
                 "half_siblings": half_siblings,
+                "step_siblings": step_siblings,
                 "all_siblings": all_siblings,
+                "full_siblings_count": full_siblings_count,
+                "half_siblings_count": half_siblings_count,
+                "step_siblings_count": step_siblings_count,
+                "total_siblings_count": total_siblings_count,
                 "spouses": spouses,
+                "spouse_groups": spouse_groups,
                 "children": children,
                 "children_relationship": children_relationship,
-                "spouse_children_relationship": spouse_children_relationship,
+                "unassigned_children": unassigned_children,
                 "individuals_dict": individuals_dict,
                 "individuals_json": json.dumps(
                     [ind.to_dict() for ind in processed_individuals]

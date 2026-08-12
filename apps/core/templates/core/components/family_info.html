@@ -1,175 +1,34 @@
 {% load custom_filters %}
 
-<div class="mt-4">
+{# Scoped fix: Tailwind's compiled `.collapse` utility sets `visibility: collapse`,
+   which collides with Bootstrap's `.collapse` component class and hides the expanded
+   accordion sections on page load. Bootstrap's `.collapse.show` only flips `display`,
+   so the sections render as empty space. Forcing `visibility: visible` here keeps the
+   Parents / Siblings / Spouses / Children sections expanded and visible immediately,
+   while Bootstrap's `collapse`/`show` toggling continues to work via `display`. #}
+<style>
+    .family-info .collapse {
+        visibility: visible;
+    }
+</style>
+
+<div class="family-info mt-4">
     <h5>Family Information</h5>
     <ul class="list-group">
-        {% if father or mother %}
+
+        {# ---- Enclave 1: Origin Family (Parents & Siblings) ---- #}
         <li class="list-group-item">
-            <strong>Parents:</strong>
-            {% if father or mother %}
-            <ul class="list-group mt-2">
-                {% if father %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {% with father_photo=photos|get_item:father.id %}
-                    {% if father_photo %}
-                    <img src="{{ father_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                    {% else %}
-                    <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
-                        <i class="bi bi-person"></i>
-                    </div>
-                    {% endif %}
-                    {% endwith %}
-                    <div class="flex-grow-1">
-                        <strong>Father:</strong> <span class="fs-5">{{ father.full_name }}</span>
-                        {% if individual.adoptive_parents and father.id in individual.adoptive_parents %}<span class="text-info">(adoptive)</span>{% endif %}
-                        {% if individual.foster_parents and father.id in individual.foster_parents %}<span class="text-warning">(foster)</span>{% endif %}
-                        {% if father.birth_date or father.birth_place %}
-                        <div class="mt-1">
-                            <small class="text-muted">
-                                {% if father.birth_date %}b. {{ father.birth_date|format_date }}{% endif %}
-                                {% if father.birth_place %}{% if father.birth_date %}, {% endif %}{{ father.birth_place }}{% endif %}
-                            </small>
-                        </div>
-                        {% endif %}
-                        {% if father.death_date or father.death_place %}
-                        <div class="mt-1">
-                            <small class="text-muted">
-                                {% if father.death_date %}d. {{ father.death_date|format_date }}{% endif %}
-                                {% if father.death_place %}{% if father.death_date %}, {% endif %}{{ father.death_place }}{% endif %}
-                            </small>
-                        </div>
-                        {% endif %}
-                    </div>
-                    <a href="{% url 'browse:individual_detail' father.id %}" class="btn btn-primary btn-sm">Profile</a>
-                </li>
-                {% endif %}
-                {% if mother %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {% with mother_photo=photos|get_item:mother.id %}
-                    {% if mother_photo %}
-                    <img src="{{ mother_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                    {% else %}
-                    <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
-                        <i class="bi bi-person"></i>
-                    </div>
-                    {% endif %}
-                    {% endwith %}
-                    <div class="flex-grow-1">
-                        <strong>Mother:</strong> <span class="fs-5">{{ mother.full_name }}</span>
-                        {% if individual.adoptive_parents and mother.id in individual.adoptive_parents %}<span class="text-info">(adoptive)</span>{% endif %}
-                        {% if individual.foster_parents and mother.id in individual.foster_parents %}<span class="text-warning">(foster)</span>{% endif %}
-                        {% if mother.birth_date or mother.birth_place %}
-                        <div class="mt-1">
-                            <small class="text-muted">
-                                {% if mother.birth_date %}b. {{ mother.birth_date|format_date }}{% endif %}
-                                {% if mother.birth_place %}{% if mother.birth_date %}, {% endif %}{{ mother.birth_place }}{% endif %}
-                            </small>
-                        </div>
-                        {% endif %}
-                        {% if mother.death_date or mother.death_place %}
-                        <div class="mt-1">
-                            <small class="text-muted">
-                                {% if mother.death_date %}d. {{ mother.death_date|format_date }}{% endif %}
-                                {% if mother.death_place %}{% if mother.death_date %}, {% endif %}{{ mother.death_place }}{% endif %}
-                            </small>
-                        </div>
-                        {% endif %}
-                    </div>
-                    <a href="{% url 'browse:individual_detail' mother.id %}" class="btn btn-primary btn-sm">Profile</a>
-                </li>
-                {% endif %}
-            </ul>
-            {% endif %}
-
-            {% if individual.adoptive_parents or individual.foster_parents %}
-            <div class="mt-3">
-                <strong>{% if individual.adoptive_parents %}Adoptive Parents:{% else %}Foster Parents:{% endif %}</strong>
+            <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="collapse" data-bs-target="#originFamilyCollapse" aria-expanded="true" aria-controls="originFamilyCollapse">
+                <strong>Origin Family:</strong>
+            </button>
+            <div class="collapse show" id="originFamilyCollapse">
+                {% if father or mother %}
                 <ul class="list-group mt-2">
-                    {% if individual.adoptive_parents %}
-                        {% for parent_id in individual.adoptive_parents %}
-                        {% with adoptive_parent=individuals_dict|get_item:parent_id %}
-                        {% if adoptive_parent %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            {% with parent_photo=photos|get_item:adoptive_parent.id %}
-                            {% if parent_photo %}
-                            <img src="{{ parent_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                            {% else %}
-                            <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
-                                <i class="bi bi-person"></i>
-                            </div>
-                            {% endif %}
-                            {% endwith %}
-                            <div class="flex-grow-1">
-                                <span class="fs-5">{{ adoptive_parent.full_name }}</span>
-                                {% if adoptive_parent.birth_date or adoptive_parent.birth_place %}
-                                <div class="mt-1">
-                                    <small class="text-muted">
-                                        {% if adoptive_parent.birth_date %}b. {{ adoptive_parent.birth_date|format_date }}{% endif %}
-                                        {% if adoptive_parent.birth_place %}{% if adoptive_parent.birth_date %}, {% endif %}{{ adoptive_parent.birth_place }}{% endif %}
-                                    </small>
-                                </div>
-                                {% endif %}
-                                {% if adoptive_parent.death_date or adoptive_parent.death_place %}
-                                <div class="mt-1">
-                                    <small class="text-muted">
-                                        {% if adoptive_parent.death_date %}d. {{ adoptive_parent.death_date|format_date }}{% endif %}
-                                        {% if adoptive_parent.death_place %}{% if adoptive_parent.death_date %}, {% endif %}{{ adoptive_parent.death_place }}{% endif %}
-                                    </small>
-                                </div>
-                                {% endif %}
-                            </div>
-                            <a href="{% url 'browse:individual_detail' adoptive_parent.id %}" class="btn btn-primary btn-sm">Profile</a>
-                        </li>
-                        {% endif %}
-                        {% endwith %}
-                        {% endfor %}
-                    {% endif %}
-                    {% if individual.foster_parents %}
-                        {% for parent_id in individual.foster_parents %}
-                        {% with foster_parent=individuals_dict|get_item:parent_id %}
-                        {% if foster_parent %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            {% with parent_photo=photos|get_item:foster_parent.id %}
-                            {% if parent_photo %}
-                            <img src="{{ parent_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                            {% else %}
-                            <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
-                                <i class="bi bi-person"></i>
-                            </div>
-                            {% endif %}
-                            {% endwith %}
-                            <div class="flex-grow-1">
-                                <span class="fs-5">{{ foster_parent.full_name }}</span>
-                                {% if foster_parent.birth_date or foster_parent.birth_place %}
-                                <div class="mt-1">
-                                    <small class="text-muted">
-                                        {% if foster_parent.birth_date %}b. {{ foster_parent.birth_date|format_date }}{% endif %}
-                                        {% if foster_parent.birth_place %}{% if foster_parent.birth_date %}, {% endif %}{{ foster_parent.birth_place }}{% endif %}
-                                    </small>
-                                </div>
-                                {% endif %}
-                            </div>
-                            <a href="{% url 'browse:individual_detail' foster_parent.id %}" class="btn btn-primary btn-sm">Profile</a>
-                        </li>
-                        {% endif %}
-                        {% endwith %}
-                        {% endfor %}
-                    {% endif %}
-                </ul>
-            </div>
-            {% endif %}
-
-            {% if individual.step_parents %}
-            <div class="mt-3">
-                <strong>Step Parents:</strong>
-                <ul class="list-group mt-2">
-                    {% for parent_id in individual.step_parents %}
-                    {% with step_parent=individuals_dict|get_item:parent_id %}
-                    {% if step_parent %}
+                    {% if father %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        {% with parent_photo=photos|get_item:step_parent.id %}
-                        {% if parent_photo %}
-                        <img src="{{ parent_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                        {% with father_photo=photos|get_item:father.id %}
+                        {% if father_photo %}
+                        <img src="{{ father_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
                         {% else %}
                         <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
                             <i class="bi bi-person"></i>
@@ -177,85 +36,156 @@
                         {% endif %}
                         {% endwith %}
                         <div class="flex-grow-1">
-                            <span class="fs-5">{{ step_parent.full_name }}</span>
-                            {% if step_parent.birth_date or step_parent.birth_place %}
+                            <strong>Father:</strong> <span class="fs-5">{{ father.full_name }}</span>
+                            {% if individual.adoptive_parents and father.id in individual.adoptive_parents %}<span class="text-info">(adoptive)</span>{% endif %}
+                            {% if individual.foster_parents and father.id in individual.foster_parents %}<span class="text-warning">(foster)</span>{% endif %}
+                            {% if father.birth_date or father.birth_place %}
                             <div class="mt-1">
                                 <small class="text-muted">
-                                    {% if step_parent.birth_date %}b. {{ step_parent.birth_date|format_date }}{% endif %}
-                                    {% if step_parent.birth_place %}{% if step_parent.birth_date %}, {% endif %}{{ step_parent.birth_place }}{% endif %}
+                                    {% if father.birth_date %}b. {{ father.birth_date|format_date }}{% endif %}
+                                    {% if father.birth_place %}{% if father.birth_date %}, {% endif %}{{ father.birth_place }}{% endif %}
                                 </small>
                             </div>
                             {% endif %}
-                            {% if step_parent.death_date or step_parent.death_place %}
+                            {% if father.death_date or father.death_place %}
                             <div class="mt-1">
                                 <small class="text-muted">
-                                    {% if step_parent.death_date %}d. {{ step_parent.death_date|format_date }}{% endif %}
-                                    {% if step_parent.death_place %}{% if step_parent.death_date %}, {% endif %}{{ step_parent.death_place }}{% endif %}
+                                    {% if father.death_date %}d. {{ father.death_date|format_date }}{% endif %}
+                                    {% if father.death_place %}{% if father.death_date %}, {% endif %}{{ father.death_place }}{% endif %}
                                 </small>
                             </div>
                             {% endif %}
                         </div>
-                        <a href="{% url 'browse:individual_detail' step_parent.id %}" class="btn btn-primary btn-sm">Profile</a>
+                        <a href="{% url 'browse:individual_detail' father.id %}" class="btn btn-primary btn-sm">Profile</a>
                     </li>
                     {% endif %}
-                    {% endwith %}
-                    {% endfor %}
+                    {% if mother %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {% with mother_photo=photos|get_item:mother.id %}
+                        {% if mother_photo %}
+                        <img src="{{ mother_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                        {% else %}
+                        <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                        <div class="flex-grow-1">
+                            <strong>Mother:</strong> <span class="fs-5">{{ mother.full_name }}</span>
+                            {% if individual.adoptive_parents and mother.id in individual.adoptive_parents %}<span class="text-info">(adoptive)</span>{% endif %}
+                            {% if individual.foster_parents and mother.id in individual.foster_parents %}<span class="text-warning">(foster)</span>{% endif %}
+                            {% if mother.birth_date or mother.birth_place %}
+                            <div class="mt-1">
+                                <small class="text-muted">
+                                    {% if mother.birth_date %}b. {{ mother.birth_date|format_date }}{% endif %}
+                                    {% if mother.birth_place %}{% if mother.birth_date %}, {% endif %}{{ mother.birth_place }}{% endif %}
+                                </small>
+                            </div>
+                            {% endif %}
+                            {% if mother.death_date or mother.death_place %}
+                            <div class="mt-1">
+                                <small class="text-muted">
+                                    {% if mother.death_date %}d. {{ mother.death_date|format_date }}{% endif %}
+                                    {% if mother.death_place %}{% if mother.death_date %}, {% endif %}{{ mother.death_place }}{% endif %}
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'browse:individual_detail' mother.id %}" class="btn btn-primary btn-sm">Profile</a>
+                    </li>
+                    {% endif %}
                 </ul>
-            </div>
-            {% endif %}
+                {% endif %}
 
-            {% if siblings or half_siblings or all_siblings %}
-            <div class="mt-2">
-                <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="collapse" data-bs-target="#siblingsCollapse" aria-expanded="true" aria-controls="siblingsCollapse">
-                    <strong>Siblings ({{ all_siblings|length }}):</strong>
-                </button>
-                <div class="collapse show" id="siblingsCollapse">
+                {% if individual.adoptive_parents or individual.foster_parents %}
+                <div class="mt-3">
+                    <strong>{% if individual.adoptive_parents %}Adoptive Parents:{% else %}Foster Parents:{% endif %}</strong>
                     <ul class="list-group mt-2">
-                        {% for sibling in siblings %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            {% with sibling_photo=photos|get_item:sibling.id %}
-                            {% if sibling_photo %}
-                            <img src="{{ sibling_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                            {% else %}
-                            <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
-                                <i class="bi bi-person"></i>
-                            </div>
-                            {% endif %}
-                            {% endwith %}
-                            <div class="flex-grow-1">
-                                <span class="fs-5">{{ sibling.full_name }}</span>
-                                {% if sibling.father and sibling.mother %}
-                                    {% if sibling.father == individual.father and sibling.mother == individual.mother %}
-                                    {% elif sibling.father == individual.father %}<span class="text-muted">(Half - via father)</span>
-                                    {% elif sibling.mother == individual.mother %}<span class="text-muted">(Half - via mother)</span>
-                                    {% else %}<span class="text-muted">(Half)</span>
+                        {% if individual.adoptive_parents %}
+                            {% for parent_id in individual.adoptive_parents %}
+                            {% with adoptive_parent=individuals_dict|get_item:parent_id %}
+                            {% if adoptive_parent %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {% with parent_photo=photos|get_item:adoptive_parent.id %}
+                                {% if parent_photo %}
+                                <img src="{{ parent_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                                {% endif %}
+                                {% endwith %}
+                                <div class="flex-grow-1">
+                                    <span class="fs-5">{{ adoptive_parent.full_name }}</span>
+                                    {% if adoptive_parent.birth_date or adoptive_parent.birth_place %}
+                                    <div class="mt-1">
+                                        <small class="text-muted">
+                                            {% if adoptive_parent.birth_date %}b. {{ adoptive_parent.birth_date|format_date }}{% endif %}
+                                            {% if adoptive_parent.birth_place %}{% if adoptive_parent.birth_date %}, {% endif %}{{ adoptive_parent.birth_place }}{% endif %}
+                                        </small>
+                                    </div>
                                     {% endif %}
-                                {% endif %}
-                                {% if sibling.birth_date or sibling.birth_place %}
-                                <div class="mt-1">
-                                    <small class="text-muted">
-                                        {% if sibling.birth_date %}b. {{ sibling.birth_date|format_date }}{% endif %}
-                                        {% if sibling.birth_place %}{% if sibling.birth_date %}, {% endif %}{{ sibling.birth_place }}{% endif %}
-                                    </small>
+                                    {% if adoptive_parent.death_date or adoptive_parent.death_place %}
+                                    <div class="mt-1">
+                                        <small class="text-muted">
+                                            {% if adoptive_parent.death_date %}d. {{ adoptive_parent.death_date|format_date }}{% endif %}
+                                            {% if adoptive_parent.death_place %}{% if adoptive_parent.death_date %}, {% endif %}{{ adoptive_parent.death_place }}{% endif %}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <a href="{% url 'browse:individual_detail' adoptive_parent.id %}" class="btn btn-primary btn-sm">Profile</a>
+                            </li>
+                            {% endif %}
+                            {% endwith %}
+                            {% endfor %}
+                        {% endif %}
+                        {% if individual.foster_parents %}
+                            {% for parent_id in individual.foster_parents %}
+                            {% with foster_parent=individuals_dict|get_item:parent_id %}
+                            {% if foster_parent %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {% with parent_photo=photos|get_item:foster_parent.id %}
+                                {% if parent_photo %}
+                                <img src="{{ parent_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
+                                    <i class="bi bi-person"></i>
                                 </div>
                                 {% endif %}
-                                {% if sibling.death_date or sibling.death_place %}
-                                <div class="mt-1">
-                                    <small class="text-muted">
-                                        {% if sibling.death_date %}d. {{ sibling.death_date|format_date }}{% endif %}
-                                        {% if sibling.death_place %}{% if sibling.death_date %}, {% endif %}{{ sibling.death_place }}{% endif %}
-                                    </small>
+                                {% endwith %}
+                                <div class="flex-grow-1">
+                                    <span class="fs-5">{{ foster_parent.full_name }}</span>
+                                    {% if foster_parent.birth_date or foster_parent.birth_place %}
+                                    <div class="mt-1">
+                                        <small class="text-muted">
+                                            {% if foster_parent.birth_date %}b. {{ foster_parent.birth_date|format_date }}{% endif %}
+                                            {% if foster_parent.birth_place %}{% if foster_parent.birth_date %}, {% endif %}{{ foster_parent.birth_place }}{% endif %}
+                                        </small>
+                                    </div>
+                                    {% endif %}
                                 </div>
-                                {% endif %}
-                            </div>
-                            <a href="{% url 'browse:individual_detail' sibling.id %}" class="btn btn-primary btn-sm">Profile</a>
-                        </li>
-                        {% endfor %}
-                        {% for sibling in half_siblings %}
+                                <a href="{% url 'browse:individual_detail' foster_parent.id %}" class="btn btn-primary btn-sm">Profile</a>
+                            </li>
+                            {% endif %}
+                            {% endwith %}
+                            {% endfor %}
+                        {% endif %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% if individual.step_parents %}
+                <div class="mt-3">
+                    <strong>Step Parents:</strong>
+                    <ul class="list-group mt-2">
+                        {% for parent_id in individual.step_parents %}
+                        {% with step_parent=individuals_dict|get_item:parent_id %}
+                        {% if step_parent %}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                            {% with sibling_photo=photos|get_item:sibling.id %}
-                            {% if sibling_photo %}
-                            <img src="{{ sibling_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                            {% with parent_photo=photos|get_item:step_parent.id %}
+                            {% if parent_photo %}
+                            <img src="{{ parent_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
                             {% else %}
                             <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
                                 <i class="bi bi-person"></i>
@@ -263,142 +193,315 @@
                             {% endif %}
                             {% endwith %}
                             <div class="flex-grow-1">
-                                <span class="fs-5">{{ sibling.full_name }}</span>
-                                <span class="text-muted">
-                                    {% if sibling.father == individual.father %}(Half - via father)
-                                    {% elif sibling.mother == individual.mother %}(Half - via mother)
-                                    {% else %}(Half){% endif %}
-                                </span>
-                                {% if sibling.birth_date or sibling.birth_place %}
+                                <span class="fs-5">{{ step_parent.full_name }}</span>
+                                {% if step_parent.birth_date or step_parent.birth_place %}
                                 <div class="mt-1">
                                     <small class="text-muted">
-                                        {% if sibling.birth_date %}b. {{ sibling.birth_date|format_date }}{% endif %}
-                                        {% if sibling.birth_place %}{% if sibling.birth_date %}, {% endif %}{{ sibling.birth_place }}{% endif %}
+                                        {% if step_parent.birth_date %}b. {{ step_parent.birth_date|format_date }}{% endif %}
+                                        {% if step_parent.birth_place %}{% if step_parent.birth_date %}, {% endif %}{{ step_parent.birth_place }}{% endif %}
                                     </small>
                                 </div>
                                 {% endif %}
-                                {% if sibling.death_date or sibling.death_place %}
+                                {% if step_parent.death_date or step_parent.death_place %}
                                 <div class="mt-1">
                                     <small class="text-muted">
-                                        {% if sibling.death_date %}d. {{ sibling.death_date|format_date }}{% endif %}
-                                        {% if sibling.death_place %}{% if sibling.death_date %}, {% endif %}{{ sibling.death_place }}{% endif %}
+                                        {% if step_parent.death_date %}d. {{ step_parent.death_date|format_date }}{% endif %}
+                                        {% if step_parent.death_place %}{% if step_parent.death_date %}, {% endif %}{{ step_parent.death_place }}{% endif %}
                                     </small>
                                 </div>
                                 {% endif %}
                             </div>
-                            <a href="{% url 'browse:individual_detail' sibling.id %}" class="btn btn-primary btn-sm">Profile</a>
+                            <a href="{% url 'browse:individual_detail' step_parent.id %}" class="btn btn-primary btn-sm">Profile</a>
                         </li>
+                        {% endif %}
+                        {% endwith %}
                         {% endfor %}
                     </ul>
                 </div>
+                {% endif %}
+
+                {% if siblings or half_siblings or step_siblings %}
+                <div class="mt-3">
+                    <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="collapse" data-bs-target="#siblingsCollapse" aria-expanded="true" aria-controls="siblingsCollapse">
+                        <strong>Siblings ({{ total_siblings_count }}):</strong>
+                    </button>
+                    <div class="collapse show" id="siblingsCollapse">
+                        <ul class="list-group mt-2">
+                            {% if siblings %}
+                            <li class="list-group-item list-group-item-secondary"><strong>Full Siblings ({{ full_siblings_count }})</strong></li>
+                            {% for sibling in siblings %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {% with sibling_photo=photos|get_item:sibling.id %}
+                                {% if sibling_photo %}
+                                <img src="{{ sibling_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                                {% endif %}
+                                {% endwith %}
+                                <div class="flex-grow-1">
+                                    <span class="fs-5">{{ sibling.full_name }}</span>
+                                    {% if sibling.father and sibling.mother %}
+                                        {% if sibling.father == individual.father and sibling.mother == individual.mother %}
+                                        {% elif sibling.father == individual.father %}<span class="text-muted">(Half - via father)</span>
+                                        {% elif sibling.mother == individual.mother %}<span class="text-muted">(Half - via mother)</span>
+                                        {% else %}<span class="text-muted">(Half)</span>
+                                        {% endif %}
+                                    {% endif %}
+                                    {% if sibling.birth_date or sibling.birth_place %}
+                                    <div class="mt-1">
+                                        <small class="text-muted">
+                                            {% if sibling.birth_date %}b. {{ sibling.birth_date|format_date }}{% endif %}
+                                            {% if sibling.birth_place %}{% if sibling.birth_date %}, {% endif %}{{ sibling.birth_place }}{% endif %}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                    {% if sibling.death_date or sibling.death_place %}
+                                    <div class="mt-1">
+                                        <small class="text-muted">
+                                            {% if sibling.death_date %}d. {{ sibling.death_date|format_date }}{% endif %}
+                                            {% if sibling.death_place %}{% if sibling.death_date %}, {% endif %}{{ sibling.death_place }}{% endif %}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <a href="{% url 'browse:individual_detail' sibling.id %}" class="btn btn-primary btn-sm">Profile</a>
+                            </li>
+                            {% endfor %}
+                            {% endif %}
+                            {% if half_siblings %}
+                            <li class="list-group-item list-group-item-secondary"><strong>Half Siblings ({{ half_siblings_count }})</strong></li>
+                            {% for sibling in half_siblings %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {% with sibling_photo=photos|get_item:sibling.id %}
+                                {% if sibling_photo %}
+                                <img src="{{ sibling_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                                {% endif %}
+                                {% endwith %}
+                                <div class="flex-grow-1">
+                                    <span class="fs-5">{{ sibling.full_name }}</span>
+                                    <span class="text-muted">
+                                        {% if sibling.father == individual.father %}(Half - via father)
+                                        {% elif sibling.mother == individual.mother %}(Half - via mother)
+                                        {% else %}(Half){% endif %}
+                                    </span>
+                                    {% if sibling.birth_date or sibling.birth_place %}
+                                    <div class="mt-1">
+                                        <small class="text-muted">
+                                            {% if sibling.birth_date %}b. {{ sibling.birth_date|format_date }}{% endif %}
+                                            {% if sibling.birth_place %}{% if sibling.birth_date %}, {% endif %}{{ sibling.birth_place }}{% endif %}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                    {% if sibling.death_date or sibling.death_place %}
+                                    <div class="mt-1">
+                                        <small class="text-muted">
+                                            {% if sibling.death_date %}d. {{ sibling.death_date|format_date }}{% endif %}
+                                            {% if sibling.death_place %}{% if sibling.death_date %}, {% endif %}{{ sibling.death_place }}{% endif %}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <a href="{% url 'browse:individual_detail' sibling.id %}" class="btn btn-primary btn-sm">Profile</a>
+                            </li>
+                            {% endfor %}
+                            {% endif %}
+                            {% if step_siblings %}
+                            <li class="list-group-item list-group-item-secondary"><strong>Step Siblings ({{ step_siblings_count }})</strong></li>
+                            {% for sibling in step_siblings %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {% with sibling_photo=photos|get_item:sibling.id %}
+                                {% if sibling_photo %}
+                                <img src="{{ sibling_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
+                                    <i class="bi bi-person"></i>
+                                </div>
+                                {% endif %}
+                                {% endwith %}
+                                <div class="flex-grow-1">
+                                    <span class="fs-5">{{ sibling.full_name }}</span>
+                                    <span class="text-muted">(Step)</span>
+                                    {% if sibling.birth_date or sibling.birth_place %}
+                                    <div class="mt-1">
+                                        <small class="text-muted">
+                                            {% if sibling.birth_date %}b. {{ sibling.birth_date|format_date }}{% endif %}
+                                            {% if sibling.birth_place %}{% if sibling.birth_date %}, {% endif %}{{ sibling.birth_place }}{% endif %}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                    {% if sibling.death_date or sibling.death_place %}
+                                    <div class="mt-1">
+                                        <small class="text-muted">
+                                            {% if sibling.death_date %}d. {{ sibling.death_date|format_date }}{% endif %}
+                                            {% if sibling.death_place %}{% if sibling.death_date %}, {% endif %}{{ sibling.death_place }}{% endif %}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <a href="{% url 'browse:individual_detail' sibling.id %}" class="btn btn-primary btn-sm">Profile</a>
+                            </li>
+                            {% endfor %}
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
+        </li>
+
+        {# ---- Enclave 2: Spouses & Marriages ---- #}
+        {% if spouse_groups %}
+        <li class="list-group-item">
+            <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="collapse" data-bs-target="#spousesCollapse" aria-expanded="true" aria-controls="spousesCollapse">
+                <strong>Spouses & Marriages:</strong>
+            </button>
+            <div class="collapse show" id="spousesCollapse">
+                <ul class="list-group mt-2">
+                    {% for group in spouse_groups %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            {% with spouse=group.spouse %}
+                            {% with spouse_photo=photos|get_item:spouse.id %}
+                            {% if spouse_photo %}
+                            <img src="{{ spouse_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                            {% else %}
+                            <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            {% endif %}
+                            {% endwith %}
+                            <div class="flex-grow-1">
+                                <span class="fs-5">{{ spouse.full_name }}</span>
+                                {% if spouse.birth_date or spouse.birth_place %}
+                                <div class="mt-1">
+                                    <small class="text-muted">
+                                        {% if spouse.birth_date %}b. {{ spouse.birth_date|format_date }}{% endif %}
+                                        {% if spouse.birth_place %}{% if spouse.birth_date %}, {% endif %}{{ spouse.birth_place }}{% endif %}
+                                    </small>
+                                </div>
+                                {% endif %}
+                                {% if spouse.death_date or spouse.death_place %}
+                                <div class="mt-1">
+                                    <small class="text-muted">
+                                        {% if spouse.death_date %}d. {{ spouse.death_date|format_date }}{% endif %}
+                                        {% if spouse.death_place %}{% if spouse.death_date %}, {% endif %}{{ spouse.death_place }}{% endif %}
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'browse:individual_detail' spouse.id %}" class="btn btn-primary btn-sm">Profile</a>
+                            {% endwith %}
+                        </div>
+                        {% if group.children %}
+                        <div class="mt-2">
+                            <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="collapse" data-bs-target="#childrenCollapse{{ group.spouse.id }}" aria-expanded="true" aria-controls="childrenCollapse{{ group.spouse.id }}">
+                                <strong>Children ({{ group.count }}):</strong>
+                            </button>
+                            <div class="collapse show" id="childrenCollapse{{ group.spouse.id }}">
+                                <ul class="list-group mt-2">
+                                    {% for child in group.children %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {% with child_photo=photos|get_item:child.id %}
+                                        {% if child_photo %}
+                                        <img src="{{ child_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% else %}
+                                        <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
+                                            <i class="bi bi-person"></i>
+                                        </div>
+                                        {% endif %}
+                                        {% endwith %}
+                                        <div class="flex-grow-1">
+                                            <span class="fs-5">{{ child.full_name }}</span>
+                                            {% with rel_type=children_relationship|get_item:child.id %}
+                                            {% if rel_type and rel_type != "biological" %}
+                                            <span class="text-muted">({{ rel_type }})</span>
+                                            {% endif %}
+                                            {% endwith %}
+                                            {% if child.birth_date or child.birth_place %}
+                                            <div class="mt-1">
+                                                <small class="text-muted">
+                                                    {% if child.birth_date %}b. {{ child.birth_date|format_date }}{% endif %}
+                                                    {% if child.birth_place %}{% if child.birth_date %}, {% endif %}{{ child.birth_place }}{% endif %}
+                                                </small>
+                                            </div>
+                                            {% endif %}
+                                            {% if child.death_date or child.death_place %}
+                                            <div class="mt-1">
+                                                <small class="text-muted">
+                                                    {% if child.death_date %}d. {{ child.death_date|format_date }}{% endif %}
+                                                    {% if child.death_place %}{% if child.death_date %}, {% endif %}{{ child.death_place }}{% endif %}
+                                                </small>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <a href="{% url 'browse:individual_detail' child.id %}" class="btn btn-primary btn-sm">Profile</a>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
         </li>
         {% endif %}
 
-        {% if spouses %}
+        {# ---- Enclave 3: Unassigned Children ---- #}
+        {% if unassigned_children %}
         <li class="list-group-item">
-            <strong>Spouses:</strong>
-            <ul class="list-group">
-                {% for spouse in spouses %}
-                <li class="list-group-item">
-                    {% with spouse_photo=photos|get_item:spouse.id %}
-                    {% if spouse_photo %}
-                    <img src="{{ spouse_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover; float: left;">
-                    {% else %}
-                    <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; float: left; margin-right: 10px;">
-                        <i class="bi bi-person"></i>
-                    </div>
-                    {% endif %}
-                    {% endwith %}
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="fs-5">{{ spouse.full_name }}</span>
-                            {% if spouse.birth_date or spouse.birth_place %}
+            <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="collapse" data-bs-target="#unassignedChildrenCollapse" aria-expanded="true" aria-controls="unassignedChildrenCollapse">
+                <strong>Unassigned Children ({{ unassigned_children|length }}):</strong>
+            </button>
+            <div class="collapse show" id="unassignedChildrenCollapse">
+                <ul class="list-group mt-2">
+                    {% for child in unassigned_children %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {% with child_photo=photos|get_item:child.id %}
+                        {% if child_photo %}
+                        <img src="{{ child_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                        {% else %}
+                        <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                        <div class="flex-grow-1">
+                            <span class="fs-5">{{ child.full_name }}</span>
+                            {% with rel_type=children_relationship|get_item:child.id %}
+                            {% if rel_type and rel_type != "biological" %}
+                            <span class="text-muted">({{ rel_type }})</span>
+                            {% endif %}
+                            {% endwith %}
+                            {% if child.birth_date or child.birth_place %}
                             <div class="mt-1">
                                 <small class="text-muted">
-                                    {% if spouse.birth_date %}b. {{ spouse.birth_date|format_date }}{% endif %}
-                                    {% if spouse.birth_place %}{% if spouse.birth_date %}, {% endif %}{{ spouse.birth_place }}{% endif %}
+                                    {% if child.birth_date %}b. {{ child.birth_date|format_date }}{% endif %}
+                                    {% if child.birth_place %}{% if child.birth_date %}, {% endif %}{{ child.birth_place }}{% endif %}
                                 </small>
                             </div>
                             {% endif %}
-                            {% if spouse.death_date or spouse.death_place %}
+                            {% if child.death_date or child.death_place %}
                             <div class="mt-1">
                                 <small class="text-muted">
-                                    {% if spouse.death_date %}d. {{ spouse.death_date|format_date }}{% endif %}
-                                    {% if spouse.death_place %}{% if spouse.death_date %}, {% endif %}{{ spouse.death_place }}{% endif %}
+                                    {% if child.death_date %}d. {{ child.death_date|format_date }}{% endif %}
+                                    {% if child.death_place %}{% if child.death_date %}, {% endif %}{{ child.death_place }}{% endif %}
                                 </small>
                             </div>
                             {% endif %}
                         </div>
-                        <a href="{% url 'browse:individual_detail' spouse.id %}" class="btn btn-primary btn-sm">Profile</a>
-                    </div>
-                    {% if individual.spouses_children and individual.spouses_children|get_item:spouse.id %}
-                    <div class="mt-2">
-                        <button class="btn btn-link btn-sm p-0" type="button" data-bs-toggle="collapse" data-bs-target="#childrenCollapse{{ spouse.id }}" aria-expanded="true" aria-controls="childrenCollapse{{ spouse.id }}">
-                            <strong>Children ({% count_spouse_children spouse.id individual.spouses_children|get_item:spouse.id individuals_dict as child_count %}{{ child_count }}):</strong>
-                        </button>
-                        <div class="collapse show" id="childrenCollapse{{ spouse.id }}">
-                            <ul class="list-group mt-2">
-                                {% for child_id in individual.spouses_children|get_item:spouse.id %}
-                                {% with child=individuals_dict|get_item:child_id %}
-                                {% if child %}
-                                {% with child_step=child.step_parents|default:'' %}
-                                {% with child_adoptive=child.adoptive_parents|default:'' %}
-                                {% with child_foster=child.foster_parents|default:'' %}
-                                {# Don't show if spouse is step/adoptive/foster parent of this child #}
-                                {% if spouse.id not in child_step and spouse.id not in child_adoptive and spouse.id not in child_foster %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    {% with child_photo=photos|get_item:child.id %}
-                                    {% if child_photo %}
-                                    <img src="{{ child_photo.photo.url }}" alt="" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                                    {% else %}
-                                    <div class="rounded me-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width: 50px; height: 50px; flex-shrink: 0;">
-                                        <i class="bi bi-person"></i>
-                                    </div>
-                                    {% endif %}
-                                    {% endwith %}
-                                    <div class="flex-grow-1">
-                                        <span class="fs-5">{{ child.full_name }}</span>
-                                        {# Check if viewing individual is step parent of this child #}
-                                        {% if individual.id in child_step %}<span class="text-info">(Step{% if child.father and child.father != spouse.id %} - biological father: {% with bio_father=individuals_dict|get_item:child.father %}{{ bio_father.full_name }}{% endwith %}{% endif %}{% if child.mother and child.mother != spouse.id %}{% if child.father and child.father != spouse.id %} and {% else %} - {% endif %}biological mother: {% with bio_mother=individuals_dict|get_item:child.mother %}{{ bio_mother.full_name }}{% endwith %}{% endif %})</span>
-                                        {% elif child.adopted %}<span class="text-success">(Adopted{% if child.father and child.father != spouse.id %} - biological father: {% with bio_father=individuals_dict|get_item:child.father %}{{ bio_father.full_name }}{% endwith %}{% endif %}{% if child.mother and child.mother != spouse.id %}{% if child.father and child.father != spouse.id %} and {% else %} - {% endif %}biological mother: {% with bio_mother=individuals_dict|get_item:child.mother %}{{ bio_mother.full_name }}{% endwith %}{% endif %})</span>
-                                        {% elif spouse.id in child_adoptive %}<span class="text-success">(Adopted{% if child.father and child.father != spouse.id %} - biological father: {% with bio_father=individuals_dict|get_item:child.father %}{{ bio_father.full_name }}{% endwith %}{% endif %}{% if child.mother and child.mother != spouse.id %}{% if child.father and child.father != spouse.id %} and {% else %} - {% endif %}biological mother: {% with bio_mother=individuals_dict|get_item:child.mother %}{{ bio_mother.full_name }}{% endwith %}{% endif %})</span>
-                                        {% elif spouse.id in child_foster %}<span class="text-warning">(Foster{% if child.father and child.father != spouse.id %} - biological father: {% with bio_father=individuals_dict|get_item:child.father %}{{ bio_father.full_name }}{% endwith %}{% endif %}{% if child.mother and child.mother != spouse.id %}{% if child.father and child.father != spouse.id %} and {% else %} - {% endif %}biological mother: {% with bio_mother=individuals_dict|get_item:child.mother %}{{ bio_mother.full_name }}{% endwith %}{% endif %})</span>
-                                        {% endif %}
-                                        {% if child.birth_date or child.birth_place %}
-                                        <div class="mt-1">
-                                            <small class="text-muted">
-                                                {% if child.birth_date %}b. {{ child.birth_date|format_date }}{% endif %}
-                                                {% if child.birth_place %}{% if child.birth_date %}, {% endif %}{{ child.birth_place }}{% endif %}
-                                            </small>
-                                        </div>
-                                        {% endif %}
-                                        {% if child.death_date or child.death_place %}
-                                        <div class="mt-1">
-                                            <small class="text-muted">
-                                                {% if child.death_date %}d. {{ child.death_date|format_date }}{% endif %}
-                                                {% if child.death_place %}{% if child.death_date %}, {% endif %}{{ child.death_place }}{% endif %}
-                                            </small>
-                                        </div>
-                                        {% endif %}
-                                    </div>
-                                    <a href="{% url 'browse:individual_detail' child.id %}" class="btn btn-primary btn-sm">Profile</a>
-                                </li>
-                                {% endif %}
-                                {% endwith %}
-                                {% endwith %}
-                                {% endwith %}
-                                {% endif %}
-                                {% endwith %}
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                    {% endif %}
-                </li>
-                {% endfor %}
-            </ul>
+                        <a href="{% url 'browse:individual_detail' child.id %}" class="btn btn-primary btn-sm">Profile</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
         </li>
         {% endif %}
     </ul>
