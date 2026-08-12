@@ -2,167 +2,130 @@
 Tests for the multi-generation family tree image generation system.
 
 This test suite covers:
-- Settings helper functionality
-- Image generation chaining
-- Template preview endpoints
+- Settings validation (apps.generator.utils.settings_validator)
+- Template mapping and generator wiring (apps.generator.template_mapping)
+- Template preview endpoint (apps.hud.views_simple_buffered.get_template_preview_simple)
 - Frontend integration
-- Edge cases (missing parents, invalid data)
 - Settings persistence across templates
 """
 
+import importlib
 import json
 from io import BytesIO
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
-from django.test import TestCase, Client
-from django.urls import reverse
+from django.conf import settings
+from django.test import Client, TestCase
+from wand.color import Color
+
 from apps.generator.models import GedcomFile
-from apps.generator.utils.settings_helper import (
-    extract_generation_settings,
-    get_default_settings,
-)
-from apps.generator.utils. import generate_1gen_preview
+from apps.generator.template_mapping import get_template_mapping
+from apps.generator.utils import settings_validator
 from apps.parser.models import PersonData
 
 
-class TestSettingsHelper(TestCase):
-    """Test the settings helper functions."""
+def set_client_session(client, **data):
+    """Persist session data into the test client's signed cookie."""
+    session = client.session
+    session.update(data)
+    session.save()
+    client.cookies[settings.SESSION_COOKIE_NAME] = session.session_key
 
-    def test_extract_primary_settings(self):
-        """Test extraction of PRIMARY generation settings."""
-        user_settings = {
-            "PRIMARY_name_font_size": 84,
-            "PRIMARY_translate_x": 100,
-            "font_family": "Arial",
-            "PARENT_name_font_size": 60,  # Should be excluded
+
+class TestSettingsValidation(TestCase):
+    """Test the settings validation helpers."""
+
+    def test_validate_setting_converts_values(self):
+        self.assertEqual(
+            settings_validator.validate_setting("84", int, 10, "name_font_size"), 84
+        )
+        self.assertEqual(
+            settings_validator.validate_setting(42, int, 10, "name_font_size"), 42
+        )
+
+    def test_validate_setting_falls_back_on_invalid(self):
+        self.assertEqual(
+            settings_validator.validate_setting("bad", int, 10, "name_font_size"), 10
+        )
+        self.assertEqual(
+            settings_validator.validate_setting(None, str, "Arial", "font_family"),
+            "Arial",
+        )
+
+    def test_validate_font_size_enforces_bounds(self):
+        self.assertEqual(settings_validator.validate_font_size_setting(2, 12), 6)
+        self.assertEqual(settings_validator.validate_font_size_setting(900, 12), 500)
+        self.assertEqual(settings_validator.validate_font_size_setting(24, 12), 24)
+
+    def test_validate_coordinate_setting(self):
+        self.assertEqual(settings_validator.validate_coordinate_setting("50", 0), 50)
+        self.assertEqual(
+            settings_validator.validate_coordinate_setting(
+                -5, 0, allow_negative=False
+            ),
+            0,
+        )
+
+    def test_validate_color_setting(self):
+        color = settings_validator.validate_color_setting("#FF0000", "#FFFFFF", "bg")
+        self.assertIsInstance(color, Color)
+        self.assertEqual(color, Color("#f00"))
+
+    def test_validate_color_setting_falls_back_on_invalid(self):
+        fallback = settings_validator.validate_color_setting(
+            "not-a-color", "#FFFFFF", "bg"
+        )
+        self.assertEqual(fallback, Color("#FFFFFF"))
+
+    def test_get_validated_settings_with_schema(self):
+        import os
+
+        schema = {
+            "font_family": (str, "Arial"),
+            "primary_name_font_size": (int, 84),
+            "primary_font_color": (str, "black"),
         }
+        validated = settings_validator.get_validated_settings(
+            {
+                "font_family": "Arial",
+                "primary_name_font_size": "120",
+                "primary_font_color": "red",
+            },
+            schema,
+        )
+        self.assertEqual(validated["primary_name_font_size"], 120)
+        self.assertEqual(validated["primary_font_color"], Color("#f00"))
+        # Font family must resolve to a real font file on disk
+        self.assertTrue(os.path.isfile(validated["font_family"]))
 
-        result = extract_generation_settings(user_settings, "PRIMARY")
 
-        self.assertEqual(result["name_font_size"], 84)
-        self.assertEqual(result["translate_x"], 100)
-        self.assertEqual(result["font_family"], "Arial")  # Inherited
-        self.assertNotIn("name_font_size", result)  # PARENT setting excluded
+class TestTemplateMapping(TestCase):
+    """Test template mapping and generator wiring."""
 
-    def test_extract_parent_settings(self):
-        """Test extraction of PARENT generation settings."""
-        user_settings = {
-            "PARENT_name_font_size": 60,
-            "PARENT_translate_x": 200,
-            "font_family": "Times New Roman",
-            "PRIMARY_name_font_size": 84,  # Should be excluded
-        }
+    def test_mapping_has_seven_generations(self):
+        mapping = get_template_mapping()
+        self.assertEqual(set(mapping.keys()), {"1", "2", "3", "4", "5", "6", "7"})
 
-        result = extract_generation_settings(user_settings, "PARENT")
+    def test_mapping_points_to_prototype_generators(self):
+        mapping = get_template_mapping()
+        for gen, config in mapping.items():
+            self.assertEqual(config["function"], f"generate_prototype_{gen}gen_preview")
+            self.assertEqual(
+                config["module"],
+                f"apps.generator.utils.prototype.prototype_image_{gen}generator",
+            )
 
-        self.assertEqual(result["name_font_size"], 60)
-        self.assertEqual(result["translate_x"], 200)
-        self.assertEqual(result["font_family"], "Times New Roman")  # Inherited
-        self.assertNotIn("name_font_size", result)  # PRIMARY setting excluded
-
-    def test_extract_settings_empty_input(self):
-        """Test extraction with empty user settings."""
-        result = extract_generation_settings(None, "PRIMARY")
-        self.assertEqual(result, {})
-
-    def test_extract_settings_no_prefix_matches(self):
-        """Test extraction with no matching prefix."""
-        user_settings = {
-            "font_family": "Arial",
-            "primary_background_color": "#FFFFFF",
-        }
-
-        result = extract_generation_settings(user_settings, "NONEXISTENT")
-
-        # Should only inherit base settings
-        self.assertEqual(result["font_family"], "Arial")
-        self.assertEqual(result["primary_background_color"], "#FFFFFF")
-
-    def test_get_default_settings_primary(self):
-        """Test default settings for PRIMARY generation."""
-        defaults = get_default_settings("PRIMARY")
-
-        self.assertEqual(defaults["primary_name_font_size"], 84)
-        self.assertEqual(defaults["font_family"], "Arial")
-        self.assertEqual(defaults["primary_background_color"], "#FFFFFF")
-
-    def test_get_default_settings_parent(self):
-        """Test default settings for PARENT generation."""
-        defaults = get_default_settings("PARENT")
-
-        self.assertEqual(defaults["primary_name_font_size"], 60)  # Smaller than PRIMARY
-        self.assertEqual(defaults["font_family"], "Arial")
-        self.assertEqual(defaults["primary_background_color"], "#FFFFFF")
-
-    def test_get_default_settings_nonexistent(self):
-        """Test default settings for nonexistent generation."""
-        defaults = get_default_settings("NONEXISTENT")
-
-        # Should return only base defaults
-        self.assertEqual(defaults["font_family"], "Arial")
-        self.assertEqual(defaults["primary_background_color"], "#FFFFFF")
-        self.assertNotIn("primary_name_font_size", defaults)
+    def test_mapping_modules_are_importable(self):
+        mapping = get_template_mapping()
+        for config in mapping.values():
+            module = importlib.import_module(config["module"])
+            self.assertTrue(callable(getattr(module, config["function"])))
 
 
 class TestImageGeneration(TestCase):
-    """Test the image generation functionality."""
-
-    @patch("apps.generator.utils.image_1generator.generate_1gen_preview")
-    def test_2gen_chaining(self, mock_1gen):
-        """Test that 2gen properly calls 1gen and composites."""
-        # Mock the 1gen generator to return a buffer
-        mock_buffer = BytesIO()
-        mock_1gen.return_value = mock_buffer
-
-        # This would need actual implementation
-        # result = generate_2gen_preview(mock_person, mock_family_data)
-
-        # Verify 1gen was called
-        mock_1gen.assert_called_once()
-
-        # In a real test, you'd verify the composite operation
-        # self.assertIsNotNone(result)
-
-    def test_2gen_missing_parents(self):
-        """Test 2gen generation with missing parents (edge case)."""
-        from apps.generator.utils.image_2generator import generate_2gen_preview
-
-        # Create mock person with no parents
-        mock_person = Mock(spec=PersonData)
-        mock_person.father = None
-        mock_person.mother = None
-
-        mock_family_data = {"individuals": {}}
-
-        # This should not raise an exception
-        try:
-            result = generate_2gen_preview(mock_person, mock_family_data)
-            self.assertIsNotNone(result)
-        except Exception as e:
-            self.fail(f"2gen generation failed with missing parents: {e}")
-
-    def test_2gen_partial_parent_info(self):
-        """Test 2gen generation with partial parent information."""
-        from apps.generator.utils.image_2generator import generate_2gen_preview
-
-        # Create mock person with father but no mother
-        mock_person = Mock(spec=PersonData)
-        mock_person.father = Mock(spec=PersonData)
-        mock_person.father.full_name = "John Doe"
-        mock_person.father.birth_date = None  # Missing birth date
-        mock_person.mother = None
-
-        mock_family_data = {"individuals": {"father_id": mock_person.father}}
-
-        # This should not raise an exception
-        try:
-            result = generate_2gen_preview(mock_person, mock_family_data)
-            self.assertIsNotNone(result)
-        except Exception as e:
-            self.fail(f"2gen generation failed with partial parent info: {e}")
+    """Wiring-level tests for the prototype generators."""
 
     def setUp(self):
-        """Set up test data."""
         self.primary_individual = PersonData(
             id="I1",
             full_name="John Doe",
@@ -174,336 +137,67 @@ class TestImageGeneration(TestCase):
             mother="I3",
         )
 
-        self.family_data = {
-            "individuals": {
-                "I1": self.primary_individual,
-                "I2": PersonData(
-                    id="I2", full_name="Robert Doe", given_name="Robert", surname="Doe"
-                ),
-                "I3": PersonData(
-                    id="I3", full_name="Jane Smith", given_name="Jane", surname="Smith"
-                ),
-            }
-        }
+    def test_1gen_generator_importable(self):
+        from apps.generator.utils.prototype.prototype_image_1generator import (
+            generate_prototype_1gen_preview,
+        )
 
-    @patch("apps.generator.utils.image_1generator.Image")
-    def test_1gen_preview_basic(self, mock_image_class):
-        """Test basic 1-generation preview generation."""
-        # Mock Wand Image
-        mock_img = Mock()
-        mock_image_class.return_value.__enter__.return_value = mock_img
+        self.assertTrue(callable(generate_prototype_1gen_preview))
 
-        # Mock drawing
-        mock_draw = Mock()
-        with patch(
-            "apps.generator.utils.image_1generator.Drawing", return_value=mock_draw
-        ):
-            with patch(
-                "apps.generator.utils.image_1generator.os.path.exists",
-                return_value=True,
-            ):
-                result = generate_1gen_preview(
-                    self.primary_individual, self.family_data, "preview", {}
-                )
+    def test_2gen_generator_importable(self):
+        from apps.generator.utils.prototype.prototype_image_2generator import (
+            generate_prototype_2gen_preview,
+        )
 
-                self.assertIsInstance(result, BytesIO)
-                mock_draw.assert_called_once()
+        self.assertTrue(callable(generate_prototype_2gen_preview))
 
-    @patch("apps.generator.utils.image_1generator.Image")
-    def test_1gen_preview_with_user_settings(self, mock_image_class):
-        """Test 1-generation preview with custom user settings."""
-        user_settings = {
-            "PRIMARY_name_font_size": 100,
-            "font_family": "Times New Roman",
-            "primary_background_color": "#FF0000",
-        }
+    def test_generator_signature_matches_standard_call(self):
+        import inspect
 
-        # Mock Wand Image
-        mock_img = Mock()
-        mock_image_class.return_value.__enter__.return_value = mock_img
+        from apps.generator.utils.prototype.prototype_image_2generator import (
+            generate_prototype_2gen_preview,
+        )
 
-        # Mock drawing
-        mock_draw = Mock()
-        with patch(
-            "apps.generator.utils.image_1generator.Drawing", return_value=mock_draw
-        ):
-            with patch(
-                "apps.generator.utils.image_1generator.os.path.exists",
-                return_value=True,
-            ):
-                result = generate_1gen_preview(
-                    self.primary_individual, self.family_data, "preview", user_settings
-                )
+        params = list(inspect.signature(generate_prototype_2gen_preview).parameters)
+        self.assertEqual(
+            params[:4],
+            ["primary_individual", "family_data", "template", "user_settings"],
+        )
 
-                self.assertIsInstance(result, BytesIO)
-                # Verify that user settings were applied (would need to check drawing calls)
+    def test_2gen_missing_parents_does_not_crash(self):
+        """The 2gen generator must tolerate missing parents."""
+        from apps.generator.utils.prototype import prototype_image_2generator as gen2
 
-    @patch("apps.generator.utils.image_2generator.generate_1gen_preview")
-    @patch("apps.generator.utils.image_2generator.Image")
-    def test_2gen_preview_composite(self, mock_image_class, mock_gen1_preview):
-        """Test 2-generation preview with 1gen composite."""
-        from apps.generator.utils.image_2generator import generate_2gen_preview
+        person = PersonData(
+            id="I1", full_name="No Parents", given_name="No", surname="Parents"
+        )
+        family_data = {"individuals": {"I1": person}}
 
-        # Mock 1gen preview result
-        mock_gen1_buffer = BytesIO(b"fake_1gen_image_data")
-        mock_gen1_preview.return_value = mock_gen1_buffer
+        mock_img = MagicMock()
+        mock_img.width = 100
+        mock_img.height = 100
+        mock_img.format = "PNG"
+        mock_img.__enter__.return_value = mock_img
+        mock_img.save = Mock(side_effect=lambda file: file.write(b"png-data"))
+        mock_draw = MagicMock()
 
-        # Mock Wand Image for 2gen
-        mock_img = Mock()
-        mock_image_class.return_value.__enter__.return_value = mock_img
+        with patch.object(gen2, "Image", return_value=mock_img), patch.object(
+            gen2, "Drawing", return_value=mock_draw
+        ), patch.object(gen2, "get_chart_buffer", return_value=BytesIO(b"overlay")), patch.object(
+            gen2, "print_individual"
+        ) as mock_print:
+            result = gen2.generate_prototype_2gen_preview(person, family_data)
 
-        # Mock drawing
-        mock_draw = Mock()
-        with patch(
-            "apps.generator.utils.image_2generator.Drawing", return_value=mock_draw
-        ):
-            with patch(
-                "apps.generator.utils.image_2generator.os.path.exists",
-                return_value=True,
-            ):
-                result = generate_2gen_preview(
-                    self.primary_individual, self.family_data, "preview", {}
-                )
-
-                self.assertIsInstance(result, BytesIO)
-                # Verify 1gen preview was called
-                mock_gen1_preview.assert_called_once()
-                # Verify composite was attempted (would need to check Image.composite calls)
+        self.assertIsInstance(result, BytesIO)
+        # No parents -> neither parent is rendered
+        mock_print.assert_not_called()
 
 
 class TestTemplatePreviewEndpoint(TestCase):
     """Test the generic template preview endpoint."""
 
     def setUp(self):
-        """Set up test client and data."""
         self.client = Client()
-
-        # Mock session data
-        self.session_data = {
-            "current_gedcom_file_id": 1,
-            "selected_individual_id": "I1",
-        }
-
-    @patch("apps.hud.views.GedcomFile.objects.get")
-    @patch("apps.hud.views.get_template_mapping")
-    def test_get_template_preview_success(self, mock_template_mapping, mock_gedcom_get):
-        """Test successful template preview generation."""
-        # Mock GedcomFile
-        mock_gedcom_file = Mock()
-        mock_gedcom_file.parsed_data = {
-            "individuals": {
-                "I1": {
-                    "id": "I1",
-                    "full_name": "John Doe",
-                    "given_name": "John",
-                    "surname": "Doe",
-                }
-            }
-        }
-        mock_gedcom_get.return_value = mock_gedcom_file
-
-        # Mock template mapping
-        mock_template_mapping.return_value = {
-            "1": {
-                "module": "apps.generator.utils.image_1generator",
-                "function": "generate_1gen_preview",
-            }
-        }
-
-        # Mock the generator function
-        with patch("apps.hud.views.generate_1gen_preview") as mock_generator:
-            mock_buffer = BytesIO(b"fake_image_data")
-            mock_generator.return_value = mock_buffer
-
-            # Set session
-            session = self.client.session
-            session.update(self.session_data)
-            session.save()
-
-            # Make request
-            response = self.client.get("/hud/get-template-preview/1/")
-
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response["Content-Type"], "image/png")
-
-    def test_get_template_preview_invalid_template(self):
-        """Test preview request with invalid template ID."""
-        # Set session
-        session = self.client.session
-        session.update(self.session_data)
-        session.save()
-
-        # Make request with invalid template
-        response = self.client.get("/hud/get-template-preview/999/")
-
-        self.assertEqual(response.status_code, 404)
-
-    @patch("apps.hud.views.GedcomFile.objects.get")
-    def test_get_template_preview_no_gedcom_file(self, mock_gedcom_get):
-        """Test preview request with no GEDCOM file in session."""
-        mock_gedcom_get.side_effect = Exception("DoesNotExist")
-
-        # Set session without gedcom file
-        session = self.client.session
-        session["selected_individual_id"] = "I1"
-        session.save()
-
-        response = self.client.get("/hud/get-template-preview/1/")
-
-        self.assertEqual(response.status_code, 500)
-
-
-class TestTemplateValidation(TestCase):
-    """Test template validation and mapping."""
-
-    def test_template_selection_javascript(self):
-        """Test that template selection JavaScript works correctly."""
-        # This would require Selenium or similar for full JavaScript testing
-        # For now, we'll test the backend endpoints that JavaScript calls
-
-        with patch("apps.hud.views.get_template_mapping") as mock_mapping:
-            mock_mapping.return_value = {
-                "1": {
-                    "module": "apps.generator.utils.image_1generator",
-                    "function": "generate_1gen_preview",
-                },
-                "2": {
-                    "module": "apps.generator.utils.image_2generator",
-                    "function": "generate_2gen_preview",
-                },
-            }
-
-            # Test that all template IDs are valid
-            for template_id in range(1, 11):
-                if template_id in mock_mapping.return_value:
-                    config = mock_mapping.return_value[template_id]
-                    self.assertIn("module", config)
-                    self.assertIn("function", config)
-
-
-class TestPerformanceAndMemory(TestCase):
-    """Test performance and memory management."""
-
-    @patch("apps.generator.utils.image_1generator.Image")
-    def test_buffer_memory_management(self, mock_image_class):
-        """Test that buffers are properly managed."""
-        mock_img = Mock()
-        mock_image_class.return_value.__enter__.return_value = mock_img
-
-        individual = PersonData(
-            id="I1", full_name="Test User", given_name="Test", surname="User"
-        )
-        family_data = {"individuals": {"I1": individual}}
-
-        with patch("apps.generator.utils.image_1generator.Drawing"):
-            with patch(
-                "apps.generator.utils.image_1generator.os.path.exists",
-                return_value=True,
-            ):
-                result = generate_1gen_preview(individual, family_data, "preview", {})
-
-                # Buffer should be seekable
-                self.assertTrue(result.seekable())
-                # Should be able to read from buffer
-                result.seek(0)
-                data = result.read()
-                self.assertIsInstance(data, bytes)
-
-    def test_settings_extraction_performance(self):
-        """Test performance of settings extraction with large datasets."""
-        # Create large user settings dict
-        large_settings = {}
-        for i in range(1000):
-            large_settings[f"PRIMARY_setting_{i}"] = f"value_{i}"
-            large_settings[f"PARENT_setting_{i}"] = f"value_{i}"
-
-        # Time the extraction
-        import time
-
-        start_time = time.time()
-
-        result = extract_generation_settings(large_settings, "PRIMARY")
-
-        end_time = time.time()
-        extraction_time = end_time - start_time
-
-        # Should complete quickly (less than 0.1 seconds)
-        self.assertLess(extraction_time, 0.1)
-        # Should extract only PRIMARY settings
-        self.assertEqual(len(result), 1000)
-
-
-# Integration Test Example
-class TestMultiGenerationIntegration(TestCase):
-    """Integration tests for the complete multi-generation system."""
-
-    @patch("apps.generator.utils.image_1generator.Image")
-    @patch("apps.generator.utils.image_2generator.Image")
-    def test_complete_2gen_workflow(self, mock_image_2gen, mock_image_1gen):
-        """Test complete workflow from settings to final 2gen image."""
-        from apps.generator.utils.image_2generator import generate_2gen_preview
-
-        # Mock 1gen generation
-        mock_1gen_buffer = BytesIO(b"mock_1gen_data")
-        with patch(
-            "apps.generator.utils.image_2generator.generate_1gen_preview",
-            return_value=mock_1gen_buffer,
-        ):
-            # Mock 2gen image
-            mock_2gen_img = Mock()
-            mock_image_2gen.return_value.__enter__.return_value = mock_2gen_img
-
-            individual = PersonData(
-                id="I1",
-                full_name="John Doe",
-                given_name="John",
-                surname="Doe",
-                father="I2",
-                mother="I3",
-            )
-            family_data = {
-                "individuals": {
-                    "I1": individual,
-                    "I2": PersonData(
-                        id="I2",
-                        full_name="Robert Doe",
-                        given_name="Robert",
-                        surname="Doe",
-                    ),
-                    "I3": PersonData(
-                        id="I3",
-                        full_name="Jane Smith",
-                        given_name="Jane",
-                        surname="Smith",
-                    ),
-                }
-            }
-
-            user_settings = {
-                "PRIMARY_name_font_size": 84,
-                "PARENT_name_font_size": 60,
-                "font_family": "Arial",
-            }
-
-            with patch("apps.generator.utils.image_2generator.Drawing"):
-                with patch(
-                    "apps.generator.utils.image_2generator.os.path.exists",
-                    return_value=True,
-                ):
-                    result = generate_2gen_preview(
-                        individual, family_data, "preview", user_settings
-                    )
-
-                    self.assertIsInstance(result, BytesIO)
-                    # Verify the workflow completed successfully
-
-
-class TestFrontendIntegration(TestCase):
-    """Test frontend integration with multi-generation system."""
-
-    def setUp(self):
-        """Set up test data for integration tests."""
-        # Create a test GEDCOM file with parsed data
         self.gedcom_file = GedcomFile.objects.create(
             file="test.gedcom",
             home_person_id="I1",
@@ -533,133 +227,138 @@ class TestFrontendIntegration(TestCase):
                 "families": {},
             },
         )
+        set_client_session(
+            self.client,
+            current_gedcom_file_id=self.gedcom_file.id,
+            selected_individual_id="I1",
+        )
 
-    def test_template_preview_endpoint(self):
-        """Test generic template preview endpoint."""
-        from apps.generator.models import GedcomFile
+    @patch("apps.hud.views_simple_buffered.get_chart_buffer")
+    def test_get_preview_success(self, mock_get_chart_buffer):
+        mock_get_chart_buffer.return_value = BytesIO(b"fake_image_data")
 
-        client = Client()
+        response = self.client.get(
+            "/hud/get-template-preview/1/", {"individual_id": "I1"}
+        )
 
-        # Set up session data
-        session = client.session
-        session["current_gedcom_file_id"] = self.gedcom_file.id
-        session["selected_individual_id"] = "I1"
-        session.save()
-
-        # Test 1gen template
-        response = client.get("/hud/get-template-preview/1/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "image/png")
+        mock_get_chart_buffer.assert_called_once()
+        self.assertEqual(mock_get_chart_buffer.call_args.args[3], 1)
 
-        # Test 2gen template
-        response = client.get("/hud/get-template-preview/2/")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "image/png")
-
-        # Test invalid template
-        response = client.get("/hud/get-template-preview/999/")
-        self.assertEqual(response.status_code, 404)
-
-    def test_template_preview_post_with_settings(self):
-        """Test POST request with user settings."""
-        client = Client()
-
-        # Set up session data
-        session = client.session
-        session["current_gedcom_file_id"] = self.gedcom_file.id
-        session["selected_individual_id"] = "I1"
-        session.save()
-
-        user_settings = {
+    @patch("apps.hud.views_simple_buffered.get_chart_buffer")
+    def test_post_preview_with_settings(self, mock_get_chart_buffer):
+        mock_get_chart_buffer.return_value = BytesIO(b"fake_image_data")
+        payload = {
             "individual_id": "I1",
             "user_settings": {
                 "primary_name_font_size": 100,
                 "primary_background_color": "#FF0000",
             },
-            "primary_settings": {
-                "primary_name_font_size": 90,
-                "primary_background_color": "#00FF00",
-            },
         }
 
-        response = client.post(
+        response = self.client.post(
             "/hud/get-template-preview/2/",
-            data=json.dumps(user_settings),
+            data=json.dumps(payload),
             content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "image/png")
+        _, _, user_settings, generation = mock_get_chart_buffer.call_args.args
+        self.assertEqual(user_settings["primary_name_font_size"], 100)
+        self.assertEqual(generation, 2)
 
-    def test_2gen_preview_with_stored_1gen_settings(self):
-        """Test 2gen preview using stored 1gen settings."""
+    @patch("apps.hud.views_simple_buffered.get_chart_buffer")
+    def test_invalid_template_returns_500(self, mock_get_chart_buffer):
+        mock_get_chart_buffer.side_effect = ValueError("Unsupported generation: 999")
+
+        response = self.client.get(
+            "/hud/get-template-preview/999/", {"individual_id": "I1"}
+        )
+
+        self.assertEqual(response.status_code, 500)
+
+    def test_non_numeric_template_returns_400(self):
+        response = self.client.get(
+            "/hud/get-template-preview/abc/", {"individual_id": "I1"}
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_preview_without_session_file_returns_400(self):
         client = Client()
-
-        # Set up session data
-        session = client.session
-        session["current_gedcom_file_id"] = self.gedcom_file.id
-        session["selected_individual_id"] = "I1"
-        session.save()
-
-        # Test POST with primary_settings (stored 1gen settings)
-        user_settings = {
-            "individual_id": "I1",
-            "user_settings": {
-                "father_font_color": "#000000",
-                "mother_font_color": "#000000",
-                "composite_1gen_scale": 48,
-            },
-            "primary_settings": {
-                "primary_background_color": "#1a5fb4",
-                "primary_name_font_size": 91,
-                "primary_stroke_color": "#000000",
-            },
-        }
-
-        response = client.post(
-            "/hud/get-template-preview/2/",
-            data=json.dumps(user_settings),
-            content_type="application/json",
+        response = client.get(
+            "/hud/get-template-preview/1/", {"individual_id": "I1"}
         )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "image/png")
+        self.assertEqual(response.status_code, 400)
 
 
 class TestSettingsPersistence(TestCase):
     """Test settings persistence across template switches."""
 
-    def test_localstorage_storage(self):
-        """Test localStorage storage of 1gen settings."""
-        # This would need JavaScript testing framework
-        pass
+    def setUp(self):
+        self.client = Client()
+        self.gedcom_file = GedcomFile.objects.create(
+            file="test.gedcom",
+            home_person_id="I1",
+            parsed_data={
+                "individuals": {
+                    "I1": {
+                        "id": "I1",
+                        "full_name": "John Doe",
+                        "given_name": "John",
+                        "surname": "Doe",
+                    }
+                },
+                "families": {},
+            },
+        )
 
-    def test_session_persistence(self):
-        """Test Django session storage of settings."""
-        client = Client()
+    def test_save_settings_requires_session(self):
+        response = self.client.post(
+            "/hud/save-settings/",
+            data={
+                "individual_id": "I1",
+                "template": "1",
+                "primary_name_font_size": "91",
+            },
+        )
+        # No file/individual selected in session -> 400
+        self.assertEqual(response.status_code, 400)
 
-        # Test saving settings to session
-        form_data = {
-            "individual_id": "I123",
-            "template": "1",
-            "primary_name_font_size": "91",
-            "primary_background_color": "#1a5fb4",
-        }
+    @patch("apps.hud.views_simple_buffered.apply_settings_change")
+    def test_save_settings_with_session(self, mock_apply):
+        set_client_session(
+            self.client,
+            current_gedcom_file_id=self.gedcom_file.id,
+            selected_individual_id="I1",
+        )
 
-        response = client.post("/hud/save-settings/", data=form_data)
+        response = self.client.post(
+            "/hud/save-settings/",
+            data=json.dumps({"settings": {"primary_name_font_size": 91}}),
+            content_type="application/json",
+        )
 
-        # Session save may fail (non-critical), but should not break functionality
-        # The important thing is that the core features work without it
-        self.assertIn(response.status_code, [200, 400])  # Accept either
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["success"])
+        mock_apply.assert_called_once()
 
-    def test_cross_template_state_sharing(self):
-        """Test that settings persist when switching templates."""
-        # This would need JavaScript testing framework
-        # Test that localStorage provides fallback when session fails
-        pass
+    @patch("apps.hud.views_simple_buffered.get_chart_buffer")
+    def test_session_settings_are_passed_to_buffer_layer(self, mock_get_chart_buffer):
+        set_client_session(
+            self.client,
+            current_gedcom_file_id=self.gedcom_file.id,
+            selected_individual_id="I1",
+            hud_settings={"primary_name_font_size": 91},
+        )
+        mock_get_chart_buffer.return_value = BytesIO(b"fake_image_data")
 
+        response = self.client.get(
+            "/hud/get-template-preview/1/", {"individual_id": "I1"}
+        )
 
-if __name__ == "__main__":
-    import unittest
-
-    unittest.main()
+        # Session settings flow through to the buffer layer.
+        _, _, user_settings, _ = mock_get_chart_buffer.call_args.args
+        self.assertEqual(user_settings["primary_name_font_size"], 91)
+        self.assertEqual(response.status_code, 200)

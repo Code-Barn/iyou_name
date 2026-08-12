@@ -11,6 +11,13 @@ from apps.parser.models import PersonData
 logger = logging.getLogger(__name__)
 
 
+def _strip_xref(xref):
+    """Centralized XREF ID normalization: strip @ delimiters from GEDCOM IDs."""
+    if not xref:
+        return None
+    return str(xref).replace("@", "")
+
+
 def detect_encoding(file_path: str) -> Optional[str]:
     """
     Detect the encoding of a file using charset-normalizer.
@@ -89,9 +96,10 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
         parser = GedcomReader(io.BytesIO(gedcom_bytes), encoding="utf-8")
         print("Successfully initialized GedcomReader")
         # Create a mapping of XREF IDs to individual records for quick lookup
+        # Keys are normalized to bare IDs (no @ delimiters)
         individual_records = {}
         for record in parser.records0("INDI"):
-            individual_records[record.xref_id] = record
+            individual_records[_strip_xref(record.xref_id)] = record
 
         # Detect GEDCOM version for compatibility handling
         gedcom_version = "5.5"  # Default
@@ -110,11 +118,7 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
 
         print("Starting to parse individuals...")
         for record in parser.records0("INDI"):
-            ind = (
-                record.xref_id.replace("@", "")
-                if record.xref_id
-                else f"unknown_{len(family_data['individuals'])}"
-            )
+            ind = _strip_xref(record.xref_id) or f"unknown_{len(family_data['individuals'])}"
 
             # Initialize variables with safe defaults
             given_name = ""
@@ -402,9 +406,9 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
 
             # Get husband and wife by following XREF pointers safely
             husb_record = record.sub_tag("HUSB")
-            husband_id = husb_record.xref_id if husb_record else None
+            husband_id = _strip_xref(husb_record.xref_id) if husb_record else None
             wife_record = record.sub_tag("WIFE")
-            wife_id = wife_record.xref_id if wife_record else None
+            wife_id = _strip_xref(wife_record.xref_id) if wife_record else None
 
             # Process family record even if only one spouse is present
             # (GEDCOM allows single-parent families)
@@ -459,7 +463,7 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
 
             # Get children by following XREF pointers
             for child_record in record.sub_tags("CHIL"):
-                child_id = child_record.xref_id
+                child_id = _strip_xref(child_record.xref_id)
                 if child_id in individual_records:
                     family["children"].append(
                         child_id.replace("@", "") if child_id else ""
@@ -600,6 +604,69 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
             )
 
         print(f"Finished parsing families. Total: {len(family_data['families'])}")
+
+        # Fallback link pass: resolve relationships from INDI FAMC/FAMS tags when
+        # FAM records are incomplete (e.g. Ancestry.com / FamilySearch.org exports
+        # that only reference the family from the child/spouse side). This pass only
+        # ADDS missing links and never overwrites relationships set by the FAM pass.
+        print("Running FAMC/FAMS fallback link pass...")
+        for record in parser.records0("INDI"):
+            ind = _strip_xref(record.xref_id)
+            if not ind or ind not in family_data["individuals"]:
+                continue
+            individual = family_data["individuals"][ind]
+
+            # FAMC: this individual is a child of the referenced family
+            for famc_tag in record.sub_tags("FAMC"):
+                fam_id = _strip_xref(getattr(famc_tag, "xref_id", None))
+                if not fam_id or fam_id not in family_data["families"]:
+                    continue
+                family = family_data["families"][fam_id]
+                if ind not in family["children"]:
+                    family["children"].append(ind)
+                husband_id = family.get("husband")
+                wife_id = family.get("wife")
+                if husband_id and not individual.father:
+                    individual.father = husband_id
+                if wife_id and not individual.mother:
+                    individual.mother = wife_id
+                for parent_id in (husband_id, wife_id):
+                    if parent_id and parent_id in family_data["individuals"]:
+                        parent = family_data["individuals"][parent_id]
+                        if ind not in parent.children:
+                            parent.children.append(ind)
+
+            # FAMS: this individual is a spouse in the referenced family
+            for fams_tag in record.sub_tags("FAMS"):
+                fam_id = _strip_xref(getattr(fams_tag, "xref_id", None))
+                if not fam_id or fam_id not in family_data["families"]:
+                    continue
+                family = family_data["families"][fam_id]
+                husband_id = family.get("husband")
+                wife_id = family.get("wife")
+                if husband_id == ind:
+                    partner_id = wife_id
+                elif wife_id == ind:
+                    partner_id = husband_id
+                else:
+                    continue
+                if partner_id and partner_id not in individual.spouse:
+                    individual.spouse.append(partner_id)
+                if partner_id and partner_id in family_data["individuals"]:
+                    partner = family_data["individuals"][partner_id]
+                    if ind not in partner.spouse:
+                        partner.spouse.append(ind)
+                if individual.spouses_children is None:
+                    individual.spouses_children = {}
+                if partner_id not in individual.spouses_children:
+                    individual.spouses_children[partner_id] = list(family["children"])
+                else:
+                    for child_id in family["children"]:
+                        if child_id not in individual.spouses_children[partner_id]:
+                            individual.spouses_children[partner_id].append(child_id)
+                for child_id in family.get("children", []):
+                    if child_id and child_id not in individual.children:
+                        individual.children.append(child_id)
 
         print(f"Finished parsing families. Total: {len(family_data['families'])}")
         # Identify root individuals (those without parents)
@@ -976,6 +1043,24 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
                 if shared == 1:
                     half_siblings.append(other_ind)
 
+            # Find step siblings - children of step-parents who are not bio siblings
+            for sp_id in individual.step_parents or []:
+                for fam_id, children in family_children.items():
+                    family = family_data["families"].get(fam_id)
+                    if not family:
+                        continue
+                    husband_id = (family.get("husband") or "").replace("@", "")
+                    wife_id = (family.get("wife") or "").replace("@", "")
+                    if sp_id not in (husband_id, wife_id):
+                        continue
+                    for child_id in children:
+                        if child_id == ind:
+                            continue
+                        if child_id in all_siblings or child_id in half_siblings:
+                            continue
+                        if child_id not in step_siblings_list:
+                            step_siblings_list.append(child_id)
+
             # Combine all siblings for the total count (full + half + step/adopted)
             # Store separate lists for UI display, but also create combined list for counting
             combined_siblings = list(all_siblings)  # Start with full siblings
@@ -990,6 +1075,36 @@ def parse_gedcom_data(gedcom_content: str) -> Dict:
             individual.half_siblings = half_siblings
             individual.step_siblings = step_siblings_list
             individual.all_siblings = combined_siblings  # Combined list for total count
+
+        # Final pass: deduplicate all relationship lists on every individual
+        print("Deduplicating relationship lists...")
+        for ind, individual in family_data["individuals"].items():
+
+            def _dedupe(items):
+                if not items:
+                    return items
+                seen = set()
+                result = []
+                for item in items:
+                    if item not in seen:
+                        seen.add(item)
+                        result.append(item)
+                return result
+
+            individual.spouse = _dedupe(individual.spouse)
+            individual.children = _dedupe(individual.children)
+            individual.siblings = _dedupe(individual.siblings)
+            individual.half_siblings = _dedupe(individual.half_siblings)
+            individual.step_siblings = _dedupe(individual.step_siblings)
+            individual.all_siblings = _dedupe(individual.all_siblings)
+            individual.adoptive_parents = _dedupe(individual.adoptive_parents)
+            individual.foster_parents = _dedupe(individual.foster_parents)
+            individual.step_parents = _dedupe(individual.step_parents)
+            if individual.spouses_children:
+                for partner_id in individual.spouses_children:
+                    individual.spouses_children[partner_id] = _dedupe(
+                        individual.spouses_children[partner_id]
+                    )
 
         # Debug: Print all individuals and their relationships
         print("\n=== Debug: Individuals and Relationships ===")
