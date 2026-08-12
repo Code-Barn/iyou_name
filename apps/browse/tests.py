@@ -170,11 +170,15 @@ class IndividualDetailRelationshipTests(TestCase):
         self.assertIn(".family-info .collapse", content)
         self.assertIn("visibility: visible", content)
 
-    def test_profile_photo_grid_layout_with_placeholder(self):
-        """The top detail card must use a 2-column grid (info left, photo right)
-        and render a fallback avatar frame when no profile photo exists."""
+        # Multi-line template comments must never leak into the rendered HTML.
+        self.assertNotIn("Scoped fix", content)
+        self.assertNotIn("Tailwind", content)
+
+    def test_profile_photo_hero_layout_with_placeholder(self):
+        """The top hero card must use a flex layout (info left, photo right) and
+        render a clean avatar frame with the Upload Photo action underneath."""
         individuals = {
-            "I1": _person(id="I1", full_name="Grid Person"),
+            "I1": _person(id="I1", full_name="Hero Person", sex="M"),
         }
         self._set_file(individuals)
 
@@ -182,11 +186,14 @@ class IndividualDetailRelationshipTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         content = response.content.decode()
-        self.assertIn('class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4"', content)
-        self.assertIn('class="md:col-span-3"', content)
-        self.assertIn('class="md:col-span-1 flex items-start justify-center md:justify-end"', content)
+        self.assertIn('class="flex flex-col md:flex-row gap-6 justify-between items-start mt-4"', content)
+        self.assertIn('class="flex-1 w-full"', content)
+        self.assertIn('class="w-48 shrink-0 md:self-start"', content)
+        # Gender + XREF badges render next to the name.
+        self.assertIn('<span class="badge bg-info ms-2 align-middle">M</span>', content)
+        self.assertIn('<span class="badge bg-secondary ms-2 align-middle">XREF I1</span>', content)
         # Fallback avatar frame renders when no photo exists.
-        self.assertIn('class="rounded-lg border border-gray-200 bg-gray-50', content)
+        self.assertIn('class="rounded-xl shadow-sm border border-gray-200 bg-gray-50', content)
         self.assertIn('bi bi-person', content)
 
     def test_half_and_step_siblings_labeled(self):

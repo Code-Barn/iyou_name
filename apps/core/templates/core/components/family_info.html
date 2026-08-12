@@ -1,11 +1,14 @@
 {% load custom_filters %}
 
-{# Scoped fix: Tailwind's compiled `.collapse` utility sets `visibility: collapse`,
-   which collides with Bootstrap's `.collapse` component class and hides the expanded
-   accordion sections on page load. Bootstrap's `.collapse.show` only flips `display`,
-   so the sections render as empty space. Forcing `visibility: visible` here keeps the
-   Parents / Siblings / Spouses / Children sections expanded and visible immediately,
-   while Bootstrap's `collapse`/`show` toggling continues to work via `display`. #}
+{% comment %}
+Scoped fix: Tailwind's compiled `.collapse` utility sets `visibility: collapse`,
+which collides with Bootstrap's `.collapse` component class and hides the
+expanded accordion sections on page load. Bootstrap's `.collapse.show` only
+flips `display`, so the sections render as empty space. Forcing
+`visibility: visible` here keeps the Parents / Siblings / Spouses / Children
+sections expanded and visible immediately, while Bootstrap's `collapse`/`show`
+toggling continues to work via `display`.
+{% endcomment %}
 <style>
     .family-info .collapse {
         visibility: visible;

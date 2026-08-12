@@ -11,6 +11,12 @@
                     <h3 class="card-title fs-2 d-inline">
                         {{ individual.full_name }}
                     </h3>
+                    {% if individual.sex %}
+                    <span class="badge bg-info ms-2 align-middle">{{ individual.sex }}</span>
+                    {% endif %}
+                    {% if individual.id %}
+                    <span class="badge bg-secondary ms-2 align-middle">XREF {{ individual.id }}</span>
+                    {% endif %}
                     {% if is_home_person %}
                     <span class="badge bg-success ms-2 align-middle">
                         <i class="bi bi-house-fill me-1"></i>Home Person
@@ -39,49 +45,41 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-                <div class="md:col-span-3">
+            <div class="flex flex-col md:flex-row gap-6 justify-between items-start mt-4">
+                <div class="flex-1 w-full">
                     {% include 'core/components/basic_info.html' %}
                     {% include 'core/components/locations.html' %}
                 </div>
-                <div class="md:col-span-1 flex items-start justify-center md:justify-end">
-                    <div class="w-full max-w-[240px]">
+                <div class="w-48 shrink-0 md:self-start">
+                    {% if individual_photo %}
+                    <img src="{{ individual_photo.photo.url }}" alt="Photo of {{ individual.full_name }}" class="rounded-xl shadow-sm border border-gray-200 aspect-[3/4] object-cover w-full">
+                    {% else %}
+                    <div class="rounded-xl shadow-sm border border-gray-200 bg-gray-50 aspect-[3/4] w-full d-flex align-items-center justify-content-center text-muted">
+                        <i class="bi bi-person" style="font-size: 4rem;"></i>
+                    </div>
+                    {% endif %}
+                    {% if user.is_authenticated and gedcom_hash %}
+                    <div class="mt-3 text-center">
                         {% if individual_photo %}
-                        <div class="rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
-                            <img src="{{ individual_photo.photo.url }}" alt="Photo of {{ individual.full_name }}" class="w-full h-auto object-contain" style="max-height: 480px;">
-                        </div>
-                        {% if user.is_authenticated %}
-                        <div class="mt-2 text-center md:text-right">
-                            <a href="#" onclick="deletePhoto('{{ gedcom_hash }}', '{{ individual.id }}'); return false;" class="text-muted small text-decoration-none" title="Delete photo">
-                                <i class="bi bi-x-lg"></i> remove
-                            </a>
-                        </div>
-                        {% endif %}
+                        <a href="#" onclick="deletePhoto('{{ gedcom_hash }}', '{{ individual.id }}'); return false;" class="text-muted small text-decoration-none">
+                            <i class="bi bi-x-lg"></i> Remove Photo
+                        </a>
                         {% else %}
-                        <div class="rounded-lg border border-gray-200 bg-gray-50 d-flex align-items-center justify-content-center text-muted" style="aspect-ratio: 3 / 4;">
-                            <i class="bi bi-person" style="font-size: 4rem;"></i>
-                        </div>
-                        {% if user.is_authenticated and gedcom_hash %}
-                        <div class="card mt-3">
-                            <div class="card-body text-center">
-                                <p class="text-muted mb-2">No photo</p>
-                                <label for="photoUpload" class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-camera"></i> Upload
-                                </label>
-                                <input type="file" id="photoUpload" accept="image/*" style="display: none;" onchange="uploadPhoto(this)">
-                                <button type="button" class="btn btn-outline-secondary btn-sm ms-1" onclick="document.getElementById('photoUrlInput').classList.toggle('d-none');">
-                                    <i class="bi bi-link"></i> URL
-                                </button>
-                                <input type="text" id="photoUrlInput" class="form-control form-control-sm mt-2 d-none" placeholder="https://example.com/photo.jpg" onkeydown="if(event.key==='Enter'){uploadPhotoByUrl(this);return false;}">
-                                <input type="hidden" id="gedcomHash" value="{{ gedcom_hash }}">
-                                <input type="hidden" id="individualId" value="{{ individual.id }}">
-                                <input type="hidden" id="individualName" value="{{ individual.full_name }}">
-                                <input type="hidden" id="fileName" value="{{ file_name }}">
-                            </div>
-                        </div>
-                        {% endif %}
+                        <label for="photoUpload" class="btn btn-outline-primary btn-sm w-full">
+                            <i class="bi bi-camera"></i> Upload Photo
+                        </label>
+                        <input type="file" id="photoUpload" accept="image/*" style="display: none;" onchange="uploadPhoto(this)">
+                        <button type="button" class="btn btn-outline-secondary btn-sm mt-2 w-full" onclick="document.getElementById('photoUrlInput').classList.toggle('d-none');">
+                            <i class="bi bi-link"></i> URL
+                        </button>
+                        <input type="text" id="photoUrlInput" class="form-control form-control-sm mt-2 d-none" placeholder="https://example.com/photo.jpg" onkeydown="if(event.key==='Enter'){uploadPhotoByUrl(this);return false;}">
+                        <input type="hidden" id="gedcomHash" value="{{ gedcom_hash }}">
+                        <input type="hidden" id="individualId" value="{{ individual.id }}">
+                        <input type="hidden" id="individualName" value="{{ individual.full_name }}">
+                        <input type="hidden" id="fileName" value="{{ file_name }}">
                         {% endif %}
                     </div>
+                    {% endif %}
                 </div>
             </div>
 
