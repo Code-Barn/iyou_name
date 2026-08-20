@@ -246,11 +246,10 @@
 
         </style>
 
-        <!-- Zero-flash theme init: name_theme cookie > localStorage > light -->
         <script>
           (function() {
-            var cookieMatch = document.cookie.match(/(?:^|; )name_theme=([^;]*)/);
-            var theme = cookieMatch ? decodeURIComponent(cookieMatch[1]) : (localStorage.getItem('name_theme') || 'light');
+            const cookieMatch = document.cookie.match(/(?:^|; )name_theme=([^;]*)/);
+            const theme = cookieMatch ? decodeURIComponent(cookieMatch[1]) : (localStorage.getItem('name_theme') || 'light');
             if (theme === 'dark' || theme === 'stealth') {
               document.documentElement.classList.add('dark');
             } else {
@@ -258,10 +257,9 @@
             }
           })();
         </script>
-        <!-- STATIC TAILWIND CSS (compiled via `npm run tailwind:build`) -->
         <link rel="stylesheet" href="{% static 'css/output.css' %}">
     </head>
-    <body class="min-h-screen flex flex-col transition-colors duration-200 bg-slate-50 text-slate-900 dark:bg-[#0B0F19] dark:text-gray-200">
+    <body class="min-h-screen flex flex-col transition-colors duration-200 bg-slate-50 text-slate-900 dark:bg-[#0B0F19] dark:text-gray-100">
         {% include 'includes/_ecosystem_bar.html' %}
         {% include 'includes/_standard_header.html' %}
         {% include 'includes/_tailwind_safe_init.html' %}
