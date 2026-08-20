@@ -1,11 +1,21 @@
-{# _tailwind_safe_init.html — Dark mode bootstrap (runs before body render) #}
+<!-- Tailwind Safe Initialization - Prevents "Can't find variable: tailwind" errors -->
 <script>
-  (function () {
-    var theme = localStorage.getItem('color-theme');
-    if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  })();
+// Prevent script execution crashes if runtime tailwind variables are unresolved
+if (typeof tailwind !== 'undefined') {
+    tailwind.config = { 
+        theme: { 
+            extend: { 
+                colors: { 
+                    // App accent color for dynamic theming
+                    'accent': 'var(--color-accent)'
+                } 
+            } 
+        } 
+    };
+}
 </script>
+<style>
+    :root {
+        --color-accent: #14B8A6;
+    }
+</style>
